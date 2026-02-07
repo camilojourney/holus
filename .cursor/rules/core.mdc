@@ -1,0 +1,9 @@
+---
+description: Core project rules
+alwaysApply: true
+---
+
+Follow:
+- `AGENTS.md`
+- `.ai/decision-boundaries.md`
+- relevant standards in `.ai/standards/`

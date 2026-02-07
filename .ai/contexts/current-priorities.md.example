@@ -1,0 +1,77 @@
+# Current Priorities (Week of 2026-02-07)
+
+> Updated every Monday. Guides all agents on what matters most RIGHT NOW.
+
+## This Week's Focus
+
+### P1 - Must Ship This Week
+1. **[Feature/Bug Name]**
+   - Why: In progress
+   - Owner: Builder/Operator
+   - Success: Delivery velocity and defect rate
+   - Status: {{IN_PROGRESS | BLOCKED | DONE}}
+
+2. **[Feature/Bug Name]**
+   - Why: In progress
+   - Owner: Builder/Operator
+   - Success: Delivery velocity and defect rate
+   - Status: active
+
+### P2 - Nice to Have
+1. **[Feature Name]**
+   - Why: In progress
+   - Owner: Builder/Operator
+
+## Blockers
+
+| Blocker | Blocking What | Owner | Resolution |
+|---------|---------------|-------|------------|
+| Environment-specific secrets or missing service access | End-to-end validation in production-like env | Engineering | Provision credentials and run smoke tests |
+
+If no blockers: "None 🎉"
+
+## Decisions Made This Week
+
+| Decision | Rationale | Date | Who |
+|----------|-----------|------|-----|
+| Using Use repo-native stack and tooling for Implement and ship project tasks | Best fit for current team velocity and maintenance burden | 2026-02-07 | Maintainer |
+
+## User Feedback Summary
+
+**Top Pain Point:** Inconsistent edge-case handling
+
+**Top Request:** Higher reliability and better visibility
+
+**Recent Praise:** Automation speed and reduced manual effort
+
+## Metrics This Week
+
+| Metric | Target | Actual | Trend |
+|--------|--------|--------|-------|
+| Workflow success rate > 95% | Stable releases each sprint | In progress | ↑/↓/→ |
+| Median execution time within target SLO | Stable releases each sprint | In progress | ↑/↓/→ |
+
+## Next Week Preview
+
+What's coming:
+- Close highest-priority bug or missing validation
+- Improve test coverage for critical path
+
+## Long-Term Context
+
+**Current Phase:** {{MVP | V1.5 | V2}}
+
+**Strategic Goal:** Reliable feature delivery and maintainable automation
+
+**Key Milestone:** Complete current phase and stabilize with tests by 2026-02-07
+
+---
+
+## How to Use This File
+
+**For Strategist:** Update every Monday morning
+**For Builder:** Check before picking up new work
+**For Operator:** Know what's shipping when
+**For Communicator:** Align messaging with current focus
+
+Last updated: 2026-02-07

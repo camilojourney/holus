@@ -1,0 +1,30 @@
+# Config with secrets
+config/config.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Memory store
+.holus/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Credentials
+*.json
+!config/*.example.*
+credentials/

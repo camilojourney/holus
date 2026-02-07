@@ -1,0 +1,129 @@
+# Holus Product Context
+
+> This file provides product and business context to all AI agents. Update it as your product evolves.
+
+## Overview
+
+Holus is **Personal AI Agent Workforce for local-first automation.**.
+
+**Vision:** Ship reliable AI-assisted workflows with measurable outcomes and strong operational safety
+
+## Target Users
+
+**Primary Audience:** Product builders, operators, and AI-assisted contributors
+
+**User Personas:**
+- Primary user: Personal AI Agent Workforce for local-first automation.
+- Operator user: Personal AI Agent Workforce for local-first automation.
+
+## Core Problem
+
+**Problem Statement:**
+Reduces manual delivery work while improving consistency and reliability
+
+**Current Solution (if any):**
+Manual workflows, ad-hoc scripts, and fragmented documentation
+
+**Why This Matters:**
+Faster iteration, fewer regressions, and predictable operations
+
+## Tech Stack
+
+- **Framework:** Python + LangChain/LangGraph
+- **Language:** Python
+- **Database:** ChromaDB
+- **Key Dependencies:**
+  - Runtime and framework dependencies - Store canonical workflow state
+  - Data and integration dependencies - Store canonical workflow state
+
+## Domain Entities
+
+Core concepts in this project:
+
+| Entity | Description | Key Fields |
+|--------|-------------|------------|
+| Primary domain entity | Personal AI Agent Workforce for local-first automation. | id, status, created_at, updated_at |
+| Workflow execution entity | Personal AI Agent Workforce for local-first automation. | id, status, created_at, updated_at |
+| Audit/log entity | Personal AI Agent Workforce for local-first automation. | id, status, created_at, updated_at |
+
+**Entity Relationships:**
+```
+Primary domain entity
+  ├── has many Workflow execution entity
+  └── belongs to Audit/log entity
+```
+
+## External Dependencies
+
+### Primary API provider (e.g., Stripe)
+- **Purpose:** Enable core business workflows and automation
+- **Key Operations:** Deploy specialized AI agents on local machine for 24/7 personal assistance.
+- **Constraints:** Respect provider limits and cost ceilings
+
+### Secondary integrations (e.g., SendGrid)
+- **Purpose:** Enable core business workflows and automation
+- **Key Operations:** Deploy specialized AI agents on local machine for 24/7 personal assistance.
+- **Constraints:** Respect provider limits and cost ceilings
+
+## Key Constraints
+
+- **Performance:** Interactive paths under 2s where possible
+- **Scale:** Designed for current project demand with room to scale
+- **Compliance:** Handle PII and credentials according to platform policies
+- **Budget:** Keep cloud and API spend within approved budget
+- **Technical:** Constrained by third-party APIs and local environment differences
+
+## Folder Structure
+
+```
+holus/
+├── core agents tools/
+│   ├── data models/
+│   ├── core/
+│   ├── api/
+│   └── src/
+├── tests/
+└── TBD/
+```
+
+## Development Phases
+
+### MVP (0-8 weeks)
+**Goal:** Ship a reliable core workflow end-to-end
+
+**Scope:**
+- Core data flow and persistence
+- Primary user-facing operation
+- Monitoring and error handling
+
+**Success Criteria:**
+- Workflow success rate > 95%
+- Median execution time within target SLO
+
+### V1.5 (8-16 weeks)
+**Goal:** Expand automation and observability
+
+**Scope:**
+- Advanced reporting/analytics
+- Operational automation hooks
+
+### V2 (16+ weeks)
+**Goal:** Scale with stronger reliability guarantees
+
+## Product-Specific Patterns
+
+Prefer explicit interfaces and typed contracts
+
+Example:
+- Every Primary domain entity MUST have id
+- Workflow execution entity creation requires validation via Primary API provider
+- All Audit/log entity operations are atomic transactions
+
+## How to Update This File
+
+- Update when product vision changes
+- Update when adding new domain entities
+- Update when changing tech stack
+- Update at major milestones (MVP shipped, V1.5 complete)
+
+Last updated: 2026-02-07

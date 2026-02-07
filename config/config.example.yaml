@@ -1,0 +1,171 @@
+# ============================================================
+# HOLUS CONFIGURATION
+# Copy this to config.yaml and fill in your values
+# ============================================================
+
+# --- LLM Providers ---
+llm:
+  # Default provider for routine tasks
+  default_provider: "ollama"
+  
+  ollama:
+    base_url: "http://127.0.0.1:11434"
+    model: "qwen2.5:7b"
+  
+  openai:
+    api_key: ""  # sk-...
+    model: "gpt-4o-mini"
+  
+  anthropic:
+    api_key: ""  # sk-ant-...
+    model: "claude-sonnet-4-5-20250929"
+  
+  # Route complex tasks to cloud, simple tasks to local
+  routing:
+    simple_tasks: "ollama"      # categorization, scheduling, simple Q&A
+    complex_tasks: "anthropic"  # cover letters, research synthesis, strategy
+
+# --- Notifications ---
+notifications:
+  telegram:
+    enabled: true
+    bot_token: ""       # Get from @BotFather
+    chat_id: ""         # Your personal chat ID
+  
+  sms:
+    enabled: false
+    provider: "twilio"
+    account_sid: ""
+    auth_token: ""
+    from_number: ""
+    to_number: ""
+
+# --- Agent Configurations ---
+agents:
+  job_hunter:
+    enabled: true
+    schedule: "every 6 hours"
+    llm_provider: "anthropic"  # needs quality for cover letters
+    preferences:
+      target_roles:
+        - "Data Analyst"
+        - "Data Scientist"  
+        - "AI Engineer"
+        - "Product Manager"
+      target_companies:
+        - "AI startups"
+        - "Big tech"
+        - "Fintech"
+      location: "New York City"
+      salary_min: 150000
+      salary_max: 180000
+      resume_path: "~/Documents/resume.pdf"
+      skills:
+        - "Python"
+        - "SQL"
+        - "Machine Learning"
+        - "Data Science"
+        - "Product Management"
+    sources:
+      - "linkedin"
+      - "wellfound"
+      - "greenhouse"
+      - "lever"
+    max_applications_per_day: 10
+    require_approval: true  # sends to Telegram for approval before applying
+
+  trading_monitor:
+    enabled: true
+    schedule: "every 15 minutes"
+    llm_provider: "ollama"  # simple signal detection
+    exchanges:
+      - name: "binance"
+        api_key: ""
+        api_secret: ""
+    watchlist:
+      - "BTC/USDT"
+      - "ETH/USDT"
+      - "SOL/USDT"
+    alerts:
+      price_change_pct: 3.0      # alert on 3%+ moves
+      volume_spike_multiplier: 2  # alert on 2x volume
+    require_approval_for_trades: true
+
+  social_media:
+    enabled: true
+    schedule: "3x daily"  # 9am, 1pm, 6pm
+    llm_provider: "anthropic"  # needs quality for writing
+    platforms:
+      twitter:
+        enabled: true
+        api_key: ""
+        api_secret: ""
+        access_token: ""
+        access_token_secret: ""
+      linkedin:
+        enabled: false
+    topics:
+      - "AI/ML trends"
+      - "startups"
+      - "data science"
+      - "Python programming"
+    tone: "insightful, concise, technical but accessible"
+    max_posts_per_day: 3
+    require_approval: true
+
+  research_scout:
+    enabled: true
+    schedule: "daily at 7am"
+    llm_provider: "ollama"  # summarization is fine locally
+    sources:
+      github_trending: true
+      arxiv:
+        categories:
+          - "cs.AI"
+          - "cs.LG"
+          - "cs.CL"
+      rss_feeds:
+        - "https://blog.langchain.dev/rss/"
+        - "https://www.anthropic.com/rss"
+      newsletters: []
+    digest_format: "markdown"
+    digest_delivery: "telegram"
+
+  inbox_manager:
+    enabled: true
+    schedule: "every 30 minutes"
+    llm_provider: "ollama"  # categorization is simple
+    email:
+      provider: "gmail"
+      credentials_path: "~/.holus/gmail_credentials.json"
+    categories:
+      opportunity: "Job offers, partnerships, speaking invites"
+      action_needed: "Requires a response or decision"
+      fyi: "Newsletters, updates, notifications"
+      spam: "Promotional, irrelevant"
+    auto_actions:
+      spam: "archive"
+      fyi: "label and archive"
+      opportunity: "notify via telegram"
+      action_needed: "notify via telegram + draft response"
+    require_approval_for_replies: true
+
+# --- Memory ---
+memory:
+  provider: "chromadb"
+  persist_directory: "~/.holus/memory"
+  # Each agent gets its own collection + a shared collection
+
+# --- Dashboard ---
+dashboard:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8080
+  # Access at http://your-mac-mini-ip:8080
+
+# --- Logging ---
+logging:
+  level: "INFO"
+  file: "~/.holus/logs/holus.log"
+  max_size: "10MB"
+  backup_count: 5
