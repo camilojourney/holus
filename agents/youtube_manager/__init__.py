@@ -1,4 +1,4 @@
-"""YouTube Manager Agent — Content automation for YouTube channel."""
+"""YouTube Manager Agent — Content creation pipeline orchestrator."""
 from .agent import YouTubeManagerAgent
 
 __all__ = ["YouTubeManagerAgent"]
