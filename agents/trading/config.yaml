@@ -1,0 +1,38 @@
+# Trading Domain Configuration
+domain: trading
+enabled: true
+
+# Market monitoring settings
+markets:
+  stocks:
+    enabled: true
+    symbols: [AAPL, GOOGL, MSFT, NVDA, TSLA]
+    check_interval_minutes: 15
+  crypto:
+    enabled: true
+    symbols: [BTC, ETH, SOL]
+    check_interval_minutes: 5
+
+# Alert thresholds
+alerts:
+  price_change_percent: 5.0  # Alert if price moves more than 5%
+  volume_spike_multiplier: 3.0  # Alert if volume is 3x normal
+  
+# Agent configurations
+agents:
+  market_monitor:
+    enabled: true
+    schedule: "every 15 minutes"
+    data_sources:
+      - yahoo_finance
+      - alpha_vantage
+      
+  alert_manager:
+    enabled: true
+    schedule: "continuous"
+    notification_channels:
+      - telegram
+      
+  portfolio_tracker:
+    enabled: false  # Future
+    schedule: "daily at 9:00"
