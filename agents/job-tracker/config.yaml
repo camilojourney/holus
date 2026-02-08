@@ -1,0 +1,32 @@
+# Job Tracker Domain Configuration
+domain: job-tracker
+enabled: true
+
+# Job search preferences
+preferences:
+  target_roles:
+    - AI Engineer
+    - ML Engineer
+    - Data Scientist
+    - Data Analyst
+  target_companies:
+    - AI startups
+    - Fintech
+    - Big tech
+  location: "New York City"
+  remote_ok: true
+  salary_min: 150000
+  salary_max: 200000
+
+# Agent configurations
+agents:
+  job_hunter:
+    enabled: true
+    schedule: "every 6 hours"
+    max_applications_per_day: 10
+    require_approval: true
+    
+  resume_tailor:
+    enabled: true
+    schedule: "manual"
+    base_resume_path: ~/.holus/resumes/base.pdf

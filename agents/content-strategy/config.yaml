@@ -1,0 +1,39 @@
+# Content Strategy Domain Configuration
+domain: content-strategy
+enabled: true
+
+# Platform configurations
+platforms:
+  youtube:
+    enabled: true
+    credentials_path: ~/.holus/credentials/youtube.json
+    default_privacy: public
+    default_category: 28  # Science & Technology
+    
+  twitter:
+    enabled: true
+    credentials_path: ~/.holus/credentials/twitter.json
+
+# Agent configurations  
+agents:
+  video_publisher:
+    enabled: true
+    schedule: "manual"
+    platforms: [youtube]
+    
+  text_publisher:
+    enabled: true
+    schedule: "manual"
+    platforms: [twitter]
+    
+  repurposing_engine:
+    enabled: true
+    schedule: "manual"
+    auto_clip: true
+    min_clip_duration: 15
+    max_clips_per_video: 5
+
+# Analytics settings
+analytics:
+  poll_interval_hours: 6
+  retention_days: 90
