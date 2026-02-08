@@ -4,6 +4,7 @@ from typing import Type
 from .base_adapter import BaseAdapter, Content, ContentType, PublishResult, Analytics
 from .youtube_adapter import YouTubeAdapter
 from .twitter_adapter import TwitterAdapter
+from .automation_adapter import AutomationAdapter, PipelineTask, PipelineResult
 
 __all__ = [
     "BaseAdapter",
@@ -13,6 +14,9 @@ __all__ = [
     "Analytics",
     "YouTubeAdapter",
     "TwitterAdapter",
+    "AutomationAdapter",
+    "PipelineTask",
+    "PipelineResult",
     "ADAPTER_REGISTRY",
     "get_adapter",
     "list_adapters",
