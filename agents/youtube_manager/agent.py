@@ -1,27 +1,10 @@
 """
-YouTube Manager Agent — Orchestrates content creation for YouTube channel.
-
-Sub-agents managed:
-- Idea Gen: Daily trend scanning, video idea suggestions
-- Research: Keywords, competitor analysis, KB updates
-- Content: Title + description writing
-- Thumbnail: Visual concept generation
-- Analytics: Post-publish performance tracking, feedback loop
-
-Workflow:
-1. Daily: Idea Gen + Research scan trends → update KB
-2. Juan picks idea or requests one
-3. Manager spawns Content + Thumbnail agents (parallel)
-4. Manager scores outputs (1-10)
-5. If score >8: auto-approve → notify Juan
-6. If score 5-8: send to Juan for review
-7. Juan approves → Manager packages for publish
-8. Post-publish: Analytics agent tracks performance
+YouTube Manager Agent — Orchestrates content creation pipeline.
+Manages 5 sub-agents: Idea Gen, Research, Content, Thumbnail, Analytics.
+Auto-approves score >8, human review for 5-8, rejects <5.
 """
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 from langchain_core.tools import tool
@@ -33,209 +16,260 @@ from core.llm import TaskComplexity
 
 class YouTubeManagerAgent(BaseAgent):
     name = "youtube_manager"
-    description = "Orchestrates YouTube content creation: ideas, research, titles, thumbnails, analytics"
-    schedule = "daily at 9am"
-    
-    # Knowledge base path
-    KB_PATH = Path("data/youtube-kb.json")
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._ensure_kb_exists()
-    
-    def _ensure_kb_exists(self):
-        """Create knowledge base if it doesn't exist."""
-        if not self.KB_PATH.exists():
-            self.KB_PATH.parent.mkdir(parents=True, exist_ok=True)
-            self.KB_PATH.write_text(json.dumps({
-                "pastVideos": [],
-                "brandVoice": {
-                    "tone": "educational, engaging, direct",
-                    "keywords": ["AI", "tech", "tutorials", "coding", "automation"]
-                },
-                "trends": [],
-                "competitors": [],
-                "lastUpdated": None
-            }, indent=2))
-    
-    def _load_kb(self) -> dict:
-        """Load knowledge base."""
-        return json.loads(self.KB_PATH.read_text())
-    
-    def _save_kb(self, kb: dict):
-        """Save knowledge base."""
-        from datetime import datetime
-        kb["lastUpdated"] = datetime.now().isoformat()
-        self.KB_PATH.write_text(json.dumps(kb, indent=2))
+    description = "Orchestrates YouTube content creation with 5 specialized sub-agents"
+    schedule = "daily at 9:00"
 
     def get_tools(self) -> list:
-        """Define tools for YouTube Manager agent."""
-        
+        config = self.config
+        kb_path = config.get("knowledge_base_path", "youtube-kb.json")
+
         @tool
-        def generate_video_ideas(topic_focus: str = "") -> str:
-            """Generate 3-5 video ideas based on current trends and channel focus.
+        def generate_ideas(niche: str, count: int = 5) -> str:
+            """Generate video ideas based on trending topics and past performance.
             
             Args:
-                topic_focus: Optional specific topic to focus on
+                niche: Content niche (e.g., 'AI tutorials', 'tech reviews')
+                count: Number of ideas to generate
             """
-            kb = self._load_kb()
-            brand_keywords = kb.get("brandVoice", {}).get("keywords", [])
-            
+            # Sub-agent: Idea Generator
             return (
-                f"[Placeholder] Would scan trends and generate ideas.\n"
-                f"Focus: {topic_focus or 'general AI/tech'}\n"
-                f"Brand keywords: {brand_keywords}\n"
-                f"Would use web_search to find trending topics."
+                f"[IdeaGen] Would analyze:\n"
+                f"- Trending topics in {niche}\n"
+                f"- Competitor content gaps\n"
+                f"- Past video performance\n"
+                f"- Audience comments/requests\n"
+                f"Generating {count} ideas..."
             )
-        
+
         @tool
-        def research_keywords(video_topic: str) -> str:
-            """Research keywords and competitors for a video topic.
+        def research_topic(topic: str) -> str:
+            """Deep research on a video topic - stats, sources, talking points.
             
             Args:
-                video_topic: The topic to research
+                topic: The video topic to research
             """
+            # Sub-agent: Research Agent
             return (
-                f"[Placeholder] Would research keywords for: {video_topic}\n"
-                f"- Search volume analysis\n"
+                f"[Research] Would compile:\n"
+                f"- Key statistics and data points\n"
+                f"- Expert quotes and sources\n"
                 f"- Competitor video analysis\n"
-                f"- Suggested tags"
+                f"- SEO keywords for '{topic}'"
             )
-        
+
         @tool
-        def generate_title_description(video_topic: str, keywords: list[str] = None) -> str:
-            """Generate optimized title and description for a video.
+        def create_script(topic: str, style: str = "educational") -> str:
+            """Generate video script with hook, body, CTA structure.
             
             Args:
-                video_topic: The video topic
-                keywords: Optional target keywords
+                topic: Video topic
+                style: Content style (educational, entertaining, tutorial)
             """
-            kb = self._load_kb()
-            tone = kb.get("brandVoice", {}).get("tone", "educational")
-            
+            # Sub-agent: Content Creator
             return (
-                f"[Placeholder] Would generate title + description.\n"
-                f"Topic: {video_topic}\n"
-                f"Tone: {tone}\n"
-                f"Keywords: {keywords or []}\n"
-                f"Would output 3 title options + SEO description."
+                f"[Content] Would create {style} script for '{topic}':\n"
+                f"- Hook (0-30s): Pattern interrupt\n"
+                f"- Body: Key points with B-roll notes\n"
+                f"- CTA: Subscribe + next video tease"
             )
-        
+
         @tool
-        def generate_thumbnail_concept(video_title: str) -> str:
-            """Generate thumbnail concept/description for a video.
+        def design_thumbnail(title: str, style: str = "bold") -> str:
+            """Design thumbnail concept with text, imagery, colors.
             
             Args:
-                video_title: The video title to create thumbnail for
+                title: Video title for thumbnail text
+                style: Visual style (bold, minimal, curiosity-gap)
             """
+            # Sub-agent: Thumbnail Designer
             return (
-                f"[Placeholder] Would generate thumbnail concept for: {video_title}\n"
-                f"- Text overlay suggestion\n"
-                f"- Color scheme\n"
-                f"- Facial expression/pose\n"
-                f"- Background recommendation"
+                f"[Thumbnail] Would design {style} thumbnail:\n"
+                f"- Main text: '{title[:30]}...'\n"
+                f"- Face expression: shocked/curious\n"
+                f"- Color scheme: high contrast\n"
+                f"- CTR optimization tips"
             )
-        
+
         @tool
-        def score_content(title: str, description: str, thumbnail_concept: str) -> str:
-            """Score content package on 1-10 scale.
+        def analyze_performance(video_id: str = None) -> str:
+            """Analyze video/channel performance metrics.
+            
+            Args:
+                video_id: Specific video ID or None for channel overview
+            """
+            # Sub-agent: Analytics Agent
+            target = f"video {video_id}" if video_id else "channel"
+            return (
+                f"[Analytics] Would analyze {target}:\n"
+                f"- Views, watch time, CTR\n"
+                f"- Audience retention curve\n"
+                f"- Traffic sources\n"
+                f"- Recommendations for improvement"
+            )
+
+        @tool
+        def score_content(title: str, script_summary: str, thumbnail_desc: str) -> dict:
+            """Score content package 1-10 for virality potential.
             
             Args:
                 title: Video title
-                description: Video description
-                thumbnail_concept: Thumbnail concept description
+                script_summary: Brief script summary
+                thumbnail_desc: Thumbnail description
             
             Returns:
-                Score breakdown and total
+                Score dict with overall score and breakdown
             """
-            # Scoring criteria weights
-            criteria = {
-                "hook_strength": 0.25,
-                "seo_optimization": 0.20,
-                "brand_alignment": 0.15,
-                "clickbait_free": 0.15,
-                "uniqueness": 0.15,
-                "cta_presence": 0.10
+            # Would use LLM to score based on:
+            # - Title clickability
+            # - Script engagement potential
+            # - Thumbnail appeal
+            # - Trend alignment
+            return {
+                "overall": 7.5,
+                "title_score": 8,
+                "script_score": 7,
+                "thumbnail_score": 8,
+                "recommendation": "review",  # auto_approve, review, reject
             }
-            
-            return (
-                f"[Placeholder] Would score content:\n"
-                f"Title: {title[:50]}...\n"
-                f"Criteria: {list(criteria.keys())}\n"
-                f"Would return score 1-10 with breakdown."
-            )
-        
+
         @tool
-        def update_knowledge_base(
-            video_id: str = None,
-            video_title: str = None,
-            ctr: float = None,
-            views: int = None,
-            trends: list[str] = None
-        ) -> str:
-            """Update knowledge base with new data.
+        def queue_for_production(content_package: dict) -> str:
+            """Add approved content to production queue.
             
             Args:
-                video_id: YouTube video ID
-                video_title: Title of published video
-                ctr: Click-through rate
-                views: View count
-                trends: New trend keywords to add
+                content_package: Dict with title, script, thumbnail, schedule
             """
-            kb = self._load_kb()
-            
-            if video_id and video_title:
-                from datetime import datetime
-                kb["pastVideos"].append({
-                    "id": video_id,
-                    "title": video_title,
-                    "ctr": ctr,
-                    "views": views,
-                    "date": datetime.now().isoformat()
-                })
-            
-            if trends:
-                kb["trends"] = list(set(kb.get("trends", []) + trends))
-            
-            self._save_kb(kb)
-            return f"Updated KB: {video_id or 'trends update'}"
-        
-        @tool
-        def get_analytics_summary() -> str:
-            """Get summary of channel analytics from knowledge base."""
-            kb = self._load_kb()
-            past_videos = kb.get("pastVideos", [])
-            
-            if not past_videos:
-                return "No videos tracked yet."
-            
-            avg_ctr = sum(v.get("ctr", 0) for v in past_videos if v.get("ctr")) / len(past_videos)
-            total_views = sum(v.get("views", 0) for v in past_videos)
-            
-            return (
-                f"Videos tracked: {len(past_videos)}\n"
-                f"Average CTR: {avg_ctr:.2%}\n"
-                f"Total views: {total_views:,}"
+            title = content_package.get("title", "Untitled")
+            self.remember(
+                f"Queued for production: {title}",
+                metadata={"type": "production_queue", "content": content_package},
             )
+            return f"✅ Added '{title}' to production queue"
+
+        @tool
+        def get_content_calendar(days: int = 7) -> str:
+            """Get upcoming content calendar.
+            
+            Args:
+                days: Number of days to look ahead
+            """
+            queued = self.recall("production_queue", n_results=10)
+            if not queued:
+                return f"No videos scheduled for next {days} days"
+            return f"Found {len(queued)} videos in pipeline"
 
         return [
-            generate_video_ideas,
-            research_keywords,
-            generate_title_description,
-            generate_thumbnail_concept,
+            generate_ideas,
+            research_topic,
+            create_script,
+            design_thumbnail,
+            analyze_performance,
             score_content,
-            update_knowledge_base,
-            get_analytics_summary,
+            queue_for_production,
+            get_content_calendar,
         ]
 
-    async def run_scheduled_task(self) -> str:
-        """Daily task: Generate ideas and update trends."""
-        logger.info(f"[{self.name}] Running daily YouTube task")
-        
-        # This would be replaced with actual LLM calls
-        return (
-            "Daily YouTube tasks completed:\n"
-            "1. Scanned trends\n"
-            "2. Generated 3 video ideas\n"
-            "3. Updated knowledge base"
+    def get_system_prompt(self) -> str:
+        config = self.config
+        channel = config.get("channel_name", "My Channel")
+        niche = config.get("niche", "tech/AI")
+        upload_frequency = config.get("upload_frequency", "2x per week")
+
+        return f"""You are the YouTube Manager agent for Holus, a personal AI workforce system.
+
+Your mission: Create a content pipeline that grows the channel systematically.
+
+CHANNEL PROFILE:
+- Channel: {channel}
+- Niche: {niche}
+- Upload frequency: {upload_frequency}
+- Goal: Build authority, grow subscribers, eventual monetization
+
+YOUR TEAM (Sub-Agents):
+1. **Idea Generator** — Finds trending topics, analyzes competition, spots content gaps
+2. **Research Agent** — Deep dives on topics, gathers stats, finds sources
+3. **Content Creator** — Writes scripts with hooks, retention strategies, CTAs
+4. **Thumbnail Designer** — Creates click-worthy thumbnail concepts
+5. **Analytics Agent** — Tracks performance, identifies what works
+
+APPROVAL WORKFLOW:
+- Score >8: Auto-approve for production
+- Score 5-8: Flag for human review
+- Score <5: Reject with feedback
+
+DAILY WORKFLOW:
+1. Check analytics for recent video performance
+2. Generate new ideas based on trends + past performance
+3. Pick top idea, run through research → script → thumbnail pipeline
+4. Score the content package
+5. Route based on score (approve/review/reject)
+6. Update content calendar
+7. Send daily summary to user
+
+RULES:
+- Never publish without scoring
+- Always include retention hooks every 30 seconds in scripts
+- Thumbnails must have <6 words
+- Track all content in memory for performance correlation
+- Learn from what works: high-retention videos inform future content
+"""
+
+    async def run(self) -> dict[str, Any]:
+        """Execute the daily YouTube content pipeline."""
+        logger.info("🎬 YouTube Manager starting daily pipeline...")
+
+        # Check recent performance
+        recent_vids = self.recall("video published", n_results=5)
+        recent_ideas = self.recall("idea generated", n_results=10)
+
+        # Run the content pipeline
+        result = await self.execute(
+            f"Run the daily YouTube content pipeline:\n"
+            f"1. Check analytics on recent videos (last 5)\n"
+            f"2. Generate 3 new video ideas based on trends\n"
+            f"3. Pick the best idea and create a full content package\n"
+            f"4. Score it and route appropriately\n"
+            f"5. Update the content calendar\n\n"
+            f"Recent videos in memory: {len(recent_vids)}\n"
+            f"Ideas in backlog: {len(recent_ideas)}",
+            complexity=TaskComplexity.COMPLEX,
         )
+
+        # Extract any content needing review
+        needs_review = "review" in result.lower() or "score: 5" in result.lower()
+
+        if needs_review:
+            await self.notify(
+                f"🎬 *YouTube: Content Needs Review*\n\n{result[:500]}\n\n"
+                f"Reply with APPROVE or REJECT"
+            )
+        else:
+            await self.notify(
+                f"🎬 *YouTube Pipeline Complete*\n\n{result[:500]}"
+            )
+
+        self.remember(
+            f"Daily pipeline completed. Result: {result[:300]}",
+            metadata={"type": "run_summary"},
+        )
+
+        return {
+            "status": "completed",
+            "needs_review": needs_review,
+            "result": result,
+        }
+
+    async def handle_approval(self, video_id: str, approved: bool, feedback: str = None) -> dict:
+        """Handle human approval/rejection of content."""
+        if approved:
+            self.remember(
+                f"Video {video_id} APPROVED for production",
+                metadata={"type": "approval", "video_id": video_id},
+            )
+            return {"status": "approved", "next": "queued_for_production"}
+        else:
+            self.remember(
+                f"Video {video_id} REJECTED. Feedback: {feedback}",
+                metadata={"type": "rejection", "video_id": video_id, "feedback": feedback},
+            )
+            return {"status": "rejected", "feedback": feedback}
