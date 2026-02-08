@@ -1,0 +1,17 @@
+# Video Scorer API dependencies
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+pydantic>=2.5.0
+
+# Video processing
+ffmpeg-python>=0.2.0
+
+# AI/ML
+torch>=2.1.0
+transformers>=4.36.0
+# clip-by-openai  # For visual analysis
+
+# Utilities
+httpx>=0.26.0  # For downloading videos
+python-dotenv>=1.0.0
