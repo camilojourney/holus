@@ -66,7 +66,7 @@ class Orchestrator:
     
     Responsibilities:
     - Load config and initialize shared resources
-    - Discover and register agents
+    - Discover and register agents and domain orchestrators
     - Schedule agent runs
     - Handle graceful shutdown
     - Provide status/health endpoints
@@ -87,6 +87,9 @@ class Orchestrator:
 
         # Agent registry
         self.agents: dict[str, BaseAgent] = {}
+        # Domain orchestrator registry (content-strategy, job-tracker, trading)
+        self.domain_orchestrators: dict[str, object] = {}
+        self._domain_tasks: list[asyncio.Task] = []
         self.scheduler = AsyncIOScheduler()
 
         logger.info("Holus Orchestrator initialized")
@@ -160,6 +163,86 @@ class Orchestrator:
             except Exception as e:
                 logger.error(f"Failed to register agent '{agent_class.name}': {e}")
 
+    def discover_domain_orchestrators(self):
+        """Auto-discover and register domain orchestrators.
+
+        Domain orchestrators manage cross-cutting concerns within a domain
+        (e.g., content-strategy automation routing). They run as long-lived
+        asyncio tasks alongside the scheduler.
+        """
+        domain_configs = {
+            "content-strategy": {
+                "module": "agents.content-strategy.orchestrator",
+                "class": "ContentOrchestrator",
+            },
+            "job-tracker": {
+                "module": "agents.job-tracker.orchestrator",
+                "class": "JobTrackerOrchestrator",
+            },
+            "trading": {
+                "module": "agents.trading.orchestrator",
+                "class": "TradingOrchestrator",
+            },
+        }
+
+        for domain_name, info in domain_configs.items():
+            domain_cfg = self.config.get("domains", {}).get(domain_name, {})
+            if not domain_cfg.get("enabled", False):
+                logger.debug(f"Domain '{domain_name}' not enabled, skipping")
+                continue
+
+            try:
+                import importlib
+                # Hyphenated directory names require bracket import
+                mod_path = info["module"].replace("-", "_")
+                # Use __import__ for hyphenated paths
+                parts = info["module"].split(".")
+                mod = __import__(info["module"].replace("-", ""), fromlist=[info["class"]])
+                # Fall back to importlib for robustness
+            except ImportError:
+                try:
+                    import importlib
+                    mod = importlib.import_module(info["module"])
+                except ImportError as e:
+                    logger.warning(
+                        f"Could not import domain orchestrator '{domain_name}': {e}"
+                    )
+                    continue
+
+            try:
+                cls = getattr(mod, info["class"])
+                orchestrator = cls()
+                self.domain_orchestrators[domain_name] = orchestrator
+                logger.info(f"Domain orchestrator '{domain_name}' registered")
+
+                # Schedule domain-specific jobs
+                self._schedule_domain_jobs(domain_name, orchestrator, domain_cfg)
+            except Exception as e:
+                logger.error(
+                    f"Failed to register domain '{domain_name}': {e}"
+                )
+
+    def _schedule_domain_jobs(self, name: str, orchestrator: object, cfg: dict):
+        """Schedule recurring jobs defined by a domain orchestrator."""
+        schedule_str = cfg.get("schedule")
+        if not schedule_str:
+            return
+
+        # Content-strategy has a daily routine
+        if name == "content-strategy" and hasattr(orchestrator, "run_daily_routine"):
+            trigger = parse_schedule(schedule_str)
+            if trigger:
+                self.scheduler.add_job(
+                    orchestrator.run_daily_routine,
+                    trigger=trigger,
+                    id=f"domain_{name}_daily",
+                    name=f"Domain: {name} daily routine",
+                    replace_existing=True,
+                )
+                logger.info(
+                    f"Domain '{name}' daily routine scheduled: {schedule_str}"
+                )
+
     async def run_agent(self, agent_name: str) -> dict:
         """Manually trigger a specific agent."""
         if agent_name not in self.agents:
@@ -167,14 +250,24 @@ class Orchestrator:
         return await self.agents[agent_name].scheduled_run()
 
     def get_status(self) -> dict:
-        """Get status of all agents."""
+        """Get status of all agents and domain orchestrators."""
+        domain_status = {}
+        for name, orch in self.domain_orchestrators.items():
+            domain_status[name] = {
+                "domain": name,
+                "agents": len(getattr(orch, "agents", {})),
+                "status": "running",
+            }
+
         return {
             "agents": {
                 name: agent.get_status()
                 for name, agent in self.agents.items()
             },
+            "domains": domain_status,
             "scheduler_running": self.scheduler.running,
             "total_agents": len(self.agents),
+            "total_domains": len(self.domain_orchestrators),
         }
 
     def _start_dashboard(self):
@@ -216,18 +309,31 @@ class Orchestrator:
         # Discover and register agents
         self.discover_agents()
 
+        # Discover and register domain orchestrators
+        self.discover_domain_orchestrators()
+
         # Start scheduler
         self.scheduler.start()
+
+        # Launch domain orchestrators as background tasks
+        for name, orch in self.domain_orchestrators.items():
+            if hasattr(orch, "run") and asyncio.iscoroutinefunction(orch.run):
+                task = asyncio.create_task(orch.run())
+                task.set_name(f"domain_{name}")
+                self._domain_tasks.append(task)
+                logger.info(f"Domain '{name}' running as background task")
 
         # Start dashboard (SPEC-008)
         self._start_dashboard()
 
         # Send startup notification
         agent_list = ", ".join(self.agents.keys()) or "none"
+        domain_list = ", ".join(self.domain_orchestrators.keys()) or "none"
         await self.notifier.notify(
             f"🔮 *Holus started!*\n\n"
             f"Active agents: {agent_list}\n"
-            f"Total: {len(self.agents)}"
+            f"Active domains: {domain_list}\n"
+            f"Total: {len(self.agents)} agents, {len(self.domain_orchestrators)} domains"
         )
 
         # Setup graceful shutdown
@@ -247,6 +353,13 @@ class Orchestrator:
         """Graceful shutdown."""
         logger.info("🛑 Holus shutting down...")
         self.scheduler.shutdown(wait=False)
+
+        # Cancel domain orchestrator tasks
+        for task in self._domain_tasks:
+            task.cancel()
+        if self._domain_tasks:
+            await asyncio.gather(*self._domain_tasks, return_exceptions=True)
+
         await self.notifier.notify("🛑 *Holus shutting down*")
         logger.info("Goodbye!")
 

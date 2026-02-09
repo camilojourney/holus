@@ -7,19 +7,19 @@
 llm:
   # Default provider for routine tasks
   default_provider: "ollama"
-  
+
   ollama:
     base_url: "http://127.0.0.1:11434"
     model: "qwen2.5:7b"
-  
+
   openai:
     api_key: ""  # sk-...
     model: "gpt-4o-mini"
-  
+
   anthropic:
     api_key: ""  # sk-ant-...
     model: "claude-sonnet-4-5-20250929"
-  
+
   # Route complex tasks to cloud, simple tasks to local
   routing:
     simple_tasks: "ollama"      # categorization, scheduling, simple Q&A
@@ -31,7 +31,7 @@ notifications:
     enabled: true
     bot_token: ""       # Get from @BotFather
     chat_id: ""         # Your personal chat ID
-  
+
   sms:
     enabled: false
     provider: "twilio"
@@ -49,7 +49,7 @@ agents:
     preferences:
       target_roles:
         - "Data Analyst"
-        - "Data Scientist"  
+        - "Data Scientist"
         - "AI Engineer"
         - "Product Manager"
       target_companies:
@@ -149,6 +149,30 @@ agents:
       opportunity: "notify via telegram"
       action_needed: "notify via telegram + draft response"
     require_approval_for_replies: true
+
+  video_scorer:
+    enabled: true
+    schedule: "manual"  # on-demand only
+    llm_provider: "anthropic"  # needs quality for video analysis
+    feedback_path: "data/video-scorer-feedback.json"
+
+# --- Domain Orchestrators ---
+# Domain orchestrators manage cross-cutting concerns within a domain.
+# They run as background tasks alongside the agent scheduler.
+domains:
+  content-strategy:
+    enabled: false  # Enable when automation pipeline is configured
+    schedule: "daily at 9am"  # Daily routine for content enhancement + posting
+    automation:
+      pipeline_url: "http://localhost:8000"  # social-media-automatization endpoint
+
+  job-tracker:
+    enabled: false  # Skeleton — enable when job domain logic is added
+    schedule: "daily at 8am"
+
+  trading:
+    enabled: false  # Skeleton — enable when trading domain logic is added
+    schedule: "every 1 hours"
 
 # --- Memory ---
 memory:
