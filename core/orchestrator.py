@@ -9,6 +9,7 @@ import asyncio
 import os
 import signal
 import sys
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -176,6 +177,36 @@ class Orchestrator:
             "total_agents": len(self.agents),
         }
 
+    def _start_dashboard(self):
+        """Start the FastAPI dashboard in a background thread (SPEC-008)."""
+        dash_cfg = self.config.get("dashboard", {})
+        if not dash_cfg.get("enabled", True):
+            logger.info("Dashboard disabled in config")
+            return
+
+        host = dash_cfg.get("host", "0.0.0.0")
+        port = dash_cfg.get("port", 8080)
+
+        try:
+            import uvicorn
+            from dashboard.app import create_app
+
+            app = create_app(self)
+
+            config = uvicorn.Config(
+                app,
+                host=host,
+                port=port,
+                log_level="warning",
+            )
+            server = uvicorn.Server(config)
+
+            thread = threading.Thread(target=server.run, daemon=True)
+            thread.start()
+            logger.info(f"Dashboard running at http://{host}:{port}")
+        except Exception as e:
+            logger.error(f"Failed to start dashboard: {e}")
+
     async def start(self):
         """Start the orchestrator and all scheduled agents."""
         logger.info("=" * 60)
@@ -187,6 +218,9 @@ class Orchestrator:
 
         # Start scheduler
         self.scheduler.start()
+
+        # Start dashboard (SPEC-008)
+        self._start_dashboard()
 
         # Send startup notification
         agent_list = ", ".join(self.agents.keys()) or "none"

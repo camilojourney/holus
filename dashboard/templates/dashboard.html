@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holus — Agent Dashboard</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"
+            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+            crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --surface: #1a1a24;
+            --border: #2a2a3a;
+            --text: #e4e4ef;
+            --text-dim: #8888a0;
+            --accent: #7c6aef;
+            --green: #34d399;
+            --yellow: #fbbf24;
+            --red: #f87171;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        header h1 { font-size: 1.5rem; }
+        header h1 span { color: var(--accent); }
+        .meta {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: border-color 0.2s;
+        }
+        .card:hover { border-color: var(--accent); }
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .card-head h2 { font-size: 1.1rem; }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-idle   { background: rgba(52,211,153,.15); color: var(--green); }
+        .badge-running { background: rgba(251,191,36,.15); color: var(--yellow); }
+        .badge-error  { background: rgba(248,113,113,.15); color: var(--red); }
+        .card-body {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .card-body .row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .card-actions { margin-top: 1rem; }
+        .btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.45rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: opacity 0.15s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .spinner {
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid var(--text-dim);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.3rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: inline-block; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔮 <span>Holus</span> Dashboard</h1>
+        <div class="meta">
+            {{ agent_count }} agent{{ 's' if agent_count != 1 else '' }} registered
+            · uptime {{ uptime_seconds // 3600 }}h {{ (uptime_seconds % 3600) // 60 }}m
+        </div>
+    </header>
+
+    <div id="agent-grid"
+         hx-get="/api/agents"
+         hx-trigger="every 10s"
+         hx-swap="innerHTML"
+         hx-target="#agent-cards">
+
+        <div id="agent-cards" class="grid">
+            {% if agents %}
+                {% for agent in agents %}
+                <div class="card" id="card-{{ agent.name }}">
+                    <div class="card-head">
+                        <h2>{{ agent.name }}</h2>
+                        <span class="badge badge-{{ agent.status }}">{{ agent.status }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row"><span>Schedule</span><span>{{ agent.schedule }}</span></div>
+                        <div class="row"><span>Runs</span><span>{{ agent.run_count }}</span></div>
+                        <div class="row">
+                            <span>Last run</span>
+                            <span>{{ agent.last_run[:19] if agent.last_run else 'never' }}</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn"
+                                hx-post="/api/agents/{{ agent.name }}/run"
+                                hx-swap="none"
+                                {% if agent.status == 'running' %}disabled{% endif %}>
+                            <span class="htmx-indicator"><span class="spinner"></span></span>
+                            Run Now
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">No agents registered. Check your config.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // After HTMX swaps in the JSON array, re-render as cards
+        document.body.addEventListener('htmx:beforeSwap', function(evt) {
+            if (evt.detail.target.id === 'agent-cards') {
+                try {
+                    const agents = JSON.parse(evt.detail.xhr.responseText);
+                    if (Array.isArray(agents)) {
+                        let html = '';
+                        if (agents.length === 0) {
+                            html = '<div class="empty">No agents registered. Check your config.</div>';
+                        } else {
+                            agents.forEach(a => {
+                                const lastRun = a.last_run ? a.last_run.substring(0, 19) : 'never';
+                                const disabled = a.status === 'running' ? 'disabled' : '';
+                                html += `
+                                <div class="card" id="card-${a.name}">
+                                    <div class="card-head">
+                                        <h2>${a.name}</h2>
+                                        <span class="badge badge-${a.status}">${a.status}</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row"><span>Schedule</span><span>${a.schedule}</span></div>
+                                        <div class="row"><span>Runs</span><span>${a.run_count}</span></div>
+                                        <div class="row"><span>Last run</span><span>${lastRun}</span></div>
+                                    </div>
+                                    <div class="card-actions">
+                                        <button class="btn"
+                                                hx-post="/api/agents/${a.name}/run"
+                                                hx-swap="none"
+                                                ${disabled}>
+                                            Run Now
+                                        </button>
+                                    </div>
+                                </div>`;
+                            });
+                        }
+                        evt.detail.serverResponse = html;
+                    }
+                } catch (e) { /* not JSON — let htmx handle normally */ }
+            }
+        });
+        // Re-process HTMX attributes after swap
+        document.body.addEventListener('htmx:afterSwap', function(evt) {
+            htmx.process(evt.detail.target);
+        });
+    </script>
+</body>
+</html>
