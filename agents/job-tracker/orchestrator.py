@@ -30,11 +30,9 @@ class JobTrackerOrchestrator:
     
     def discover_agents(self) -> list:
         """Discover and register domain agents."""
-        # TODO: Import actual agent classes
-        # from .job_hunter import JobHunterAgent
-        # return [JobHunterAgent]
-        logger.info("Agent discovery not yet implemented")
-        return []
+        from agents.job_hunter.agent import JobHunterAgent
+        logger.info(f"Discovered agent: {JobHunterAgent.name}")
+        return [JobHunterAgent]
     
     async def healthcheck(self) -> dict:
         """Return health status for monitoring."""

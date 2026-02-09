@@ -30,11 +30,9 @@ class TradingOrchestrator:
     
     def discover_agents(self) -> list:
         """Discover and register domain agents."""
-        # TODO: Import actual agent classes
-        # from .market_monitor import MarketMonitorAgent
-        # from .alert_manager import AlertManagerAgent
-        logger.info("Agent discovery not yet implemented")
-        return []
+        from agents.trading_monitor.agent import TradingMonitorAgent
+        logger.info(f"Discovered agent: {TradingMonitorAgent.name}")
+        return [TradingMonitorAgent]
     
     async def healthcheck(self) -> dict:
         """Return health status for monitoring."""

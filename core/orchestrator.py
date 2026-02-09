@@ -170,17 +170,21 @@ class Orchestrator:
         (e.g., content-strategy automation routing). They run as long-lived
         asyncio tasks alongside the scheduler.
         """
+        import importlib.util
+
+        project_root = Path(__file__).parent.parent
+
         domain_configs = {
             "content-strategy": {
-                "module": "agents.content-strategy.orchestrator",
+                "file": project_root / "agents" / "content-strategy" / "orchestrator.py",
                 "class": "ContentOrchestrator",
             },
             "job-tracker": {
-                "module": "agents.job-tracker.orchestrator",
+                "file": project_root / "agents" / "job-tracker" / "orchestrator.py",
                 "class": "JobTrackerOrchestrator",
             },
             "trading": {
-                "module": "agents.trading.orchestrator",
+                "file": project_root / "agents" / "trading" / "orchestrator.py",
                 "class": "TradingOrchestrator",
             },
         }
@@ -191,25 +195,20 @@ class Orchestrator:
                 logger.debug(f"Domain '{domain_name}' not enabled, skipping")
                 continue
 
-            try:
-                import importlib
-                # Hyphenated directory names require bracket import
-                mod_path = info["module"].replace("-", "_")
-                # Use __import__ for hyphenated paths
-                parts = info["module"].split(".")
-                mod = __import__(info["module"].replace("-", ""), fromlist=[info["class"]])
-                # Fall back to importlib for robustness
-            except ImportError:
-                try:
-                    import importlib
-                    mod = importlib.import_module(info["module"])
-                except ImportError as e:
-                    logger.warning(
-                        f"Could not import domain orchestrator '{domain_name}': {e}"
-                    )
-                    continue
+            filepath = info["file"]
+            if not filepath.exists():
+                logger.warning(
+                    f"Domain orchestrator file not found: {filepath}"
+                )
+                continue
 
             try:
+                mod_name = f"agents_domain_{domain_name.replace('-', '_')}"
+                spec = importlib.util.spec_from_file_location(mod_name, filepath)
+                mod = importlib.util.module_from_spec(spec)
+                sys.modules[mod_name] = mod
+                spec.loader.exec_module(mod)
+
                 cls = getattr(mod, info["class"])
                 orchestrator = cls()
                 self.domain_orchestrators[domain_name] = orchestrator
