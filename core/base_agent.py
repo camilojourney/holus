@@ -1,7 +1,7 @@
 """
 Base Agent — The foundation class for all Holus agents.
-Inspired by AI Jason's approach: each agent has its own tools, memory, 
-system prompt, and scheduled tasks.
+
+Each agent has its own tools, memory, system prompt, and scheduled tasks.
 """
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ class RunRecord:
 class BaseAgent(ABC):
     """
     Base class for all Holus agents.
-    
+
     Each agent has:
     - A name and description
     - Its own tools
