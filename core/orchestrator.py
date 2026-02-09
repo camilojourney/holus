@@ -50,6 +50,8 @@ def parse_schedule(schedule_str: str) -> Optional[IntervalTrigger | CronTrigger]
         hour = int(time_str.replace("am", "").replace("pm", ""))
         if "pm" in time_str and hour != 12:
             hour += 12
+        elif "am" in time_str and hour == 12:
+            hour = 0
         return CronTrigger(hour=hour, minute=0)
 
     # "3x daily" — roughly every 8 hours
@@ -57,13 +59,13 @@ def parse_schedule(schedule_str: str) -> Optional[IntervalTrigger | CronTrigger]
         return IntervalTrigger(hours=8)
 
     logger.warning(f"Could not parse schedule '{schedule_str}', defaulting to every 6 hours")
-    return IntervalTrigger(hours=6)
+    return IntervalTrigger(hours=6)  # TODO: Consider raising ValueError
 
 
 class Orchestrator:
     """
     Central orchestrator for all Holus agents.
-    
+
     Responsibilities:
     - Load config and initialize shared resources
     - Discover and register agents
@@ -95,9 +97,10 @@ class Orchestrator:
         """Load configuration from YAML file."""
         config_path = Path(self.config_path)
         if not config_path.exists():
-            logger.error(f"Config file not found: {config_path}")
-            logger.info("Run: cp config/config.example.yaml config/config.yaml")
-            sys.exit(1)
+            raise FileNotFoundError(
+                f"Config file not found: {config_path}. "
+                f"Run: cp config/config.example.yaml config/config.yaml"
+            )
 
         with open(config_path) as f:
             config = yaml.safe_load(f)
@@ -184,7 +187,7 @@ class Orchestrator:
             logger.info("Dashboard disabled in config")
             return
 
-        host = dash_cfg.get("host", "0.0.0.0")
+        host = dash_cfg.get("host", "127.0.0.1")
         port = dash_cfg.get("port", 8080)
 
         try:

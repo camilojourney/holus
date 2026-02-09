@@ -102,5 +102,5 @@ class Notifier:
         """Request human approval for a high-stakes action."""
         if self.telegram:
             return await self.telegram.send_approval_request(agent_name, action, details)
-        logger.warning(f"No notification channel for approval. Auto-approving: {action}")
-        return True
+        logger.warning(f"No notification channel for approval. Denying: {action}")
+        return False

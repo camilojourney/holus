@@ -1,93 +1,126 @@
-"""
-Social Media Agent — Manages online presence.
-Drafts posts, monitors engagement, curates content.
+"""Text Publisher — Publishes text content via platform adapters.
+
+Uses the adapter pattern (SPEC-003) to validate, adapt, and push
+text content to Twitter, LinkedIn, and other text platforms.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Optional
 
-from langchain_core.tools import tool
 from loguru import logger
 
-from shared.base_agent import BaseAgent
-from shared.llm import TaskComplexity
+from ..adapters.base_adapter import (
+    BaseAdapter,
+    Content,
+    ContentType,
+    PublishResult,
+)
 
 
-class SocialMediaAgent(BaseAgent):
-    name = "social_media"
-    description = "Manages social media presence — drafts, posts, monitors"
-    schedule = "3x daily"
+class TextPublisher:
+    """Publishes text content through registered text-capable adapters.
 
-    def get_tools(self) -> list:
+    Usage:
+        publisher = TextPublisher(config)
+        publisher.register_adapter(TwitterAdapter(tw_config))
+        results = await publisher.publish(content)
+    """
 
-        @tool
-        def draft_post(topic: str, platform: str = "twitter") -> str:
-            """Draft a social media post on a given topic."""
-            return f"[Placeholder] Would draft {platform} post about: {topic}"
+    def __init__(self, config: dict | None = None):
+        self.config = config or {}
+        self._adapters: dict[str, BaseAdapter] = {}
+        logger.info("TextPublisher initialized")
 
-        @tool
-        def search_trending_topics(niche: str = "AI") -> str:
-            """Find trending topics in the AI/tech niche for content ideas."""
-            return f"[Placeholder] Would search trending topics in {niche}"
+    def register_adapter(self, adapter: BaseAdapter) -> None:
+        """Register a platform adapter for text publishing."""
+        if ContentType.TEXT not in adapter.content_types:
+            logger.warning(
+                f"Adapter '{adapter.platform}' doesn't support TEXT, skipping"
+            )
+            return
+        self._adapters[adapter.platform] = adapter
+        logger.info(f"Registered text adapter: {adapter.platform}")
 
-        @tool
-        def schedule_post(content: str, platform: str, time: str = "next_slot") -> str:
-            """Schedule a post for publishing. Requires approval."""
-            return f"[Placeholder] Would schedule post on {platform} at {time}"
+    @property
+    def platforms(self) -> list[str]:
+        """List of registered platform names."""
+        return list(self._adapters.keys())
 
-        @tool
-        def check_engagement() -> str:
-            """Check recent engagement metrics (likes, replies, follows)."""
-            return "[Placeholder] Would fetch engagement metrics from Twitter/LinkedIn API"
+    def validate(self, content: Content) -> dict[str, tuple[bool, list[str]]]:
+        """Validate content against all registered adapters."""
+        results = {}
+        for name, adapter in self._adapters.items():
+            results[name] = adapter.validate_content(content)
+        return results
 
-        @tool
-        def find_relevant_content(topic: str) -> str:
-            """Find relevant content to engage with or share."""
-            return f"[Placeholder] Would search for shareable content about {topic}"
+    async def publish(
+        self,
+        content: Content,
+        platforms: list[str] | None = None,
+    ) -> list[PublishResult]:
+        """Publish text content to one or more platforms.
 
-        return [draft_post, search_trending_topics, schedule_post, check_engagement, find_relevant_content]
+        Args:
+            content: The text content to publish.
+            platforms: Subset of platforms to target (all if None).
 
-    def get_system_prompt(self) -> str:
-        topics = self.config.get("topics", ["AI/ML", "startups", "data science"])
-        tone = self.config.get("tone", "insightful, concise, technical but accessible")
-        return f"""You are the Social Media agent for Holus.
+        Returns:
+            List of PublishResult objects, one per platform.
+        """
+        if content.type != ContentType.TEXT:
+            return [
+                PublishResult(
+                    success=False,
+                    platform="all",
+                    error=f"TextPublisher only handles TEXT, got {content.type}",
+                )
+            ]
 
-Your mission: Build and maintain a strong professional presence on social media.
+        targets = self._adapters
+        if platforms:
+            targets = {k: v for k, v in self._adapters.items() if k in platforms}
 
-CONTENT TOPICS: {', '.join(topics)}
-TONE: {tone}
-MAX POSTS PER DAY: {self.config.get('max_posts_per_day', 3)}
+        if not targets:
+            return [
+                PublishResult(
+                    success=False,
+                    platform="none",
+                    error="No matching adapters registered",
+                )
+            ]
 
-WORKFLOW:
-1. Check trending topics in AI/tech
-2. Review recent research and news (check shared memory from Research Scout)
-3. Draft 1-2 posts with unique insights
-4. Send drafts for approval before posting
-5. Check engagement on recent posts and note what works
+        results: list[PublishResult] = []
+        for name, adapter in targets.items():
+            try:
+                valid, errors = adapter.validate_content(content)
+                if not valid:
+                    results.append(
+                        PublishResult(
+                            success=False,
+                            platform=name,
+                            error="; ".join(errors),
+                        )
+                    )
+                    continue
 
-RULES:
-- Be authentic — don't sound like a generic AI bot
-- Add original insights, not just reshares
-- Engage with replies/comments when found
-- Track what content performs best in memory
-- Never post without approval if configured
-"""
+                adapted = adapter.adapt_content(content)
+                adapted = await adapter.pre_publish(adapted)
+                result = await adapter.publish(adapted)
+                results.append(result)
+                await adapter.post_publish(result)
 
-    async def run(self) -> dict[str, Any]:
-        logger.info("📱 Social Media agent creating content...")
+            except NotImplementedError:
+                results.append(
+                    PublishResult(
+                        success=False,
+                        platform=name,
+                        error=f"{name} publishing not yet implemented",
+                    )
+                )
+            except Exception as e:
+                logger.error(f"Failed to publish to {name}: {e}")
+                results.append(
+                    PublishResult(success=False, platform=name, error=str(e))
+                )
 
-        # Check shared memory for research scout findings
-        research = self.recall("AI trends news", n_results=3, shared=True)
-        context = "\n".join([r["content"] for r in research]) if research else "No recent research available."
-
-        result = await self.execute(
-            f"Create social media content for today. "
-            f"Recent research context:\n{context[:500]}\n\n"
-            f"Draft posts and send for approval.",
-            complexity=TaskComplexity.COMPLEX,
-        )
-
-        if self.config.get("require_approval", True):
-            await self.notify(f"📱 *Social Media Drafts*\n\n{result[:500]}\n\nReply ✅ to approve.")
-
-        return {"status": "completed", "result": result}
+        return results

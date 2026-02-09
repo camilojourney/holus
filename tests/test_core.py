@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from core.base_agent import BaseAgent
@@ -10,7 +10,7 @@ from core.notifier import Notifier
 
 def _mock_notifier() -> Notifier:
     n = MagicMock(spec=Notifier)
-    n.notify = MagicMock(return_value=asyncio.coroutine(lambda *a, **k: None)())
+    n.notify = AsyncMock()
     return n
 
 
@@ -40,4 +40,4 @@ class TestBaseAgent:
         assert agent.schedule == "every 1 hour"
         assert agent.status == "idle"
         assert agent._run_count == 0
-        assert agent._run_history == []
+        assert len(agent._run_history) == 0

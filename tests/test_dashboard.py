@@ -8,7 +8,7 @@ import asyncio
 import time
 from datetime import datetime
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -76,7 +76,7 @@ def _make_agent(cls=StubAgent, config: dict | None = None) -> BaseAgent:
     llm = MagicMock(spec=LLMProvider)
     mem = MagicMock(spec=MemoryStore)
     notifier = MagicMock(spec=Notifier)
-    notifier.notify = MagicMock(return_value=asyncio.coroutine(lambda *a, **k: None)())
+    notifier.notify = AsyncMock()
     agent = cls(
         llm_provider=llm,
         memory=mem,

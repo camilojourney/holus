@@ -5,12 +5,26 @@ Each agent gets its own collection + access to a shared collection.
 from __future__ import annotations
 
 import os
+import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
-import chromadb
-from chromadb.config import Settings
 from loguru import logger
+
+if TYPE_CHECKING:
+    import chromadb
+
+
+def _get_chromadb():
+    """Lazy import of chromadb to avoid module-level pydantic v1 errors."""
+    import chromadb
+    return chromadb
+
+
+def _get_settings():
+    """Lazy import of chromadb Settings."""
+    from chromadb.config import Settings
+    return Settings
 
 
 class MemoryStore:
@@ -20,20 +34,22 @@ class MemoryStore:
         self.persist_dir = os.path.expanduser(persist_dir)
         os.makedirs(self.persist_dir, exist_ok=True)
 
-        self.client = chromadb.PersistentClient(
+        chroma = _get_chromadb()
+        Settings = _get_settings()
+        self.client = chroma.PersistentClient(
             path=self.persist_dir,
             settings=Settings(anonymized_telemetry=False),
         )
         logger.info(f"Memory store initialized at {self.persist_dir}")
 
-    def get_collection(self, agent_name: str) -> chromadb.Collection:
+    def get_collection(self, agent_name: str) -> "chromadb.Collection":
         """Get or create a collection for a specific agent."""
         return self.client.get_or_create_collection(
             name=f"agent_{agent_name}",
             metadata={"agent": agent_name},
         )
 
-    def get_shared_collection(self) -> chromadb.Collection:
+    def get_shared_collection(self) -> "chromadb.Collection":
         """Get the shared collection accessible by all agents."""
         return self.client.get_or_create_collection(
             name="shared",
@@ -52,7 +68,7 @@ class MemoryStore:
         collection = self.get_shared_collection() if shared else self.get_collection(agent_name)
 
         if doc_id is None:
-            doc_id = f"{agent_name}_{datetime.now().isoformat()}"
+            doc_id = f"{agent_name}_{uuid.uuid4().hex}"
 
         meta = {
             "agent": agent_name,

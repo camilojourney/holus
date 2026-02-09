@@ -1,6 +1,7 @@
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.backends._legacy:_Backend"
+# Use the modern backend so `pip install -e .` works in CI (PEP 660 editable installs).
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "holus"
@@ -14,7 +15,7 @@ requires-python = ">=3.11"
 holus = "main:main"
 
 [tool.setuptools.packages.find]
-include = ["core*", "agents*", "tools*", "dashboard*"]
+include = ["core*", "agents*", "tools*", "dashboard*", "shared*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

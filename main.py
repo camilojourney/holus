@@ -9,15 +9,18 @@ Usage:
 """
 import asyncio
 import argparse
+import os
 import sys
 from pathlib import Path
 
 from loguru import logger
 
 # Configure logging
+log_dir = os.path.expanduser("~/.holus/logs")
+os.makedirs(log_dir, exist_ok=True)
 logger.remove()
 logger.add(sys.stderr, level="INFO", format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> - {message}")
-logger.add("~/.holus/logs/holus.log", rotation="10 MB", retention="7 days", level="DEBUG")
+logger.add(os.path.join(log_dir, "holus.log"), rotation="10 MB", retention="7 days", level="DEBUG")
 
 
 def main():
@@ -29,7 +32,11 @@ def main():
 
     from core.orchestrator import Orchestrator
 
-    orchestrator = Orchestrator(config_path=args.config)
+    try:
+        orchestrator = Orchestrator(config_path=args.config)
+    except FileNotFoundError as e:
+        logger.error(str(e))
+        sys.exit(1)
 
     if args.status:
         orchestrator.discover_agents()

@@ -8,14 +8,15 @@ from __future__ import annotations
 import asyncio
 import time
 from abc import ABC, abstractmethod
+from collections import deque
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import Any, Optional
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langgraph.prebuilt import create_react_agent
 from loguru import logger
 
 from core.llm import LLMProvider, TaskComplexity
@@ -62,12 +63,13 @@ class BaseAgent(ABC):
         self.memory = memory
         self.notifier = notifier
         self.config = config
-        self._agent_executor: Optional[AgentExecutor] = None
+        self._agent_graph = None
         self._run_count = 0
         self._last_run: Optional[datetime] = None
         self._is_running = False
         self._last_error: Optional[str] = None
-        self._run_history: list[RunRecord] = []
+        self._run_history: deque[RunRecord] = deque(maxlen=1000)
+        self._run_lock = asyncio.Lock()
 
         logger.info(f"Agent '{self.name}' initialized | schedule: {self.schedule}")
 
@@ -101,41 +103,36 @@ class BaseAgent(ABC):
             return self.llm_provider.get(provider=agent_provider)
         return self.llm_provider.get(complexity=complexity)
 
-    def build_agent_executor(self) -> AgentExecutor:
-        """Build a LangChain agent executor with this agent's tools and prompt."""
-        if self._agent_executor is not None:
-            return self._agent_executor
+    def build_agent_executor(self):
+        """Build a LangGraph react agent with this agent's tools and prompt."""
+        if self._agent_graph is not None:
+            return self._agent_graph
 
         tools = self.get_tools()
         llm = self.get_llm()
 
-        prompt = ChatPromptTemplate.from_messages([
-            SystemMessage(content=self.get_system_prompt()),
-            MessagesPlaceholder(variable_name="chat_history", optional=True),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
-
-        agent = create_openai_functions_agent(llm, tools, prompt)
-        self._agent_executor = AgentExecutor(
-            agent=agent,
+        self._agent_graph = create_react_agent(
+            model=llm,
             tools=tools,
-            verbose=True,
-            max_iterations=10,
-            handle_parsing_errors=True,
+            prompt=self.get_system_prompt(),
         )
-        return self._agent_executor
+        return self._agent_graph
 
     async def execute(self, task: str, complexity: TaskComplexity = TaskComplexity.SIMPLE) -> str:
         """Execute a single task using this agent's tools and LLM."""
-        executor = self.build_agent_executor()
+        graph = self.build_agent_executor()
         try:
             result = await asyncio.to_thread(
-                executor.invoke, {"input": task}
+                graph.invoke,
+                {"messages": [HumanMessage(content=task)]},
             )
-            return result.get("output", str(result))
+            # Extract the final message content from the graph result
+            messages = result.get("messages", [])
+            if messages:
+                return messages[-1].content
+            return str(result)
         except Exception as e:
-            logger.error(f"Agent '{self.name}' execution error: {e}")
+            logger.exception(f"Agent '{self.name}' execution error: {e}")
             return f"Error: {e}"
 
     async def notify(self, message: str):
@@ -156,6 +153,15 @@ class BaseAgent(ABC):
 
     async def scheduled_run(self):
         """Wrapper for scheduled execution with logging and error handling."""
+        if self._run_lock.locked():
+            logger.warning(f"Agent '{self.name}' is already running, skipping")
+            return {"status": "skipped", "reason": "already running"}
+
+        async with self._run_lock:
+            return await self._do_run()
+
+    async def _do_run(self):
+        """Internal run implementation (holds _run_lock)."""
         self._run_count += 1
         self._last_run = datetime.now()
         self._is_running = True
@@ -229,5 +235,6 @@ class BaseAgent(ABC):
     def get_run_history(self, limit: int = 20) -> list[dict]:
         """Get structured run history, newest first."""
         limit = min(max(limit, 1), 100)
-        history = list(reversed(self._run_history))
+        history = list(self._run_history)
+        history.reverse()
         return [asdict(r) for r in history[:limit]]

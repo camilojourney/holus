@@ -1,250 +1,239 @@
-"""
-Video Scorer Agent — Analyzes videos and predicts YouTube performance.
+"""Repurposing Engine — Transforms long-form content into platform-specific formats.
 
-Features:
-- Frame analysis (visual quality, composition)
-- Audio analysis (energy levels, clarity)
-- Content analysis (script/transcript quality)
-- Suggests cuts for Shorts/highlights
-- Feedback loop: compares predictions vs actual performance
-
-Scoring Criteria (weighted):
-- Hook strength (first 5 sec): 25%
-- Pacing (energy, no dead spots): 20%
-- Visual quality: 15%
-- Audio quality: 15%
-- Content value: 15%
-- CTA presence: 10%
+Handles:
+- Transcription of video/audio content
+- Clip extraction (highlight/Shorts candidates)
+- Hook generation per platform
+- Format adaptation (video → thread, video → short, etc.)
 """
 from __future__ import annotations
 
-import json
-from pathlib import Path
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Optional
 
-from langchain_core.tools import tool
 from loguru import logger
 
-from shared.base_agent import BaseAgent
-from shared.llm import TaskComplexity
+from .adapters.base_adapter import Content, ContentType
 
 
-class VideoScorerAgent(BaseAgent):
-    name = "video_scorer"
-    description = "Analyzes videos, scores them 1-10, suggests cuts, and learns from feedback"
-    schedule = "on-demand"
-    
-    # Scoring weights
-    SCORING_WEIGHTS = {
-        "hook_strength": 0.25,
-        "pacing": 0.20,
-        "visual_quality": 0.15,
-        "audio_quality": 0.15,
-        "content_value": 0.15,
-        "cta_presence": 0.10,
-    }
-    
-    # Feedback history path
-    FEEDBACK_PATH = Path("data/video-scorer-feedback.json")
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._ensure_feedback_exists()
-    
-    def _ensure_feedback_exists(self):
-        """Create feedback file if it doesn't exist."""
-        if not self.FEEDBACK_PATH.exists():
-            self.FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
-            self.FEEDBACK_PATH.write_text(json.dumps({
-                "scoredVideos": [],
-                "weightAdjustments": [],
-                "accuracy": None
-            }, indent=2))
-    
-    def _load_feedback(self) -> dict:
-        """Load feedback history."""
-        return json.loads(self.FEEDBACK_PATH.read_text())
-    
-    def _save_feedback(self, data: dict):
-        """Save feedback history."""
-        self.FEEDBACK_PATH.write_text(json.dumps(data, indent=2))
+@dataclass
+class ClipSuggestion:
+    """A suggested clip from a longer piece of content."""
+    start_seconds: float
+    end_seconds: float
+    reason: str
+    score: float = 0.0  # 0-1 relevance score
 
-    def get_tools(self) -> list:
-        """Define tools for Video Scorer agent."""
-        
-        @tool
-        def analyze_video(video_path: str) -> str:
-            """Analyze a video file and extract quality metrics.
-            
-            Args:
-                video_path: Path to video file
-            """
-            return (
-                f"[Placeholder] Would analyze video: {video_path}\n"
-                f"Steps:\n"
-                f"1. Extract frames at key timestamps (0s, 5s, 30s, 60s, etc.)\n"
-                f"2. Transcribe audio\n"
-                f"3. Analyze frame quality (lighting, composition)\n"
-                f"4. Analyze audio levels and clarity\n"
-                f"5. Detect scene changes and energy patterns"
-            )
-        
-        @tool
-        def score_hook(first_5_seconds_transcript: str, first_frame_description: str) -> str:
-            """Score the video's hook (first 5 seconds).
-            
-            Args:
-                first_5_seconds_transcript: Transcript of first 5 seconds
-                first_frame_description: Description of opening frame
-            """
-            return (
-                f"[Placeholder] Would score hook:\n"
-                f"Transcript: {first_5_seconds_transcript[:100]}...\n"
-                f"Frame: {first_frame_description[:100]}...\n"
-                f"Criteria: Attention-grabbing? Creates curiosity? Fast-paced?\n"
-                f"Would return score 1-10."
-            )
-        
-        @tool
-        def detect_dead_spots(video_path: str) -> str:
-            """Detect low-energy or dead spots in the video.
-            
-            Args:
-                video_path: Path to video file
-            """
-            return (
-                f"[Placeholder] Would analyze pacing for: {video_path}\n"
-                f"Detection methods:\n"
-                f"- Audio energy levels (silence, low volume)\n"
-                f"- Speech rate analysis\n"
-                f"- Scene change frequency\n"
-                f"Would return timestamps of dead spots."
-            )
-        
-        @tool
-        def suggest_shorts_cuts(video_path: str, transcript: str = None) -> str:
-            """Suggest cuts for YouTube Shorts (30-60 sec highlights).
-            
-            Args:
-                video_path: Path to video file
-                transcript: Optional full transcript
-            """
-            return (
-                f"[Placeholder] Would identify Shorts candidates:\n"
-                f"Criteria:\n"
-                f"- High energy moments\n"
-                f"- Standalone value (makes sense without context)\n"
-                f"- Quotable/memorable statements\n"
-                f"- Visual interest\n"
-                f"Would return list of {{start, end, reason}} objects."
-            )
-        
-        @tool
-        def generate_full_score(
-            hook_score: float,
-            pacing_score: float,
-            visual_score: float,
-            audio_score: float,
-            content_score: float,
-            cta_score: float
-        ) -> str:
-            """Generate weighted final score from individual criteria.
-            
-            Args:
-                hook_score: Hook strength (1-10)
-                pacing_score: Pacing quality (1-10)
-                visual_score: Visual quality (1-10)
-                audio_score: Audio quality (1-10)
-                content_score: Content value (1-10)
-                cta_score: CTA presence (1-10)
-            """
-            weights = self.SCORING_WEIGHTS
-            
-            weighted_score = (
-                hook_score * weights["hook_strength"] +
-                pacing_score * weights["pacing"] +
-                visual_score * weights["visual_quality"] +
-                audio_score * weights["audio_quality"] +
-                content_score * weights["content_value"] +
-                cta_score * weights["cta_presence"]
-            )
-            
-            breakdown = {
-                "hook": f"{hook_score}/10 (weight: {weights['hook_strength']:.0%})",
-                "pacing": f"{pacing_score}/10 (weight: {weights['pacing']:.0%})",
-                "visual": f"{visual_score}/10 (weight: {weights['visual_quality']:.0%})",
-                "audio": f"{audio_score}/10 (weight: {weights['audio_quality']:.0%})",
-                "content": f"{content_score}/10 (weight: {weights['content_value']:.0%})",
-                "cta": f"{cta_score}/10 (weight: {weights['cta_presence']:.0%})",
-            }
-            
-            return (
-                f"**Final Score: {weighted_score:.1f}/10**\n\n"
-                f"Breakdown:\n" +
-                "\n".join(f"- {k}: {v}" for k, v in breakdown.items())
-            )
-        
-        @tool
-        def record_feedback(
-            video_id: str,
-            predicted_score: float,
-            actual_ctr: float,
-            actual_watch_time_percent: float
-        ) -> str:
-            """Record actual performance to improve future predictions.
-            
-            Args:
-                video_id: YouTube video ID
-                predicted_score: Score given before publish
-                actual_ctr: Actual click-through rate
-                actual_watch_time_percent: Actual avg watch time as % of duration
-            """
-            feedback = self._load_feedback()
-            
-            feedback["scoredVideos"].append({
-                "video_id": video_id,
-                "predicted_score": predicted_score,
-                "actual_ctr": actual_ctr,
-                "actual_watch_time": actual_watch_time_percent,
-                "timestamp": __import__("datetime").datetime.now().isoformat()
-            })
-            
-            self._save_feedback(feedback)
-            
-            return (
-                f"Recorded feedback for {video_id}:\n"
-                f"Predicted: {predicted_score}/10\n"
-                f"Actual CTR: {actual_ctr:.2%}\n"
-                f"Actual watch time: {actual_watch_time_percent:.1%}"
-            )
-        
-        @tool
-        def get_prediction_accuracy() -> str:
-            """Calculate how accurate past predictions have been."""
-            feedback = self._load_feedback()
-            videos = feedback.get("scoredVideos", [])
-            
-            if len(videos) < 3:
-                return "Need at least 3 videos with feedback to calculate accuracy."
-            
-            # Simple correlation: high score should correlate with high CTR
-            # This would be replaced with actual ML correlation analysis
-            return (
-                f"Videos analyzed: {len(videos)}\n"
-                f"[Placeholder] Would calculate correlation between\n"
-                f"predicted scores and actual CTR/watch time."
-            )
 
+@dataclass
+class RepurposedContent:
+    """Content adapted for a specific platform."""
+    platform: str
+    content: Content
+    source_clip: Optional[ClipSuggestion] = None
+    metadata: dict = field(default_factory=dict)
+
+
+class RepurposingEngine:
+    """Transforms long-form content into multiple platform-specific pieces.
+
+    Pipeline:
+    1. transcribe() — Extract text from video/audio
+    2. extract_clips() — Identify highlight segments
+    3. generate_hooks() — Create platform-specific hooks
+    4. adapt_format() — Transform content to target format
+    5. repurpose() — Full pipeline from source to multi-platform output
+    """
+
+    def __init__(self, config: dict | None = None):
+        self.config = config or {}
+        logger.info("RepurposingEngine initialized")
+
+    async def transcribe(self, media_path: str) -> str:
+        """Transcribe video or audio to text.
+
+        Args:
+            media_path: Path to video/audio file.
+
+        Returns:
+            Transcript text.
+        """
+        # TODO: Integrate Whisper or cloud transcription API
+        logger.info(f"Transcribing: {media_path}")
+        return f"[Placeholder] Transcript of {media_path}"
+
+    async def extract_clips(
+        self,
+        media_path: str,
+        transcript: str | None = None,
+        max_clips: int = 5,
+    ) -> list[ClipSuggestion]:
+        """Identify the best clip candidates from long-form content.
+
+        Uses energy analysis, transcript highlights, and scene changes to
+        find segments that work as standalone Shorts or highlights.
+
+        Args:
+            media_path: Path to source video.
+            transcript: Optional transcript (will be generated if missing).
+            max_clips: Maximum number of clips to suggest.
+
+        Returns:
+            List of ClipSuggestion objects sorted by score descending.
+        """
+        if transcript is None:
+            transcript = await self.transcribe(media_path)
+
+        # TODO: Implement with ffmpeg scene detection + LLM transcript analysis
+        logger.info(f"Extracting up to {max_clips} clips from {media_path}")
         return [
-            analyze_video,
-            score_hook,
-            detect_dead_spots,
-            suggest_shorts_cuts,
-            generate_full_score,
-            record_feedback,
-            get_prediction_accuracy,
+            ClipSuggestion(
+                start_seconds=0,
+                end_seconds=60,
+                reason="Placeholder — first minute as default clip",
+                score=0.5,
+            )
         ]
 
-    async def run_scheduled_task(self) -> str:
-        """This agent runs on-demand, not scheduled."""
-        return "Video Scorer is an on-demand agent. Send a video to analyze."
+    async def cut_clip(
+        self,
+        media_path: str,
+        clip: ClipSuggestion,
+        output_path: str | None = None,
+    ) -> str:
+        """Cut a clip from the source video.
+
+        Args:
+            media_path: Source video path.
+            clip: The clip suggestion with start/end timestamps.
+            output_path: Where to save the clip (auto-generated if None).
+
+        Returns:
+            Path to the cut clip file.
+        """
+        if output_path is None:
+            output_path = f"{media_path}_clip_{clip.start_seconds}-{clip.end_seconds}.mp4"
+
+        # TODO: Implement with ffmpeg
+        logger.info(
+            f"Cutting clip [{clip.start_seconds}s - {clip.end_seconds}s] "
+            f"from {media_path} -> {output_path}"
+        )
+        return output_path
+
+    async def generate_hooks(
+        self,
+        transcript: str,
+        platforms: list[str] | None = None,
+    ) -> dict[str, str]:
+        """Generate attention-grabbing hooks for each target platform.
+
+        Args:
+            transcript: Source transcript to extract hooks from.
+            platforms: Target platforms (default: twitter, youtube, linkedin).
+
+        Returns:
+            Dict mapping platform name to hook text.
+        """
+        platforms = platforms or ["twitter", "youtube", "linkedin"]
+
+        # TODO: Use LLM to generate platform-specific hooks
+        hooks = {}
+        for platform in platforms:
+            hooks[platform] = f"[Placeholder hook for {platform}]"
+
+        logger.info(f"Generated hooks for {len(hooks)} platforms")
+        return hooks
+
+    def adapt_format(
+        self,
+        source: Content,
+        target_type: ContentType,
+        platform: str,
+    ) -> Content:
+        """Transform content from one format to another.
+
+        Examples:
+        - VIDEO → TEXT (extract transcript as thread)
+        - VIDEO → VIDEO (crop to vertical for Shorts/TikTok)
+        - TEXT → IMAGE (pull-quote card for Instagram)
+
+        Args:
+            source: Original content.
+            target_type: Desired output content type.
+            platform: Target platform name.
+
+        Returns:
+            New Content object adapted for the target format.
+        """
+        adapted = Content(
+            type=target_type,
+            title=source.title,
+            body=source.body,
+            tags=source.tags.copy(),
+            metadata={
+                **source.metadata,
+                "repurposed_from": source.type.value,
+                "target_platform": platform,
+            },
+        )
+
+        # Platform-specific transformations
+        if target_type == ContentType.TEXT and source.type == ContentType.VIDEO:
+            adapted.body = f"🎬 From my latest video: {source.title}\n\n{source.body}"
+
+        logger.debug(f"Adapted {source.type.value} -> {target_type.value} for {platform}")
+        return adapted
+
+    async def repurpose(
+        self,
+        media_path: str,
+        title: str,
+        platforms: list[str] | None = None,
+    ) -> list[RepurposedContent]:
+        """Full repurposing pipeline: transcribe → clip → adapt → output.
+
+        Args:
+            media_path: Path to source media.
+            title: Content title.
+            platforms: Target platforms.
+
+        Returns:
+            List of RepurposedContent objects ready for publishing.
+        """
+        platforms = platforms or ["twitter", "youtube"]
+        results: list[RepurposedContent] = []
+
+        # Step 1: Transcribe
+        transcript = await self.transcribe(media_path)
+
+        # Step 2: Extract clips
+        clips = await self.extract_clips(media_path, transcript)
+
+        # Step 3: Generate hooks
+        hooks = await self.generate_hooks(transcript, platforms)
+
+        # Step 4: Create platform-specific content
+        source = Content(
+            type=ContentType.VIDEO,
+            title=title,
+            body=transcript,
+            media_path=media_path,
+        )
+
+        for platform in platforms:
+            # Adapt format based on platform
+            if platform in ("twitter", "linkedin"):
+                adapted = self.adapt_format(source, ContentType.TEXT, platform)
+                adapted.body = f"{hooks.get(platform, '')}\n\n{adapted.body[:280]}"
+            else:
+                adapted = self.adapt_format(source, ContentType.VIDEO, platform)
+
+            results.append(RepurposedContent(
+                platform=platform,
+                content=adapted,
+                source_clip=clips[0] if clips else None,
+            ))
+
+        logger.info(f"Repurposed '{title}' into {len(results)} platform pieces")
+        return results

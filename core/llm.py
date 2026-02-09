@@ -42,10 +42,13 @@ class LLMProvider:
             from langchain_openai import ChatOpenAI
 
             cfg = self.config["openai"]
-            os.environ.setdefault("OPENAI_API_KEY", cfg.get("api_key", ""))
+            api_key = cfg.get("api_key") or os.environ.get("OPENAI_API_KEY", "")
+            if not api_key:
+                raise ValueError("OpenAI API key not found in config or OPENAI_API_KEY env var")
             self._models["openai"] = ChatOpenAI(
                 model=cfg.get("model", "gpt-4o-mini"),
                 temperature=0.7,
+                api_key=api_key,
             )
         return self._models["openai"]
 
@@ -54,21 +57,24 @@ class LLMProvider:
             from langchain_community.chat_models import ChatAnthropic
 
             cfg = self.config["anthropic"]
-            os.environ.setdefault("ANTHROPIC_API_KEY", cfg.get("api_key", ""))
+            api_key = cfg.get("api_key") or os.environ.get("ANTHROPIC_API_KEY", "")
+            if not api_key:
+                raise ValueError("Anthropic API key not found in config or ANTHROPIC_API_KEY env var")
             self._models["anthropic"] = ChatAnthropic(
                 model=cfg.get("model", "claude-sonnet-4-5-20250929"),
                 temperature=0.7,
+                anthropic_api_key=api_key,
             )
         return self._models["anthropic"]
 
     def get(self, provider: Optional[str] = None, complexity: TaskComplexity = TaskComplexity.SIMPLE) -> BaseChatModel:
         """
         Get an LLM instance.
-        
+
         Args:
             provider: Explicit provider name ("ollama", "openai", "anthropic")
             complexity: If no provider specified, routes based on complexity config
-        
+
         Returns:
             A LangChain chat model instance
         """
