@@ -1,5 +1,13 @@
 # Config with secrets
 config/config.yaml
+config/.env
+config/.env.*
+!config/.env.example
+
+# Common env files
+.env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
