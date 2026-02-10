@@ -6,9 +6,9 @@
 | Task | Product | Est | Status |
 |------|---------|-----|--------|
 | ✅ Genpelli semantic clip cutting | Genpelli | 8h | DONE |
-| MCP wrapper for Social Media Auto | Social Media | 4h | 🔄 In Progress |
-| Manager Agent skeleton | Holus | 4h | 🔄 In Progress |
-| Dashboard v1 (agent status view) | Holus | 4h | 🔄 In Progress |
+| ✅ MCP wrapper for Social Media Auto | Social Media | 4h | DONE |
+| ✅ Manager Agent skeleton | Holus | 4h | DONE |
+| ✅ Dashboard v1 (agent status view) | Holus | 4h | DONE |
 
 ## Priority 1 — Next 2 Weeks
 
@@ -45,3 +45,6 @@
 - [x] Holus Strategy v1 + v2 (2026-02-10)
 - [x] Fast Loops design (2026-02-10)
 - [x] Build/Think crons setup (2026-02-10)
+- [x] MCP wrapper for Social Media Auto (2026-02-10)
+- [x] Manager Agent skeleton (2026-02-10)
+- [x] Dashboard v1 (2026-02-10)

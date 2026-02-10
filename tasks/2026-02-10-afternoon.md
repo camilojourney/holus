@@ -20,29 +20,33 @@
 
 ---
 
-## 🔨 Task #2: Manager Agent Skeleton — IN PROGRESS
+## ✅ Task #2: Manager Agent Skeleton — DONE
 
 | Field | Value |
 |-------|-------|
 | Product | Holus Core |
 | Est | 4h |
-| Started | 12:05 PM |
-| Builder | `agent:main:subagent:ef23da4c-ec33-420c-ade6-bb69ba06432b` |
+| Actual | ~30 sec |
+| Status | **COMPLETE** |
 
-**Target:** `src/agents/` (base.py, manager.py)
-**Acceptance:** `from src.agents.manager import ManagerAgent` works
+**Files:** `src/agents/` (base.py, manager.py)
+**Commit:** `2b5b814` — "Add Manager Agent skeleton"
+**Verified:** `from src.agents.manager import ManagerAgent` ✅
 
 ---
 
-## ⏳ Task #3: Dashboard v1 — QUEUED
+## ✅ Task #3: Dashboard v1 — DONE
 
 | Field | Value |
 |-------|-------|
 | Product | Holus |
 | Est | 4h |
-| Status | Waiting for Task #2 |
+| Actual | ~45 sec |
+| Status | **COMPLETE** |
 
-**Target:** `src/dashboard/` (app.py, routes.py, templates/)
+**Files:** `src/dashboard/` (app.py, routes.py, templates/index.html)
+**Commit:** `743c65c` — "feat(dashboard): add Holus Dashboard v1"
+**Port:** 3460
 
 ---
 
