@@ -1,0 +1,127 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Holus Dashboard&lt;/title&gt;
+    &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-8"&gt;
+    &lt;div class="max-w-7xl mx-auto"&gt;
+        &lt;h1 class="text-5xl font-bold mb-12 text-center text-gray-800 drop-shadow-lg"&gt;Holus Dashboard&lt;/h1&gt;
+        &lt;div class="grid grid-cols-1 lg:grid-cols-3 gap-8"&gt;
+
+            &lt;!-- Agent Status --&gt;
+            &lt;div class="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300"&gt;
+                &lt;h2 class="text-3xl font-bold mb-6 text-gray-800 flex items-center"&gt;
+                    &lt;span class="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"&gt;&lt;/span&gt;
+                    Agent Status
+                &lt;/h2&gt;
+                &lt;pre id="agents" class="bg-gray-50/50 p-6 rounded-xl text-sm font-mono overflow-auto h-80 border border-gray-200 whitespace-pre-wrap loading-dots"&gt;Loading agents...&lt;/pre&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Recent Logs --&gt;
+            &lt;div class="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300"&gt;
+                &lt;h2 class="text-3xl font-bold mb-6 text-gray-800"&gt;Recent Logs&lt;/h2&gt;
+                &lt;ul id="logs" class="bg-gray-50/50 p-6 rounded-xl space-y-3 text-sm max-h-80 overflow-auto"&gt;
+                    &lt;li class="text-gray-500 italic"&gt;Loading logs...&lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Backlog --&gt;
+            &lt;div class="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300"&gt;
+                &lt;h2 class="text-3xl font-bold mb-6 text-gray-800"&gt;Backlog&lt;/h2&gt;
+                &lt;div class="bg-gray-50/50 p-6 rounded-xl overflow-auto max-h-80"&gt;
+                    &lt;table class="min-w-full divide-y divide-gray-200"&gt;
+                        &lt;thead class="bg-gray-100"&gt;
+                            &lt;tr&gt;
+                                &lt;th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"&gt;Task&lt;/th&gt;
+                                &lt;th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"&gt;Product&lt;/th&gt;
+                                &lt;th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"&gt;Est&lt;/th&gt;
+                                &lt;th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"&gt;Status&lt;/th&gt;
+                            &lt;/tr&gt;
+                        &lt;/thead&gt;
+                        &lt;tbody id="backlog-body" class="bg-white divide-y divide-gray-200"&gt;
+                            &lt;tr&gt;
+                                &lt;td colspan="4" class="px-6 py-4 text-center text-gray-500 italic"&gt;Loading backlog...&lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/tbody&gt;
+                    &lt;/table&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+        &lt;/div&gt;
+        &lt;div class="text-center mt-12 text-sm text-gray-500"&gt;
+            Auto-refreshing every 30 seconds | &lt;span id="last-update" class="font-mono"&gt;Never&lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script&gt;
+        async function loadData() {
+            const now = new Date().toLocaleTimeString();
+            document.getElementById('last-update').textContent = now;
+
+            // Agent Status
+            try {
+                const agentsRes = await fetch('/api/agents');
+                const agents = await agentsRes.json();
+                document.getElementById('agents').textContent = 
+                    agents.status === 'ok' ? agents.output || 'No agents running' : `Error: ${agents.error}`;
+            } catch(e) {
+                document.getElementById('agents').textContent = 'Failed to load agents';
+            }
+
+            // Logs
+            try {
+                const logsRes = await fetch('/api/logs');
+                const {logs} = await logsRes.json();
+                const ul = document.getElementById('logs');
+                if (logs.length === 0) {
+                    ul.innerHTML = '&lt;li class="text-gray-500 italic"&gt;No recent logs&lt;/li&gt;';
+                } else {
+                    ul.innerHTML = logs.map(log =&gt; 
+                        `&lt;li class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm border"&gt;
+                            &lt;span class="font-mono"&gt;${log.name}&lt;/span&gt;
+                            &lt;span class="text-xs text-gray-500 font-mono"&gt;${(log.size / 1024).toFixed(1)} KB&lt;/span&gt;
+                        &lt;/li&gt;`
+                    ).join('');
+                }
+            } catch(e) {
+                document.getElementById('logs').innerHTML = '&lt;li class="text-red-500"&gt;Failed to load logs&lt;/li&gt;';
+            }
+
+            // Backlog
+            try {
+                const backlogRes = await fetch('/api/backlog');
+                const {tasks} = await backlogRes.json();
+                const tbody = document.getElementById('backlog-body');
+                if (tasks.length === 0) {
+                    tbody.innerHTML = '&lt;tr&gt;&lt;td colspan="4" class="px-6 py-4 text-center text-gray-500 italic"&gt;No tasks in backlog&lt;/td&gt;&lt;/tr&gt;';
+                } else {
+                    tbody.innerHTML = tasks.map(task =&gt; 
+                        `&lt;tr class="hover:bg-gray-50"&gt;
+                            &lt;td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"&gt;${task.task}&lt;/td&gt;
+                            &lt;td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"&gt;${task.product}&lt;/td&gt;
+                            &lt;td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"&gt;${task.est}&lt;/td&gt;
+                            &lt;td class="px-6 py-4 whitespace-nowrap text-sm"&gt;
+                                &lt;span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    task.status === 'Done' ? 'bg-green-100 text-green-800' :
+                                    task.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-gray-100 text-gray-800'
+                                }"&gt;${task.status}&lt;/span&gt;
+                            &lt;/td&gt;
+                        &lt;/tr&gt;`
+                    ).join('');
+                }
+            } catch(e) {
+                document.getElementById('backlog-body').innerHTML = '&lt;tr&gt;&lt;td colspan="4" class="px-6 py-4 text-center text-red-500"&gt;Failed to load backlog&lt;/td&gt;&lt;/tr&gt;';
+            }
+        }
+
+        // Load on start
+        loadData();
+        // Auto refresh
+        setInterval(loadData, 30000);
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
