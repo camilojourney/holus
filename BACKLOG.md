@@ -20,6 +20,16 @@
 | Manager Agent: web research capability | Holus | 4h | Backlog |
 | Landing page for Holus | Marketing | 4h | Backlog |
 
+## Priority 1.5 — Invoz Improvements
+
+| Task | Product | Est | Status |
+|------|---------|-----|--------|
+| Real-time voice feedback (during message) | Invoz | 8h | Backlog |
+| Weekly progress visualization | Invoz | 4h | Backlog |
+| Filler word pattern detection | Invoz | 4h | Backlog |
+| Speaking rate tracker over time | Invoz | 4h | Backlog |
+| Compare to target speaker models | Invoz | 8h | Backlog |
+
 ## Priority 2 — Month 1
 
 | Task | Product | Est | Status |
