@@ -14,9 +14,9 @@
 
 | Task | Product | Est | Status |
 |------|---------|-----|--------|
-| Genpelli MCP server | Genpelli | 4h | Backlog |
-| Connect Genpelli → Social Media Auto | Integration | 4h | Backlog |
-| Reachout: "research person" feature | Reachout | 6h | Backlog |
+| Genpelli MCP server | Genpelli | 4h | In Progress |
+| Connect Genpelli → Social Media Auto | Integration | 4h | In Progress |
+| Reachout: "research person" feature | Reachout | 6h | In Progress |
 | Manager Agent: web research capability | Holus | 4h | Backlog |
 | Landing page for Holus | Marketing | 4h | Backlog |
 
