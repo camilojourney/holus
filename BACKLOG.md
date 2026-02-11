@@ -1,5 +1,5 @@
 # Holus Backlog
-*Updated: 2026-02-10*
+*Updated: 2026-02-11*
 
 ## Priority 0 — This Week
 
@@ -14,9 +14,9 @@
 
 | Task | Product | Est | Status |
 |------|---------|-----|--------|
-| Genpelli MCP server | Genpelli | 4h | In Progress |
-| Connect Genpelli → Social Media Auto | Integration | 4h | In Progress |
-| Reachout: "research person" feature | Reachout | 6h | In Progress |
+| ✅ Genpelli MCP server | Genpelli | 4h | DONE |
+| ✅ Connect Genpelli → Social Media Auto | Integration | 4h | DONE |
+| ✅ Reachout: "research person" feature | Reachout | 6h | DONE |
 | Manager Agent: web research capability | Holus | 4h | Backlog |
 | Landing page for Holus | Marketing | 4h | Backlog |
 
@@ -58,3 +58,9 @@
 - [x] MCP wrapper for Social Media Auto (2026-02-10)
 - [x] Manager Agent skeleton (2026-02-10)
 - [x] Dashboard v1 (2026-02-10)
+- [x] Genpelli MCP server (2026-02-11)
+- [x] Connect Genpelli → Social Media Auto (2026-02-11)
+- [x] Reachout: "research person" feature (2026-02-11)
+- [x] LinkedIn post API endpoint (2026-02-11)
+- [x] Invoz research update (2026-02-11)
+- [x] Logging infra across all repos (2026-02-11)
