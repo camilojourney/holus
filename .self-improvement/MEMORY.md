@@ -1,51 +1,64 @@
 # Holus System Memory
 
-Accumulated knowledge from agent operations. Updated by agents after each cycle.
-Human-readable summary of what the system has learned.
+Accumulated knowledge from agent operations. Updated by the manager agent after each cycle.
+
+**Last updated:** 2026-02-25
+**Updated by:** Human (vision rewrite)
 
 ---
 
-## Domain Knowledge
+## What Holus Does
 
-### Trading
-- Paper trading only. Alpaca paper API at `https://paper-api.alpaca.markets`.
-- Guardrails: 2% max per-trade, 25% max exposure, 5% weekly drawdown circuit breaker.
-- Signal generator runs on Sonnet. Risk manager always runs on Opus.
-- Graduation to live requires: 30+ days paper, 50+ trades, Sharpe > 1.0, max drawdown < 10%.
+Holus is the AI marketing strategist for the product portfolio.
+It promotes Pilaster, genpeli, and invoz by deciding what content to create,
+calling silo tools (MCP) to produce it, and learning from what works.
 
-### Content
-- Distribution via Late API to 13 platforms.
-- Visual generation via ComfyUI (local) or Replicate (Flux Schnell).
-- Strategy planning monthly on Opus, execution on Sonnet.
+**Silos Holus uses:**
+- genpeli → video creation (MCP)
+- social-media-automatization → posting + analytics (MCP)
+- pilaster → image generation (MCP)
 
-### Coding
-- Self-improvement cycles run weekly (Sunday 2am).
-- Target: increase test coverage, reduce lint warnings, update dependencies.
-- All PRs require passing CI before merge.
+**Silos Holus never touches:**
+- pythia, milo-to-the-moon (trading — completely isolated)
 
-### Pilaster
-- ComfyUI workflow optimization for image generation quality.
-- Quality gate: images must pass automated quality scoring before distribution.
+---
+
+## Products Being Promoted
+
+| Product | Audience | Best Platforms | Best Content Type |
+|---------|---------|----------------|------------------|
+| Pilaster | ComfyUI artists | TikTok, LinkedIn | Tutorial, before/after |
+| genpeli | Content creators | LinkedIn, Instagram | Demo, case study |
+| invoz | Developers | LinkedIn, Twitter | Technical post |
+
+---
+
+## Content Strategy (What We've Learned)
+
+_No data yet. Marketing agent will populate this after first cycles._
+
+Examples of what will go here:
+- "Tutorial posts get 4x engagement vs promotional posts"
+- "LinkedIn outperforms Instagram for Pilaster audience"
+- "Best posting time: Tuesday 9am for LinkedIn"
+- "ComfyUI workflow demos perform better than static screenshots"
+
+---
+
+## Analytics Source
+
+All analytics data lives in **social-media-automatization**.
+Holus reads it via MCP — never stores it.
+If you want raw analytics, query social-media-automatization directly.
 
 ---
 
 ## Lessons Learned
 
-_No lessons yet. This section is populated after agents begin operating._
-
----
-
-## Cross-Project Patterns
-
-_No cross-project patterns yet. The coordinator agent will populate this after Phase 3 activation._
+_No lessons yet. Populated after agent cycles begin._
 
 ---
 
 ## System Incidents
 
 _No incidents recorded yet._
-
----
-
-**Last updated:** 2026-02-24
-**Updated by:** Human (initial template)

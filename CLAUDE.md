@@ -1,60 +1,52 @@
 # Holus
 
-Federated AI Operating System for multi-project management.
+AI marketing strategist for the product portfolio. Decides what content to create,
+calls silo tools to produce it, tracks what works, and improves strategy over time.
 
 ## Commands
 
 ```bash
-# Install
-uv sync --all-extras
-
-# Run
-python -m holus                        # Start coordinator
-python -m holus agent start trading    # Start single agent
-python -m holus agent start --all      # Start all agents
-
-# Test
-pytest tests/ -x -v                    # All tests
-pytest tests/unit/ -x -v               # Unit only
-pytest tests/integration/ -x -v        # Integration only (requires Docker services)
-
-# Lint + Type Check
-ruff check src/ tests/                 # Lint
-ruff format src/ tests/ --check        # Format check
-mypy src/                              # Type check
-
-# All checks (run before committing)
-just check                             # Runs: ruff check + ruff format --check + mypy + pytest
+just install          # uv sync --all-extras
+just run              # start the marketing agent
+just check            # lint + typecheck + tests (run before committing)
+just improve          # run manager self-improvement cycle
+just audit            # run security sentinel
 ```
 
-## IMPORTANT Rules
+## What Holus Does
 
-- NEVER expose API keys, secrets, or credentials in code or commits. All secrets flow through environment variables via `.env` (never committed). See `.env.example` for the template.
-- ALWAYS run `just check` before committing. Tests must pass, types must check, lint must be clean.
-- NEVER modify `config/guardrails.yaml` or kill switch logic without explicit human approval. These are safety-critical components.
-- NEVER allow any agent direct access to another agent's Mem0 scope. Memory isolation is a load-bearing architectural constraint.
-- ALWAYS use Pydantic models for data crossing module boundaries. No raw dicts at API surfaces.
+1. Reads analytics from social-media-automatization (what performed well)
+2. Reads product state (what's new in Pilaster, genpeli, invoz)
+3. Decides what content to create and for which product
+4. Calls silo tools (genpeli MCP, pilaster MCP, social-media MCP) to execute
+5. Tracks results. Adjusts strategy.
 
-## Required Environment Variables
+## Silo Tools (MCP servers Holus calls)
 
-See `.env.example` for the full list. Critical:
-- `ANTHROPIC_API_KEY` -- required for all agents
-- `REDIS_URL` -- event bus (default: `redis://localhost:6379`)
-- `DATABASE_URL` -- PostgreSQL + pgvector (default: `postgresql://holus:holus@localhost:5432/holus`)
+| Tool | Repo | What it does for Holus |
+|------|------|----------------------|
+| `genpeli-mcp` | genpeli | Create and edit videos |
+| `social-media-mcp` | social-media-automatization | Post content + read analytics |
+| `pilaster-mcp` | pilaster | Generate images, run workflows |
+
+## What Holus Does NOT Do
+
+- Trading (pythia + milo are completely separate, never touched by Holus)
+- Store social media analytics (that data lives in social-media-automatization)
+- Publish content directly (social-media-automatization does that)
+- Generate videos itself (genpeli does that)
+
+## Rules
+
+- NEVER expose API keys in code or commits. All secrets via `.env`.
+- ALWAYS run `just check` before committing.
+- NEVER modify `config/guardrails.yaml` without explicit human approval.
+- ALWAYS use Pydantic models at silo boundaries. No raw dicts.
 
 ## Context
 
-- System design: @ARCHITECTURE.md
-- Code style + testing + security: @.claude/rules/
-- Decisions log: @docs/decisions/
-- Specs index: @specs/README.md
-- Agent authority matrix: @AGENTS.md
+- Architecture: @ARCHITECTURE.md
+- Rules: @.claude/rules/
+- Specs: @specs/README.md
+- Agent roles: @AGENTS.md
 - Env template: @.env.example
-
-## Tech Stack
-
-- Python 3.12+ / uv / src-layout
-- LangGraph (agent orchestration) + Anthropic Claude API (Opus 4 strategic, Sonnet 4.5 operational)
-- Redis (event bus) + PostgreSQL/pgvector (storage) + Mem0 (agent memory)
-- Langfuse (observability) + Temporal.io (durable execution for trading)
-- n8n (workflow automation) + Docker/OrbStack (infrastructure)

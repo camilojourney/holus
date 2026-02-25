@@ -1,0 +1,67 @@
+# Holus — Products Being Promoted
+# This is the source of truth for what Holus markets.
+# Update when products launch new features or audience changes.
+# Last updated: 2026-02-25
+
+products:
+  pilaster:
+    name: "Pilaster"
+    tagline: "The memory layer for ComfyUI"
+    description: >
+      Pilaster saves your ComfyUI workflow experiments, diffs versions,
+      and warns you before you repeat a failed experiment.
+      Solves the #1 problem of AI artists: losing track of what worked.
+    url: "https://pilaster.ai"
+    status: "mvp_active"
+    audience: "AI artists, ComfyUI users, image generation hobbyists"
+    pain_point: "Can't reproduce my best results. Don't know what changed."
+    platforms:
+      - linkedin
+      - tiktok
+      - youtube_shorts
+    content_types:
+      - tutorial          # "How to version your ComfyUI workflows"
+      - before_after      # "Same prompt, 10 iterations — here's what changed"
+      - tips              # "3 ComfyUI mistakes Pilaster prevents"
+      - demo              # Screen recording of the diff engine
+
+  genpeli:
+    name: "Genpeli"
+    tagline: "AI video editing pipeline"
+    description: >
+      Genpeli takes your raw video, removes silences and fillers,
+      burns captions, normalizes audio, and pushes to social.
+      For content creators who want polished shorts without manual editing.
+    url: ""
+    status: "internal_pipeline"
+    audience: "Content creators, YouTubers, short-form video creators"
+    pain_point: "Video editing takes hours. I just want to press record and have it ready."
+    platforms:
+      - linkedin
+      - instagram
+    content_types:
+      - demo              # Before/after of raw vs processed video
+      - case_study        # "How I edited 10 videos in 1 hour"
+      - tutorial          # "Setting up your AI video pipeline"
+
+  invoz:
+    name: "Invoz"
+    tagline: "Audio ML API"
+    description: >
+      Invoz is a Whisper-powered audio processing API.
+      Transcription, speaker diarization, silence detection.
+      For developers building audio-first applications.
+    url: ""
+    status: "in_development"
+    audience: "Developers, technical founders"
+    pain_point: "Whisper setup is painful. I just need a clean API."
+    platforms:
+      - linkedin
+      - twitter
+    content_types:
+      - technical_post    # API usage examples
+      - demo              # Transcription accuracy comparison
+
+# Analytics source: social-media-automatization
+# Holus reads analytics via social-media-mcp — never stores them here.
+# To query analytics directly: check social-media-automatization repo.

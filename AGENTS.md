@@ -1,4 +1,4 @@
-# Holus -- Agent Instructions
+# Holus — Agent Instructions
 
 ## Project Docs Index
 
@@ -6,154 +6,117 @@
 [Holus Docs Index] | root: ./
 |IMPORTANT: Fetch specific files on demand, do not assume content
 |architecture:  {ARCHITECTURE.md}
-|specs:         {specs/README.md, specs/001-*.md .. specs/008-*.md}
-|decisions:     {docs/decisions/README.md, docs/decisions/0001-*.md}
-|playbooks:     {docs/playbooks/development.md, docs/playbooks/deployment.md, docs/playbooks/agent-session.md}
+|specs:         {specs/README.md}
+|decisions:     {docs/decisions/}
+|playbooks:     {docs/playbooks/}
 |roadmap:       {docs/roadmap.md}
 |vision:        {docs/vision.md}
-|config:        {config/base.yaml, config/guardrails.yaml, config/events.yaml}
-|agent-defs:    {.claude/agents/manager.md, .claude/agents/code-improver.md, .claude/agents/judge-agent.md, .claude/agents/prompt-optimizer.md, .claude/agents/security-sentinel.md}
-|rules:         {.claude/rules/structure.md, .claude/rules/code-style.md, .claude/rules/testing.md, .claude/rules/security.md}
+|config:        {config/base.yaml, config/guardrails.yaml, config/products.yaml}
+|agent-defs:    {.claude/agents/manager.md, .claude/agents/content-orchestrator.md,
+|               .claude/agents/code-improver.md, .claude/agents/judge-agent.md,
+|               .claude/agents/security-sentinel.md}
+|rules:         {.claude/rules/structure.md, .claude/rules/code-style.md,
+|               .claude/rules/testing.md, .claude/rules/security.md}
 ```
 
 ---
 
-## Agent Role and Scope
+## What Holus Is
 
-You are an AI agent working within **Holus**, a federated AI operating system that coordinates four domain-specific agents (Trading, Content, Coding, Pilaster) for a solo founder's project portfolio.
+Holus is an **AI marketing strategist** for the product portfolio.
 
-**Your operating context:**
-- **Architecture:** Federated process isolation with shared Redis event bus. Each domain agent runs as an independent OS process with its own Mem0 memory scope and LangGraph execution graph.
-- **Intelligence tier:** Claude Opus 4 for strategic decisions (risk evaluation, cross-project synthesis, architecture). Claude Sonnet 4.5 for operational tasks (content generation, routine code review, standard signal evaluation).
-- **Infrastructure:** All services (PostgreSQL, Redis, Langfuse, n8n, Temporal, Mem0) run locally on Mac Mini M4 via OrbStack/Docker. LLM reasoning runs on Anthropic cloud API.
-- **Source layout:** `src/holus/` with domain-scoped modules: `core/`, `agents/`, `integrations/`, `memory/`, `observability/`, `self_improvement/`.
+**Goal:** Promote Pilaster, genpeli, and invoz by creating content that resonates
+with each product's audience, publishing it through the right channels,
+and learning from what works to improve over time.
 
-**What you are responsible for depends on your agent role.** Read your specific agent definition in `.claude/agents/` for your full instructions, tools, and boundaries.
+**How it works:**
+- Observes analytics from social-media-automatization (via MCP)
+- Reasons about strategy using Claude Opus
+- Acts by calling silo tools: genpeli-mcp, pilaster-mcp, social-media-mcp
+- Evaluates results and updates strategy
+
+**What Holus is NOT:**
+- Not a trading system (pythia + milo are completely separate, never touched)
+- Not a publisher (social-media-automatization does the actual posting)
+- Not a video generator (genpeli does that)
+- Not an image generator (pilaster does that)
+
+---
+
+## Agents in This System
+
+| Agent | Model | Role |
+|-------|-------|------|
+| `marketing-strategist` | Opus | Primary agent — decides strategy, calls silo MCPs, learns |
+| `manager` | Opus | Self-improvement orchestrator — coordinates workers, updates NEXT.md |
+| `code-improver` | Sonnet | Code quality and test coverage |
+| `security-sentinel` | Sonnet | Security audit, credential scanning |
+| `judge-agent` | Sonnet | Evaluates worker outputs, updates lessons.json |
 
 ---
 
 ## Agent Authority Matrix
 
-### Autonomous -- No confirmation needed
+### Autonomous — No confirmation needed
 
 - Read any file in the repository
-- Run lint, type checking, and tests (`make check`)
-- Fix bugs that do not touch auth, payments, trading execution, or data schemas
-- Add tests, update documentation, improve code style
+- Run lint, type checking, and tests (`just check`)
+- Call silo MCP tools to read data (analytics, product state)
+- Generate content drafts (text, briefs for video/image)
 - Write reports to `.self-improvement/reports/`
-- Publish events to the agent's own event bus channel
-- Generate and evaluate signals (trading), generate content drafts (content), run workflows (pilaster)
-- Update agent-scoped Mem0 memory (own scope only)
+- Update `.self-improvement/MEMORY.md` with learned patterns
+- Fix bugs that don't touch auth, billing, or silo API contracts
 
-### Ask First -- Propose, wait for approval
+### Ask First — Propose, wait for approval
 
+- Call silo MCP tools to POST or publish (schedule_post, create_video)
+- Change which products are being promoted in `config/products.yaml`
+- Change which platforms or accounts are targeted
 - Add or remove dependencies in `pyproject.toml`
-- Change existing API contracts or Pydantic model schemas used across modules
-- Database schema changes (PostgreSQL, pgvector)
+- Change Pydantic models used at silo boundaries
 - Modify `config/*.yaml` configuration files
-- Change content strategy, brand voice, or distribution platforms
-- Execute paper trades above $500
-- Change position size limits or risk parameters
-- Trigger cross-project actions (coordinator only)
-- Reallocate resources between agents (coordinator only)
-- Delete workflow versions (pilaster)
-- Spend more than $10/day on Replicate API (pilaster)
+- Spend more than $5/day on generation API calls
 
-### Never -- Hard stop, escalate immediately
+### Never — Hard stop, escalate immediately
 
 - Expose API keys, secrets, or credentials in code or commits
 - Force-push to main
-- Delete production data, trade history, or trajectory logs
-- Commit `.env` files or any file containing secrets
-- Access another agent's Mem0 memory scope (memory isolation is load-bearing)
-- Modify `config/guardrails.yaml` or kill switch logic without explicit human approval
-- Disable circuit breakers or trading safety mechanisms
-- Execute live trades without graduation approval
-- Directly control another agent's execution (coordinator must only advise, never command)
-- Override another agent's guardrails
-- Publish financial advice (content agent)
+- Access pythia, milo-to-the-moon, or any trading system
+- Modify `config/guardrails.yaml` without explicit human approval
+- Delete content performance data or trajectory logs
+- Post content about trading, financial advice, or investment decisions
+- Access social media accounts not listed in `config/products.yaml`
 
 ---
 
 ## Where Agents Write Outputs
 
-| Output Type | Location | Persistence |
-|-------------|----------|-------------|
-| Self-improvement reports | `.self-improvement/reports/{agent-type}/YYYY-MM-DD.md` | Git-ignored; review and archive manually |
-| Priority queue | `.self-improvement/NEXT.md` | In git; manager agent writes, all workers read |
-| System memory | `.self-improvement/MEMORY.md` | In git; accumulated domain knowledge |
-| Run trajectory | `.self-improvement/memory/trajectory.jsonl` | Git-ignored; append-only run log |
-| Distilled patterns | `.self-improvement/memory/lessons.json` | Git-ignored; manager extracts from trajectory |
-| Agent-specific memory | `.claude/agent-memory/{agent-name}/MEMORY.md` | In git; agent writes its own persistent notes |
-| Audit trail | `.self-improvement/audit/{agent}_{YYYY-MM}.jsonl` | Git-ignored; append-only, never modified |
-| Event bus | Redis pub/sub channels `holus.*` | Volatile + Redis Streams (rolling 10K per channel) |
+| Output | Location | Persistence |
+|--------|---------|-------------|
+| Marketing reports | `.self-improvement/reports/marketing/YYYY-MM-DD.md` | Git-ignored |
+| Manager reports | `.self-improvement/reports/manager/YYYY-MM-DD.md` | Git-ignored |
+| Priority queue | `.self-improvement/NEXT.md` | In git |
+| System memory | `.self-improvement/MEMORY.md` | In git |
+| Run trajectory | `.self-improvement/memory/trajectory.jsonl` | Git-ignored |
+| Lessons | `.self-improvement/memory/lessons.json` | Git-ignored |
 
 ---
 
-## Memory and Continuity Model
+## Silo Boundaries
 
-### Per-Agent Memory (Mem0)
+Holus calls silos via MCP. It does NOT:
+- Import silo Python packages
+- Read silo databases directly
+- SSH into silo servers
+- Manage silo deployments
 
-Each agent has an isolated Mem0 scope identified by `agent_id`. Memory is hierarchical:
-
-- **Session memory:** Current task context. Cleared between sessions.
-- **Agent memory:** Project-specific patterns accumulated over time. Persists across sessions. Scoped to `agent_id` in Mem0.
-- **User memory:** Founder preferences and working style. Shared read-only across agents via Mem0 user scope.
-
-No agent can read or write another agent's memory scope. This is enforced at the Mem0 client level (`src/holus/memory/mem0_client.py`).
-
-### Trajectory Log
-
-Every agent run is logged to `.self-improvement/memory/trajectory.jsonl` with:
-- Timestamp, agent name, task description
-- Actions taken, tools called, tokens consumed
-- Outcome (success/failure), quality score from Judge agent
-- Duration, cost estimate
-
-The Manager agent reads the trajectory weekly to extract patterns into `lessons.json` and update `NEXT.md`.
-
-### Cross-Project Memory (Phase 3)
-
-The Coordinator agent maintains a Cognee knowledge graph (`src/holus/agents/coordinator/knowledge_graph.py`) that stores cross-project relationships:
-- Content engagement patterns that correlate with trading signals
-- Code deployment patterns that affect workflow quality
-- Temporal patterns across all domains
-
-This graph is read-only for domain agents. Only the Coordinator writes to it.
-
----
-
-## Self-Improvement Cycle
-
-```
-Weekly:
-  Manager reads trajectory.jsonl + reports/
-    -> extracts patterns -> updates lessons.json
-    -> reprioritizes NEXT.md
-
-  Code Improver reads NEXT.md
-    -> executes ONE improvement
-    -> writes report to reports/code-improver/
-
-  Judge scores the improvement
-    -> writes report to reports/judge/
-
-Monthly:
-  Prompt Optimizer runs DSPy MIPROv2
-    -> optimizes agent prompts using Langfuse traces as training data
-    -> A/B tests new prompts -> deploys best performers
-
-  Security Sentinel audits
-    -> scans for credential exposure, dependency CVEs, permission drift
-    -> writes report to reports/security/
-```
+The MCP boundary is the contract. If a silo's MCP is down, Holus waits.
 
 ---
 
 ## Key Constraints
 
-1. **Compound error budget:** 1% error per step compounds to 63% failure by step 100. Keep agent action chains short. Validate at every boundary.
-2. **Context window is the bottleneck:** Every file, every tool definition, every memory retrieval competes for context. Be surgical about what you load.
-3. **Intelligence routing:** Use Opus 4 for decisions that matter (risk evaluation, architecture, synthesis). Use Sonnet 4.5 for volume (content drafts, routine review).
-4. **Prompt caching:** System prompts + tool definitions + persistent memory form the stable cached prefix. Dynamic task content goes in the suffix. Minimum 1,024 tokens for Sonnet cache, 2,048 for Opus.
-5. **Graceful degradation:** If the Coordinator (Phase 3) becomes too complex to maintain, the system degrades to four independent agents (Phase 2) with no rewrite needed.
+1. **Marketing only.** Holus promotes products. It does not trade, code for other repos, or manage operations outside marketing.
+2. **Analytics stay in the silo.** social-media-automatization owns all analytics data. Holus reads it via MCP, never stores it permanently.
+3. **Trading is isolated.** pythia and milo-to-the-moon are never referenced, called, or monitored by Holus. They are separate businesses.
+4. **Human approval for publishing.** Phase 1: all publish actions require human review before execution. Phase 2+: autonomous with weekly human review.
