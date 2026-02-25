@@ -24,13 +24,13 @@ ruff format src/ tests/ --check        # Format check
 mypy src/                              # Type check
 
 # All checks (run before committing)
-make check                             # Runs: ruff check + ruff format --check + mypy + pytest
+just check                             # Runs: ruff check + ruff format --check + mypy + pytest
 ```
 
 ## IMPORTANT Rules
 
 - NEVER expose API keys, secrets, or credentials in code or commits. All secrets flow through environment variables via `.env` (never committed). See `.env.example` for the template.
-- ALWAYS run `make check` before committing. Tests must pass, types must check, lint must be clean.
+- ALWAYS run `just check` before committing. Tests must pass, types must check, lint must be clean.
 - NEVER modify `config/guardrails.yaml` or kill switch logic without explicit human approval. These are safety-critical components.
 - NEVER allow any agent direct access to another agent's Mem0 scope. Memory isolation is a load-bearing architectural constraint.
 - ALWAYS use Pydantic models for data crossing module boundaries. No raw dicts at API surfaces.

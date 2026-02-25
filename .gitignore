@@ -76,6 +76,9 @@ data/runtime/
 logs/
 *.log
 
+# ---- Claude Code: Worktrees (ephemeral agent sandboxes) ----
+.claude/worktrees/
+
 # ---- Misc ----
 *.bak
 *.tmp
