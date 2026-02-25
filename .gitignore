@@ -1,0 +1,82 @@
+# ============================================================
+# Holus .gitignore
+# ============================================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+
+# ---- Virtual Environment ----
+.venv/
+venv/
+ENV/
+
+# ---- Type Checking / Linting / Testing ----
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# ---- Environment / Secrets ----
+.env
+.env.local
+.env.production
+.env.*.local
+# NOT .env.example -- that is committed as a template
+
+# ---- Docker ----
+docker-compose.override.yml
+
+# ---- IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---- Holus: Self-Improvement Reports ----
+# Reports are agent-generated artifacts -- track .gitkeep only
+.self-improvement/reports/**/*
+!.self-improvement/reports/*/.gitkeep
+
+# ---- Holus: Memory / Trajectory ----
+# Trajectory logs are append-only runtime data, not source
+.self-improvement/memory/trajectory*.jsonl
+.self-improvement/memory/lessons.json
+
+# ---- Holus: Agent Memory (runtime-accumulated) ----
+.claude/agent-memory/**/*.jsonl
+
+# ---- Holus: Audit Logs ----
+.self-improvement/audit/
+
+# ---- Data: Runtime ----
+data/runtime/
+*.db
+*.sqlite3
+
+# ---- Logs ----
+logs/
+*.log
+
+# ---- Misc ----
+*.bak
+*.tmp
+*.temp

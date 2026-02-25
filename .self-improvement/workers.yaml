@@ -1,0 +1,131 @@
+# ==============================================================================
+# Holus Worker Registry
+# Defines all autonomous agents, their models, schedules, and prompt versions.
+# The coordinator reads this to know who is available and how to reach them.
+# ==============================================================================
+
+workers:
+
+  # --------------------------------------------------------------------------
+  # Trading Agent — Paper trading via Alpaca, signal generation + risk mgmt
+  # --------------------------------------------------------------------------
+  trading_agent:
+    description: "Generates trading signals, validates risk, executes via Alpaca paper API"
+    model: claude-sonnet-4-20250514  # Signal generation (Opus for risk manager node)
+    schedule: "0 9,12,15 * * 1-5"    # 9am, noon, 3pm EST on weekdays
+    status: paused                    # Activate after infrastructure is up
+    active_prompt_version: v1
+    prompt_versions:
+      v1:
+        path: src/holus/agents/trading/prompts/signal_generator_v1.md
+        deployed_at: "2026-02-24"
+        scores:
+          accuracy: null
+          risk_compliance: null
+          pnl_paper: null
+
+  # --------------------------------------------------------------------------
+  # Content Agent — Strategy planning, text gen, distribution via Late
+  # --------------------------------------------------------------------------
+  content_agent:
+    description: "Plans content strategy, generates text/visuals, distributes via Late API"
+    model: claude-sonnet-4-20250514
+    schedule: "0 8 * * 1,3,5"        # Mon/Wed/Fri at 8am
+    status: paused
+    active_prompt_version: v1
+    prompt_versions:
+      v1:
+        path: src/holus/agents/content/prompts/strategy_planner_v1.md
+        deployed_at: "2026-02-24"
+        scores:
+          engagement_rate: null
+          seo_score: null
+          consistency: null
+
+  # --------------------------------------------------------------------------
+  # Coding Agent — Claude Code integration for self-improvement cycles
+  # --------------------------------------------------------------------------
+  coding_agent:
+    description: "Runs code improvement cycles, PR reviews, dependency updates"
+    model: claude-sonnet-4-20250514
+    schedule: "0 2 * * 0"            # Sunday 2am — weekly improvement cycle
+    status: paused
+    active_prompt_version: v1
+    prompt_versions:
+      v1:
+        path: src/holus/agents/coding/prompts/code_improver_v1.md
+        deployed_at: "2026-02-24"
+        scores:
+          test_coverage_delta: null
+          lint_score_delta: null
+          pr_acceptance_rate: null
+
+  # --------------------------------------------------------------------------
+  # Pilaster Agent — ComfyUI workflow optimization for image generation
+  # --------------------------------------------------------------------------
+  pilaster_agent:
+    description: "Optimizes ComfyUI workflows, manages image generation quality"
+    model: claude-sonnet-4-20250514
+    schedule: "0 10 * * 2,4"         # Tue/Thu at 10am
+    status: paused
+    active_prompt_version: v1
+    prompt_versions:
+      v1:
+        path: src/holus/agents/pilaster/prompts/workflow_optimizer_v1.md
+        deployed_at: "2026-02-24"
+        scores:
+          image_quality: null
+          generation_speed: null
+          workflow_reliability: null
+
+  # --------------------------------------------------------------------------
+  # Coordinator — Cross-project synthesis and delegation (Phase 3)
+  # --------------------------------------------------------------------------
+  coordinator:
+    description: "Daily cross-project intelligence synthesis and task delegation"
+    model: claude-opus-4-20250514    # Always Opus — highest-stakes reasoning
+    schedule: "0 20 * * *"           # 8pm daily — end-of-day synthesis
+    status: paused                   # Activate after 90+ days (Phase 3)
+    active_prompt_version: v1
+    prompt_versions:
+      v1:
+        path: src/holus/coordinator/prompts/coordinator_v1.md
+        deployed_at: "2026-02-24"
+        scores:
+          insight_quality: null
+          delegation_accuracy: null
+          cross_project_value: null
+
+  # --------------------------------------------------------------------------
+  # Judge Agent — Evaluates other agents' outputs for quality scoring
+  # --------------------------------------------------------------------------
+  judge_agent:
+    description: "Scores agent outputs against quality rubrics, feeds reward signals"
+    model: claude-opus-4-20250514    # Opus for impartial high-quality judgment
+    schedule: "0 22 * * *"           # 10pm daily — after all agents have run
+    status: paused
+    active_prompt_version: v1
+    prompt_versions:
+      v1:
+        path: src/holus/agents/judge/prompts/judge_v1.md
+        deployed_at: "2026-02-24"
+        scores:
+          inter_rater_reliability: null
+          calibration_accuracy: null
+
+  # --------------------------------------------------------------------------
+  # Prompt Optimizer — Evolves agent prompts based on judge scores
+  # --------------------------------------------------------------------------
+  prompt_optimizer:
+    description: "Analyzes judge scores, proposes prompt mutations, A/B tests versions"
+    model: claude-sonnet-4-20250514
+    schedule: "0 3 * * 0"           # Sunday 3am — weekly after coding agent
+    status: paused                  # Activate after self-improvement loop (Phase 3)
+    active_prompt_version: v1
+    prompt_versions:
+      v1:
+        path: src/holus/agents/prompt_optimizer/prompts/optimizer_v1.md
+        deployed_at: "2026-02-24"
+        scores:
+          prompt_improvement_rate: null
+          regression_rate: null
