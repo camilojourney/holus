@@ -18,15 +18,16 @@ Activation methods:
 
 from __future__ import annotations
 
-import json
-import logging
 import functools
-from datetime import datetime, timezone
+import logging
+from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import redis
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    import redis
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Types
 # ---------------------------------------------------------------------------
+
 
 class KillSwitchScope(StrEnum):
     GLOBAL = "global"
@@ -53,7 +55,7 @@ class KillSwitchState(BaseModel):
     scope: str = "global"
 
 
-class KillSwitchActive(Exception):
+class KillSwitchActive(Exception):  # noqa: N818
     """Raised when an operation is blocked by an active kill switch."""
 
     def __init__(self, scope: str, state: KillSwitchState) -> None:
@@ -81,6 +83,7 @@ DOMAIN_AGENTS: dict[str, list[str]] = {
 # ---------------------------------------------------------------------------
 # Kill Switch
 # ---------------------------------------------------------------------------
+
 
 class KillSwitch:
     """Redis-backed kill switch with per-agent, per-domain, and global scopes."""
@@ -110,7 +113,7 @@ class KillSwitch:
         """
         key = self._key_for(scope)
         state = KillSwitchState(
-            activated_at=datetime.now(timezone.utc),
+            activated_at=datetime.now(UTC),
             reason=reason,
             activated_by=activated_by,
             scope=scope,
@@ -147,10 +150,7 @@ class KillSwitch:
 
         # Agent-specific
         agent_key = f"{self.AGENT_PREFIX}{agent_name}"
-        if self._redis.exists(agent_key):
-            return True
-
-        return False
+        return bool(self._redis.exists(agent_key))
 
     def get_state(self, scope: str) -> KillSwitchState | None:
         """Return the ``KillSwitchState`` for *scope*, or ``None``."""
@@ -228,6 +228,7 @@ class KillSwitch:
 # Decorator
 # ---------------------------------------------------------------------------
 
+
 def check_kill_switch(kill_switch: KillSwitch, agent_name: str):
     """Decorator that checks the kill switch before executing a function.
 
@@ -241,6 +242,7 @@ def check_kill_switch(kill_switch: KillSwitch, agent_name: str):
         def execute_trade(signal):
             ...
     """
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -249,12 +251,14 @@ def check_kill_switch(kill_switch: KillSwitch, agent_name: str):
                     kill_switch.get_state(agent_name)
                     or kill_switch.get_state("global")
                     or KillSwitchState(
-                        activated_at=datetime.now(timezone.utc),
+                        activated_at=datetime.now(UTC),
                         reason="Unknown",
                         scope=agent_name,
                     )
                 )
                 raise KillSwitchActive(agent_name, state)
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator

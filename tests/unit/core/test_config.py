@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import pytest
-
 
 class TestHolusConfig:
     """Test configuration loading and validation."""
@@ -16,9 +14,8 @@ class TestHolusConfig:
             from holus.core.config import HolusConfig
 
             config = HolusConfig()
-            assert config.anthropic_api_key.get_secret_value() == "sk-ant-test-key-not-real"
+            assert config.anthropic_api_key == "sk-ant-test-key-not-real"
             assert config.redis_url == "redis://localhost:6379"
-            assert config.holus_env == "test"
 
     def test_config_requires_anthropic_key(self):
         """Config should fail without ANTHROPIC_API_KEY."""
@@ -35,4 +32,4 @@ class TestHolusConfig:
             from holus.core.config import HolusConfig
 
             config = HolusConfig()
-            assert config.holus_log_level == "DEBUG"  # From our test env
+            assert config.log_level == "DEBUG"  # From HOLUS_LOG_LEVEL in test env

@@ -17,10 +17,10 @@ import yaml
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 # ---------------------------------------------------------------------------
 # Per-agent configuration
 # ---------------------------------------------------------------------------
+
 
 class AgentConfig(BaseSettings):
     """Configuration for a single Holus agent."""
@@ -45,7 +45,7 @@ class AgentConfig(BaseSettings):
     langfuse_enabled: bool = True
 
     @model_validator(mode="after")
-    def _default_mem0_scope(self) -> "AgentConfig":
+    def _default_mem0_scope(self) -> AgentConfig:
         if not self.mem0_scope:
             self.mem0_scope = self.name
         return self
@@ -54,6 +54,7 @@ class AgentConfig(BaseSettings):
 # ---------------------------------------------------------------------------
 # Trading-specific configuration
 # ---------------------------------------------------------------------------
+
 
 class TradingGuardrailsConfig(BaseSettings):
     """Trading agent guardrails -- loaded from config/trading_agent.yaml."""
@@ -72,6 +73,7 @@ class TradingGuardrailsConfig(BaseSettings):
 # ---------------------------------------------------------------------------
 # Global configuration
 # ---------------------------------------------------------------------------
+
 
 class HolusConfig(BaseSettings):
     """Root configuration for the entire Holus system.
@@ -105,7 +107,8 @@ class HolusConfig(BaseSettings):
     mem0_api_url: str = Field(default="http://localhost:8050", alias="MEM0_API_URL")
     n8n_base_url: str = Field(default="http://localhost:5678", alias="N8N_BASE_URL")
     comfyui_base_url: str = Field(
-        default="http://127.0.0.1:8188", alias="COMFYUI_BASE_URL",
+        default="http://127.0.0.1:8188",
+        alias="COMFYUI_BASE_URL",
     )
 
     # ---- Runtime settings --------------------------------------------------
@@ -133,7 +136,7 @@ class HolusConfig(BaseSettings):
 
     # ---- Loaders -----------------------------------------------------------
     @classmethod
-    def load(cls, agent_name: str | None = None) -> "HolusConfig":
+    def load(cls, agent_name: str | None = None) -> HolusConfig:
         """Build a ``HolusConfig`` from YAML files + environment.
 
         Resolution order (later wins):
@@ -170,7 +173,8 @@ class HolusConfig(BaseSettings):
         return self.agents.get(name, AgentConfig(name=name))
 
     def model_for_tier(
-        self, tier: Literal["strategic", "operational", "classification"],
+        self,
+        tier: Literal["strategic", "operational", "classification"],
     ) -> str:
         """Map a semantic tier to a concrete model identifier."""
         mapping = {

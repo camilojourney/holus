@@ -13,7 +13,7 @@ Langfuse is the data backbone of the self-improvement loop:
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import wraps
 from typing import Any
 
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Client factory
 # ---------------------------------------------------------------------------
+
 
 def create_langfuse_client(
     public_key: str | None = None,
@@ -49,6 +50,7 @@ def create_langfuse_client(
 # Decorators
 # ---------------------------------------------------------------------------
 
+
 def trace_agent_call(
     agent_id: str,
     task_type: str,
@@ -69,11 +71,12 @@ def trace_agent_call(
         def analyze_trade(market_data: str, portfolio: str) -> dict:
             ...
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
-                from langfuse.decorators import observe, langfuse_context
+                from langfuse.decorators import langfuse_context, observe
 
                 @observe(name=agent_id)
                 def traced_fn(*a, **kw):
@@ -83,7 +86,7 @@ def trace_agent_call(
                             "agent_id": agent_id,
                             "task_type": task_type,
                             "model_tier": tier,
-                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "timestamp": datetime.now(UTC).isoformat(),
                         },
                         tags=[agent_id, task_type, tier],
                     )
@@ -94,11 +97,7 @@ def trace_agent_call(
                     result = func(*a, **kw)
 
                     langfuse_context.update_current_observation(
-                        output=(
-                            result
-                            if isinstance(result, (str, dict))
-                            else str(result)[:2000]
-                        ),
+                        output=(result if isinstance(result, (str, dict)) else str(result)[:2000]),
                     )
                     return result
 
@@ -109,12 +108,14 @@ def trace_agent_call(
                 return func(*args, **kwargs)
 
         return wrapper
+
     return decorator
 
 
 # ---------------------------------------------------------------------------
 # LLM call tracing
 # ---------------------------------------------------------------------------
+
 
 def trace_llm_call(
     langfuse_client: Any,
@@ -160,6 +161,7 @@ def trace_llm_call(
 # Tool call tracing
 # ---------------------------------------------------------------------------
 
+
 def trace_tool_call(
     langfuse_client: Any,
     trace_id: str,
@@ -192,6 +194,7 @@ def trace_tool_call(
 # Judge scoring
 # ---------------------------------------------------------------------------
 
+
 def record_judge_score(
     langfuse_client: Any,
     trace_id: str,
@@ -219,11 +222,7 @@ def record_judge_score(
         langfuse_client.score(
             trace_id=trace_id,
             name="verdict_category",
-            value=(
-                1.0 if verdict == "PASS"
-                else 0.5 if verdict == "PARTIAL"
-                else 0.0
-            ),
+            value=(1.0 if verdict == "PASS" else 0.5 if verdict == "PARTIAL" else 0.0),
             comment=verdict,
         )
 
@@ -243,6 +242,7 @@ def record_judge_score(
 # ---------------------------------------------------------------------------
 # Dataset management (for DSPy integration)
 # ---------------------------------------------------------------------------
+
 
 class LangfuseDatasetManager:
     """Manages evaluation datasets created from Langfuse traces.
@@ -270,16 +270,14 @@ class LangfuseDatasetManager:
         Returns the dataset name.
         """
         if dataset_name is None:
-            dataset_name = (
-                f"{agent_id}_{task_type}_{datetime.now(timezone.utc).strftime('%Y%m')}"
-            )
+            dataset_name = f"{agent_id}_{task_type}_{datetime.now(UTC).strftime('%Y%m')}"
 
         self._lf.create_dataset(
             name=dataset_name,
             description=(
                 f"Optimization dataset for {agent_id}/{task_type}. "
                 f"Min score: {min_score}. "
-                f"Created: {datetime.now(timezone.utc).isoformat()}"
+                f"Created: {datetime.now(UTC).isoformat()}"
             ),
         )
 
@@ -320,6 +318,9 @@ class LangfuseDatasetManager:
 
         logger.info(
             "Created dataset %s with %d items for %s/%s",
-            dataset_name, items_added, agent_id, task_type,
+            dataset_name,
+            items_added,
+            agent_id,
+            task_type,
         )
         return dataset_name

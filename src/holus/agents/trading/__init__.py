@@ -2,18 +2,18 @@
 
 from holus.agents.trading.agent import TradingAgent
 from holus.agents.trading.models import (
-    TradeSignal,
+    PortfolioState,
     RiskAssessment,
     TradeExecution,
-    PortfolioState,
+    TradeSignal,
     TradingState,
 )
 
 __all__ = [
-    "TradingAgent",
-    "TradeSignal",
+    "PortfolioState",
     "RiskAssessment",
     "TradeExecution",
-    "PortfolioState",
+    "TradeSignal",
+    "TradingAgent",
     "TradingState",
 ]

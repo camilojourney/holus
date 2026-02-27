@@ -22,11 +22,11 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+import operator
+from datetime import UTC, datetime
 from typing import Annotated, Any, TypedDict
 
-import operator
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 
 from holus.agents.base import BaseAgent
 from holus.core.events import EventType
@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # State
 # ---------------------------------------------------------------------------
+
 
 class CoordinatorState(TypedDict):
     """State for the Holus coordinator graph."""
@@ -102,13 +103,14 @@ CONSUMED_CHANNELS = [
 # Node functions
 # ---------------------------------------------------------------------------
 
+
 def gather_events(state: CoordinatorState) -> dict[str, Any]:
     """Read last 24h of events from Redis Streams.
 
     This populates the domain summaries from the event bus.
     """
-    from holus.core.events import EventBus
     from holus.core.config import HolusConfig
+    from holus.core.events import EventBus
 
     config = HolusConfig.load()
     bus = EventBus(redis_url=config.redis_url)
@@ -162,18 +164,23 @@ def synthesize(state: CoordinatorState) -> dict[str, Any]:
         max_tokens=8192,
     )
 
-    response = opus.invoke([
-        {"role": "system", "content": COORDINATOR_PROMPT},
-        {"role": "user", "content": (
-            f"## Daily Domain Summaries ({datetime.now(timezone.utc).strftime('%Y-%m-%d')})\n\n"
-            f"### Trading\n{json.dumps(state['trading_summary'], indent=2)}\n\n"
-            f"### Content/Media\n{json.dumps(state['content_summary'], indent=2)}\n\n"
-            f"### Coding Infrastructure\n{json.dumps(state['coding_summary'], indent=2)}\n\n"
-            f"### Pilaster.ai\n{json.dumps(state['pilaster_summary'], indent=2)}\n\n"
-            "Analyze these summaries. Return JSON with insights, directives, "
-            "risk_flags, and report_summary."
-        )},
-    ])
+    response = opus.invoke(
+        [
+            {"role": "system", "content": COORDINATOR_PROMPT},
+            {
+                "role": "user",
+                "content": (
+                    f"## Daily Domain Summaries ({datetime.now(UTC).strftime('%Y-%m-%d')})\n\n"
+                    f"### Trading\n{json.dumps(state['trading_summary'], indent=2)}\n\n"
+                    f"### Content/Media\n{json.dumps(state['content_summary'], indent=2)}\n\n"
+                    f"### Coding Infrastructure\n{json.dumps(state['coding_summary'], indent=2)}\n\n"
+                    f"### Pilaster.ai\n{json.dumps(state['pilaster_summary'], indent=2)}\n\n"
+                    "Analyze these summaries. Return JSON with insights, directives, "
+                    "risk_flags, and report_summary."
+                ),
+            },
+        ]
+    )
 
     try:
         content = response.content if isinstance(response.content, str) else str(response.content)
@@ -197,8 +204,8 @@ def synthesize(state: CoordinatorState) -> dict[str, Any]:
 
 def publish_directives(state: CoordinatorState) -> dict[str, Any]:
     """Publish advisory directives to the event bus."""
-    from holus.core.events import EventBus, HolusEvent
     from holus.core.config import HolusConfig
+    from holus.core.events import EventBus, HolusEvent
 
     config = HolusConfig.load()
     bus = EventBus(redis_url=config.redis_url)
@@ -215,13 +222,19 @@ def publish_directives(state: CoordinatorState) -> dict[str, Any]:
         bus.close()
 
     return {
-        "messages": [{"node": "publish_directives", "output": f"Published {len(state.get('directives', []))} directives"}],
+        "messages": [
+            {
+                "node": "publish_directives",
+                "output": f"Published {len(state.get('directives', []))} directives",
+            }
+        ],
     }
 
 
 # ---------------------------------------------------------------------------
 # CoordinatorAgent
 # ---------------------------------------------------------------------------
+
 
 class CoordinatorAgent(BaseAgent):
     """Daily cross-project intelligence coordinator (Phase 3)."""
@@ -272,7 +285,7 @@ class CoordinatorAgent(BaseAgent):
         result = await self.run(**kwargs)
 
         # Publish the weekly synthesis event if it is Sunday
-        weekday = datetime.now(timezone.utc).weekday()
+        weekday = datetime.now(UTC).weekday()
         if weekday == 6:  # Sunday
             self.publish_event(
                 "holus.coordinator.directives",

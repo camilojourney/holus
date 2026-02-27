@@ -11,16 +11,18 @@ Each channel is namespaced: ``holus.{domain}.{category}``
 
 from __future__ import annotations
 
-import json
 import logging
-import threading
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import redis
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    import threading
+    from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Event types
 # ---------------------------------------------------------------------------
+
 
 class EventType(StrEnum):
     """Canonical event types published across the Holus event bus."""
@@ -74,13 +77,14 @@ class EventType(StrEnum):
 # Event model
 # ---------------------------------------------------------------------------
 
+
 class HolusEvent(BaseModel):
     """A single event on the Holus event bus."""
 
     event_id: str = Field(default_factory=lambda: uuid4().hex)
     source_agent: str
     event_type: EventType
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     payload: dict[str, Any] = Field(default_factory=dict)
     correlation_id: str | None = None
 
@@ -88,13 +92,14 @@ class HolusEvent(BaseModel):
         return self.model_dump_json()
 
     @classmethod
-    def from_json(cls, data: str | bytes) -> "HolusEvent":
+    def from_json(cls, data: str | bytes) -> HolusEvent:
         return cls.model_validate_json(data)
 
 
 # ---------------------------------------------------------------------------
 # Event Bus
 # ---------------------------------------------------------------------------
+
 
 class EventBus:
     """Redis-backed publish/subscribe + streams event bus.

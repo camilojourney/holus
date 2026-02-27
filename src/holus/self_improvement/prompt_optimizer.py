@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 # Prompt version management
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PromptVersion:
     """A versioned prompt with metadata."""
@@ -39,7 +40,7 @@ class PromptVersion:
     agent_id: str
     prompt_text: str
     created_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        default_factory=lambda: datetime.now(UTC).isoformat(),
     )
     source: str = "manual"  # "manual" | "optimizer" | "dspy"
     parent_version: str | None = None
@@ -128,7 +129,7 @@ class PromptVersionStore:
 
         for filepath in agent_dir.glob("*.json"):
             data = json.loads(filepath.read_text())
-            data["is_active"] = (data["version_id"] == version_id)
+            data["is_active"] = data["version_id"] == version_id
             filepath.write_text(json.dumps(data, indent=2))
 
 
@@ -256,7 +257,7 @@ class PromptOptimizer:
             }
 
         # Save the new version
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         version_id = f"v_{timestamp}_{task_type}"
 
         current_version = self._store.load_active(agent_id)

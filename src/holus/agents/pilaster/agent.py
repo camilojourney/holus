@@ -15,15 +15,14 @@ import base64
 import hashlib
 import json
 import logging
-from datetime import datetime, timezone
+import operator
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any, TypedDict
 
-import operator
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 
 from holus.agents.base import BaseAgent
-from holus.core.events import EventType
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +30,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # State
 # ---------------------------------------------------------------------------
+
 
 class PilasterState(TypedDict):
     """State for the Pilaster agent LangGraph."""
@@ -43,7 +43,7 @@ class PilasterState(TypedDict):
 
     # Pipeline outputs
     prompt_id: str | None
-    generated_images: list[str]     # file paths or URLs
+    generated_images: list[str]  # file paths or URLs
     quality_scores: list[dict]
     workflow_version_hash: str | None
 
@@ -58,6 +58,7 @@ class PilasterState(TypedDict):
 # ---------------------------------------------------------------------------
 # Workflow version control
 # ---------------------------------------------------------------------------
+
 
 class WorkflowVersionManager:
     """Version-control ComfyUI workflows with hash-based deduplication."""
@@ -74,21 +75,26 @@ class WorkflowVersionManager:
         """Save a workflow version.  Returns the content hash."""
         content = json.dumps(workflow_json, sort_keys=True)
         content_hash = hashlib.sha256(content.encode()).hexdigest()[:12]
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
         filename = f"{name}_{timestamp}_{content_hash}.json"
         filepath = self.workflows_dir / name / filename
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
-        filepath.write_text(json.dumps({
-            "workflow": workflow_json,
-            "metadata": {
-                "name": name,
-                "hash": content_hash,
-                "created": timestamp,
-                **(metadata or {}),
-            },
-        }, indent=2))
+        filepath.write_text(
+            json.dumps(
+                {
+                    "workflow": workflow_json,
+                    "metadata": {
+                        "name": name,
+                        "hash": content_hash,
+                        "created": timestamp,
+                        **(metadata or {}),
+                    },
+                },
+                indent=2,
+            )
+        )
 
         logger.info("Saved workflow %s version %s", name, content_hash)
         return content_hash
@@ -114,7 +120,8 @@ class WorkflowVersionManager:
             "added_nodes": list(nodes_b - nodes_a),
             "removed_nodes": list(nodes_a - nodes_b),
             "modified_nodes": [
-                node for node in nodes_a & nodes_b
+                node
+                for node in nodes_a & nodes_b
                 if wf_a["workflow"][node] != wf_b["workflow"][node]
             ],
         }
@@ -123,6 +130,7 @@ class WorkflowVersionManager:
 # ---------------------------------------------------------------------------
 # Node functions
 # ---------------------------------------------------------------------------
+
 
 def submit_workflow(state: PilasterState) -> dict[str, Any]:
     """Submit a ComfyUI workflow for execution."""
@@ -187,30 +195,32 @@ def assess_quality(state: PilasterState) -> dict[str, Any]:
             response = client.messages.create(
                 model="claude-sonnet-4-5-20250514",
                 max_tokens=1024,
-                messages=[{
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": media_type,
-                                "data": image_data,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": media_type,
+                                    "data": image_data,
+                                },
                             },
-                        },
-                        {
-                            "type": "text",
-                            "text": (
-                                f'Assess this generated image quality.\n\n'
-                                f'Generation prompt: "{prompt_used}"\n\n'
-                                f'Score each criterion 1-10:\n{criteria_text}\n\n'
-                                f'Return JSON: {{"scores": {{"criterion": {{"score": N, '
-                                f'"reason": "..."}}}}, "overall": N, "pass": true/false}}\n'
-                                f'Pass threshold: overall >= 7'
-                            ),
-                        },
-                    ],
-                }],
+                            {
+                                "type": "text",
+                                "text": (
+                                    f"Assess this generated image quality.\n\n"
+                                    f'Generation prompt: "{prompt_used}"\n\n'
+                                    f"Score each criterion 1-10:\n{criteria_text}\n\n"
+                                    f'Return JSON: {{"scores": {{"criterion": {{"score": N, '
+                                    f'"reason": "..."}}}}, "overall": N, "pass": true/false}}\n'
+                                    f"Pass threshold: overall >= 7"
+                                ),
+                            },
+                        ],
+                    }
+                ],
             )
 
             try:
@@ -257,7 +267,7 @@ def version_workflow(state: PilasterState) -> dict[str, Any]:
             "workflow_name": name,
             "version_hash": version_hash,
             "quality_scores": scores,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         },
         "messages": [{"node": "version_workflow", "output": f"Version hash: {version_hash}"}],
     }
@@ -266,6 +276,7 @@ def version_workflow(state: PilasterState) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # PilasterAgent
 # ---------------------------------------------------------------------------
+
 
 class PilasterAgent(BaseAgent):
     """ComfyUI-powered image generation agent with quality assessment."""

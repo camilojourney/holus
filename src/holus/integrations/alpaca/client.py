@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 
+
 class AlpacaConfig(BaseModel):
     """Alpaca API connection settings."""
 
@@ -42,7 +43,9 @@ class TradingGuardrails(BaseModel):
     max_position_pct: float = Field(default=0.02, description="2% per position")
     max_portfolio_exposure: float = Field(default=0.30, description="30% total")
     max_single_trade_usd: float = Field(default=500.0, description="Human approval above this")
-    daily_loss_limit_pct: float = Field(default=0.05, description="5% daily drawdown circuit breaker")
+    daily_loss_limit_pct: float = Field(
+        default=0.05, description="5% daily drawdown circuit breaker"
+    )
     max_trades_per_day: int = 10
     allowed_symbols: list[str] | None = None
 
@@ -51,17 +54,19 @@ class TradingGuardrails(BaseModel):
 # Exceptions
 # ---------------------------------------------------------------------------
 
-class GuardrailViolation(Exception):
+
+class GuardrailViolation(Exception):  # noqa: N818
     """Raised when a trade would violate a safety guardrail."""
 
 
-class RateLimitExceeded(Exception):
+class RateLimitExceeded(Exception):  # noqa: N818
     """Raised when the Alpaca API rate limit is hit."""
 
 
 # ---------------------------------------------------------------------------
 # Client
 # ---------------------------------------------------------------------------
+
 
 class AlpacaClient:
     """Alpaca trading client with guardrail enforcement.
@@ -80,8 +85,8 @@ class AlpacaClient:
         config: AlpacaConfig,
         guardrails: TradingGuardrails | None = None,
     ) -> None:
-        from alpaca.trading.client import TradingClient
         from alpaca.data.historical import StockHistoricalDataClient
+        from alpaca.trading.client import TradingClient
 
         self.config = config
         self.guardrails = guardrails or TradingGuardrails()
@@ -164,11 +169,11 @@ class AlpacaClient:
             GuardrailViolation: If any guardrail is violated.
             RateLimitExceeded: If rate limit would be breached.
         """
-        from alpaca.trading.requests import (
-            MarketOrderRequest,
-            LimitOrderRequest,
-        )
         from alpaca.trading.enums import OrderSide, TimeInForce
+        from alpaca.trading.requests import (
+            LimitOrderRequest,
+            MarketOrderRequest,
+        )
 
         self._enforce_rate_limit()
         self._reset_daily_counter_if_needed()
@@ -191,7 +196,10 @@ class AlpacaClient:
             )
 
         current_exposure = self.get_portfolio_exposure()
-        if current_exposure + (estimated_value / portfolio_value) > self.guardrails.max_portfolio_exposure:
+        if (
+            current_exposure + (estimated_value / portfolio_value)
+            > self.guardrails.max_portfolio_exposure
+        ):
             raise GuardrailViolation(
                 f"Adding {symbol} would push exposure to "
                 f"{current_exposure + estimated_value / portfolio_value:.1%} "
@@ -266,14 +274,16 @@ class AlpacaClient:
 
         result: list[dict[str, Any]] = []
         for bar in bars[symbol]:
-            result.append({
-                "timestamp": bar.timestamp.isoformat(),
-                "open": float(bar.open),
-                "high": float(bar.high),
-                "low": float(bar.low),
-                "close": float(bar.close),
-                "volume": int(bar.volume),
-            })
+            result.append(
+                {
+                    "timestamp": bar.timestamp.isoformat(),
+                    "open": float(bar.open),
+                    "high": float(bar.high),
+                    "low": float(bar.low),
+                    "close": float(bar.close),
+                    "volume": int(bar.volume),
+                }
+            )
         return result
 
     # -- Internal helpers ----------------------------------------------------
@@ -281,9 +291,7 @@ class AlpacaClient:
     def _validate_symbol(self, symbol: str) -> None:
         allowed = self.guardrails.allowed_symbols
         if allowed is not None and symbol not in allowed:
-            raise GuardrailViolation(
-                f"Symbol {symbol} not in allowed list: {allowed}"
-            )
+            raise GuardrailViolation(f"Symbol {symbol} not in allowed list: {allowed}")
 
     def _validate_daily_trade_count(self) -> None:
         if self._trade_count_today >= self.guardrails.max_trades_per_day:
@@ -301,13 +309,9 @@ class AlpacaClient:
         """Simple sliding-window rate limiter."""
         now = time.time()
         window_start = now - 60.0
-        self._call_timestamps = [
-            t for t in self._call_timestamps if t > window_start
-        ]
+        self._call_timestamps = [t for t in self._call_timestamps if t > window_start]
         if len(self._call_timestamps) >= self.RATE_LIMIT_PER_MINUTE:
-            raise RateLimitExceeded(
-                f"Rate limit ({self.RATE_LIMIT_PER_MINUTE}/min) reached"
-            )
+            raise RateLimitExceeded(f"Rate limit ({self.RATE_LIMIT_PER_MINUTE}/min) reached")
         self._call_timestamps.append(now)
 
     def _last_price(self, symbol: str) -> float:

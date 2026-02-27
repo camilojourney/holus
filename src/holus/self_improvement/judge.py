@@ -21,7 +21,6 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any
 
@@ -31,6 +30,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Types
 # ---------------------------------------------------------------------------
+
 
 class JudgeVerdict(StrEnum):
     PASS = "PASS"
@@ -43,9 +43,9 @@ class JudgeEvaluation:
     """Structured output from the Judge Agent."""
 
     verdict: JudgeVerdict
-    score: float                        # 0.0 - 1.0
+    score: float  # 0.0 - 1.0
     dimension_scores: dict[str, float]  # Per-dimension breakdown
-    feedback: str                       # Specific, actionable feedback
+    feedback: str  # Specific, actionable feedback
     pass_threshold_met: bool
 
     def to_dict(self) -> dict[str, Any]:
@@ -130,6 +130,7 @@ TASK_TYPE_RUBRICS: dict[str, str] = {
 # Judge Agent
 # ---------------------------------------------------------------------------
 
+
 class JudgeAgent:
     """Independent quality evaluator for Holus agent outputs.
 
@@ -177,9 +178,7 @@ class JudgeAgent:
         Returns:
             A ``JudgeEvaluation`` with verdict, score, and feedback.
         """
-        rubric = custom_rubric or TASK_TYPE_RUBRICS.get(
-            task_type, TASK_TYPE_RUBRICS["default"]
-        )
+        rubric = custom_rubric or TASK_TYPE_RUBRICS.get(task_type, TASK_TYPE_RUBRICS["default"])
 
         user_message = (
             f"## Task\n{task}\n\n"
@@ -206,7 +205,11 @@ class JudgeAgent:
             evaluation = json.loads(response_text)
 
             verdict_str = evaluation.get("verdict", "FAIL").upper()
-            verdict = JudgeVerdict(verdict_str) if verdict_str in JudgeVerdict.__members__ else JudgeVerdict.FAIL
+            verdict = (
+                JudgeVerdict(verdict_str)
+                if verdict_str in JudgeVerdict.__members__
+                else JudgeVerdict.FAIL
+            )
 
             return JudgeEvaluation(
                 verdict=verdict,

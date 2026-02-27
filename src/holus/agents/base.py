@@ -16,15 +16,17 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import redis
-from langgraph.graph import StateGraph
 
 from holus.core.config import AgentConfig, HolusConfig
-from holus.core.events import EventBus, HolusEvent, EventType
+from holus.core.events import EventBus, EventType, HolusEvent
 from holus.core.kill_switch import KillSwitch, KillSwitchActive
-from holus.integrations.claude_api.client import HolusClaudeClient, CachedPrompt, ModelTier
+from holus.integrations.claude_api.client import CachedPrompt, HolusClaudeClient, ModelTier
+
+if TYPE_CHECKING:
+    from langgraph.graph import StateGraph
 
 logger = logging.getLogger(__name__)
 
@@ -116,9 +118,8 @@ class BaseAgent(abc.ABC):
     def check_kill_switch(self) -> None:
         """Raise ``KillSwitchActive`` if this agent should halt."""
         if self.kill_switch.is_active(self.agent_name):
-            state = (
-                self.kill_switch.get_state(self.agent_name)
-                or self.kill_switch.get_state("global")
+            state = self.kill_switch.get_state(self.agent_name) or self.kill_switch.get_state(
+                "global"
             )
             if state:
                 raise KillSwitchActive(self.agent_name, state)

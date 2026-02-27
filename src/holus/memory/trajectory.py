@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -27,12 +27,13 @@ logger = logging.getLogger(__name__)
 # Data model
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TrajectoryEntry:
     """A single entry in the trajectory log."""
 
     timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        default_factory=lambda: datetime.now(UTC).isoformat(),
     )
     agent_id: str = ""
     task_type: str = ""
@@ -44,8 +45,8 @@ class TrajectoryEntry:
     attempts: int = 1
 
     # Quality
-    judge_verdict: str | None = None       # PASS / FAIL / PARTIAL
-    judge_score: float | None = None       # 0.0 - 1.0
+    judge_verdict: str | None = None  # PASS / FAIL / PARTIAL
+    judge_score: float | None = None  # 0.0 - 1.0
     judge_feedback: str | None = None
 
     # Cost
@@ -86,13 +87,14 @@ class TrajectoryEntry:
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "TrajectoryEntry":
+    def from_dict(cls, data: dict[str, Any]) -> TrajectoryEntry:
         return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
 
 
 # ---------------------------------------------------------------------------
 # Logger
 # ---------------------------------------------------------------------------
+
 
 class TrajectoryLogger:
     """Append-only JSONL trajectory logger.
@@ -117,7 +119,9 @@ class TrajectoryLogger:
         """Append a single entry to the trajectory file."""
         with open(self.path, "a", encoding="utf-8") as fh:
             fh.write(entry.to_json() + "\n")
-        logger.debug("Trajectory logged: %s/%s -> %s", entry.agent_id, entry.task_type, entry.status)
+        logger.debug(
+            "Trajectory logged: %s/%s -> %s", entry.agent_id, entry.task_type, entry.status
+        )
 
     def read_all(self) -> list[TrajectoryEntry]:
         """Read all trajectory entries."""
@@ -209,7 +213,7 @@ class TrajectoryLogger:
         if not entries:
             return {"total": 0}
 
-        statuses = {}
+        statuses: dict[str, int] = {}
         total_cost = 0.0
         total_tokens = 0
         scores: list[float] = []

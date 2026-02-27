@@ -18,9 +18,12 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Generator, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import anthropic
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +51,7 @@ PRICING: dict[str, tuple[float, float, float, float]] = {
 # Cached Prompt
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CachedPrompt:
     """A prompt structured for Anthropic's prompt caching.
@@ -73,19 +77,23 @@ class CachedPrompt:
         blocks: list[dict[str, Any]] = []
 
         # Block 1: System prompt (most stable)
-        blocks.append({
-            "type": "text",
-            "text": self.system_prompt,
-            "cache_control": {"type": "ephemeral"},
-        })
+        blocks.append(
+            {
+                "type": "text",
+                "text": self.system_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }
+        )
 
         # Block 2: Persistent context (changes less frequently than task)
         if self.persistent_context:
-            blocks.append({
-                "type": "text",
-                "text": self.persistent_context,
-                "cache_control": {"type": "ephemeral"},
-            })
+            blocks.append(
+                {
+                    "type": "text",
+                    "text": self.persistent_context,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            )
 
         return blocks
 
@@ -101,6 +109,7 @@ class CachedPrompt:
 # ---------------------------------------------------------------------------
 # Client
 # ---------------------------------------------------------------------------
+
 
 class HolusClaudeClient:
     """Central Claude API client for all Holus agents."""
@@ -187,8 +196,7 @@ class HolusClaudeClient:
             messages=messages,
             tools=tools_arg,
         ) as stream:
-            for event in stream:
-                yield event
+            yield from stream
             response = stream.get_final_message()
             self._track_cost(response, model, agent_id)
 
@@ -213,16 +221,18 @@ class HolusClaudeClient:
 
         for req in requests:
             cp: CachedPrompt = req["cached_prompt"]
-            batch_items.append({
-                "custom_id": req["custom_id"],
-                "params": {
-                    "model": model,
-                    "max_tokens": req.get("max_tokens", 4096),
-                    "system": cp.build_system_blocks(),
-                    "messages": req["messages"],
-                    "tools": cp.build_tools_with_cache() or [],
-                },
-            })
+            batch_items.append(
+                {
+                    "custom_id": req["custom_id"],
+                    "params": {
+                        "model": model,
+                        "max_tokens": req.get("max_tokens", 4096),
+                        "system": cp.build_system_blocks(),
+                        "messages": req["messages"],
+                        "tools": cp.build_tools_with_cache() or [],
+                    },
+                }
+            )
 
         return self.client.messages.batches.create(requests=batch_items)
 
@@ -285,6 +295,7 @@ class HolusClaudeClient:
 # Tool definition helper
 # ---------------------------------------------------------------------------
 
+
 def define_tool(
     name: str,
     description: str,
@@ -319,6 +330,7 @@ def define_tool(
 # ---------------------------------------------------------------------------
 # Multi-turn tool use loop
 # ---------------------------------------------------------------------------
+
 
 def handle_tool_loop(
     client: HolusClaudeClient,
@@ -371,29 +383,35 @@ def handle_tool_loop(
                     if handler:
                         try:
                             result = handler(**block.input)
-                            tool_results.append({
-                                "type": "tool_result",
-                                "tool_use_id": block.id,
-                                "content": (
-                                    json.dumps(result)
-                                    if not isinstance(result, str)
-                                    else result
-                                ),
-                            })
+                            tool_results.append(
+                                {
+                                    "type": "tool_result",
+                                    "tool_use_id": block.id,
+                                    "content": (
+                                        json.dumps(result)
+                                        if not isinstance(result, str)
+                                        else result
+                                    ),
+                                }
+                            )
                         except Exception as exc:
-                            tool_results.append({
+                            tool_results.append(
+                                {
+                                    "type": "tool_result",
+                                    "tool_use_id": block.id,
+                                    "content": f"Error: {exc}",
+                                    "is_error": True,
+                                }
+                            )
+                    else:
+                        tool_results.append(
+                            {
                                 "type": "tool_result",
                                 "tool_use_id": block.id,
-                                "content": f"Error: {exc}",
+                                "content": f"Unknown tool: {block.name}",
                                 "is_error": True,
-                            })
-                    else:
-                        tool_results.append({
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": f"Unknown tool: {block.name}",
-                            "is_error": True,
-                        })
+                            }
+                        )
 
             messages.append({"role": "user", "content": tool_results})
 

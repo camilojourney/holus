@@ -6,16 +6,16 @@ the trading pipeline: signals, risk assessments, executions, and portfolio state
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import operator
+from datetime import UTC, datetime
 from typing import Annotated, Literal, TypedDict
 
-import operator
 from pydantic import BaseModel, Field
-
 
 # ---------------------------------------------------------------------------
 # Pydantic models (validation boundaries)
 # ---------------------------------------------------------------------------
+
 
 class TradeSignal(BaseModel):
     """A trading signal produced by the signal generator node."""
@@ -26,7 +26,7 @@ class TradeSignal(BaseModel):
     reasoning: str
     entry_price: float | None = None
     signal_source: str = "sonnet-signal-generator"
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class RiskAssessment(BaseModel):
@@ -70,6 +70,7 @@ class PortfolioState(BaseModel):
 # ---------------------------------------------------------------------------
 # LangGraph state (TypedDict for graph flow)
 # ---------------------------------------------------------------------------
+
 
 class TradingState(TypedDict):
     """State flowing through the trading LangGraph pipeline.

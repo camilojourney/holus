@@ -13,10 +13,10 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Annotated, Any, Literal, TypedDict
-
 import operator
-from langgraph.graph import StateGraph, START, END
+from typing import Annotated, Any, TypedDict
+
+from langgraph.graph import END, START, StateGraph
 
 from holus.agents.base import BaseAgent
 from holus.core.events import EventType
@@ -28,12 +28,13 @@ logger = logging.getLogger(__name__)
 # State
 # ---------------------------------------------------------------------------
 
+
 class ContentState(TypedDict):
     """State flowing through the content LangGraph pipeline."""
 
     # Inputs
-    content_brief: dict         # topic, platforms, keywords, type, voice
-    strategy_context: dict      # from Mem0: what worked before
+    content_brief: dict  # topic, platforms, keywords, type, voice
+    strategy_context: dict  # from Mem0: what worked before
 
     # Pipeline outputs
     text_output: str | None
@@ -73,6 +74,7 @@ Return JSON: {"text": "...", "headline": "...", "hashtags": ["..."], "meta_descr
 # Node functions
 # ---------------------------------------------------------------------------
 
+
 def text_generator(state: ContentState) -> dict[str, Any]:
     """Generate text content using Sonnet."""
     from langchain_anthropic import ChatAnthropic
@@ -82,20 +84,27 @@ def text_generator(state: ContentState) -> dict[str, Any]:
     brief = state["content_brief"]
     strategy = state.get("strategy_context", {})
 
-    response = sonnet.invoke([
-        {"role": "system", "content": TEXT_GENERATOR_PROMPT},
-        {"role": "user", "content": (
-            f"## Content Brief\n{json.dumps(brief)}\n\n"
-            f"## What Worked Before (from memory)\n{json.dumps(strategy)}\n\n"
-            "Generate the content piece. Return JSON."
-        )},
-    ])
+    response = sonnet.invoke(
+        [
+            {"role": "system", "content": TEXT_GENERATOR_PROMPT},
+            {
+                "role": "user",
+                "content": (
+                    f"## Content Brief\n{json.dumps(brief)}\n\n"
+                    f"## What Worked Before (from memory)\n{json.dumps(strategy)}\n\n"
+                    "Generate the content piece. Return JSON."
+                ),
+            },
+        ]
+    )
 
     try:
         result = json.loads(response.content)
         text_output = result.get("text", response.content)
     except (json.JSONDecodeError, TypeError):
-        text_output = response.content if isinstance(response.content, str) else str(response.content)
+        text_output = (
+            response.content if isinstance(response.content, str) else str(response.content)
+        )
 
     return {
         "text_output": text_output,
@@ -152,7 +161,6 @@ def video_generator(state: ContentState) -> dict[str, Any]:
 
 def distributor(state: ContentState) -> dict[str, Any]:
     """Distribute content to platforms via Late API."""
-    import httpx
 
     brief = state["content_brief"]
     text = state.get("text_output", "")
@@ -194,6 +202,7 @@ def performance_tracker(state: ContentState) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # ContentAgent
 # ---------------------------------------------------------------------------
+
 
 class ContentAgent(BaseAgent):
     """LangGraph-based content pipeline agent."""

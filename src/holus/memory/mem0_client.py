@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 class MemoryLevel(StrEnum):
     """Memory hierarchy levels."""
 
-    SESSION = "session"   # L1: ephemeral, current task
-    AGENT = "agent"       # L2: persistent, per-domain
-    USER = "user"         # L3: global, cross-agent
+    SESSION = "session"  # L1: ephemeral, current task
+    AGENT = "agent"  # L2: persistent, per-domain
+    USER = "user"  # L3: global, cross-agent
 
 
 class HolusMem0Client:
@@ -177,14 +177,12 @@ class HolusMem0Client:
             # Filter by level and session if specified
             if level:
                 memories = [
-                    m for m in memories
-                    if m.get("metadata", {}).get("level") == level.value
+                    m for m in memories if m.get("metadata", {}).get("level") == level.value
                 ]
 
             if session_id:
                 memories = [
-                    m for m in memories
-                    if m.get("metadata", {}).get("session_id") == session_id
+                    m for m in memories if m.get("metadata", {}).get("session_id") == session_id
                 ]
 
             return memories
@@ -211,8 +209,7 @@ class HolusMem0Client:
 
             if level:
                 memories = [
-                    m for m in memories
-                    if m.get("metadata", {}).get("level") == level.value
+                    m for m in memories if m.get("metadata", {}).get("level") == level.value
                 ]
 
             return memories

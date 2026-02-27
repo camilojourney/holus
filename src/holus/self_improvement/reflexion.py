@@ -17,14 +17,12 @@ detects 3+ failures of the same type, it flags for systematic optimization.
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Annotated, Any, Literal, TypedDict
+from datetime import UTC, datetime
+from typing import Any, Literal, TypedDict
 
-import operator
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
 from holus.integrations.claude_api.client import (
     CachedPrompt,
@@ -39,6 +37,7 @@ logger = logging.getLogger(__name__)
 # State
 # ---------------------------------------------------------------------------
 
+
 class ReflexionState(TypedDict):
     """LangGraph state for the Reflexion loop."""
 
@@ -51,15 +50,15 @@ class ReflexionState(TypedDict):
     attempt: int
     max_attempts: int
     output: str
-    evaluation: dict            # {verdict, score, feedback, dimension_scores}
+    evaluation: dict  # {verdict, score, feedback, dimension_scores}
 
     # Reflection memory
-    reflections: list[str]      # Reflections from current task attempts
+    reflections: list[str]  # Reflections from current task attempts
     episodic_memory: list[str]  # Past reflections from Mem0
 
     # Final result
     final_output: str
-    final_verdict: str          # PASS / FAIL / PARTIAL
+    final_verdict: str  # PASS / FAIL / PARTIAL
 
 
 # ---------------------------------------------------------------------------
@@ -96,6 +95,7 @@ Keep it under 150 words. Be specific, not generic."""
 # ---------------------------------------------------------------------------
 # Node functions
 # ---------------------------------------------------------------------------
+
 
 def execute_node(
     state: ReflexionState,
@@ -229,6 +229,7 @@ def finish_fail(state: ReflexionState) -> dict[str, Any]:
 # Reflexion Loop builder
 # ---------------------------------------------------------------------------
 
+
 class ReflexionLoop:
     """Builds and runs a LangGraph-based Reflexion loop.
 
@@ -332,7 +333,7 @@ class ReflexionLoop:
             config["configurable"] = {"thread_id": thread_id}
         else:
             config["configurable"] = {
-                "thread_id": f"{agent_id}_{datetime.now(timezone.utc).isoformat()}",
+                "thread_id": f"{agent_id}_{datetime.now(UTC).isoformat()}",
             }
 
         result = await app.ainvoke(initial_state, config=config)
@@ -342,6 +343,7 @@ class ReflexionLoop:
 # ---------------------------------------------------------------------------
 # Reflection Memory Manager (bridges Reflexion <-> Mem0)
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class ReflectionMemoryManager:
@@ -378,7 +380,7 @@ class ReflectionMemoryManager:
                 "type": "reflection",
                 "task_type": task_type,
                 "score": score,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             },
         )
 
@@ -407,7 +409,8 @@ class ReflectionMemoryManager:
 
         # Filter to failed reflections for this task type
         failures = [
-            m for m in all_memories
+            m
+            for m in all_memories
             if m.get("metadata", {}).get("task_type") == task_type
             and m.get("metadata", {}).get("type") == "reflection"
             and m.get("metadata", {}).get("score", 1.0) < 0.5

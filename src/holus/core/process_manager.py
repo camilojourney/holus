@@ -10,7 +10,6 @@ affect the content agent.
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
 import signal
@@ -28,6 +27,7 @@ logger = logging.getLogger(__name__)
 # Types
 # ---------------------------------------------------------------------------
 
+
 class AgentStatus(StrEnum):
     STARTING = "starting"
     RUNNING = "running"
@@ -42,12 +42,12 @@ class AgentProcess:
     """Runtime state for a managed agent process."""
 
     name: str
-    entrypoint: str                     # e.g. "holus.agents.trading.agent"
+    entrypoint: str  # e.g. "holus.agents.trading.agent"
     pid: int | None = None
     status: AgentStatus = AgentStatus.STOPPED
     restart_count: int = 0
     max_restarts: int = 3
-    cooldown_seconds: int = 60          # Base cooldown; doubles per restart
+    cooldown_seconds: int = 60  # Base cooldown; doubles per restart
     last_started: float | None = None
     last_stopped: float | None = None
     process: subprocess.Popen | None = field(default=None, repr=False)
@@ -62,6 +62,7 @@ class AgentProcess:
 # ---------------------------------------------------------------------------
 # Process Manager
 # ---------------------------------------------------------------------------
+
 
 class ProcessManager:
     """Supervisor for Holus agent processes.
@@ -99,8 +100,8 @@ class ProcessManager:
         stdout_path = self._log_dir / f"{name}.stdout.log"
         stderr_path = self._log_dir / f"{name}.stderr.log"
 
-        stdout_fh: IO = open(stdout_path, "a")
-        stderr_fh: IO = open(stderr_path, "a")
+        stdout_fh: IO = open(stdout_path, "a")  # noqa: SIM115
+        stderr_fh: IO = open(stderr_path, "a")  # noqa: SIM115
 
         env = {**os.environ, "HOLUS_AGENT_NAME": name}
 

@@ -17,12 +17,11 @@ import json
 import logging
 from typing import Any
 
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
 from holus.agents.base import BaseAgent
 from holus.agents.trading.models import TradingState
-from holus.core.config import HolusConfig
 from holus.core.events import EventType
 
 logger = logging.getLogger(__name__)
@@ -68,6 +67,7 @@ ALWAYS evaluate independently -- never trust the signal generator blindly.
 # Node functions
 # ---------------------------------------------------------------------------
 
+
 def signal_generator(state: TradingState) -> dict[str, Any]:
     """Read market data, produce trading signals.  Uses Sonnet.  No broker access."""
     from langchain_anthropic import ChatAnthropic
@@ -77,14 +77,19 @@ def signal_generator(state: TradingState) -> dict[str, Any]:
     market_data = state["market_data"]
     portfolio = state["portfolio_state"]
 
-    response = sonnet.invoke([
-        {"role": "system", "content": SIGNAL_GENERATOR_PROMPT},
-        {"role": "user", "content": (
-            f"Market Data: {json.dumps(market_data)}\n"
-            f"Portfolio State: {json.dumps(portfolio)}\n\n"
-            "Generate trading signals. Output as JSON array."
-        )},
-    ])
+    response = sonnet.invoke(
+        [
+            {"role": "system", "content": SIGNAL_GENERATOR_PROMPT},
+            {
+                "role": "user",
+                "content": (
+                    f"Market Data: {json.dumps(market_data)}\n"
+                    f"Portfolio State: {json.dumps(portfolio)}\n\n"
+                    "Generate trading signals. Output as JSON array."
+                ),
+            },
+        ]
+    )
 
     try:
         signals = json.loads(response.content)
@@ -116,15 +121,20 @@ def risk_manager(state: TradingState) -> dict[str, Any]:
 
     best_signal = max(signals, key=lambda s: s.get("confidence", 0))
 
-    response = opus.invoke([
-        {"role": "system", "content": RISK_MANAGER_PROMPT},
-        {"role": "user", "content": (
-            f"Signal: {json.dumps(best_signal)}\n"
-            f"Portfolio: {json.dumps(portfolio)}\n\n"
-            "Evaluate this signal. Return JSON with: approved, position_size, "
-            "stop_loss, take_profit, risk_score, rejection_reason, max_loss_usd"
-        )},
-    ])
+    response = opus.invoke(
+        [
+            {"role": "system", "content": RISK_MANAGER_PROMPT},
+            {
+                "role": "user",
+                "content": (
+                    f"Signal: {json.dumps(best_signal)}\n"
+                    f"Portfolio: {json.dumps(portfolio)}\n\n"
+                    "Evaluate this signal. Return JSON with: approved, position_size, "
+                    "stop_loss, take_profit, risk_score, rejection_reason, max_loss_usd"
+                ),
+            },
+        ]
+    )
 
     try:
         assessment = json.loads(response.content)
@@ -150,12 +160,14 @@ def human_review(state: TradingState) -> dict[str, Any]:
     price = state.get("market_data", {}).get("price", 0)
     position_value = assessment.get("position_size", 0) * price
 
-    human_decision = interrupt({
-        "question": "Approve this trade?",
-        "signal": best_signal,
-        "risk_assessment": assessment,
-        "position_value": position_value,
-    })
+    human_decision = interrupt(
+        {
+            "question": "Approve this trade?",
+            "signal": best_signal,
+            "risk_assessment": assessment,
+            "position_value": position_value,
+        }
+    )
 
     approved = human_decision.get("approved", False) if isinstance(human_decision, dict) else False
 
@@ -182,8 +194,8 @@ def execution_handler(state: TradingState) -> dict[str, Any]:
         }
 
     try:
-        from holus.integrations.alpaca import AlpacaClient, AlpacaConfig, TradingGuardrails
         from holus.core.config import HolusConfig
+        from holus.integrations.alpaca import AlpacaClient, AlpacaConfig, TradingGuardrails
 
         config = HolusConfig.load()
         alpaca = AlpacaClient(
@@ -217,6 +229,7 @@ def execution_handler(state: TradingState) -> dict[str, Any]:
 # Routing functions
 # ---------------------------------------------------------------------------
 
+
 def should_proceed_to_execution(state: TradingState) -> str:
     """Conditional edge: route based on risk assessment."""
     assessment = state.get("risk_assessment")
@@ -241,6 +254,7 @@ def check_human_approval(state: TradingState) -> str:
 # ---------------------------------------------------------------------------
 # TradingAgent
 # ---------------------------------------------------------------------------
+
 
 class TradingAgent(BaseAgent):
     """LangGraph-based trading agent with three-component air-gapped pipeline."""

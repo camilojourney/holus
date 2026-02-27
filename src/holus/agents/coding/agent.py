@@ -13,19 +13,16 @@ self-improvement pipeline.
 
 from __future__ import annotations
 
-import asyncio
-import json
 import logging
+import operator
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Annotated, Any, Literal, TypedDict
+from typing import Annotated, Any, TypedDict
 
-import operator
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 
 from holus.agents.base import BaseAgent
-from holus.core.events import EventType
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +31,12 @@ logger = logging.getLogger(__name__)
 # State
 # ---------------------------------------------------------------------------
 
+
 class CodingState(TypedDict):
     """State for the coding agent LangGraph."""
 
     # Inputs
-    task_type: str          # "pr_review" | "improvement" | "maintenance"
+    task_type: str  # "pr_review" | "improvement" | "maintenance"
     repo_path: str
     task_description: str
 
@@ -61,6 +59,7 @@ class CodingState(TypedDict):
 # ---------------------------------------------------------------------------
 # Claude Code CLI wrapper
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class ClaudeCodeRunner:
@@ -91,10 +90,14 @@ class ClaudeCodeRunner:
         """
         cmd = [
             "claude",
-            "-p", prompt,
-            "--model", model or self.model,
-            "--max-turns", str(self.max_turns),
-            "--output-format", "json",
+            "-p",
+            prompt,
+            "--model",
+            model or self.model,
+            "--max-turns",
+            str(self.max_turns),
+            "--output-format",
+            "json",
         ]
 
         if allowed_tools:
@@ -135,6 +138,7 @@ class ClaudeCodeRunner:
 # Cross-repo management
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RepoConfig:
     """Configuration for a managed repository."""
@@ -155,6 +159,7 @@ MANAGED_REPOS = [
 # ---------------------------------------------------------------------------
 # Node functions
 # ---------------------------------------------------------------------------
+
 
 def pr_review_node(state: CodingState) -> dict[str, Any]:
     """Review a PR diff using Claude Code CLI."""
@@ -229,7 +234,9 @@ def maintenance_node(state: CodingState) -> dict[str, Any]:
 
     return {
         "dependency_report": report,
-        "messages": [{"node": "maintenance", "output": f"Checked {len(report['repos_checked'])} repos"}],
+        "messages": [
+            {"node": "maintenance", "output": f"Checked {len(report['repos_checked'])} repos"}
+        ],
     }
 
 
@@ -246,6 +253,7 @@ def route_task(state: CodingState) -> str:
 # ---------------------------------------------------------------------------
 # CodingAgent
 # ---------------------------------------------------------------------------
+
 
 class CodingAgent(BaseAgent):
     """Claude Code CLI-based coding agent."""

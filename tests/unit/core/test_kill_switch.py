@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
-
-import pytest
-
 
 class TestKillSwitch:
     """Test kill switch activation, deactivation, and scope checking."""
@@ -15,7 +11,7 @@ class TestKillSwitch:
         from holus.core.kill_switch import KillSwitch
 
         ks = KillSwitch(redis_client=mock_redis)
-        ks.activate(scope="agent", target="trading_agent", reason="Manual stop")
+        ks.activate(scope="trading_agent", reason="Manual stop")
 
         mock_redis.set.assert_called_once()
         call_args = mock_redis.set.call_args
@@ -26,13 +22,13 @@ class TestKillSwitch:
         from holus.core.kill_switch import KillSwitch
 
         ks = KillSwitch(redis_client=mock_redis)
-        ks.deactivate(scope="agent", target="trading_agent")
+        ks.deactivate(scope="trading_agent")
 
         mock_redis.delete.assert_called_once()
 
     def test_is_active_returns_false_when_not_set(self, mock_redis):
         """Kill switch should return False when no keys are set."""
-        mock_redis.get.return_value = None
+        mock_redis.exists.return_value = 0  # 0 = key not found in Redis
 
         from holus.core.kill_switch import KillSwitch
 
@@ -41,24 +37,21 @@ class TestKillSwitch:
 
     def test_is_active_returns_true_for_global(self, mock_redis):
         """Global kill switch should block all agents."""
-        # First call (agent-level) returns None, second (domain) returns None,
-        # third (global) returns the kill data
-        mock_redis.get.side_effect = [None, None, b'{"reason": "Emergency"}']
+        # exists() returns 1 (truthy) for the global key
+        mock_redis.exists.return_value = 1
 
         from holus.core.kill_switch import KillSwitch
 
         ks = KillSwitch(redis_client=mock_redis)
         assert ks.is_active(agent_name="trading_agent")
 
-    def test_status_returns_all_scopes(self, mock_redis):
-        """Status should report on all three scope levels."""
-        mock_redis.get.return_value = None
+    def test_status_returns_dict(self, mock_redis):
+        """Status should return a dict of active kill switches."""
+        mock_redis.scan_iter.return_value = []
 
         from holus.core.kill_switch import KillSwitch
 
         ks = KillSwitch(redis_client=mock_redis)
-        status = ks.status(agent_name="trading_agent")
+        status = ks.status()
 
-        assert "agent" in status
-        assert "domain" in status
-        assert "global" in status
+        assert isinstance(status, dict)

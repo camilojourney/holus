@@ -12,8 +12,9 @@ Each check returns a dict with at minimum a ``status`` key:
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import structlog
 
@@ -23,10 +24,10 @@ logger = structlog.get_logger()
 class HealthCheck:
     """Run health checks and aggregate results."""
 
-    def run(self) -> dict:
+    def run(self) -> dict[str, Any]:
         """Run all health checks and return a summary."""
-        results: dict = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+        results: dict[str, Any] = {
+            "timestamp": datetime.now(UTC).isoformat(),
             "checks": {},
             "overall": "healthy",
         }
@@ -38,15 +39,9 @@ class HealthCheck:
         results["checks"]["logs"] = self.check_logs()
 
         # Overall: unhealthy if any check is unhealthy
-        if any(
-            c.get("status") == "unhealthy"
-            for c in results["checks"].values()
-        ):
+        if any(c.get("status") == "unhealthy" for c in results["checks"].values()):
             results["overall"] = "unhealthy"
-        elif any(
-            c.get("status") == "degraded"
-            for c in results["checks"].values()
-        ):
+        elif any(c.get("status") == "degraded" for c in results["checks"].values()):
             results["overall"] = "degraded"
 
         logger.info(
@@ -56,7 +51,7 @@ class HealthCheck:
         )
         return results
 
-    def check_kill_switch(self) -> dict:
+    def check_kill_switch(self) -> dict[str, Any]:
         """Check Redis connectivity and kill switch state."""
         try:
             import redis
@@ -78,7 +73,7 @@ class HealthCheck:
                 "note": "Redis not required for Phase 1",
             }
 
-    def check_trajectory(self) -> dict:
+    def check_trajectory(self) -> dict[str, Any]:
         """Check trajectory file exists and is writable."""
         path = Path(".self-improvement/memory/trajectory.jsonl")
         return {
@@ -87,7 +82,7 @@ class HealthCheck:
             "size_bytes": path.stat().st_size if path.exists() else 0,
         }
 
-    def check_knowledge(self) -> dict:
+    def check_knowledge(self) -> dict[str, Any]:
         """Check knowledge base has files."""
         knowledge_dir = Path(".self-improvement/knowledge/current")
         files = list(knowledge_dir.glob("*.md")) if knowledge_dir.exists() else []
@@ -97,7 +92,7 @@ class HealthCheck:
             "files": [f.name for f in files],
         }
 
-    def check_content_queue(self) -> dict:
+    def check_content_queue(self) -> dict[str, Any]:
         """Check content queue directory."""
         queue_dir = Path("data/content-queue")
         if not queue_dir.exists():
@@ -105,7 +100,7 @@ class HealthCheck:
         pending = list(queue_dir.glob("*.yaml")) + list(queue_dir.glob("*.json"))
         return {"status": "healthy", "pending": len(pending)}
 
-    def check_logs(self) -> dict:
+    def check_logs(self) -> dict[str, Any]:
         """Check logs directory exists."""
         logs_dir = Path("logs")
         if not logs_dir.exists():
