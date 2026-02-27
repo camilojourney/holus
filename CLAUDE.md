@@ -50,3 +50,7 @@ just audit            # run security sentinel
 - Specs: @specs/README.md
 - Agent roles: @AGENTS.md
 - Env template: @.env.example
+
+## Rule Imports
+
+@import .claude/rules/delegation.md

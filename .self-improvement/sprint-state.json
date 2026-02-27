@@ -1,0 +1,8 @@
+{
+  "cycle": 0,
+  "max_cycles": 80,
+  "started_at": null,
+  "last_cycle_at": null,
+  "status": "ready",
+  "interval_minutes": 20
+}

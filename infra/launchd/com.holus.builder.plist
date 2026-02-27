@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.holus.builder</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/mini/.openclaw/workspace/github/holus/infra/build-cycle.sh</string>
+    </array>
+    <!-- Every 20 minutes = 1200 seconds. 80 cycles = ~27 hours. -->
+    <key>StartInterval</key>
+    <integer>1200</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/mini/.openclaw/workspace/github/holus/logs/builder.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/mini/.openclaw/workspace/github/holus/logs/builder.stderr.log</string>
+    <!-- Inherit user environment for PATH (claude, codex, gemini CLIs) -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:/Users/mini/.local/bin:/Users/mini/.cargo/bin</string>
+        <key>HOME</key>
+        <string>/Users/mini</string>
+    </dict>
+</dict>
+</plist>

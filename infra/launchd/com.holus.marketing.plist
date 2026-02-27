@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.holus.marketing</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-c</string>
+        <string>cd /Users/mini/.openclaw/workspace/github/holus &amp;&amp; .venv/bin/python -m holus run marketing --once &gt;&gt; logs/marketing.log 2&gt;&amp;1</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>1800</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/mini/.openclaw/workspace/github/holus/logs/marketing.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/mini/.openclaw/workspace/github/holus/logs/marketing.stderr.log</string>
+</dict>
+</plist>

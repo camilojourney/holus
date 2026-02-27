@@ -73,6 +73,109 @@ clean:
     find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
     rm -rf dist/ build/ htmlcov/ .coverage coverage.xml
 
+# -- Marketing Agent ---------------------------------------------------------
+
+run-marketing:
+    python -m holus run marketing --once
+
+review-content:
+    python -m holus.agents.marketing.review
+
+# -- Autonomous Build Sprint (cron-based) -----------------------------------
+
+# Run ONE build cycle (picks next task, implements, logs, commits)
+build-cycle:
+    bash infra/build-cycle.sh
+
+# Start the 80-cycle sprint via launchd cron (every 20 min)
+sprint-start:
+    mkdir -p logs
+    @echo '{"cycle": 0, "max_cycles": 80, "status": "running", "started_at": null, "interval_minutes": 20}' > .self-improvement/sprint-state.json
+    cp infra/launchd/com.holus.builder.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.holus.builder.plist
+    @echo "Sprint started! Builder will run every 20 min for 80 cycles (~27 hours)."
+    @echo "Monitor: just sprint-status"
+    @echo "Stop:    just sprint-stop"
+
+# Stop the sprint (graceful — finishes current cycle first)
+sprint-stop:
+    touch /tmp/holus-stop
+    -launchctl unload ~/Library/LaunchAgents/com.holus.builder.plist 2>/dev/null
+    @echo "Sprint stopped. Kill file created + cron unloaded."
+    @echo "To resume: just sprint-resume"
+
+# Resume a stopped sprint (keeps cycle count)
+sprint-resume:
+    rm -f /tmp/holus-stop
+    cp infra/launchd/com.holus.builder.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.holus.builder.plist
+    @echo "Sprint resumed from where it left off."
+
+# Reset sprint (start fresh from cycle 0)
+sprint-reset:
+    -launchctl unload ~/Library/LaunchAgents/com.holus.builder.plist 2>/dev/null
+    rm -f /tmp/holus-stop
+    @echo '{"cycle": 0, "max_cycles": 80, "status": "ready", "started_at": null, "interval_minutes": 20}' > .self-improvement/sprint-state.json
+    @echo "Sprint reset to cycle 0."
+
+# Full sprint status dashboard
+sprint-status:
+    @echo "=== Sprint State ==="
+    @cat .self-improvement/sprint-state.json 2>/dev/null || echo "No sprint state"
+    @echo ""
+    @echo "=== Tasks ==="
+    @printf "Remaining: "; grep -c '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null || echo "0"
+    @printf "Completed: "; grep -c '^\- \[x\]' .self-improvement/NEXT.md 2>/dev/null || echo "0"
+    @echo ""
+    @echo "=== Cron Status ==="
+    @launchctl list 2>/dev/null | grep holus.builder || echo "Builder cron not loaded"
+    @echo ""
+    @echo "=== Recent Cycle Logs ==="
+    @ls -lt logs/cycle-*.log 2>/dev/null | head -5 || echo "No cycle logs yet"
+    @echo ""
+    @echo "=== Recent Reports ==="
+    @ls -lt .self-improvement/reports/builder/*.md 2>/dev/null | head -5 || echo "No reports yet"
+    @echo ""
+    @echo "=== Sprint Log (last 15 lines) ==="
+    @tail -15 logs/sprint.log 2>/dev/null || echo "No sprint log yet"
+
+# Run the old loop-style sprint (alternative to cron)
+sprint-loop:
+    bash infra/build-sprint.sh
+
+# -- Scheduling (launchd) — marketing + health crons -----------------------
+
+schedule:
+    mkdir -p logs
+    cp infra/launchd/com.holus.marketing.plist ~/Library/LaunchAgents/ 2>/dev/null || true
+    cp infra/launchd/com.holus.improve.plist ~/Library/LaunchAgents/ 2>/dev/null || true
+    cp infra/launchd/com.holus.health.plist ~/Library/LaunchAgents/ 2>/dev/null || true
+    launchctl load ~/Library/LaunchAgents/com.holus.marketing.plist 2>/dev/null || true
+    launchctl load ~/Library/LaunchAgents/com.holus.improve.plist 2>/dev/null || true
+    launchctl load ~/Library/LaunchAgents/com.holus.health.plist 2>/dev/null || true
+    @echo "All Holus agents scheduled."
+
+unschedule:
+    -launchctl unload ~/Library/LaunchAgents/com.holus.marketing.plist 2>/dev/null
+    -launchctl unload ~/Library/LaunchAgents/com.holus.improve.plist 2>/dev/null
+    -launchctl unload ~/Library/LaunchAgents/com.holus.health.plist 2>/dev/null
+    -launchctl unload ~/Library/LaunchAgents/com.holus.builder.plist 2>/dev/null
+    @echo "All Holus agents unscheduled."
+
+schedule-status:
+    @echo "=== Scheduled Holus Agents ==="
+    @launchctl list 2>/dev/null | grep holus || echo "No agents scheduled"
+    @echo ""
+    @echo "=== Recent Logs ==="
+    @tail -5 logs/marketing.log 2>/dev/null || echo "No marketing logs"
+    @tail -5 logs/builder.stdout.log 2>/dev/null || echo "No builder logs"
+    @tail -5 logs/health.log 2>/dev/null || echo "No health logs"
+
+# -- Health ------------------------------------------------------------------
+
+health:
+    python -m holus health
+
 # -- Self-Improvement --------------------------------------------------------
 
 improve:
@@ -80,3 +183,11 @@ improve:
 
 audit:
     claude --agent .claude/agents/security-sentinel.md
+
+# -- Logs --------------------------------------------------------------------
+
+rotate-logs:
+    @mkdir -p logs/archive
+    @find logs -maxdepth 1 -name "*.log" -size +10M -exec sh -c 'mv {} logs/archive/$$(basename {}).$(date +%Y%m%d)' \;
+    @find logs/archive -mtime +7 -delete 2>/dev/null || true
+    @echo "Logs rotated."
