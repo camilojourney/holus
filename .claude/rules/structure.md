@@ -38,6 +38,7 @@
 | `src/holus/integrations/` | One package per external service (alpaca, n8n, comfyui, claude_api). |
 | `src/holus/memory/` | Mem0 + pgvector + trajectory logging. |
 | `src/holus/observability/` | Langfuse tracing + metrics. |
+| `src/holus/mcp_servers/` | MCP server implementations (social media, etc.). |
 | `src/holus/self_improvement/` | Judge, Prompt Optimizer, Reflexion. |
 
 ## Config (`config/`)
@@ -97,6 +98,7 @@ Numbered feature specs: `specs/NNN-name.md`. Flat structure only. No subdirector
 | External API client | `src/holus/integrations/{service}/` |
 | Shared utility | `src/holus/core/` |
 | Unit test | `tests/unit/{package}/test_{module}.py` |
+| E2E / browser test | `tests/e2e/test_{feature}.py` (uses Playwright) |
 | Agent config | `config/{agent}.yaml` |
 | Dev session notes | `devlog/YYYY-MM-DD.md` |
 | Agent priorities | `.self-improvement/NEXT.md` |
