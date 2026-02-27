@@ -1,0 +1,497 @@
+# Spec 014: Genpeli Integration
+
+## Feature: Intelligent video processing pipeline integration for social media reels
+
+### Overview
+
+Genpeli is Holus's video processing pipeline. It takes raw footage, cuts silences, adds word-by-word animated captions, normalizes audio, and produces social-ready reels. This spec defines how the marketing agent discovers and uses Genpeli's capabilities through an MCP server, enabling autonomous video content production. The integration follows the federated MCP pattern: Genpeli runs as an independent silo with its own API, and the MCP server translates marketing agent intentions into Genpeli API calls.
+
+### User Stories
+
+- As the marketing agent, I want to submit raw video footage and receive polished reels so that video content is production-ready without manual editing.
+- As the marketing agent, I want to preview generated reels before publishing so that quality is verified.
+- As a founder, I want to approve or reject video content before it goes live so that brand quality is maintained.
+- As the marketing agent, I want to learn which video styles perform best so that future generations improve.
+
+---
+
+### Core Specifications
+
+**SPEC-001: Genpeli MCP Server**
+
+| Field | Value |
+|-------|-------|
+| Description | Local MCP server that exposes Genpeli's video processing pipeline as tools the marketing agent can discover and call |
+| Trigger | Marketing agent connects to the MCP server at startup |
+| Input | Tool calls from the marketing agent (submit video, check status, approve/reject) |
+| Output | Tool results (job IDs, status updates, preview URLs, final video URLs) |
+| Validation | All inputs validated before passing to Genpeli API |
+| Auth Required | `GENPELI_API_KEY` (server-side) |
+
+```python
+# src/holus/mcp_servers/genpeli.py
+
+from mcp.server.fastmcp import FastMCP
+import httpx
+import os
+
+mcp = FastMCP("genpeli")
+
+GENPELI_API = "http://localhost:8100"
+GENPELI_API_KEY = os.environ["GENPELI_API_KEY"]
+
+
+@mcp.tool()
+async def process_video(
+    video_urls: str,
+    instruction: str = "Cut silences, add animated captions",
+) -> str:
+    """Submit video(s) for processing into social media reels.
+
+    Args:
+        video_urls: Comma-separated URLs or local paths (1-2 videos max)
+        instruction: Processing instructions (default: cut silences + captions)
+
+    Returns:
+        job_id for tracking
+    """
+    async with httpx.AsyncClient() as client:
+        files = []
+        for url in video_urls.split(","):
+            url = url.strip()
+            if url.startswith("http"):
+                # Download first (simplified - production needs streaming)
+                video_data = await client.get(url)
+                files.append(("video_files", video_data.content))
+            else:
+                with open(url, "rb") as f:
+                    files.append(("video_files", f.read()))
+
+        response = await client.post(
+            f"{GENPELI_API}/v1/process",
+            files=files,
+            data={"instruction": instruction},
+            headers={"Authorization": f"Bearer {GENPELI_API_KEY}"},
+            timeout=60.0,
+        )
+        response.raise_for_status()
+        return response.json()["job_id"]
+
+
+@mcp.tool()
+async def check_video_status(job_id: str) -> str:
+    """Check the status of a video processing job.
+
+    Args:
+        job_id: Job ID from process_video
+
+    Returns:
+        JSON with status, progress, and preview URL if ready
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{GENPELI_API}/v1/jobs/{job_id}",
+            headers={"Authorization": f"Bearer {GENPELI_API_KEY}"},
+        )
+        response.raise_for_status()
+        return response.text
+
+
+@mcp.tool()
+async def get_video_preview(job_id: str) -> str:
+    """Get the preview URL for a completed video job.
+
+    Args:
+        job_id: Job ID from process_video
+
+    Returns:
+        Preview URL for review
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{GENPELI_API}/v1/jobs/{job_id}",
+            headers={"Authorization": f"Bearer {GENPELI_API_KEY}"},
+        )
+        response.raise_for_status()
+        data = response.json()
+        if data["status"] != "ready_for_review":
+            return f"Video not ready yet. Status: {data['status']}, Progress: {data.get('progress_percent', 0)}%"
+        return f"{GENPELI_API}/v1/jobs/{job_id}/preview"
+
+
+@mcp.tool()
+async def approve_video(job_id: str) -> str:
+    """Approve a video for delivery (upload to R2, push to social media).
+
+    Args:
+        job_id: Job ID from process_video
+
+    Returns:
+        Confirmation with final video URLs
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{GENPELI_API}/v1/jobs/{job_id}/approve",
+            headers={"Authorization": f"Bearer {GENPELI_API_KEY}"},
+        )
+        response.raise_for_status()
+        return response.text
+
+
+@mcp.tool()
+async def reject_video(job_id: str, reason: str = "") -> str:
+    """Reject a video and cleanup temp files.
+
+    Args:
+        job_id: Job ID from process_video
+        reason: Optional reason for rejection
+
+    Returns:
+        Confirmation
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{GENPELI_API}/v1/jobs/{job_id}/reject",
+            json={"reason": reason},
+            headers={"Authorization": f"Bearer {GENPELI_API_KEY}"},
+        )
+        response.raise_for_status()
+        return response.text
+
+
+if __name__ == "__main__":
+    mcp.run()
+```
+
+MCP server configuration for marketing agent:
+
+```json
+{
+  "mcpServers": {
+    "genpeli": {
+      "command": "python",
+      "args": ["-m", "holus.mcp_servers.genpeli"],
+      "cwd": "/Users/mini/.openclaw/workspace/github/holus",
+      "env": {
+        "GENPELI_API_KEY": "${GENPELI_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Acceptance Criteria:
+- [ ] MCP server starts and responds to `tools/list`
+- [ ] `process_video` tool submits videos to Genpeli API
+- [ ] `check_video_status` tool returns job status with progress percentage
+- [ ] `get_video_preview` tool returns preview URL when ready
+- [ ] `approve_video` tool triggers delivery pipeline
+- [ ] `reject_video` tool cleans up temp files
+- [ ] All tools have clear descriptions and typed arguments
+
+---
+
+**SPEC-002: Marketing Agent Integration**
+
+| Field | Value |
+|-------|-------|
+| Description | Marketing agent discovers and uses Genpeli tools through the MCP server for video content production |
+| Trigger | Marketing agent reason stage decides to create video content |
+| Input | Content decision with `content_type: "video"` |
+| Output | Processed video ready for social media distribution |
+| Validation | Video decisions must include visual prompts or source footage reference |
+| Auth Required | MCP server handles auth |
+
+Video content workflow in marketing agent:
+
+```python
+# src/holus/agents/marketing/video_workflow.py
+
+async def create_video_content(self, decision: ContentDecision) -> dict:
+    """Create video content using Genpeli MCP server."""
+    
+    # Step 1: Get source footage (from assets or record new)
+    source_videos = await self.get_source_footage(decision)
+    
+    # Step 2: Submit to Genpeli via MCP
+    job_id = await self.call_mcp(
+        "genpeli",
+        "process_video",
+        video_urls=",".join(source_videos),
+        instruction=decision.get("video_instruction", "Cut silences, add animated captions"),
+    )
+    
+    # Step 3: Poll for completion
+    max_wait = 300  # 5 minutes
+    start_time = time.time()
+    while time.time() - start_time < max_wait:
+        status = await self.call_mcp("genpeli", "check_video_status", job_id=job_id)
+        status_data = json.loads(status)
+        
+        if status_data["status"] == "ready_for_review":
+            break
+        elif status_data["status"] == "error":
+            raise ValueError(f"Genpeli processing failed: {status_data.get('error')}")
+        
+        await asyncio.sleep(10)
+    
+    # Step 4: Get preview URL
+    preview_url = await self.call_mcp("genpeli", "get_video_preview", job_id=job_id)
+    
+    # Step 5: Human review (Phase 1) or auto-approve (Phase 2+)
+    await self.queue_for_review({
+        "piece_id": f"video-{job_id}",
+        "job_id": job_id,
+        "preview_url": preview_url,
+        "decision": decision,
+    })
+    
+    return {
+        "job_id": job_id,
+        "preview_url": preview_url,
+        "status": "pending_review",
+    }
+```
+
+Acceptance Criteria:
+- [ ] Marketing agent discovers Genpeli tools via MCP
+- [ ] Agent can submit video processing jobs
+- [ ] Agent polls job status until ready_for_review
+- [ ] Agent retrieves preview URL for review
+- [ ] Agent queues video for human approval in Phase 1
+- [ ] Failed processing logged with error details
+- [ ] Processing timeouts handled gracefully
+
+---
+
+**SPEC-003: Content Types Supported**
+
+| Content Type | Available Now | Needs Tooling |
+|--------------|---------------|---------------|
+| **Screen recordings** (product demos) | ✅ YES | None (capture on Mac Mini) |
+| **Talking head footage** (founder explaining features) | ✅ YES | None (record on iPhone/Mac) |
+| **B-roll clips** (UI interactions, workflows) | ✅ YES | None (capture from products) |
+| **AI-generated clips** (synthetic scenes) | ❌ NO | Kling AI integration (Spec 003) |
+| **Template-based assembly** (slides + voiceover) | ❌ NO | Creatomate integration (Spec 003) |
+| **Multi-video merges** (intro + demo + CTA) | ✅ YES | Genpeli supports 2-video concat |
+| **Custom caption styles** | ❌ NO | Genpeli config extension needed |
+| **Background music** | ❌ NO | Audio mixing in Genpeli |
+
+---
+
+**SPEC-004: Video Content Queue**
+
+| Field | Value |
+|-------|-------|
+| Description | Videos require human review before approval, similar to text content queue |
+| Trigger | Video processing completes (status: ready_for_review) |
+| Input | Processed video with preview URL |
+| Output | Video saved to review queue with approval/rejection interface |
+| Validation | Each video has job_id, preview_url, and decision context |
+| Auth Required | No (local file operations) |
+
+```python
+# src/holus/agents/marketing/video_queue.py
+
+from __future__ import annotations
+
+import yaml
+from datetime import datetime
+from pathlib import Path
+from pydantic import BaseModel
+
+
+class QueuedVideo(BaseModel):
+    piece_id: str
+    job_id: str
+    preview_url: str
+    product: str
+    topic: str
+    reasoning: str
+    generated_at: datetime
+    status: str = "pending_review"  # pending_review | approved | rejected
+
+
+VIDEO_QUEUE_DIR = Path("data/video-queue")
+
+
+def enqueue_video(video: QueuedVideo) -> Path:
+    VIDEO_QUEUE_DIR.mkdir(parents=True, exist_ok=True)
+    path = VIDEO_QUEUE_DIR / f"{video.piece_id}.yaml"
+    path.write_text(yaml.dump(video.model_dump(), default_flow_style=False))
+    return path
+
+
+def list_pending_videos() -> list[QueuedVideo]:
+    if not VIDEO_QUEUE_DIR.exists():
+        return []
+    pending = []
+    for f in sorted(VIDEO_QUEUE_DIR.glob("*.yaml")):
+        data = yaml.safe_load(f.read_text())
+        if data.get("status") == "pending_review":
+            pending.append(QueuedVideo.model_validate(data))
+    return pending
+
+
+async def approve_video(piece_id: str) -> str:
+    """Approve video and trigger Genpeli delivery."""
+    path = VIDEO_QUEUE_DIR / f"{piece_id}.yaml"
+    data = yaml.safe_load(path.read_text())
+    
+    # Call Genpeli API to approve
+    from holus.mcp_servers.genpeli import approve_video as genpeli_approve
+    result = await genpeli_approve(data["job_id"])
+    
+    # Update queue status
+    data["status"] = "approved"
+    path.write_text(yaml.dump(data, default_flow_style=False))
+    
+    return result
+
+
+async def reject_video(piece_id: str, reason: str = "") -> str:
+    """Reject video and cleanup Genpeli temp files."""
+    path = VIDEO_QUEUE_DIR / f"{piece_id}.yaml"
+    data = yaml.safe_load(path.read_text())
+    
+    # Call Genpeli API to reject
+    from holus.mcp_servers.genpeli import reject_video as genpeli_reject
+    result = await genpeli_reject(data["job_id"], reason)
+    
+    # Update queue status
+    data["status"] = "rejected"
+    data["rejection_reason"] = reason
+    path.write_text(yaml.dump(data, default_flow_style=False))
+    
+    return result
+```
+
+CLI commands:
+
+```just
+# Review pending videos
+review-videos:
+    python -m holus.agents.marketing.review_videos
+
+# Approve a video
+approve-video piece_id:
+    python -m holus.agents.marketing.review_videos --approve {{piece_id}}
+
+# Reject a video
+reject-video piece_id reason="":
+    python -m holus.agents.marketing.review_videos --reject {{piece_id}} --reason "{{reason}}"
+```
+
+Acceptance Criteria:
+- [ ] Videos saved to `data/video-queue/` as YAML files
+- [ ] `just review-videos` lists pending videos with preview URLs
+- [ ] `just approve-video <id>` approves and triggers Genpeli delivery
+- [ ] `just reject-video <id>` rejects and cleans up temp files
+- [ ] Approved videos are delivered to R2 and social platforms
+
+---
+
+### Data Structures
+
+Genpeli job status (what the MCP server returns):
+
+```json
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "ready_for_review",
+  "progress_percent": 100,
+  "created_at": "2026-02-27T10:00:00Z",
+  "preview_url": "http://localhost:8100/v1/jobs/550e8400.../preview",
+  "pipeline_stages": {
+    "ingest": "completed",
+    "transcribe": "completed",
+    "cut_silences": "completed",
+    "burn_captions": "completed",
+    "normalize": "completed",
+    "package": "completed"
+  }
+}
+```
+
+---
+
+### File Locations
+
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `src/holus/mcp_servers/__init__.py` | Modified | Export genpeli server |
+| `src/holus/mcp_servers/genpeli.py` | New | Genpeli MCP server |
+| `src/holus/agents/marketing/video_workflow.py` | New | Video creation workflow |
+| `src/holus/agents/marketing/video_queue.py` | New | Video review queue |
+| `src/holus/agents/marketing/review_videos.py` | New | CLI for reviewing videos |
+| `data/video-queue/` | New (gitignored) | Video queue directory |
+| `tests/unit/mcp/test_genpeli.py` | New | Genpeli MCP server tests |
+
+---
+
+### Edge Cases & Error Handling
+
+**EDGE-001: Genpeli API unavailable**
+- Scenario: Genpeli service is down or unreachable
+- Expected behavior: Video creation skipped for this cycle. Text/image content still created. Retry queued for next cycle.
+- Recovery: Automatic retry when service returns.
+
+**EDGE-002: Video processing timeout**
+- Scenario: Video processing takes longer than 5 minutes
+- Expected behavior: Agent logs timeout and moves on. Video can be checked manually via `just check-genpeli-jobs`.
+- Recovery: Manual review of stuck jobs.
+
+**EDGE-003: Video quality poor (after review)**
+- Scenario: Human rejects video due to quality issues
+- Expected behavior: Rejection logged with reason. Agent learns to avoid similar source footage.
+- Recovery: Human provides feedback for future video selection.
+
+**EDGE-004: No source footage available for topic**
+- Scenario: Agent decides to create video but has no relevant footage
+- Expected behavior: Video creation skipped. Agent logs "no footage available for {topic}". Text content created instead.
+- Recovery: Human records footage and places in asset library.
+
+---
+
+### Performance Requirements
+
+| Metric | Target | How to Measure |
+|--------|--------|----------------|
+| Video submission | < 10s | MCP call latency |
+| Status check | < 2s | MCP call latency |
+| Genpeli processing (1-min video) | < 3 min | Genpeli internal timing |
+| Preview retrieval | < 5s | HTTP GET latency |
+| Approval/rejection | < 5s | Genpeli API call |
+
+---
+
+### Security Considerations
+
+- `GENPELI_API_KEY` stored in `.env` only, never in code
+- Genpeli API key provides access to all video processing — protect it
+- Preview URLs are temporary (expire after 24 hours)
+- Final videos stored in R2 with access control
+
+---
+
+### Out of Scope
+
+- AI-generated video from text (Kling AI integration — see Spec 003)
+- Template-based video assembly (Creatomate — see Spec 003)
+- Custom caption styling (basic styling only in Phase 1)
+- Background music mixing (Phase 2+)
+- Multi-video advanced editing (only 2-video concat supported)
+
+---
+
+### Related Specs
+
+- [010-marketing-agent.md](./010-marketing-agent.md) — the agent that calls Genpeli tools
+- [003-content-pipeline.md](./003-content-pipeline.md) — full video generation pipeline
+- [011-social-media-integration.md](./011-social-media-integration.md) — social media distribution
+
+---
+
+**Last Updated:** 2026-02-27  
+**Status:** Draft  
+**Owner:** Camilo Martinez
