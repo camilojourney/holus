@@ -69,6 +69,7 @@ Desktop.ini
 
 # ---- Data: Runtime ----
 data/runtime/
+data/content-queue/
 *.db
 *.sqlite3
 

@@ -78,8 +78,21 @@ clean:
 run-marketing:
     python -m holus run marketing --once
 
+# Review pending social media content
 review-content:
     python -m holus.agents.marketing.review
+
+# Approve a content piece for publishing
+approve-content piece_id:
+    python -m holus.agents.marketing.review --approve {{piece_id}}
+
+# Reject a content piece
+reject-content piece_id reason="":
+    python -m holus.agents.marketing.review --reject {{piece_id}} --reason "{{reason}}"
+
+# Publish all approved content to social media
+publish-approved:
+    python -m holus.agents.marketing.publish_approved
 
 # -- Autonomous Build Sprint (cron-based) -----------------------------------
 
