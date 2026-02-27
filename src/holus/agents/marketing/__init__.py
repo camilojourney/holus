@@ -10,10 +10,12 @@ __all__ = [
     "ContentDecision",
     "ContentType",
     "GeneratedPiece",
+    "MarketingAgent",
     "MarketingCycleReport",
     "Platform",
 ]
 
+from holus.agents.marketing.agent import MarketingAgent
 from holus.agents.marketing.models import (
     ContentDecision,
     ContentType,
