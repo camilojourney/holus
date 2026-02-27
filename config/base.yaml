@@ -7,10 +7,6 @@ coordinator:
   synthesis_schedule: "0 7 * * *"  # 07:00 daily
   max_tokens: 8192
 
-agents:
-  default_model: claude-sonnet-4-6
-  restart_max: 3
-  restart_backoff_seconds: 30
 
 event_bus:
   redis_url: ${REDIS_URL}
