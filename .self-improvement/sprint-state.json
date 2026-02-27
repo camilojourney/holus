@@ -1,8 +1,8 @@
 {
-  "cycle": 0,
+  "cycle": 1,
   "max_cycles": 80,
-  "started_at": null,
-  "last_cycle_at": null,
-  "status": "ready",
-  "interval_minutes": 20
+  "status": "running",
+  "started_at": "2026-02-26T10:30:00Z",
+  "interval_minutes": 20,
+  "last_cycle_at": "2026-02-27T00:56:49.451342+00:00"
 }

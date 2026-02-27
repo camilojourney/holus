@@ -16,7 +16,7 @@ The builder uses Codex for coding, Gemini for research, Claude for orchestration
 - [x] `[BUILD]` Wire justfile: `run-marketing`, `schedule`, `unschedule`, `schedule-status`, `health`, `rotate-logs` (spec 013)
 - [x] `[BUILD]` Create `infra/launchd/` with marketing, improve, and health plist files (spec 013 SPEC-002)
 - [x] `[BUILD]` Create unit tests for run_lock, trajectory logger, and health check — 22 tests passing
-- [ ] `[REVIEW]` Run `just check` on all P0 work — fix any lint/type/test failures
+- [x] `[REVIEW]` Run `just check` on all P0 work — fix any lint/type/test failures
 
 ## P1 — Marketing Agent Core (Cycles 9-20)
 

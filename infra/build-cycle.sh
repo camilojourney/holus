@@ -14,8 +14,8 @@
 #
 # Usage:
 #   just build-cycle           # Run one cycle
-#   just sprint-cron           # Install launchd cron (every 20 min, 80 cycles)
-#   just sprint-cron-stop      # Uninstall the cron
+#   just sprint-start          # Install launchd cron (every 20 min, 80 cycles)
+#   just sprint-stop           # Uninstall the cron
 #   touch /tmp/holus-stop      # Emergency stop from anywhere
 #
 # =============================================================================
@@ -25,12 +25,18 @@ set -euo pipefail
 HOLUS_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$HOLUS_DIR"
 
+# Set PATH directly (don't source .zshrc — it hangs in non-interactive mode)
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+export HOME="${HOME:-/Users/mini}"
+# Allow claude to run even if called from inside another claude session (e.g. testing)
+unset CLAUDECODE 2>/dev/null || true
+
 LOG_DIR="$HOLUS_DIR/logs"
 mkdir -p "$LOG_DIR"
 
 STATE_FILE="$HOLUS_DIR/.self-improvement/sprint-state.json"
 KILL_FILE="/tmp/holus-stop"
-LOCK_FILE="/tmp/holus/builder-cycle.lock"
+LOCK_DIR="/tmp/holus-builder-cycle.lock"
 
 # ---- Helpers ----------------------------------------------------------------
 
@@ -107,7 +113,7 @@ if recent:
             classification = entry.get("task_classification", "?")
             tools = entry.get("tools_used", [])
             tools_failed = entry.get("tools_failed", [])
-            print(f"- [{classification}] {task} → {status} (tools: {', '.join(tools)})")
+            print(f"- [{classification}] {task} -> {status} (tools: {', '.join(tools)})")
             if tools_failed:
                 print(f"  WARNING: These tools failed: {', '.join(tools_failed)}")
         except json.JSONDecodeError:
@@ -133,6 +139,12 @@ if next_file.exists():
 PYEOF
 }
 
+# Cleanup lock on exit (even on crash)
+cleanup() {
+    rmdir "$LOCK_DIR" 2>/dev/null || true
+}
+trap cleanup EXIT
+
 # ---- Guards -----------------------------------------------------------------
 
 # Kill file check
@@ -148,7 +160,6 @@ MAX_CYCLES=$(get_max_cycles)
 if [ "$CURRENT_CYCLE" -ge "$MAX_CYCLES" ]; then
     log "Sprint complete ($CURRENT_CYCLE/$MAX_CYCLES cycles). Uninstalling cron."
     update_state "$CURRENT_CYCLE" "completed"
-    # Auto-uninstall launchd job
     launchctl unload ~/Library/LaunchAgents/com.holus.builder.plist 2>/dev/null || true
     exit 0
 fi
@@ -162,12 +173,20 @@ if [ "$REMAINING" -eq 0 ]; then
     exit 0
 fi
 
-# Run lock (prevent overlapping cycles if previous one is still running)
-mkdir -p "$(dirname "$LOCK_FILE")"
-exec 9>"$LOCK_FILE"
-if ! flock -n 9; then
-    log "Previous cycle still running. Skipping this tick."
-    exit 0
+# Run lock — mkdir is atomic on POSIX, works on macOS (no flock needed)
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+    # Check if the lock is stale (older than 60 min = stuck cycle)
+    if [ -d "$LOCK_DIR" ]; then
+        LOCK_AGE=$(( $(date +%s) - $(stat -f %m "$LOCK_DIR" 2>/dev/null || echo 0) ))
+        if [ "$LOCK_AGE" -gt 3600 ]; then
+            log "Stale lock detected (${LOCK_AGE}s old). Cleaning up."
+            rmdir "$LOCK_DIR" 2>/dev/null || true
+            mkdir "$LOCK_DIR" 2>/dev/null || true
+        else
+            log "Previous cycle still running (${LOCK_AGE}s). Skipping this tick."
+            exit 0
+        fi
+    fi
 fi
 
 # ---- Run Cycle --------------------------------------------------------------
@@ -175,6 +194,7 @@ fi
 NEXT_CYCLE=$((CURRENT_CYCLE + 1))
 NEXT_TASK=$(grep -m1 '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null | sed 's/^- \[ \] //' || echo "unknown")
 CYCLE_LOG="$LOG_DIR/cycle-$NEXT_CYCLE.log"
+TODAY=$(date +%Y-%m-%d)
 
 log "===== Cycle $NEXT_CYCLE/$MAX_CYCLES | $REMAINING tasks remaining | Next: $NEXT_TASK ====="
 
@@ -183,12 +203,12 @@ MEMORY_CONTEXT=$(generate_memory_context 2>/dev/null || echo "No memory context 
 
 START_TIME=$(date +%s)
 
-# The prompt gives the agent full context about where it is in the sprint
-# and what it learned from past cycles
-claude -p \
+# Pipe the prompt via heredoc to claude -p
+cat <<PROMPT | claude -p \
     --max-turns 75 \
     --allowedTools "Bash(just *),Bash(pytest *),Bash(ruff *),Bash(mypy *),Bash(git add *),Bash(git commit *),Bash(git status),Bash(git diff *),Bash(git log *),Bash(ls *),Bash(mkdir *),Bash(codex *),Bash(gemini *),Bash(cat /tmp/*),Bash(touch *),Bash(chmod *),Bash(cp *),Bash(python3 *),Read,Write,Edit,Glob,Grep,TodoWrite,WebSearch,WebFetch" \
-    "You are the Holus builder-manager, cycle $NEXT_CYCLE of $MAX_CYCLES.
+    >> "$CYCLE_LOG" 2>&1 || true
+You are the Holus builder-manager, cycle $NEXT_CYCLE of $MAX_CYCLES.
 
 READ YOUR FULL INSTRUCTIONS: .claude/agents/builder.md
 
@@ -207,13 +227,13 @@ AFTER COMPLETING THE TASK:
 1. Run \`just check\` if code was written
 2. Commit if tests pass: git add + git commit
 3. Mark the task as [x] in NEXT.md
-4. Write cycle report to .self-improvement/reports/builder/$(date +%Y-%m-%d)-cycle-$NEXT_CYCLE.md
+4. Write cycle report to .self-improvement/reports/builder/${TODAY}-cycle-${NEXT_CYCLE}.md
 5. Append to .self-improvement/memory/trajectory.jsonl
 6. If you learned something important, update .self-improvement/MEMORY.md
 7. If you discovered new work needed, ADD new tasks to NEXT.md
 
-If Codex or Gemini are unavailable, do the work yourself with Claude tools. Always report tool failures." \
-    >> "$CYCLE_LOG" 2>&1 || true
+If Codex or Gemini are unavailable, do the work yourself with Claude tools. Always report tool failures.
+PROMPT
 
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
@@ -222,9 +242,6 @@ log "Cycle $NEXT_CYCLE completed in ${DURATION}s ($((DURATION / 60))m $((DURATIO
 
 # Update sprint state
 update_state "$NEXT_CYCLE" "running"
-
-# Release lock (fd 9 auto-closes on script exit, but be explicit)
-flock -u 9
 
 # Summary
 COMPLETED=$(grep -c '^\- \[x\]' .self-improvement/NEXT.md 2>/dev/null || echo "0")
