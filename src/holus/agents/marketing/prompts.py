@@ -7,7 +7,6 @@ Contains prompts for:
 
 from __future__ import annotations
 
-
 # ---------------------------------------------------------------------------
 # Opus — Strategic Planning (Reason Stage)
 # ---------------------------------------------------------------------------

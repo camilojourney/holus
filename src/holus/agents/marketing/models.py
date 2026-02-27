@@ -6,12 +6,12 @@ Pydantic models for content decisions, generated content, and marketing cycle re
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class Platform(str, Enum):
+class Platform(StrEnum):
     """Social media platforms supported by the marketing agent."""
 
     LINKEDIN = "linkedin"
@@ -23,7 +23,7 @@ class Platform(str, Enum):
     YOUTUBE = "youtube"
 
 
-class ContentType(str, Enum):
+class ContentType(StrEnum):
     """Types of content the marketing agent can create."""
 
     TUTORIAL = "tutorial"
