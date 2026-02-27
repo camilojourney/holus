@@ -14,7 +14,7 @@ from .content_queue import list_approved, mark_published
 console = Console()
 
 
-async def publish_all():
+async def publish_all() -> None:
     """Publish all approved content pieces."""
     # Check for API key
     api_key = os.getenv("LATE_API_KEY")
@@ -81,7 +81,7 @@ async def publish_all():
     console.print("\n[cyan]Publishing complete![/cyan]")
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     try:
         asyncio.run(publish_all())

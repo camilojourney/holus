@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from types import TracebackType
 from typing import Any
 
 import httpx
@@ -269,16 +270,30 @@ class LateAPIClient:
         """
         response = await self.client.get("/posts", params={"status": "scheduled"})
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        if not isinstance(data, list):
+            raise TypeError("Expected list response from /posts endpoint")
+
+        scheduled: list[dict[str, Any]] = []
+        for item in data:
+            if isinstance(item, dict):
+                scheduled.append(item)
+
+        return scheduled
 
     async def close(self) -> None:
         """Close the HTTP client."""
         await self.client.aclose()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> LateAPIClient:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         """Async context manager exit."""
         await self.close()

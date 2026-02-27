@@ -13,7 +13,7 @@ from .content_queue import approve, list_pending, reject
 console = Console()
 
 
-def display_pending():
+def display_pending() -> None:
     """Display all pending content pieces in a formatted table."""
     pending = list_pending()
 
@@ -45,7 +45,7 @@ def display_pending():
     console.print("[dim]Use --reject <id> to reject[/dim]")
 
 
-def show_content(piece_id: str):
+def show_content(piece_id: str) -> None:
     """Display full content for a specific piece.
 
     Args:
@@ -84,7 +84,7 @@ Generated: {content.generated_at.strftime("%Y-%m-%d %H:%M")}
     console.print(f'  just reject-content {piece_id} "reason here"')
 
 
-def approve_content(piece_id: str):
+def approve_content(piece_id: str) -> None:
     """Approve a content piece for publishing.
 
     Args:
@@ -99,7 +99,7 @@ def approve_content(piece_id: str):
         sys.exit(1)
 
 
-def reject_content(piece_id: str, reason: str):
+def reject_content(piece_id: str, reason: str) -> None:
     """Reject a content piece.
 
     Args:
@@ -116,7 +116,7 @@ def reject_content(piece_id: str, reason: str):
         sys.exit(1)
 
 
-def main():
+def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="Review social media content")
     parser.add_argument("--show", metavar="ID", help="Show full content for a piece")

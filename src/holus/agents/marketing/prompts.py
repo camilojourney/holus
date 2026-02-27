@@ -7,6 +7,8 @@ Contains prompts for:
 
 from __future__ import annotations
 
+from typing import Any
+
 # ---------------------------------------------------------------------------
 # Opus — Strategic Planning (Reason Stage)
 # ---------------------------------------------------------------------------
@@ -157,7 +159,9 @@ Make it great. This content represents the product to the world.
 # ---------------------------------------------------------------------------
 
 
-def format_product_info(product: str, products_config: dict) -> str:
+def format_product_info(
+    product: str, products_config: dict[str, dict[str, Any]]
+) -> str:
     """Extract relevant product info from the products config."""
     product_data = products_config.get(product, {})
 
@@ -175,7 +179,7 @@ Value Proposition: {product_data.get('value_prop', 'N/A')}
 # ---------------------------------------------------------------------------
 
 
-def format_platform_guidelines(platform: str, knowledge: dict) -> str:
+def format_platform_guidelines(platform: str, knowledge: dict[str, Any]) -> str:
     """Extract platform-specific guidelines from the knowledge base."""
     platform_data = knowledge.get("platforms", {}).get(platform, {})
 

@@ -88,7 +88,7 @@ def _run_agent(agent_name: str, *, once: bool = False) -> None:
 async def _start_agent(agent_name: str, *, once: bool = False) -> None:
     """Import and run the specified agent."""
     if agent_name == "marketing":
-        from holus.agents.marketing.agent import MarketingAgent  # type: ignore[import-untyped]
+        from holus.agents.marketing.agent import MarketingAgent
 
         agent = MarketingAgent()
         await agent.run()
