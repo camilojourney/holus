@@ -2,17 +2,18 @@
 
 from __future__ import annotations
 
-import asyncio
-from types import TracebackType
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from types import TracebackType
 
 import httpx
 from pydantic import BaseModel, Field
 from tenacity import (
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
-    retry_if_exception_type,
 )
 
 

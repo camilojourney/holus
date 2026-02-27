@@ -3,12 +3,12 @@
 import asyncio
 import os
 import sys
-from pathlib import Path
 
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from holus.integrations.late_api import LateAPIClient, PostRequest
+
 from .content_queue import list_approved, mark_published
 
 console = Console()

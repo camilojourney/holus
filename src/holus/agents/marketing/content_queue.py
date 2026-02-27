@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -143,5 +143,5 @@ def mark_published(piece_id: str, post_id: str) -> None:
     data = yaml.safe_load(path.read_text())
     data["status"] = "published"
     data["post_id"] = post_id
-    data["published_at"] = datetime.now().isoformat()
+    data["published_at"] = datetime.now(tz=UTC).isoformat()
     path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
