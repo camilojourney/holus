@@ -1,27 +1,51 @@
 # Spec 010: Marketing Agent
 
-## Feature: AI marketing strategist agent that observes analytics, decides strategy, creates content, and posts to social media
+**Status:** implemented
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2026-02-26
+**Updated:** 2026-02-26
 
-### Overview
+## Problem
 
-The marketing agent is the brain of Holus. It runs as an episodic agent (triggered every 30 minutes by cron or manually) and executes a ReAct loop: Observe (read analytics and product state), Reason (decide what content to create), Act (generate text/images and post), Evaluate (log decisions and results). It starts simple — text posts to LinkedIn and Twitter — and gains capabilities over time (images, video, more platforms). This spec defines the Phase 1 minimum: a working agent that can create and post text content.
+There is no automated system to promote the product portfolio (Pilaster, genpeli, invoz). Content strategy decisions are made manually, content is created ad-hoc, and there is no feedback loop between what gets posted and what performs well. The founder must handle all marketing decisions, content creation, and scheduling, which does not scale and leaves analytics data unused.
 
-### User Stories
+## Goals
 
-- As a founder, I want the agent to read my social media analytics so that it knows what content performs well.
-- As a founder, I want the agent to decide what to post about so that content strategy is data-informed.
-- As a founder, I want the agent to create platform-specific content so that each post is optimized for its platform.
-- As a founder, I want the agent to learn from results so that content quality improves over time.
+- Marketing agent runs a full ReAct loop (observe, reason, act, evaluate) every 30 minutes via cron or manual trigger
+- Agent reads social media analytics to inform content decisions (data-driven strategy)
+- Agent decides what content to create, for which product, on which platform, with explicit reasoning
+- Agent generates platform-specific text content optimized for each platform's format and audience
+- Agent logs every decision and outcome to trajectory.jsonl for future learning
+- Content quality improves over time as the agent learns from results via MEMORY.md
 
----
+## Non-Goals
 
-### Core Specifications
+- Image generation -- handled by Pilaster integration (future spec)
+- Video generation -- handled by genpeli integration (future spec)
+- Social media posting mechanics -- handled by social-media MCP (Spec 016)
+- Self-improvement / prompt optimization -- handled by knowledge & learning system (Spec 012)
+- Content never contains financial advice or internal metrics -- enforced via system prompt hard rules
+- Auto-posting in Phase 1 -- human approval required before publishing; auto-post deferred to Phase 2+
 
-**SPEC-001: Marketing Agent ReAct Loop**
+## Solution
+
+The marketing agent is the brain of Holus. It runs as an episodic LangGraph state machine triggered every 30 minutes by cron or manually via `just run-marketing`. The agent executes a four-stage ReAct loop:
+
+1. **Observe** -- Read analytics from social-media MCP, product state from `config/products.yaml`, knowledge from `.self-improvement/knowledge/`, and memory from `.self-improvement/MEMORY.md`
+2. **Reason** -- Use Claude Opus to analyze all context and decide what 1-3 content pieces to create this cycle, with explicit reasoning
+3. **Act** -- Use Claude Sonnet to generate platform-specific text content. In Phase 1, save to `data/content-queue/` for human review. In Phase 2+, publish via social-media MCP
+4. **Evaluate** -- Log all decisions and outcomes to trajectory.jsonl. Update MEMORY.md when significant patterns emerge (Phase 2+)
+
+The agent starts simple (text posts to LinkedIn and Twitter) and gains capabilities over time (images, video, more platforms). Kill switch is checked before every stage. Human approval is required for all publishing in Phase 1.
+
+## Implementation Notes
+
+### SPEC-001: Marketing Agent ReAct Loop
 
 | Field | Value |
 |-------|-------|
-| Description | LangGraph state machine with 4 stages: observe → reason → act → evaluate |
+| Description | LangGraph state machine with 4 stages: observe, reason, act, evaluate |
 | Trigger | Cron (every 30 min) or manual (`just run-marketing`) |
 | Input | Product state (`config/products.yaml`), knowledge base (`.self-improvement/knowledge/`), memory (`.self-improvement/MEMORY.md`) |
 | Output | Published content, updated trajectory log, updated memory |
@@ -96,21 +120,7 @@ class MarketingAgent(BaseAgent):
         ...
 ```
 
-Acceptance Criteria:
-- [ ] `MarketingAgent` inherits from `BaseAgent` and implements `build_graph()`
-- [ ] LangGraph state machine has 4 stages: observe → reason → act → evaluate
-- [ ] Kill switch is checked before each stage
-- [ ] Agent reads `config/products.yaml` during observe stage
-- [ ] Agent reads `.self-improvement/knowledge/` during observe stage
-- [ ] Agent reads `.self-improvement/MEMORY.md` during observe stage
-- [ ] Agent uses Opus for strategy reasoning (model routing)
-- [ ] Agent uses Sonnet for content generation
-- [ ] Agent logs every decision to trajectory.jsonl
-- [ ] `just run-marketing` triggers the agent manually
-
----
-
-**SPEC-002: Observe Stage**
+### SPEC-002: Observe Stage
 
 | Field | Value |
 |-------|-------|
@@ -151,16 +161,7 @@ async def observe(self, state: MarketingState) -> dict:
     }
 ```
 
-Acceptance Criteria:
-- [ ] Products loaded from `config/products.yaml`
-- [ ] Knowledge loaded from all files in `.self-improvement/knowledge/current/`
-- [ ] Memory loaded from `.self-improvement/MEMORY.md`
-- [ ] Completes within 30 seconds
-- [ ] Graceful handling if files are missing
-
----
-
-**SPEC-003: Reason Stage**
+### SPEC-003: Reason Stage
 
 | Field | Value |
 |-------|-------|
@@ -238,16 +239,7 @@ class ContentDecision(BaseModel):
     estimated_engagement: str  # "low" | "medium" | "high"
 ```
 
-Acceptance Criteria:
-- [ ] Reason stage uses Opus (via `task_type="strategic_planning"`)
-- [ ] Prompt includes all context from observe stage
-- [ ] Output is a structured list of `ContentDecision` objects
-- [ ] Each decision includes reasoning (not just "what" but "why")
-- [ ] 1-3 decisions per cycle
-
----
-
-**SPEC-004: Act Stage**
+### SPEC-004: Act Stage
 
 | Field | Value |
 |-------|-------|
@@ -310,17 +302,7 @@ Reasoning: {decision['reasoning']}
     }
 ```
 
-Acceptance Criteria:
-- [ ] Text content generated using Sonnet for each decision
-- [ ] Content respects platform character limits
-- [ ] Phase 1: Content saved to `data/content-queue/` for human review
-- [ ] Phase 2+: Content published via social-media MCP
-- [ ] Generated content includes platform-specific formatting
-- [ ] Each piece logged with decision context
-
----
-
-**SPEC-005: Evaluate Stage**
+### SPEC-005: Evaluate Stage
 
 | Field | Value |
 |-------|-------|
@@ -356,14 +338,6 @@ async def evaluate(self, state: MarketingState) -> dict:
 
     return {"evaluation": {"logged": True, "pieces_created": len(state["generated_content"])}}
 ```
-
-Acceptance Criteria:
-- [ ] Every content decision logged to trajectory.jsonl
-- [ ] Metadata includes product, platform, content_type, and reasoning
-- [ ] Failed generations logged with error details
-- [ ] MEMORY.md updated when significant patterns emerge (Phase 2+)
-
----
 
 ### Data Structures
 
@@ -410,8 +384,6 @@ class MarketingCycleReport(BaseModel):
     total_cost_usd: float
 ```
 
----
-
 ### File Locations
 
 | File | Change Type | Description |
@@ -426,9 +398,22 @@ class MarketingCycleReport(BaseModel):
 | `tests/unit/agents/test_marketing.py` | New | Unit tests for the marketing agent |
 | `justfile` | Modified | Add `run-marketing` command |
 
----
+### Security Notes
 
-### Edge Cases & Error Handling
+- Content never contains financial advice (hard rule in system prompt)
+- Content never exposes internal metrics or revenue numbers
+- Human approval required before posting in Phase 1
+- Kill switch stops all content creation immediately
+
+### Dependencies
+
+- Depends on: [Spec 009](./009-autonomous-build-system.md) — the builder will implement this agent
+- Depends on: [Spec 012](./012-knowledge-learning.md) — the knowledge system the agent reads from
+- Depended on by: [Spec 016](./016-social-media-integration-v2.md) — posting and analytics via social-media MCP
+- Related: [Spec 014](./014-genpeli-integration.md) — video creation via genpeli MCP
+- Related: [Spec 015](./015-pilaster-integration.md) — image generation via Pilaster MCP
+
+## Edge Cases & Failure Modes
 
 **EDGE-001: No analytics available (cold start)**
 - Scenario: First run, no social media analytics exist
@@ -443,16 +428,14 @@ class MarketingCycleReport(BaseModel):
 **EDGE-003: Content decision is for a product with no recent updates**
 - Scenario: Opus decides to create content for invoz, but invoz hasn't shipped anything new
 - Expected behavior: Agent creates evergreen content (tips, tutorials, educational) rather than product announcements.
-- Recovery: Automatic — system prompts guide towards evergreen content when no news exists.
+- Recovery: Automatic -- system prompts guide towards evergreen content when no news exists.
 
 **EDGE-004: Generated content is too long for platform**
 - Scenario: LinkedIn post exceeds 3,000 characters
 - Expected behavior: Auto-truncate and regenerate with explicit length constraint. If still too long, truncate with "..." and post.
 - Recovery: Automatic.
 
----
-
-### Performance Requirements
+## Observability
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -463,36 +446,35 @@ class MarketingCycleReport(BaseModel):
 | Cost per cycle | < $0.50 | Langfuse cost tracking |
 | Cost per day (48 cycles) | < $10 | Aggregated |
 
----
+## Acceptance Criteria
 
-### Security Considerations
-
-- Content never contains financial advice (hard rule in system prompt)
-- Content never exposes internal metrics or revenue numbers
-- Human approval required before posting in Phase 1
-- Kill switch stops all content creation immediately
-
----
-
-### Out of Scope
-
-- Image generation (handled by spec 015 — Pilaster integration)
-- Video generation (handled by spec 014 — genpeli integration)
-- Social media posting mechanics (handled by spec 016 — social-media MCP)
-- Self-improvement / prompt optimization (handled by spec 012)
-
----
-
-### Related Specs
-
-- [009-autonomous-build-system.md](./009-autonomous-build-system.md) — the builder will implement this agent
-- [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — posting and analytics via social-media MCP
-- [012-knowledge-learning.md](./012-knowledge-learning.md) — the knowledge system the agent reads from
-- [014-genpeli-integration.md](./014-genpeli-integration.md) — video creation via genpeli MCP
-- [015-pilaster-integration.md](./015-pilaster-integration.md) — image generation via Pilaster MCP
-
----
-
-**Last Updated:** 2026-02-26
-**Status:** Not Started
-**Owner:** Camilo Martinez
+- [ ] `MarketingAgent` inherits from `BaseAgent` and implements `build_graph()`
+- [ ] LangGraph state machine has 4 stages: observe, reason, act, evaluate
+- [ ] Kill switch is checked before each stage
+- [ ] Agent reads `config/products.yaml` during observe stage
+- [ ] Agent reads `.self-improvement/knowledge/` during observe stage
+- [ ] Agent reads `.self-improvement/MEMORY.md` during observe stage
+- [ ] Agent uses Opus for strategy reasoning (model routing)
+- [ ] Agent uses Sonnet for content generation
+- [ ] Agent logs every decision to trajectory.jsonl
+- [ ] `just run-marketing` triggers the agent manually
+- [ ] Products loaded from `config/products.yaml`
+- [ ] Knowledge loaded from all files in `.self-improvement/knowledge/current/`
+- [ ] Memory loaded from `.self-improvement/MEMORY.md`
+- [ ] Observe stage completes within 30 seconds
+- [ ] Graceful handling if files are missing
+- [ ] Reason stage uses Opus (via `task_type="strategic_planning"`)
+- [ ] Prompt includes all context from observe stage
+- [ ] Output is a structured list of `ContentDecision` objects
+- [ ] Each decision includes reasoning (not just "what" but "why")
+- [ ] 1-3 decisions per cycle
+- [ ] Text content generated using Sonnet for each decision
+- [ ] Content respects platform character limits
+- [ ] Phase 1: Content saved to `data/content-queue/` for human review
+- [ ] Phase 2+: Content published via social-media MCP
+- [ ] Generated content includes platform-specific formatting
+- [ ] Each piece logged with decision context
+- [ ] Every content decision logged to trajectory.jsonl
+- [ ] Metadata includes product, platform, content_type, and reasoning
+- [ ] Failed generations logged with error details
+- [ ] MEMORY.md updated when significant patterns emerge (Phase 2+)

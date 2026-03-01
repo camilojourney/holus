@@ -16,12 +16,13 @@ Last updated: 2026-03-01
 | Spec | Name | Status |
 |------|------|--------|
 | 001 | Core Infrastructure | Partial (config, kill switch, events, health: done; docker compose, event bus integration: not tested) |
-| 010 | Marketing Agent | Implemented (ReAct loop, content queue, review CLI, 97 tests) |
-| 012 | Knowledge & Learning | Partial (trajectory logger: done; knowledge files: done; knowledge_gaps.py: not built; weekly learning loop: not built) |
+| 009 | Autonomous Build System | Partial (builder agent, run lock, trajectory logging: done; launchd scheduler: not tested) |
+| 010 | Marketing Agent | Implemented (ReAct loop, content queue, review CLI, 247 tests) |
+| 012 | Knowledge & Learning | Implemented (knowledge base, trajectory, learning loop, knowledge gaps, archive rotation, README index: all done) |
 | 013 | Scheduling & Runtime | Partial (launchd plists exist; not tested/activated) |
-| 014 | Genpeli Integration | Not Started (genpeli has no MCP server) |
-| 015 | Pilaster Integration | Not Started (pilaster MCP exists in sibling repo; not connected) |
-| 016 | Social Media Integration V2 | Not Started (social-media MCP exists in sibling repo with 9 tools; not connected; missing get_analytics + get_top_posts tools) |
+| 014 | Genpeli Integration | Partial (video_workflow.py + video_queue.py built; genpeli MCP server: not built) |
+| 015 | Pilaster Integration | Partial (pilaster MCP connected + image_workflow.py built; end-to-end not tested) |
+| 016 | Social Media Integration V2 | Partial (MCP connected + get_analytics/get_top_posts tools added; end-to-end not tested) |
 
 ---
 
@@ -48,11 +49,11 @@ Last updated: 2026-03-01
 - [x] [BUILD] Voice profile capture — Growth engine vision requires content that sounds like Camilo. Analyze existing LinkedIn/Twitter posts to extract voice characteristics. Write results to `.self-improvement/knowledge/current/voice-profile.md`.
 - [x] [BUILD] Structured content framework library — Growth engine vision defines 7 frameworks (Breakdown, Contrarian, Before/After, Thread, BTS, Engagement Bait, Data Drop) + hook templates. Structure these into a machine-readable format in `.self-improvement/knowledge/current/content-frameworks.md`.
 - [x] [BUILD] Weekly learning loop — Spec 012 SPEC-003. Manager agent reads trajectory + analytics weekly, uses Opus to extract patterns, updates MEMORY.md. Wire up `just improve` to run this.
-- [ ] [BUILD] Performance patterns knowledge file — Auto-generated from analytics data. Create `.self-improvement/knowledge/current/performance-patterns.md` seeded with the correct metadata header. Updated by the weekly learning loop.
+- [x] [BUILD] Performance patterns knowledge file — Auto-generated from analytics data. Create `.self-improvement/knowledge/current/performance-patterns.md` seeded with the correct metadata header. Updated by the weekly learning loop.
 
 ### P4 — Polish
 
-- [ ] [BUILD] Knowledge archive rotation — Spec 012 requires old knowledge versions to be moved to `archive/` when updated. Add utility function.
-- [ ] [BUILD] Knowledge README.md index — Create `.self-improvement/knowledge/README.md` indexing all current knowledge files, their topics, and confidence levels.
-- [ ] [REVIEW] Update specs/README.md status — Spec 010 is listed as "Not Started" but is Implemented. Spec 012 status should be "Partial". Sync all spec statuses.
+- [x] [BUILD] Knowledge archive rotation — Spec 012 requires old knowledge versions to be moved to `archive/` when updated. Add utility function.
+- [x] [BUILD] Knowledge README.md index — Create `.self-improvement/knowledge/README.md` indexing all current knowledge files, their topics, and confidence levels.
+- [x] [REVIEW] Update specs/README.md status — Spec 010 is listed as "Not Started" but is Implemented. Spec 012 status should be "Partial". Sync all spec statuses.
 - [ ] [REVIEW] Verify launchd scheduling works — Spec 013. Test `just schedule` and `just schedule-status`. Verify marketing agent cron runs every 30 min.

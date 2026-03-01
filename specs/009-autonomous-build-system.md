@@ -1,27 +1,59 @@
 # Spec 009: Autonomous Build System
 
-## Feature: Self-building agent loop that implements Holus feature-by-feature via scheduled Claude Code sessions
+**Status:** partial
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2026-02-26
+**Updated:** 2026-02-26
 
-### Overview
+## Problem
 
-The autonomous build system runs Claude Code sessions every 30 minutes via macOS launchd. Each session reads the priority queue (`.self-improvement/NEXT.md`), picks the top unfinished task, implements it, runs tests, commits, and updates the queue. After 24 hours (~48 cycles), Holus should have a functional marketing agent that can observe analytics, create content, and post to social media. This is the "meta-system" that builds all other features.
+Building Holus feature-by-feature requires many small implementation tasks that follow a predictable pattern: read a spec, write code, run tests, commit. Doing this manually is slow and blocks progress whenever the founder is unavailable. Without an autonomous build loop, Holus cannot build itself overnight -- the founder has to be present for every coding session, limiting throughput to a few tasks per day instead of dozens.
 
-### User Stories
+## Goals
 
-- As a founder, I want to set up a cron that runs Claude Code every 30 minutes so that Holus builds itself while I sleep.
-- As a founder, I want each build session to pick the highest-priority unfinished task so that work progresses in the right order.
-- As a founder, I want the build system to run `just check` before committing so that broken code never lands on main.
-- As a founder, I want a kill switch to stop all build sessions if something goes wrong.
+- Claude Code sessions run automatically every 30 minutes via macOS launchd, requiring no human intervention
+- Each session reads the priority queue (`.self-improvement/NEXT.md`), picks the top unfinished task, and implements it
+- `just check` (lint + typecheck + tests) must pass before any code is committed to main
+- Overlapping sessions are prevented via OS-level file locking that auto-releases on crash
+- Every build session is logged to `trajectory.jsonl` with task picked, status, files changed, and duration
+- After 24 hours (~48 cycles), Holus should have a functional marketing agent capable of observing analytics, creating content, and posting to social media
 
----
+## Non-Goals
 
-### Core Specifications
+- Remote execution -- this runs locally on macOS only (no cloud CI needed for build loop)
+- Multi-machine coordination -- single Mac Mini (distributed builds add complexity without value at this stage)
+- Cloud CI/CD integration -- separate spec (this is the local autonomous loop only)
 
-**SPEC-001: Builder Agent Definition**
+## Solution
+
+The autonomous build system is a "meta-system" that builds all other Holus features. It consists of four components:
+
+1. **Builder agent** -- A Claude Code agent definition (`.claude/agents/builder.md`) that reads NEXT.md, picks the top priority task, reads the relevant spec, implements the code, runs tests, commits on success, and updates the queue.
+
+2. **launchd scheduler** -- A macOS launchd plist that triggers `just build-cycle` every 30 minutes. Combined with the run lock, this ensures continuous progress without overlapping sessions.
+
+3. **Run lock** -- OS-level `flock` that prevents two build sessions from running simultaneously. If a session takes longer than 30 minutes, the next launchd trigger exits immediately instead of causing conflicts.
+
+4. **Session logging** -- Every build cycle appends a structured entry to `trajectory.jsonl` recording what was attempted, whether it succeeded, which files changed, and how long it took. This gives the manager agent (and the founder) full visibility into autonomous progress.
+
+The builder agent follows this loop per session:
+```
+READ NEXT.md -> FIND top unchecked task -> READ spec -> IMPLEMENT -> RUN just check
+  -> IF pass: commit, mark done, log success
+  -> IF fail: fix (2 attempts), then mark blocked, log failure, move on
+-> EXIT
+```
+
+Security: Builder runs with user-level permissions only. It never force-pushes, never modifies `config/guardrails.yaml`, never exposes secrets in commits (pre-commit hook enforces this). Build logs are gitignored as they may contain API responses.
+
+## Implementation Notes
+
+### SPEC-001: Builder Agent Definition
 
 | Field | Value |
 |-------|-------|
-| Description | Claude Code agent (``.claude/agents/builder.md``) that reads NEXT.md, picks the top P0 task, implements it, tests it, and commits |
+| Description | Claude Code agent (`.claude/agents/builder.md`) that reads NEXT.md, picks the top P0 task, implements it, tests it, and commits |
 | Trigger | launchd runs `just build-cycle` every 30 minutes |
 | Input | `.self-improvement/NEXT.md` (priority queue), relevant spec files, existing codebase |
 | Output | Implemented code, passing tests, git commit, updated NEXT.md |
@@ -47,18 +79,9 @@ The builder agent follows this loop:
 8. EXIT
 ```
 
-Acceptance Criteria:
-- [ ] `.claude/agents/builder.md` agent definition exists and works with `claude --agent`
-- [ ] Agent reads NEXT.md and correctly identifies the top priority task
-- [ ] Agent reads the relevant spec before implementing
-- [ ] `just check` runs and passes before any commit
-- [ ] Agent commits with descriptive messages
-- [ ] Agent marks completed tasks in NEXT.md
-- [ ] Agent logs to trajectory.jsonl
-
 ---
 
-**SPEC-002: launchd Scheduler**
+### SPEC-002: launchd Scheduler
 
 | Field | Value |
 |-------|-------|
@@ -124,18 +147,9 @@ builder-status:
     @tail -20 logs/builder.stdout.log 2>/dev/null || echo "No logs yet"
 ```
 
-Acceptance Criteria:
-- [ ] `infra/launchd/com.holus.builder.plist` exists with correct paths
-- [ ] `just schedule-builder` installs and loads the launchd agent
-- [ ] `just unschedule-builder` removes the launchd agent
-- [ ] `just build-cycle` runs one build session manually
-- [ ] `just builder-status` shows whether the builder is running and recent logs
-- [ ] Logs are written to `logs/builder.stdout.log` and `logs/builder.stderr.log`
-- [ ] launchd does not start a new session if the previous one is still running
-
 ---
 
-**SPEC-003: Run Lock (Overlap Prevention)**
+### SPEC-003: Run Lock (Overlap Prevention)
 
 | Field | Value |
 |-------|-------|
@@ -188,15 +202,9 @@ def acquire_run_lock(
         lock_file.unlink(missing_ok=True)
 ```
 
-Acceptance Criteria:
-- [ ] `acquire_run_lock("builder")` prevents a second instance from running
-- [ ] Lock is automatically released if the process crashes (flock guarantee)
-- [ ] Second instance exits cleanly with message, not with an error
-- [ ] Lock file is cleaned up after normal exit
-
 ---
 
-**SPEC-004: Build Session Logging**
+### SPEC-004: Build Session Logging
 
 | Field | Value |
 |-------|-------|
@@ -222,11 +230,6 @@ Acceptance Criteria:
   "notes": "Implemented observe and reason stages. Act stage deferred to next cycle."
 }
 ```
-
-Acceptance Criteria:
-- [ ] Every build session appends exactly one entry to trajectory.jsonl
-- [ ] Failed sessions are logged with `status: "error"` and error details
-- [ ] Skipped sessions (lock conflict) are logged with `status: "skipped"`
 
 ---
 
@@ -264,9 +267,13 @@ class BuildCycleResult(BaseModel):
 | `justfile` | Modified | Add build-cycle, schedule-builder, unschedule-builder commands |
 | `logs/` | New (gitignored) | Build session logs |
 
----
+### Dependencies
 
-### Edge Cases & Error Handling
+- Depends on: [Spec 001](./001-core-infrastructure.md) — uses trajectory.jsonl logging conventions, shared models
+- Depended on by: [Spec 010](./010-marketing-agent.md) — the builder will implement this spec first
+- Related: [Spec 013](./013-scheduling-runtime.md) — the runtime scheduling that Holus itself uses, separate from build scheduling
+
+## Edge Cases & Failure Modes
 
 **EDGE-001: Build session takes longer than 30 minutes**
 - Scenario: A complex task takes 45 minutes to implement
@@ -280,7 +287,7 @@ class BuildCycleResult(BaseModel):
 
 **EDGE-003: Tests fail and cannot be fixed**
 - Scenario: Builder implements code but tests fail. Two fix attempts also fail.
-- Expected behavior: Builder leaves the task unchecked, adds a `⚠️ blocked:` note to the task in NEXT.md, moves to the next task.
+- Expected behavior: Builder leaves the task unchecked, adds a blocked note to the task in NEXT.md, moves to the next task.
 - Recovery: Human reviews the blocked task and either fixes it or provides guidance.
 
 **EDGE-004: Claude Code API unavailable**
@@ -288,9 +295,7 @@ class BuildCycleResult(BaseModel):
 - Expected behavior: Build session logs the error and exits. Next session retries.
 - Recovery: Automatic on next cycle.
 
----
-
-### Performance Requirements
+## Observability
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -299,32 +304,26 @@ class BuildCycleResult(BaseModel):
 | Test pass rate | > 90% | Count tests_passed: true / total |
 | Time to functional agent | < 24 hours | First successful content post |
 
----
+## Acceptance Criteria
 
-### Security Considerations
-
-- Builder agent runs with the same permissions as the user. No privilege escalation.
-- Builder never force-pushes or modifies config/guardrails.yaml.
-- Builder never exposes secrets in commits (pre-commit hook enforces this).
-- Builder logs are gitignored (may contain API responses).
-
----
-
-### Out of Scope
-
-- Remote execution (this runs locally on macOS only)
-- Multi-machine coordination (single Mac Mini)
-- Cloud CI/CD integration (that's a separate spec)
-
----
-
-### Related Specs
-
-- [010-marketing-agent.md](./010-marketing-agent.md) — primary feature the builder will implement first
-- [013-scheduling-runtime.md](./013-scheduling-runtime.md) — the runtime scheduling that Holus itself uses (separate from build scheduling)
-
----
-
-**Last Updated:** 2026-02-26
-**Status:** Not Started
-**Owner:** Camilo Martinez
+- [ ] `.claude/agents/builder.md` agent definition exists and works with `claude --agent`
+- [ ] Agent reads NEXT.md and correctly identifies the top priority task
+- [ ] Agent reads the relevant spec before implementing
+- [ ] `just check` runs and passes before any commit
+- [ ] Agent commits with descriptive messages
+- [ ] Agent marks completed tasks in NEXT.md
+- [ ] Agent logs to trajectory.jsonl
+- [ ] `infra/launchd/com.holus.builder.plist` exists with correct paths
+- [ ] `just schedule-builder` installs and loads the launchd agent
+- [ ] `just unschedule-builder` removes the launchd agent
+- [ ] `just build-cycle` runs one build session manually
+- [ ] `just builder-status` shows whether the builder is running and recent logs
+- [ ] Logs are written to `logs/builder.stdout.log` and `logs/builder.stderr.log`
+- [ ] launchd does not start a new session if the previous one is still running
+- [ ] `acquire_run_lock("builder")` prevents a second instance from running
+- [ ] Lock is automatically released if the process crashes (flock guarantee)
+- [ ] Second instance exits cleanly with message, not with an error
+- [ ] Lock file is cleaned up after normal exit
+- [ ] Every build session appends exactly one entry to trajectory.jsonl
+- [ ] Failed sessions are logged with `status: "error"` and error details
+- [ ] Skipped sessions (lock conflict) are logged with `status: "skipped"`

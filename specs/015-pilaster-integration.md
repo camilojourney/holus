@@ -1,8 +1,37 @@
 # Spec 015: Pilaster Integration
 
-## Feature: AI image generation platform integration for consistent, memory-driven content creation
+**Status:** partial
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2026-02-27
+**Updated:** 2026-02-27
 
-### Overview
+## Problem
+
+The marketing agent needs to generate images that are visually consistent across all
+posts, videos, and platforms. Without access to Pilaster's character registry, generation
+abstraction, and experiment memory, the agent has no way to maintain brand identity, reuse
+successful prompts, or avoid repeating generation failures. Every image generation becomes
+a cold start with no institutional knowledge.
+
+## Goals
+
+- Marketing agent can generate images with consistent character identity across all posts via Pilaster's character registry and LoRAs
+- Agent picks from reusable generation presets (templates) instead of configuring settings manually each time
+- Agent queries past experiments to learn which prompts and settings produced high-quality images
+- Agent stores every generation outcome so the knowledge base grows with each cycle
+- Agent retrieves successful parameter sets for reuse, avoiding reinvention each cycle
+- Characters look the same across social posts, videos, and website without manual effort
+- Generation backends (ComfyUI, Replicate, Runway) are swappable without losing characters or memory
+
+## Non-Goals
+
+- Direct ComfyUI workflow editing — Pilaster stores workflows but editing is done in ComfyUI itself
+- Real-time collaboration on experiments — single-user system for now, no concurrent editing needed
+- Experiment forking/branching — linear history only, branching adds complexity without clear benefit at this stage
+- Public sharing of experiments — private workspace only, no multi-tenant requirements yet
+
+## Solution
 
 Pilaster is an AI image generation platform with memory. It owns three layers:
 (1) **Character registry** — LoRAs, reference sheets, and metadata for consistent
@@ -12,31 +41,17 @@ never see nodes — they pick a character, a template, and generate. (3) **Exper
 memory** — tracks every generation with outcomes and quality scores, learns what
 prompts/settings work, warns before repeating failures.
 
-This spec defines how the marketing agent discovers and uses Pilaster's capabilities
-through its MCP server. The integration follows the federated MCP pattern: Pilaster runs
-as an independent Next.js app with its own database, swappable generation backends, and
-**its own MCP server** (already built, 8 tools). Holus connects to it — no wrapper code
-lives in Holus.
+The integration follows the federated MCP pattern: Pilaster runs as an independent
+Next.js app with its own database, swappable generation backends, and **its own MCP
+server** (already built, 8 tools). Holus connects to it — no wrapper code lives in Holus.
 
 **Key architectural decision (ADR-0004):** Pilaster is a generation platform, not a
 ComfyUI plugin. Backends are swappable. The memory, characters, and templates are the
 product. See `docs/decisions/0004-pilaster-generation-platform.md`.
 
-### User Stories
+## Implementation Notes
 
-- As the marketing agent, I want to generate images of a specific character so that brand identity stays consistent across all posts.
-- As the marketing agent, I want to pick a template ("product shot", "anime scene") so that I don't configure generation settings manually.
-- As the marketing agent, I want to query past experiments so that I learn what prompts and settings work.
-- As the marketing agent, I want to store new experiments with outcomes so that the knowledge base grows.
-- As the marketing agent, I want to retrieve successful parameter sets for reuse so that I don't reinvent the wheel.
-- As a founder, I want characters to look the same everywhere — social posts, videos, website — without manual effort.
-- As a founder, I want to swap backends (ComfyUI → Replicate → Runway) without losing my characters or memory.
-
----
-
-### Core Specifications
-
-**SPEC-001: Pilaster MCP Server**
+### SPEC-001: Pilaster MCP Server
 
 | Field | Value |
 |-------|-------|
@@ -87,19 +102,7 @@ MCP server configuration for Holus (in `.claude/settings.json`):
 }
 ```
 
-Acceptance Criteria:
-- [ ] Pilaster MCP server (in pilaster repo) responds to `tools/list`
-- [ ] `generate_image` tool generates images with character + template support
-- [ ] `search_snapshots` tool searches past experiments by topic/style
-- [ ] `get_successful_prompts` tool returns prompts that worked well (to be added)
-- [ ] `get_templates` tool lists available generation presets (to be added)
-- [ ] `get_ai_suggestions` tool provides AI-powered recommendations (to be added)
-- [ ] Holus can connect to pilaster MCP via `.claude/settings.json` config
-- [ ] All tools have clear descriptions and typed arguments
-
----
-
-**SPEC-002: Marketing Agent Integration**
+### SPEC-002: Marketing Agent Integration
 
 | Field | Value |
 |-------|-------|
@@ -117,7 +120,7 @@ Image generation workflow with Pilaster memory:
 
 async def create_image_content(self, decision: ContentDecision) -> dict:
     """Create image content using Pilaster memory for informed decisions."""
-    
+
     # Step 1: Query Pilaster for successful prompts in this style
     successful_prompts = await self.call_mcp(
         "pilaster",
@@ -125,9 +128,9 @@ async def create_image_content(self, decision: ContentDecision) -> dict:
         style=decision.get("image_style", "product"),
         limit=3,
     )
-    
+
     prompts_data = json.loads(successful_prompts)
-    
+
     # Step 2: Get AI suggestions based on topic
     ai_suggestions = await self.call_mcp(
         "pilaster",
@@ -135,21 +138,21 @@ async def create_image_content(self, decision: ContentDecision) -> dict:
         topic=decision["topic"],
         context=f"Platform: {decision['platform']}, Purpose: {decision['content_type']}",
     )
-    
+
     # Step 3: Build informed prompt using successful patterns
     prompt = self.build_informed_prompt(
         decision=decision,
         successful_patterns=prompts_data,
         ai_suggestions=json.loads(ai_suggestions),
     )
-    
+
     # Step 4: Generate image (via Replicate or ComfyUI)
     image_url, quality_score = await self.generate_image(
         prompt=prompt["text"],
         negative_prompt=prompt.get("negative", ""),
         settings=prompt.get("settings", {}),
     )
-    
+
     # Step 5: Store experiment outcome in Pilaster
     snapshot_id = await self.call_mcp(
         "pilaster",
@@ -161,7 +164,7 @@ async def create_image_content(self, decision: ContentDecision) -> dict:
         quality_score=quality_score,
         settings=json.dumps(prompt.get("settings", {})),
     )
-    
+
     return {
         "image_url": image_url,
         "quality_score": quality_score,
@@ -178,21 +181,21 @@ def build_informed_prompt(
     ai_suggestions: dict,
 ) -> dict:
     """Build a prompt informed by past successes and AI suggestions."""
-    
+
     # Extract common patterns from successful prompts
     common_elements = self.extract_common_elements(successful_patterns)
-    
+
     # Combine decision intent, successful patterns, and AI suggestions
     prompt_text = f"{decision['topic']}, "
     prompt_text += ", ".join(common_elements[:3])
     prompt_text += f", {ai_suggestions.get('style_recommendation', '')}"
-    
+
     # Use settings from highest-scoring successful experiment
     best_settings = {}
     if successful_patterns:
         best = max(successful_patterns, key=lambda p: p.get("quality_score", 0))
         best_settings = best.get("settings", {})
-    
+
     return {
         "text": prompt_text.strip(),
         "negative": ai_suggestions.get("negative_prompt", ""),
@@ -200,32 +203,20 @@ def build_informed_prompt(
     }
 ```
 
-Acceptance Criteria:
-- [ ] Marketing agent discovers Pilaster tools via MCP
-- [ ] Agent queries successful prompts before generating images
-- [ ] Agent uses successful patterns to inform new prompts
-- [ ] Agent stores every generation outcome in Pilaster
-- [ ] Agent learns from past failures (avoids repeating failed experiments)
-- [ ] Prompt quality improves over time as memory grows
-
----
-
-**SPEC-003: Content Types Supported**
+### SPEC-003: Content Types Supported
 
 | Content Type | Available Now | Needs Tooling |
 |--------------|---------------|---------------|
-| **Product screenshots** (UI captures) | ✅ YES | None (query "product screenshots") |
-| **Abstract backgrounds** (social headers) | ✅ YES | None (query "abstract backgrounds") |
-| **Technical diagrams** (architecture visuals) | ✅ YES | None (query "technical diagrams") |
-| **AI-generated scenes** (Flux Schnell via Replicate) | ✅ YES | Replicate backend in Pilaster |
-| **ComfyUI custom workflows** (advanced generation) | ⚠️ PARTIAL | ComfyUI backend in Pilaster |
-| **Template-based graphics** (quote cards, announcements) | ❌ NO | Image template engine (new tool) |
-| **Photo editing** (adjustments, filters) | ❌ NO | Image editing pipeline |
-| **Multi-image compositions** (collages, comparisons) | ❌ NO | Composition engine |
+| **Product screenshots** (UI captures) | YES | None (query "product screenshots") |
+| **Abstract backgrounds** (social headers) | YES | None (query "abstract backgrounds") |
+| **Technical diagrams** (architecture visuals) | YES | None (query "technical diagrams") |
+| **AI-generated scenes** (Flux Schnell via Replicate) | YES | Replicate backend in Pilaster |
+| **ComfyUI custom workflows** (advanced generation) | PARTIAL | ComfyUI backend in Pilaster |
+| **Template-based graphics** (quote cards, announcements) | NO | Image template engine (new tool) |
+| **Photo editing** (adjustments, filters) | NO | Image editing pipeline |
+| **Multi-image compositions** (collages, comparisons) | NO | Composition engine |
 
----
-
-**SPEC-004: Memory-Driven Optimization**
+### SPEC-004: Memory-Driven Optimization
 
 | Field | Value |
 |-------|-------|
@@ -243,7 +234,7 @@ Memory-driven optimization workflow:
 
 async def optimize_image_strategy(self) -> dict:
     """Monthly analysis of image generation experiments to improve prompts."""
-    
+
     # Query all experiments from past 30 days
     experiments = await self.call_mcp(
         "pilaster",
@@ -252,12 +243,12 @@ async def optimize_image_strategy(self) -> dict:
         outcome_filter="",  # All outcomes
         limit=100,
     )
-    
+
     data = json.loads(experiments)
-    
+
     if len(data) < 20:
         return {"status": "insufficient_data", "count": len(data)}
-    
+
     # Analyze success patterns
     analysis = {
         "total_experiments": len(data),
@@ -266,24 +257,15 @@ async def optimize_image_strategy(self) -> dict:
         "top_styles": self.extract_top_styles(data),
         "failed_patterns": self.extract_failed_patterns(data),
     }
-    
+
     # Update knowledge base with findings
     await self.update_knowledge(
         section="image-generation",
         insights=analysis,
     )
-    
+
     return analysis
 ```
-
-Acceptance Criteria:
-- [ ] Monthly optimization runs when 20+ experiments exist
-- [ ] Analysis identifies successful prompt patterns
-- [ ] Analysis identifies failed patterns to avoid
-- [ ] Insights written to `.self-improvement/knowledge/current/image-generation.md`
-- [ ] Success rate trends tracked over time
-
----
 
 ### Data Structures
 
@@ -315,8 +297,6 @@ Pilaster experiment (what the MCP server returns):
 }
 ```
 
----
-
 ### File Locations
 
 **In Holus repo:**
@@ -336,9 +316,20 @@ Pilaster experiment (what the MCP server returns):
 | `get_successful_prompts` | Get prompts with high quality scores |
 | `get_ai_suggestions` | AI-powered generation recommendations |
 
----
+### Security Notes
 
-### Edge Cases & Error Handling
+- `PILASTER_API_KEY` stored in `.env` only, never in code
+- Pilaster API key provides access to all experiments — protect it
+- Experiment data may contain brand-sensitive prompts — encrypted in DB
+- Generated image URLs are public (R2 hosted) — no sensitive content in images
+
+### Dependencies
+
+- Depends on: [Spec 010](./010-marketing-agent.md) — the marketing agent that calls Pilaster tools
+- Depended on by: [Spec 016](./016-social-media-integration-v2.md) — social media distribution uses images from Pilaster
+- Related: [Spec 014](./014-genpeli-integration.md) — video creation silo (parallel integration)
+
+## Edge Cases & Failure Modes
 
 **EDGE-001: Pilaster API unavailable**
 - Scenario: Pilaster service is down or unreachable
@@ -360,9 +351,7 @@ Pilaster experiment (what the MCP server returns):
 - Expected behavior: Regenerate once with modified prompt. If still failing, store as "mixed" outcome and flag for review.
 - Recovery: Human reviews and adjusts prompt template for future use.
 
----
-
-### Performance Requirements
+## Observability
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -373,34 +362,24 @@ Pilaster experiment (what the MCP server returns):
 | Gallery retrieval | < 5s | MCP call latency |
 | Monthly optimization | < 2 min | Analysis runtime |
 
----
+## Acceptance Criteria
 
-### Security Considerations
-
-- `PILASTER_API_KEY` stored in `.env` only, never in code
-- Pilaster API key provides access to all experiments — protect it
-- Experiment data may contain brand-sensitive prompts — encrypted in DB
-- Generated image URLs are public (R2 hosted) — no sensitive content in images
-
----
-
-### Out of Scope
-
-- Direct ComfyUI workflow editing (Pilaster stores workflows, doesn't edit them)
-- Real-time collaboration on experiments (single-user for now)
-- Experiment forking/branching (linear history only)
-- Public sharing of experiments (private workspace only)
-
----
-
-### Related Specs
-
-- [010-marketing-agent.md](./010-marketing-agent.md) — the agent that calls Pilaster tools
-- [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — social media distribution
-- [014-genpeli-integration.md](./014-genpeli-integration.md) — video creation silo
-
----
-
-**Last Updated:** 2026-02-27  
-**Status:** Not Started
-**Owner:** Camilo Martinez
+- [ ] Pilaster MCP server (in pilaster repo) responds to `tools/list`
+- [ ] `generate_image` tool generates images with character + template support
+- [ ] `search_snapshots` tool searches past experiments by topic/style
+- [ ] `get_successful_prompts` tool returns prompts that worked well (to be added)
+- [ ] `get_templates` tool lists available generation presets (to be added)
+- [ ] `get_ai_suggestions` tool provides AI-powered recommendations (to be added)
+- [ ] Holus can connect to pilaster MCP via `.claude/settings.json` config
+- [ ] All tools have clear descriptions and typed arguments
+- [ ] Marketing agent discovers Pilaster tools via MCP
+- [ ] Agent queries successful prompts before generating images
+- [ ] Agent uses successful patterns to inform new prompts
+- [ ] Agent stores every generation outcome in Pilaster
+- [ ] Agent learns from past failures (avoids repeating failed experiments)
+- [ ] Prompt quality improves over time as memory grows
+- [ ] Monthly optimization runs when 20+ experiments exist
+- [ ] Analysis identifies successful prompt patterns
+- [ ] Analysis identifies failed patterns to avoid
+- [ ] Insights written to `.self-improvement/knowledge/current/image-generation.md`
+- [ ] Success rate trends tracked over time

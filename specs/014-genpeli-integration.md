@@ -1,27 +1,53 @@
 # Spec 014: Genpeli Integration
 
-## Feature: Intelligent video processing pipeline integration for social media reels
+**Status:** partial
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2026-02-27
+**Updated:** 2026-02-27
 
-### Overview
+## Problem
 
-Genpeli is Holus's video processing pipeline. It takes raw footage, cuts silences, adds word-by-word animated captions, normalizes audio, and produces social-ready reels. This spec defines how the marketing agent discovers and uses Genpeli's capabilities through an MCP server, enabling autonomous video content production. The integration follows the federated MCP pattern: Genpeli runs as an independent silo with its own API and its own MCP server (in the genpeli repo). Holus connects to it via MCP configuration — no wrapper code lives in Holus.
+The marketing agent can create text and image content, but has no way to produce video content -- the highest-engagement format on social platforms. Raw footage exists (screen recordings, talking head clips, B-roll) but requires manual editing: cutting silences, adding captions, normalizing audio. Without Genpeli integration, every video requires the founder to manually process it, making autonomous video content production impossible.
 
-### User Stories
+## Goals
 
-- As the marketing agent, I want to submit raw video footage and receive polished reels so that video content is production-ready without manual editing.
-- As the marketing agent, I want to preview generated reels before publishing so that quality is verified.
-- As a founder, I want to approve or reject video content before it goes live so that brand quality is maintained.
-- As the marketing agent, I want to learn which video styles perform best so that future generations improve.
+- Marketing agent submits raw footage and receives polished, social-ready reels without manual editing
+- Video processing is accessible via MCP tools following the federated silo pattern (no wrapper code in Holus)
+- Generated reels are previewed before publishing so quality is verified
+- Human approval gate ensures brand quality in Phase 1
+- Video performance data feeds back into strategy so future video decisions improve
 
----
+## Non-Goals
 
-### Core Specifications
+- AI-generated video from text (Kling AI) -- requires separate integration, future spec
+- Template-based video assembly (Creatomate) -- different pipeline, future spec
+- Custom caption styling -- basic styling only in Phase 1, Genpeli config extension needed
+- Background music mixing -- Phase 2+, requires audio mixing in Genpeli
+- Multi-video advanced editing -- only 2-video concat supported by Genpeli currently
 
-**SPEC-001: Genpeli MCP Server**
+## Solution
+
+Genpeli runs as an independent silo with its own REST API (5 endpoints at `http://localhost:8100`) and its own MCP server (built in the genpeli repo). Holus connects to it via MCP configuration -- no wrapper code lives in Holus.
+
+The integration follows this workflow:
+1. Marketing agent decides to create video content during its reason stage
+2. Agent calls `process_video` MCP tool with source footage URLs and processing instructions
+3. Agent polls `check_video_status` until the job reaches `ready_for_review`
+4. Agent retrieves a preview URL via `get_video_preview`
+5. Video is queued for human review (Phase 1) or auto-approved (Phase 2+)
+6. On approval, `approve_video` triggers Genpeli's delivery pipeline (R2 upload, social distribution)
+7. On rejection, `reject_video` cleans up temp files and logs the reason for future learning
+
+Security: `GENPELI_API_KEY` is stored in `.env` only, never in code. Preview URLs are temporary (expire after 24 hours). Final videos are stored in R2 with access control.
+
+## Implementation Notes
+
+### SPEC-001: Genpeli MCP Server
 
 | Field | Value |
 |-------|-------|
-| Description | MCP server in the genpeli repo that exposes the video processing pipeline as tools. Holus connects to it — no wrapper code in Holus. |
+| Description | MCP server in the genpeli repo that exposes the video processing pipeline as tools. Holus connects to it -- no wrapper code in Holus. |
 | Trigger | Marketing agent connects to the MCP server at startup |
 | Input | Tool calls from the marketing agent (submit video, check status, approve/reject) |
 | Output | Tool results (job IDs, status updates, preview URLs, final video URLs) |
@@ -59,19 +85,7 @@ MCP server configuration for Holus (in `.claude/settings.json`):
 }
 ```
 
-Acceptance Criteria:
-- [ ] Genpeli MCP server (in genpeli repo) starts and responds to `tools/list`
-- [ ] `process_video` tool submits videos to Genpeli pipeline
-- [ ] `check_video_status` tool returns job status with progress percentage
-- [ ] `get_video_preview` tool returns preview URL when ready
-- [ ] `approve_video` tool triggers delivery pipeline
-- [ ] `reject_video` tool cleans up temp files
-- [ ] Holus can connect to genpeli MCP via `.claude/settings.json` config
-- [ ] All tools have clear descriptions and typed arguments
-
----
-
-**SPEC-002: Marketing Agent Integration**
+### SPEC-002: Marketing Agent Integration
 
 | Field | Value |
 |-------|-------|
@@ -89,10 +103,10 @@ Video content workflow in marketing agent:
 
 async def create_video_content(self, decision: ContentDecision) -> dict:
     """Create video content using Genpeli MCP server."""
-    
+
     # Step 1: Get source footage (from assets or record new)
     source_videos = await self.get_source_footage(decision)
-    
+
     # Step 2: Submit to Genpeli via MCP
     job_id = await self.call_mcp(
         "genpeli",
@@ -100,24 +114,24 @@ async def create_video_content(self, decision: ContentDecision) -> dict:
         video_urls=",".join(source_videos),
         instruction=decision.get("video_instruction", "Cut silences, add animated captions"),
     )
-    
+
     # Step 3: Poll for completion
     max_wait = 300  # 5 minutes
     start_time = time.time()
     while time.time() - start_time < max_wait:
         status = await self.call_mcp("genpeli", "check_video_status", job_id=job_id)
         status_data = json.loads(status)
-        
+
         if status_data["status"] == "ready_for_review":
             break
         elif status_data["status"] == "error":
             raise ValueError(f"Genpeli processing failed: {status_data.get('error')}")
-        
+
         await asyncio.sleep(10)
-    
+
     # Step 4: Get preview URL
     preview_url = await self.call_mcp("genpeli", "get_video_preview", job_id=job_id)
-    
+
     # Step 5: Human review (Phase 1) or auto-approve (Phase 2+)
     await self.queue_for_review({
         "piece_id": f"video-{job_id}",
@@ -125,7 +139,7 @@ async def create_video_content(self, decision: ContentDecision) -> dict:
         "preview_url": preview_url,
         "decision": decision,
     })
-    
+
     return {
         "job_id": job_id,
         "preview_url": preview_url,
@@ -133,33 +147,20 @@ async def create_video_content(self, decision: ContentDecision) -> dict:
     }
 ```
 
-Acceptance Criteria:
-- [ ] Marketing agent discovers Genpeli tools via MCP
-- [ ] Agent can submit video processing jobs
-- [ ] Agent polls job status until ready_for_review
-- [ ] Agent retrieves preview URL for review
-- [ ] Agent queues video for human approval in Phase 1
-- [ ] Failed processing logged with error details
-- [ ] Processing timeouts handled gracefully
-
----
-
-**SPEC-003: Content Types Supported**
+### SPEC-003: Content Types Supported
 
 | Content Type | Available Now | Needs Tooling |
 |--------------|---------------|---------------|
-| **Screen recordings** (product demos) | ✅ YES | None (capture on Mac Mini) |
-| **Talking head footage** (founder explaining features) | ✅ YES | None (record on iPhone/Mac) |
-| **B-roll clips** (UI interactions, workflows) | ✅ YES | None (capture from products) |
-| **AI-generated clips** (synthetic scenes) | ❌ NO | Kling AI integration (future) |
-| **Template-based assembly** (slides + voiceover) | ❌ NO | Creatomate integration (future) |
-| **Multi-video merges** (intro + demo + CTA) | ✅ YES | Genpeli supports 2-video concat |
-| **Custom caption styles** | ❌ NO | Genpeli config extension needed |
-| **Background music** | ❌ NO | Audio mixing in Genpeli |
+| **Screen recordings** (product demos) | YES | None (capture on Mac Mini) |
+| **Talking head footage** (founder explaining features) | YES | None (record on iPhone/Mac) |
+| **B-roll clips** (UI interactions, workflows) | YES | None (capture from products) |
+| **AI-generated clips** (synthetic scenes) | NO | Kling AI integration (future) |
+| **Template-based assembly** (slides + voiceover) | NO | Creatomate integration (future) |
+| **Multi-video merges** (intro + demo + CTA) | YES | Genpeli supports 2-video concat |
+| **Custom caption styles** | NO | Genpeli config extension needed |
+| **Background music** | NO | Audio mixing in Genpeli |
 
----
-
-**SPEC-004: Video Content Queue**
+### SPEC-004: Video Content Queue
 
 | Field | Value |
 |-------|-------|
@@ -217,14 +218,14 @@ async def approve_video(piece_id: str) -> str:
     """Approve video and trigger Genpeli delivery."""
     path = VIDEO_QUEUE_DIR / f"{piece_id}.yaml"
     data = yaml.safe_load(path.read_text())
-    
+
     # Call Genpeli via MCP to approve
     result = await call_mcp("genpeli", "approve_video", job_id=data["job_id"])
-    
+
     # Update queue status
     data["status"] = "approved"
     path.write_text(yaml.dump(data, default_flow_style=False))
-    
+
     return result
 
 
@@ -232,15 +233,15 @@ async def reject_video(piece_id: str, reason: str = "") -> str:
     """Reject video and cleanup Genpeli temp files."""
     path = VIDEO_QUEUE_DIR / f"{piece_id}.yaml"
     data = yaml.safe_load(path.read_text())
-    
+
     # Call Genpeli via MCP to reject
     result = await call_mcp("genpeli", "reject_video", job_id=data["job_id"], reason=reason)
-    
+
     # Update queue status
     data["status"] = "rejected"
     data["rejection_reason"] = reason
     path.write_text(yaml.dump(data, default_flow_style=False))
-    
+
     return result
 ```
 
@@ -259,15 +260,6 @@ approve-video piece_id:
 reject-video piece_id reason="":
     python -m holus.agents.marketing.review_videos --reject {{piece_id}} --reason "{{reason}}"
 ```
-
-Acceptance Criteria:
-- [ ] Videos saved to `data/video-queue/` as YAML files
-- [ ] `just review-videos` lists pending videos with preview URLs
-- [ ] `just approve-video <id>` approves and triggers Genpeli delivery
-- [ ] `just reject-video <id>` rejects and cleans up temp files
-- [ ] Approved videos are delivered to R2 and social platforms
-
----
 
 ### Data Structures
 
@@ -291,8 +283,6 @@ Genpeli job status (what the MCP server returns):
 }
 ```
 
----
-
 ### File Locations
 
 **In Holus repo:**
@@ -312,9 +302,13 @@ Genpeli job status (what the MCP server returns):
 | `genpeli/mcp_server.py` | New | MCP server wrapping the existing REST API |
 | `tests/test_mcp_server.py` | New | MCP server tests |
 
----
+### Dependencies
 
-### Edge Cases & Error Handling
+- Depends on: [Spec 010](./010-marketing-agent.md) — the marketing agent that calls Genpeli tools
+- Depended on by: [Spec 016](./016-social-media-integration-v2.md) — social media distribution of videos
+- Related: [Spec 015](./015-pilaster-integration.md) — image generation silo, parallel pattern
+
+## Edge Cases & Failure Modes
 
 **EDGE-001: Genpeli API unavailable**
 - Scenario: Genpeli service is down or unreachable
@@ -336,9 +330,7 @@ Genpeli job status (what the MCP server returns):
 - Expected behavior: Video creation skipped. Agent logs "no footage available for {topic}". Text content created instead.
 - Recovery: Human records footage and places in asset library.
 
----
-
-### Performance Requirements
+## Observability
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -348,35 +340,25 @@ Genpeli job status (what the MCP server returns):
 | Preview retrieval | < 5s | HTTP GET latency |
 | Approval/rejection | < 5s | Genpeli API call |
 
----
+## Acceptance Criteria
 
-### Security Considerations
-
-- `GENPELI_API_KEY` stored in `.env` only, never in code
-- Genpeli API key provides access to all video processing — protect it
-- Preview URLs are temporary (expire after 24 hours)
-- Final videos stored in R2 with access control
-
----
-
-### Out of Scope
-
-- AI-generated video from text (Kling AI — future)
-- Template-based video assembly (Creatomate — future)
-- Custom caption styling (basic styling only in Phase 1)
-- Background music mixing (Phase 2+)
-- Multi-video advanced editing (only 2-video concat supported)
-
----
-
-### Related Specs
-
-- [010-marketing-agent.md](./010-marketing-agent.md) — the agent that calls Genpeli tools
-- [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — social media distribution
-- [015-pilaster-integration.md](./015-pilaster-integration.md) — image generation silo
-
----
-
-**Last Updated:** 2026-02-27  
-**Status:** Not Started
-**Owner:** Camilo Martinez
+- [ ] Genpeli MCP server (in genpeli repo) starts and responds to `tools/list`
+- [ ] `process_video` tool submits videos to Genpeli pipeline
+- [ ] `check_video_status` tool returns job status with progress percentage
+- [ ] `get_video_preview` tool returns preview URL when ready
+- [ ] `approve_video` tool triggers delivery pipeline
+- [ ] `reject_video` tool cleans up temp files
+- [ ] Holus can connect to genpeli MCP via `.claude/settings.json` config
+- [ ] All tools have clear descriptions and typed arguments
+- [ ] Marketing agent discovers Genpeli tools via MCP
+- [ ] Agent can submit video processing jobs
+- [ ] Agent polls job status until ready_for_review
+- [ ] Agent retrieves preview URL for review
+- [ ] Agent queues video for human approval in Phase 1
+- [ ] Failed processing logged with error details
+- [ ] Processing timeouts handled gracefully
+- [ ] Videos saved to `data/video-queue/` as YAML files
+- [ ] `just review-videos` lists pending videos with preview URLs
+- [ ] `just approve-video <id>` approves and triggers Genpeli delivery
+- [ ] `just reject-video <id>` rejects and cleans up temp files
+- [ ] Approved videos are delivered to R2 and social platforms

@@ -1,23 +1,51 @@
 # Spec 013: Scheduling & Runtime
 
-## Feature: launchd-based scheduling, health monitoring, and operational infrastructure for autonomous Holus operation
+**Status:** partial
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2026-02-26
+**Updated:** 2026-02-26
 
-### Overview
+## Problem
 
-Once the marketing agent is built, it needs to run autonomously. This spec defines the runtime infrastructure: launchd plists for scheduling the marketing agent and self-improvement cycles, run locks to prevent overlap, health checks, log rotation, and the CLI entrypoint. This is what turns Holus from "a script you run manually" into "an autonomous system that works while you sleep."
+Holus currently requires manual invocation to run the marketing agent and self-improvement cycles. Without automated scheduling, content creation stops whenever the founder is away, health issues go undetected until someone manually checks, and log files accumulate without rotation. The system needs to operate autonomously so it works while the founder sleeps.
 
-### User Stories
+## Goals
 
-- As a founder, I want the marketing agent to run automatically every 30 minutes so that content is always being created.
-- As a founder, I want a health check that tells me if the agent is running properly.
-- As a founder, I want log rotation so that disk space doesn't fill up.
-- As a founder, I want to start/stop the entire system with one command.
+- Marketing agent runs automatically every 30 minutes without manual intervention
+- Self-improvement cycle runs weekly on a fixed schedule (Sunday 7am)
+- Health checks run every 5 minutes and detect degraded services
+- System starts and stops with a single command (`just schedule` / `just unschedule`)
+- Log rotation prevents disk space exhaustion (no log file exceeds 100MB)
+- Run locks prevent overlapping agent instances
+- CLI entrypoint supports all runtime operations (`run`, `status`, `kill`, `unkill`, `health`)
 
----
+## Non-Goals
 
-### Core Specifications
+- Remote monitoring (Datadog, PagerDuty, etc.) -- Phase 2+ when we have production infrastructure
+- Multi-machine deployment -- Holus runs on a single Mac Mini for now
+- Container orchestration -- Docker is for services only, agents run natively on macOS
+- Telegram bot for notifications -- separate future spec
+- Privilege escalation -- launchd runs as the local user, no root access needed
 
-**SPEC-001: CLI Entrypoint**
+## Solution
+
+The runtime infrastructure uses macOS launchd for scheduling, flock-based run locks for overlap prevention, and a unified CLI entrypoint (`python -m holus`) for all operations.
+
+Three launchd plists schedule the system:
+1. **Marketing agent** (every 30 min) -- runs one observe-reason-act cycle
+2. **Self-improvement** (weekly Sunday 7am) -- runs `just improve`
+3. **Health check** (every 5 min) -- verifies kill switch, trajectory, knowledge, content queue, and logs
+
+The CLI provides manual control: run agents, check status, toggle kill switches, and run health checks. All operations check the kill switch before executing.
+
+Logs go to `logs/` (gitignored) with a rotation mechanism that archives files over 10MB and deletes archives older than 7 days.
+
+Security: launchd runs as the local user (no privilege escalation). Log files may contain agent reasoning but never secrets. The kill switch is accessible without authentication (intentional for emergency access). Health checks do not expose secrets.
+
+## Implementation Notes
+
+### SPEC-001: CLI Entrypoint
 
 | Field | Value |
 |-------|-------|
@@ -97,17 +125,7 @@ if __name__ == "__main__":
     main()
 ```
 
-Acceptance Criteria:
-- [ ] `python -m holus run marketing --once` runs one marketing cycle
-- [ ] `python -m holus status` shows agent status and kill switch state
-- [ ] `python -m holus kill --scope marketing-agent --reason "testing"` activates kill switch
-- [ ] `python -m holus unkill --scope marketing-agent` deactivates kill switch
-- [ ] `python -m holus health` runs health check
-- [ ] Run lock prevents overlapping instances
-
----
-
-**SPEC-002: launchd Scheduler Plists**
+### SPEC-002: launchd Scheduler Plists
 
 | Field | Value |
 |-------|-------|
@@ -232,18 +250,7 @@ run-marketing:
     python -m holus run marketing --once
 ```
 
-Acceptance Criteria:
-- [ ] `just schedule` installs and loads all launchd plists
-- [ ] `just unschedule` removes all launchd agents
-- [ ] `just schedule-status` shows running agents and recent logs
-- [ ] Marketing agent runs every 30 minutes
-- [ ] Self-improvement runs weekly on Sunday at 7am
-- [ ] Health check runs every 5 minutes
-- [ ] Logs written to `logs/` directory
-
----
-
-**SPEC-003: Health Check**
+### SPEC-003: Health Check
 
 | Field | Value |
 |-------|-------|
@@ -346,16 +353,7 @@ class HealthCheck:
         return {"status": "healthy", "directory": str(logs_dir)}
 ```
 
-Acceptance Criteria:
-- [ ] `python -m holus health` runs all checks and reports status
-- [ ] Health check completes within 30 seconds
-- [ ] Redis failure is "degraded" not "unhealthy" (not required for Phase 1)
-- [ ] Output is JSON for programmatic consumption
-- [ ] Health check itself is logged
-
----
-
-**SPEC-004: Log Management**
+### SPEC-004: Log Management
 
 | Field | Value |
 |-------|-------|
@@ -380,14 +378,6 @@ rotate-logs:
     @echo "Logs rotated."
 ```
 
-Acceptance Criteria:
-- [ ] `just rotate-logs` rotates logs larger than 10MB
-- [ ] Old archives (>7 days) are automatically deleted
-- [ ] Log rotation doesn't interrupt running agents
-- [ ] `logs/` directory is gitignored
-
----
-
 ### File Locations
 
 | File | Change Type | Description |
@@ -402,9 +392,13 @@ Acceptance Criteria:
 | `logs/` | New (gitignored) | Log output directory |
 | `tests/unit/core/test_health.py` | New | Health check tests |
 
----
+### Dependencies
 
-### Edge Cases & Error Handling
+- Depends on: [Spec 009](./009-autonomous-build-system.md) — also uses launchd and run locks
+- Depends on: [Spec 010](./010-marketing-agent.md) — the primary agent being scheduled
+- Depends on: [Spec 001](./001-core-infrastructure.md) — Docker services that support the runtime
+
+## Edge Cases & Failure Modes
 
 **EDGE-001: launchd fails to load plist**
 - Scenario: plist has invalid syntax or paths don't exist
@@ -421,9 +415,7 @@ Acceptance Criteria:
 - Expected behavior: Health check detects and reports. Log rotation runs.
 - Recovery: `just rotate-logs` frees space. Health check reports "unhealthy" until resolved.
 
----
-
-### Performance Requirements
+## Observability
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -431,34 +423,26 @@ Acceptance Criteria:
 | Health check | < 10s | Time to complete all checks |
 | launchd load/unload | < 1s | launchctl response time |
 
----
+## Acceptance Criteria
 
-### Security Considerations
-
-- launchd runs as the local user (no privilege escalation)
-- Log files may contain agent reasoning but no secrets
-- Health check does not expose secrets
-- Kill switch is accessible without authentication (intentional for emergency access)
-
----
-
-### Out of Scope
-
-- Remote monitoring (Datadog, PagerDuty, etc.)
-- Multi-machine deployment
-- Container orchestration (Docker for services only, agents run natively)
-- Telegram bot for notifications (separate future spec)
-
----
-
-### Related Specs
-
-- [009-autonomous-build-system.md](./009-autonomous-build-system.md) — build system also uses launchd and run locks
-- [010-marketing-agent.md](./010-marketing-agent.md) — the primary agent being scheduled
-- [001-core-infrastructure.md](./001-core-infrastructure.md) — Docker services that support the runtime
-
----
-
-**Last Updated:** 2026-02-26
-**Status:** Not Started
-**Owner:** Camilo Martinez
+- [ ] `python -m holus run marketing --once` runs one marketing cycle
+- [ ] `python -m holus status` shows agent status and kill switch state
+- [ ] `python -m holus kill --scope marketing-agent --reason "testing"` activates kill switch
+- [ ] `python -m holus unkill --scope marketing-agent` deactivates kill switch
+- [ ] `python -m holus health` runs all checks and reports status
+- [ ] Run lock prevents overlapping instances
+- [ ] `just schedule` installs and loads all launchd plists
+- [ ] `just unschedule` removes all launchd agents
+- [ ] `just schedule-status` shows running agents and recent logs
+- [ ] Marketing agent runs every 30 minutes
+- [ ] Self-improvement runs weekly on Sunday at 7am
+- [ ] Health check runs every 5 minutes
+- [ ] Logs written to `logs/` directory
+- [ ] Health check completes within 30 seconds
+- [ ] Redis failure is "degraded" not "unhealthy" (not required for Phase 1)
+- [ ] Health check output is JSON for programmatic consumption
+- [ ] Health check itself is logged
+- [ ] `just rotate-logs` rotates logs larger than 10MB
+- [ ] Old archives (>7 days) are automatically deleted
+- [ ] Log rotation doesn't interrupt running agents
+- [ ] `logs/` directory is gitignored

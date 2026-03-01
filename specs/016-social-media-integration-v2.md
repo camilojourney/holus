@@ -1,8 +1,36 @@
 # Spec 016: Social Media Integration V2
 
-## Feature: Multi-platform posting with bilingual routing, analytics, and intelligent scheduling via social-media-automatization
+**Status:** partial
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2026-02-27
+**Updated:** 2026-02-27
 
-### Overview
+## Problem
+
+The marketing agent needs to publish content across multiple social media platforms
+(LinkedIn, Twitter, Instagram, Facebook, Threads) in two languages (EN + ES) and
+retrieve engagement analytics to learn what works. Without a unified integration to the
+social-media-automatization silo, the agent cannot post, cannot read performance data,
+and cannot close the feedback loop that drives strategy improvement. Manual posting is
+slow, inconsistent, and cannot scale across platforms and languages.
+
+## Goals
+
+- Marketing agent can post bilingual content (EN + ES) to platform-specific accounts so both audiences are reached in a single action
+- Agent retrieves per-platform and per-product analytics to learn what content types and topics resonate with each audience
+- Content is posted at optimal times per platform to maximize engagement
+- High-risk platforms (Instagram, TikTok) require human approval before publishing while low-risk ones (LinkedIn, Twitter) auto-post
+
+## Non-Goals
+
+- Direct platform OAuth — handled by social-media-automatization service setup, not Holus
+- Comment/reply management — analytics only for now, community management is a future concern
+- Paid promotion / ads — organic content only, paid amplification is a separate budget and workflow
+- Influencer outreach — outside the scope of automated content publishing
+- User-generated content moderation — not relevant to the marketing agent's publish-and-measure loop
+
+## Solution
 
 social-media-automatization is the publishing and analytics silo. It already has a working
 FastAPI REST API (12+ endpoints) and an MCP server (9 tools) that handles posting,
@@ -12,18 +40,9 @@ to it directly — no wrapper code in Holus.
 This spec defines what Holus needs from the social-media MCP, what already exists, and what
 needs to be added to the social-media-automatization repo.
 
-### User Stories
+## Implementation Notes
 
-- As the marketing agent, I want to post bilingual content (EN + ES) to platform-specific accounts so that both audiences are reached.
-- As the marketing agent, I want to retrieve analytics for all platforms so that I learn what works across different audiences.
-- As a founder, I want content posted at optimal times per platform so that engagement is maximized.
-- As a founder, I want to approve content before it goes live on high-risk platforms (Instagram, TikTok) while auto-posting to low-risk ones (LinkedIn, Twitter).
-
----
-
-### Core Specifications
-
-**SPEC-001: Social Media MCP Server**
+### SPEC-001: Social Media MCP Server
 
 | Field | Value |
 |-------|-------|
@@ -76,19 +95,7 @@ MCP server configuration for Holus (in `.claude/settings.json`):
 }
 ```
 
-Acceptance Criteria:
-- [ ] Social-media MCP server (in social-media-automatization repo) responds to `tools/list`
-- [ ] `post_text` and `post_with_media` tools publish content to platforms
-- [ ] `schedule_post` tool schedules content for future publishing
-- [ ] `get_analytics` tool returns engagement data (to be added)
-- [ ] `get_top_posts` tool ranks posts by specified metric (to be added)
-- [ ] `post_story` tool posts stories to IG/FB (to be added)
-- [ ] `get_accounts` tool returns connected account info (to be added)
-- [ ] Holus can connect to social-media MCP via `.claude/settings.json` config
-
----
-
-**SPEC-002: Bilingual Content Routing**
+### SPEC-002: Bilingual Content Routing
 
 | Field | Value |
 |-------|-------|
@@ -110,41 +117,41 @@ accounts:
       account_id: "17841460112345678"
       language: "en"
       handle: "@pilot_experience"
-    
+
     journey:  # Spanish account
       account_id: "17841460119876543"
       language: "es"
       handle: "@pilot_journey"
-  
+
   facebook:
     experience:
       page_id: "107890123456789"
       language: "en"
       handle: "Pilot Experience"
-    
+
     journey:
       page_id: "108901234567890"
       language: "es"
       handle: "Pilot Journey"
-  
+
   threads:
     experience:
       account_id: "17841460112345678"  # Shares IG account ID
       language: "en"
       handle: "@pilot_experience"
-    
+
     journey:
       account_id: "17841460119876543"
       language: "es"
       handle: "@pilot_journey"
-  
+
   # LinkedIn and Twitter: single account, source language only
   linkedin:
     main:
       account_id: "urn:li:person:abc123"
       language: "en"
       handle: "Camilo Martinez"
-  
+
   twitter:
     main:
       account_id: "1234567890"
@@ -155,52 +162,40 @@ accounts:
 Routing logic (handled by social-media-automatization internally):
 
 ```python
-# Bilingual platforms: IG, FB, Threads → EN + ES versions
-# Single-language platforms: LinkedIn, Twitter → source language only
+# Bilingual platforms: IG, FB, Threads -> EN + ES versions
+# Single-language platforms: LinkedIn, Twitter -> source language only
 
 bilingual_platforms = {"instagram", "facebook", "threads"}
 
 if bilingual:
-    # Translate EN → ES
+    # Translate EN -> ES
     spanish_text = translate(text, "en", "es")
-    
+
     # Post to EN accounts
     post_to_accounts(text, "experience" accounts, platforms & bilingual_platforms)
-    
+
     # Post to ES accounts
     post_to_accounts(spanish_text, "journey" accounts, platforms & bilingual_platforms)
-    
+
     # Post source language to single-language platforms
     post_to_accounts(text, "main" accounts, platforms - bilingual_platforms)
 ```
 
-Acceptance Criteria:
-- [ ] Bilingual posts create 2 versions: EN and ES
-- [ ] EN version goes to "experience" accounts on IG, FB, Threads
-- [ ] ES version goes to "journey" accounts on IG, FB, Threads
-- [ ] LinkedIn and Twitter receive source language only
-- [ ] Translation uses Google Translate (no API key needed)
-- [ ] Both versions tracked separately in analytics
-
----
-
-**SPEC-003: Content Types Supported**
+### SPEC-003: Content Types Supported
 
 | Content Type | Available Now | Needs Tooling |
 |--------------|---------------|---------------|
-| **Text posts** (all platforms) | ✅ YES | None |
-| **Image posts** (single image) | ✅ YES | None |
-| **Video posts** (reels, native video) | ✅ YES | None |
-| **Stories** (IG, FB with auto-translation) | ✅ YES | None |
-| **Carousels** (multi-image swipe) | ❌ NO | Carousel assembly API |
-| **Threads** (Twitter/Threads multi-post) | ⚠️ PARTIAL | Thread splitting logic (local service) |
-| **Polls** (Twitter, IG stories) | ❌ NO | Poll creation API |
-| **Live videos** | ❌ NO | Out of scope |
-| **Link previews** (rich cards) | ✅ YES | Platform auto-generates |
+| **Text posts** (all platforms) | YES | None |
+| **Image posts** (single image) | YES | None |
+| **Video posts** (reels, native video) | YES | None |
+| **Stories** (IG, FB with auto-translation) | YES | None |
+| **Carousels** (multi-image swipe) | NO | Carousel assembly API |
+| **Threads** (Twitter/Threads multi-post) | PARTIAL | Thread splitting logic (local service) |
+| **Polls** (Twitter, IG stories) | NO | Poll creation API |
+| **Live videos** | NO | Out of scope |
+| **Link previews** (rich cards) | YES | Platform auto-generates |
 
----
-
-**SPEC-004: Analytics and Feedback**
+### SPEC-004: Analytics and Feedback
 
 | Field | Value |
 |-------|-------|
@@ -220,7 +215,7 @@ Analytics data structure:
   "total_impressions": 45320,
   "total_engagement": 2145,
   "avg_engagement_rate": 0.0473,
-  
+
   "platform_breakdown": {
     "linkedin": {
       "posts": 4,
@@ -253,7 +248,7 @@ Analytics data structure:
       }
     }
   },
-  
+
   "product_breakdown": {
     "pilaster": {
       "posts": 5,
@@ -271,14 +266,14 @@ Analytics data structure:
       "best_platform": "twitter"
     }
   },
-  
+
   "content_type_performance": {
     "tutorial": {"posts": 4, "avg_engagement": 0.061},
     "demo": {"posts": 3, "avg_engagement": 0.048},
     "thread": {"posts": 3, "avg_engagement": 0.038},
     "tips": {"posts": 2, "avg_engagement": 0.032}
   },
-  
+
   "top_posts": [
     {
       "post_id": "urn:li:share:7234567890",
@@ -293,20 +288,9 @@ Analytics data structure:
       "shares": 18,
       "comments": 12
     }
-    // ... more top posts
   ]
 }
 ```
-
-Acceptance Criteria:
-- [ ] Analytics aggregated across all connected platforms
-- [ ] Per-platform breakdown shows engagement trends
-- [ ] Per-product breakdown identifies which products resonate
-- [ ] Content type performance guides future strategy
-- [ ] Top posts ranked by engagement_rate, impressions, or clicks
-- [ ] Analytics updated daily (collected via cron)
-
----
 
 ### Data Structures
 
@@ -358,8 +342,6 @@ Post result (what the MCP server returns):
 }
 ```
 
----
-
 ### File Locations
 
 **In Holus repo:**
@@ -378,9 +360,22 @@ Post result (what the MCP server returns):
 | `post_story` | Post stories to Instagram/Facebook |
 | `get_accounts` | Get connected account information |
 
----
+### Security Notes
 
-### Edge Cases & Error Handling
+- `SOCIAL_MEDIA_API_KEY` stored in `.env` only
+- API key provides publish access to all platforms — protect it
+- Account configuration lives in social-media-automatization, not in Holus
+- Analytics data may contain follower demographics — privacy compliant aggregation only
+
+### Dependencies
+
+- Depends on: [Spec 010](./010-marketing-agent.md) — the marketing agent that calls social media tools
+- Depends on: [Spec 011](./011-social-media-integration.md) — V1 spec (deprecated, superseded by this spec)
+- Depended on by: [Spec 012](./012-knowledge-learning.md) — learning loop consumes analytics from this MCP
+- Related: [Spec 014](./014-genpeli-integration.md) — video content for social media
+- Related: [Spec 015](./015-pilaster-integration.md) — image content for social media
+
+## Edge Cases & Failure Modes
 
 **EDGE-001: Social-media service unavailable**
 - Scenario: social-media-automatization service is down
@@ -407,9 +402,7 @@ Post result (what the MCP server returns):
 - Expected behavior: Post EN version only. Log translation failure.
 - Recovery: Retry translation on next post.
 
----
-
-### Performance Requirements
+## Observability
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -420,37 +413,25 @@ Post result (what the MCP server returns):
 | Schedule post | < 3s | Database write |
 | Get scheduled posts | < 2s | Database query |
 
----
+## Acceptance Criteria
 
-### Security Considerations
-
-- `SOCIAL_MEDIA_API_KEY` stored in `.env` only
-- API key provides publish access to all platforms — protect it
-- Account configuration lives in social-media-automatization, not in Holus
-- Analytics data may contain follower demographics — privacy compliant aggregation only
-
----
-
-### Out of Scope
-
-- Direct platform OAuth (handled by service setup)
-- Comment/reply management (analytics only for now)
-- Paid promotion / ads (organic content only)
-- Influencer outreach
-- User-generated content moderation
-
----
-
-### Related Specs
-
-- [010-marketing-agent.md](./010-marketing-agent.md) — the agent that calls social media tools
-- [011-social-media-integration.md](./011-social-media-integration.md) — V1 spec (deprecated, superseded by this spec)
-- [014-genpeli-integration.md](./014-genpeli-integration.md) — video content for social media
-- [015-pilaster-integration.md](./015-pilaster-integration.md) — image content for social media
-- [012-knowledge-learning.md](./012-knowledge-learning.md) — learning loop consumes analytics from this MCP
-
----
-
-**Last Updated:** 2026-02-27  
-**Status:** Not Started
-**Owner:** Camilo Martinez
+- [ ] Social-media MCP server (in social-media-automatization repo) responds to `tools/list`
+- [ ] `post_text` and `post_with_media` tools publish content to platforms
+- [ ] `schedule_post` tool schedules content for future publishing
+- [ ] `get_analytics` tool returns engagement data (to be added)
+- [ ] `get_top_posts` tool ranks posts by specified metric (to be added)
+- [ ] `post_story` tool posts stories to IG/FB (to be added)
+- [ ] `get_accounts` tool returns connected account info (to be added)
+- [ ] Holus can connect to social-media MCP via `.claude/settings.json` config
+- [ ] Bilingual posts create 2 versions: EN and ES
+- [ ] EN version goes to "experience" accounts on IG, FB, Threads
+- [ ] ES version goes to "journey" accounts on IG, FB, Threads
+- [ ] LinkedIn and Twitter receive source language only
+- [ ] Translation uses Google Translate (no API key needed)
+- [ ] Both versions tracked separately in analytics
+- [ ] Analytics aggregated across all connected platforms
+- [ ] Per-platform breakdown shows engagement trends
+- [ ] Per-product breakdown identifies which products resonate
+- [ ] Content type performance guides future strategy
+- [ ] Top posts ranked by engagement_rate, impressions, or clicks
+- [ ] Analytics updated daily (collected via cron)

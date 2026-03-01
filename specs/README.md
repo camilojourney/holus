@@ -31,19 +31,19 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 
 | #   | Spec                                                             | Type    | Status      |
 | --- | ---------------------------------------------------------------- | ------- | ----------- |
-| 009 | [Autonomous Build System](009-autonomous-build-system.md)        | Backend | Not Started |
+| 009 | [Autonomous Build System](009-autonomous-build-system.md)        | Backend | Partial     |
 | 010 | [Marketing Agent](010-marketing-agent.md)                        | Backend | Implemented |
 | 011 | ~~[Social Media Integration](011-social-media-integration.md)~~ (superseded by 016) | Backend | Deprecated  |
-| 012 | [Knowledge & Learning](012-knowledge-learning.md)                | Backend | Partial     |
+| 012 | [Knowledge & Learning](012-knowledge-learning.md)                | Backend | Implemented |
 | 013 | [Scheduling & Runtime](013-scheduling-runtime.md)                | Backend | Partial     |
 
 ## Silo Integration Specs
 
 | #   | Spec                                                             | Type    | Status      |
 | --- | ---------------------------------------------------------------- | ------- | ----------- |
-| 014 | [Genpeli Integration](014-genpeli-integration.md)                | Backend | Not Started |
-| 015 | [Pilaster Integration](015-pilaster-integration.md)              | Backend | Not Started |
-| 016 | [Social Media Integration V2](016-social-media-integration-v2.md) | Backend | Not Started |
+| 014 | [Genpeli Integration](014-genpeli-integration.md)                | Backend | Partial     |
+| 015 | [Pilaster Integration](015-pilaster-integration.md)              | Backend | Partial     |
+| 016 | [Social Media Integration V2](016-social-media-integration-v2.md) | Backend | Partial     |
 
 ---
 

@@ -1,23 +1,45 @@
 # Spec 012: Knowledge & Learning System
 
-## Feature: Persistent knowledge base and learning loop that makes the marketing agent smarter over time
+**Status:** implemented
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2026-02-26
+**Updated:** 2026-02-26
 
-### Overview
+## Problem
 
-Holus needs to learn from what it does. This spec defines three systems: (1) the knowledge base (`.self-improvement/knowledge/`) that stores domain expertise the agent reads before making decisions, (2) trajectory logging that records every decision and outcome, and (3) the weekly learning loop that extracts patterns from trajectories and updates the knowledge base and MEMORY.md. Together, these create a flywheel: post content → track results → extract patterns → improve decisions → post better content.
+The marketing agent makes decisions in a vacuum. There is no persistent knowledge base it can consult before choosing what to post, no structured log of past decisions and outcomes, and no automated loop that extracts patterns from results. Without these, the agent cannot learn from experience -- it repeats mistakes, misses trends, and cannot improve its strategy over time. The founder has no visibility into what the agent has learned or why it makes the decisions it does.
 
-### User Stories
+## Goals
 
-- As the marketing agent, I want to read platform best practices before deciding what to post so that my decisions are informed.
-- As the marketing agent, I want to log every decision I make so that patterns can be extracted later.
-- As the manager agent, I want to analyze past decisions and results so that I can update the knowledge base with new insights.
-- As a founder, I want to see what the agent has learned in MEMORY.md so that I can verify its strategy is sound.
+- Marketing agent reads domain knowledge (platform best practices, audience profiles, content formats) before making decisions
+- Every agent decision and outcome is logged to an append-only trajectory for future analysis
+- Weekly learning loop extracts patterns from trajectories and real analytics, updating the knowledge base and MEMORY.md
+- Agents can file knowledge gap requests when they encounter decisions where information is insufficient
+- Founder can review what the agent has learned by reading MEMORY.md (committed to git)
+- Learning flywheel: post content, track results, extract patterns, improve decisions, post better content
 
----
+## Non-Goals
 
-### Core Specifications
+- Mem0 vector memory integration -- future Phase 2 feature, not needed for initial learning loop
+- Cross-agent knowledge sharing -- deferred to coordinator spec, single-agent focus first
+- External knowledge sources (web scraping, competitor analysis) -- adds complexity without proven value yet
 
-**SPEC-001: Knowledge Base**
+## Solution
+
+Three interconnected systems create a learning flywheel:
+
+1. **Knowledge Base** (`.self-improvement/knowledge/current/`) -- Structured markdown files with metadata headers that agents read before making decisions. Files cover platform best practices, audience profiles, content formats, and performance patterns. Old versions are archived automatically when updated.
+
+2. **Trajectory Logging** (`.self-improvement/memory/trajectory.jsonl`) -- Append-only JSONL log of every agent decision and outcome. Entries include agent_id, timestamp, task_type, status, cost, and rich metadata. Supports filtered reads and time-based summaries.
+
+3. **Weekly Learning Loop** -- The manager agent runs weekly (via `just improve`), reads trajectory data and real analytics from social-media MCP, uses Opus to extract patterns, and updates MEMORY.md and knowledge files with new insights. Requires a minimum of 5 data points before extracting patterns to avoid premature conclusions.
+
+Additionally, a **Knowledge Gap Detection** system lets agents file requests when they need information they do not have, which the manager agent prioritizes during the weekly cycle.
+
+## Implementation Notes
+
+### SPEC-001: Knowledge Base
 
 | Field | Value |
 |-------|-------|
@@ -57,16 +79,7 @@ Knowledge file metadata header:
 **Research cadence:** daily | weekly | monthly
 ```
 
-Acceptance Criteria:
-- [ ] All knowledge files have the required metadata header
-- [ ] Knowledge is loaded during marketing agent observe stage
-- [ ] Knowledge directory is indexed in README.md
-- [ ] Archive rotation works (old version moved to archive/ when updated)
-- [ ] Agents can file knowledge gap requests in requests/
-
----
-
-**SPEC-002: Trajectory Logging**
+### SPEC-002: Trajectory Logging
 
 | Field | Value |
 |-------|-------|
@@ -167,17 +180,7 @@ class TrajectoryLogger:
         }
 ```
 
-Acceptance Criteria:
-- [ ] `TrajectoryLogger.append()` adds one JSON line to trajectory.jsonl
-- [ ] Entries include timestamp, agent_id, task_type, status, and metadata
-- [ ] `read_filtered()` supports filtering by agent, task type, and time
-- [ ] `summary()` returns aggregate stats for a time period
-- [ ] File is append-only (never edited or truncated)
-- [ ] trajectory.jsonl is gitignored
-
----
-
-**SPEC-003: Weekly Learning Loop**
+### SPEC-003: Weekly Learning Loop
 
 | Field | Value |
 |-------|-------|
@@ -250,20 +253,7 @@ Return:
     await self.update_knowledge(response)
 ```
 
-Acceptance Criteria:
-- [ ] Learning loop runs weekly via `just improve`
-- [ ] Analyzes trajectory.jsonl entries from the past 7 days
-- [ ] Fetches real analytics from social-media MCP (`get_analytics`, `get_top_posts`)
-- [ ] Requires minimum 5 data points before extracting patterns
-- [ ] Uses Opus for pattern analysis
-- [ ] Updates MEMORY.md with new insights (appends, doesn't overwrite)
-- [ ] Updates knowledge files when significant patterns emerge
-- [ ] Archives old knowledge versions before updating
-- [ ] Logs the learning cycle itself to trajectory.jsonl
-
----
-
-**SPEC-004: Knowledge Gap Detection**
+### SPEC-004: Knowledge Gap Detection
 
 | Field | Value |
 |-------|-------|
@@ -320,14 +310,6 @@ def file_knowledge_gap(
     return path
 ```
 
-Acceptance Criteria:
-- [ ] Agents can file knowledge gaps via `file_knowledge_gap()`
-- [ ] Gap requests are saved as markdown files in requests/
-- [ ] Manager agent reads and prioritizes gap requests during weekly cycle
-- [ ] Resolved gaps are deleted after knowledge is written
-
----
-
 ### Data Structures
 
 Knowledge update event (published to event bus):
@@ -348,8 +330,6 @@ Knowledge update event (published to event bus):
 }
 ```
 
----
-
 ### File Locations
 
 | File | Change Type | Description |
@@ -361,9 +341,20 @@ Knowledge update event (published to event bus):
 | `tests/unit/memory/test_trajectory.py` | New | Trajectory logger tests |
 | `tests/unit/memory/test_knowledge_gaps.py` | New | Knowledge gap tests |
 
----
+### Security Notes
 
-### Edge Cases & Error Handling
+- Trajectory files may contain content decisions but no secrets
+- Knowledge files are committed to git (public, no secrets)
+- MEMORY.md is committed to git (public, no secrets)
+- trajectory.jsonl is gitignored (may contain detailed agent reasoning)
+
+### Dependencies
+
+- Depends on: [Spec 010](./010-marketing-agent.md) — the marketing agent that reads knowledge and writes trajectories
+- Depends on: [Spec 009](./009-autonomous-build-system.md) — the builder also logs to trajectory
+- Depended on by: [Spec 016](./016-social-media-integration-v2.md) — analytics data feeds into the learning loop
+
+## Edge Cases & Failure Modes
 
 **EDGE-001: Trajectory file is empty (cold start)**
 - Scenario: First week, no trajectory data
@@ -385,9 +376,7 @@ Knowledge update event (published to event bus):
 - Expected behavior: Learning loop only reads last N entries (configurable, default 1000). Older entries remain for archival.
 - Recovery: Periodic manual or automated archiving of old entries.
 
----
-
-### Performance Requirements
+## Observability
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -397,33 +386,29 @@ Knowledge update event (published to event bus):
 | Weekly learning cycle | < 5 min | Opus analysis + file updates |
 | Learning cycle cost | < $2 | Langfuse cost per cycle |
 
----
+## Acceptance Criteria
 
-### Security Considerations
-
-- Trajectory files may contain content decisions but no secrets
-- Knowledge files are committed to git (public, no secrets)
-- MEMORY.md is committed to git (public, no secrets)
-- trajectory.jsonl is gitignored (may contain detailed agent reasoning)
-
----
-
-### Out of Scope
-
-- Mem0 vector memory integration (future Phase 2 feature)
-- Cross-agent knowledge sharing (coordinator spec)
-- External knowledge sources (web scraping, competitor analysis)
-
----
-
-### Related Specs
-
-- [010-marketing-agent.md](./010-marketing-agent.md) — the agent that reads knowledge and writes trajectories
-- [009-autonomous-build-system.md](./009-autonomous-build-system.md) — the builder also logs to trajectory
-- [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — provides analytics data for the learning loop
-
----
-
-**Last Updated:** 2026-02-26
-**Status:** Not Started
-**Owner:** Camilo Martinez
+- [ ] All knowledge files have the required metadata header
+- [ ] Knowledge is loaded during marketing agent observe stage
+- [ ] Knowledge directory is indexed in README.md
+- [ ] Archive rotation works (old version moved to archive/ when updated)
+- [ ] Agents can file knowledge gap requests in requests/
+- [ ] `TrajectoryLogger.append()` adds one JSON line to trajectory.jsonl
+- [ ] Entries include timestamp, agent_id, task_type, status, and metadata
+- [ ] `read_filtered()` supports filtering by agent, task type, and time
+- [ ] `summary()` returns aggregate stats for a time period
+- [ ] Trajectory file is append-only (never edited or truncated)
+- [ ] trajectory.jsonl is gitignored
+- [ ] Learning loop runs weekly via `just improve`
+- [ ] Analyzes trajectory.jsonl entries from the past 7 days
+- [ ] Fetches real analytics from social-media MCP (`get_analytics`, `get_top_posts`)
+- [ ] Requires minimum 5 data points before extracting patterns
+- [ ] Uses Opus for pattern analysis
+- [ ] Updates MEMORY.md with new insights (appends, doesn't overwrite)
+- [ ] Updates knowledge files when significant patterns emerge
+- [ ] Archives old knowledge versions before updating
+- [ ] Logs the learning cycle itself to trajectory.jsonl
+- [ ] Agents can file knowledge gaps via `file_knowledge_gap()`
+- [ ] Gap requests are saved as markdown files in requests/
+- [ ] Manager agent reads and prioritizes gap requests during weekly cycle
+- [ ] Resolved gaps are deleted after knowledge is written

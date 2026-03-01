@@ -1,27 +1,55 @@
 # Spec 001: Core Infrastructure
 
-## Feature: Shared infrastructure layer for all Holus agents
+**Status:** partial
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2026-02-24
+**Updated:** 2026-02-24
 
-### Overview
+## Problem
 
-The core infrastructure provides the foundational services that every Holus agent depends on: database, caching, event bus, observability, configuration management, Claude API integration, and safety controls. This is the Phase 1 deliverable -- everything must be running before any agent is built. See [ADR-0001](../docs/decisions/0001-federated-over-unified.md) for the federated architecture rationale and [ADR-0002](../docs/decisions/0002-claude-first-intelligence.md) for the Claude-first intelligence decision.
+Every Holus agent depends on shared infrastructure -- database, caching, event bus, observability, configuration management, Claude API integration, and safety controls -- but none of it exists yet. Without this foundation, no agent can be built or tested. Developers need a single `docker compose up` command to start all services and begin agent development immediately. Agents need a configuration system that works across environments without code changes. The founder needs a kill switch accessible from any device to stop any agent within seconds. See [ADR-0001](../docs/decisions/0001-federated-over-unified.md) for the federated architecture rationale and [ADR-0002](../docs/decisions/0002-claude-first-intelligence.md) for the Claude-first intelligence decision.
 
-### User Stories
+## Goals
 
-- As a developer, I want a single `docker compose up` command that starts all infrastructure services so that I can begin agent development immediately.
-- As an agent, I want a configuration system that loads YAML defaults, agent-specific overrides, and environment variable secrets so that I can run in any environment without code changes.
-- As a founder, I want a kill switch accessible from phone/laptop/CLI so that I can stop any agent within seconds from any device.
-- As an agent, I want an event bus so that I can publish domain events without knowing which other agents (if any) consume them.
+- All infrastructure services (PostgreSQL + pgvector, Redis, n8n, Langfuse) start with a single `docker compose up -d` and pass health checks within 60 seconds
+- Layered configuration system loads YAML defaults, agent-specific overrides, and environment variable secrets, with env vars always winning
+- Three-level kill switch (per-agent, per-domain, global) accessible via CLI, SSH, n8n webhook, Slack, or automatic circuit breaker, checking in <1ms
+- Event bus enables inter-agent communication via Redis pub/sub (real-time) and Redis Streams (persistent replay) without agents reading each other's state directly
+- Claude API client enforces prompt caching, Opus/Sonnet routing, and Langfuse tracing on every call
+- All shared Pydantic models defined for cross-agent data contracts
 
----
+## Non-Goals
 
-### Core Specifications
+- Agent-specific logic (marketing, pilaster, coordinator) -- those are specs 010, 015, and 006
+- Mem0 memory system -- separate spec when Phase 2 begins
+- Agent scheduling -- uses launchd, see spec 013
+- CI/CD pipeline -- separate spec
+- Monitoring dashboards and alerting rules -- separate spec
 
-**SPEC-001: Docker Compose Service Stack**
+## Solution
+
+The core infrastructure is a shared services layer that every Holus agent depends on. It provides five foundational components:
+
+1. **Docker Compose service stack** -- PostgreSQL (with pgvector), Redis, n8n (webhooks/observability only), and Langfuse as containerized services with health checks, persistent volumes, and networking.
+
+2. **Layered configuration** -- pydantic-settings loads `config/base.yaml` defaults, then agent-specific `config/{agent_name}.yaml` overrides, then environment variables (which always win). Secrets never go in YAML.
+
+3. **Claude API client** -- Wrapper around the Anthropic SDK that enforces prompt caching on every call, routes tasks to Opus (strategy) or Sonnet (operational) based on task type, and logs all calls to Langfuse with token and cache metrics.
+
+4. **Kill switch** -- Three-level Redis-backed switch (per-agent, per-domain, global) checked before every agent action. Intentionally unauthenticated so it works from any SSH session, Redis client, or webhook.
+
+5. **Event bus** -- Redis pub/sub for real-time delivery plus Redis Streams for persistent replay. Agents publish domain events without knowing which other agents consume them. Events validated against Pydantic schemas.
+
+Security posture: All secrets live in `.env` (never committed). YAML config files contain no secrets (enforced by pre-commit hook). Redis and PostgreSQL use local-only access in dev; production uses passwords. Kill switch is intentionally unauthenticated for maximum accessibility in a single-user system. Langfuse stores trace data locally -- no agent reasoning data leaves the Mac Mini except via Anthropic API calls.
+
+## Implementation Notes
+
+### SPEC-001: Docker Compose Service Stack
 
 | Field | Value |
 |-------|-------|
-| Description | Docker Compose configuration that starts PostgreSQL (+ pgvector), Redis, n8n (webhooks/observability only — agent scheduling uses launchd), and Langfuse as containerized services |
+| Description | Docker Compose configuration that starts PostgreSQL (+ pgvector), Redis, n8n (webhooks/observability only -- agent scheduling uses launchd), and Langfuse as containerized services |
 | Trigger | `docker compose up -d` from project root or `infrastructure/` directory |
 | Input | `docker-compose.yml` + `.env` for secrets |
 | Output | 4 running containers with health checks, persistent volumes, and networking |
@@ -110,19 +138,9 @@ volumes:
   holus_n8n:
 ```
 
-Acceptance Criteria:
-- [ ] `docker compose up -d` starts all 4 containers (postgres, redis, n8n, langfuse) without errors
-- [ ] All health checks pass within 60 seconds
-- [ ] PostgreSQL accepts connections with pgvector extension enabled (`CREATE EXTENSION IF NOT EXISTS vector`)
-- [ ] Redis responds to `PING` with `PONG`
-- [ ] n8n UI is accessible at `http://localhost:5678`
-- [ ] Langfuse UI is accessible at `http://localhost:3000`
-- [ ] Data persists across `docker compose down && docker compose up -d` (volumes are not destroyed)
-- [ ] `.env.example` documents every required environment variable with descriptions
-
 ---
 
-**SPEC-002: Configuration Management**
+### SPEC-002: Configuration Management
 
 | Field | Value |
 |-------|-------|
@@ -207,17 +225,9 @@ max_concurrent_tasks: 1
 timeout_seconds: 600
 ```
 
-Acceptance Criteria:
-- [ ] `HolusSettings.load("marketing")` returns a validated config with base + marketing overlay
-- [ ] Missing `ANTHROPIC_API_KEY` raises `EnvironmentError` with message "Required secret ANTHROPIC_API_KEY not found..."
-- [ ] Environment variables override YAML values (e.g., `HOLUS_LOG_LEVEL=DEBUG` overrides YAML `log_level: INFO`)
-- [ ] All YAML config files pass `yamllint` with no errors
-- [ ] `.env.example` contains every secret with a description and placeholder value
-- [ ] `config/base.yaml` contains no secrets (verified by pre-commit hook)
-
 ---
 
-**SPEC-003: Claude API Client with Prompt Caching**
+### SPEC-003: Claude API Client with Prompt Caching
 
 | Field | Value |
 |-------|-------|
@@ -305,17 +315,9 @@ class HolusClaudeClient:
         return response
 ```
 
-Acceptance Criteria:
-- [ ] All Claude API calls include `cache_control: {"type": "ephemeral"}` on the system prompt block
-- [ ] `strategic_planning` task routes to Opus; `content_generation` task routes to Sonnet
-- [ ] Every API call is logged to Langfuse with model, token counts, and cache hit metrics
-- [ ] Cache read tokens appear in Langfuse traces (verify prompt caching is working)
-- [ ] Client raises a descriptive error if `ANTHROPIC_API_KEY` is missing or invalid
-- [ ] Batch API wrapper exists for non-urgent tasks (50% cost discount)
-
 ---
 
-**SPEC-004: Kill Switch System**
+### SPEC-004: Kill Switch System
 
 | Field | Value |
 |-------|-------|
@@ -404,18 +406,9 @@ Access methods:
 | Slack | `/holus kill marketing-agent` via n8n Slack integration | ~2s |
 | Circuit breaker | Automatic when crash count exceeds threshold | Automatic |
 
-Acceptance Criteria:
-- [ ] `kill_switch.activate("marketing-agent", "test")` sets Redis key `holus:kill:agent:marketing-agent`
-- [ ] `kill_switch.is_active("marketing-agent")` returns `True` when agent-specific OR global switch is active
-- [ ] `kill_switch.is_active("marketing-agent")` returns `True` when domain switch for `marketing` is active
-- [ ] `kill_switch.deactivate("global")` removes the global key and agents resume
-- [ ] `kill_switch.status()` returns all active kill switches with reason and timestamp
-- [ ] CLI command `python -m holus kill --scope global --reason "test"` works
-- [ ] Kill switch check adds <1ms latency per agent action (single Redis `EXISTS` call)
-
 ---
 
-**SPEC-005: Event Bus (Redis Pub/Sub + Streams)**
+### SPEC-005: Event Bus (Redis Pub/Sub + Streams)
 
 | Field | Value |
 |-------|-------|
@@ -526,15 +519,6 @@ Example event payload:
 }
 ```
 
-Acceptance Criteria:
-- [ ] `event_bus.publish("holus.marketing.content", event)` delivers to all pub/sub subscribers AND persists to Redis Stream
-- [ ] `event_bus.read_stream("holus.marketing.content", count=10)` returns the last 10 events from the stream
-- [ ] Stream is capped at 10,000 entries per channel (MAXLEN)
-- [ ] Events with invalid schema (missing required fields) raise `ValidationError` before publishing
-- [ ] `config/events.yaml` documents every channel and event type
-- [ ] Subscriber callback receives deserialized `HolusEvent` objects
-- [ ] Publishing is fire-and-forget (never blocks the publishing agent)
-
 ---
 
 ### Data Structures
@@ -600,9 +584,13 @@ class HolusEvent(BaseModel):
 | `infrastructure/scripts/backup.sh` | New | Daily backup script |
 | `infrastructure/scripts/health_check.sh` | New | Service health verification |
 
----
+### Dependencies
 
-### Edge Cases & Error Handling
+- Depends on: None (this is the foundational spec)
+- Depended on by: [Spec 010](./010-marketing-agent.md) — Marketing Agent needs Redis, Claude client, kill switch
+- Depended on by: [Spec 015](./015-pilaster-integration.md) — Pilaster Integration needs Redis, Claude client
+
+## Edge Cases & Failure Modes
 
 **EDGE-001: Redis unavailable at startup**
 - Scenario: Agent starts but Redis is not running or unreachable
@@ -646,9 +634,7 @@ class HolusEvent(BaseModel):
 - Error message: `FATAL: Cannot parse config/marketing.yaml: {yaml_error}. Fix the YAML syntax and restart.`
 - Recovery: Fix the YAML syntax error and restart the agent
 
----
-
-### Performance Requirements
+## Observability
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -660,36 +646,38 @@ class HolusEvent(BaseModel):
 | Claude API call (cached prefix) | < 3s p95 | Langfuse trace duration |
 | Claude API call (cold prefix) | < 5s p95 | Langfuse trace duration |
 
----
+## Acceptance Criteria
 
-### Security Considerations
-
-- All secrets live in `.env` (never committed). `.env.example` contains only placeholders.
-- YAML config files in `config/` contain no secrets. A pre-commit hook verifies this.
-- Redis requires no authentication in local dev. In production, `REDIS_PASSWORD` is set.
-- PostgreSQL uses a dedicated `holus` user with minimum required privileges.
-- Kill switch is intentionally unauthenticated -- accessibility from any device is more important than preventing unauthorized deactivation in a single-user system.
-- Langfuse stores trace data locally. No agent reasoning data leaves the Mac Mini except via Anthropic API calls (covered by their API privacy guarantees).
-
----
-
-### Out of Scope
-
-- Agent-specific logic (marketing, pilaster, coordinator) -- those are specs 010, 015, and 006
-- Mem0 memory system -- will be its own spec when Phase 2 begins
-- Agent scheduling -- uses launchd, see spec 013
-- CI/CD pipeline -- separate spec
-- Monitoring dashboards and alerting rules -- separate spec
-
----
-
-### Related Specs
-
-- [010-marketing-agent.md](./010-marketing-agent.md) -- depends on this infrastructure (Redis, Claude client, kill switch)
-- [015-pilaster-integration.md](./015-pilaster-integration.md) -- depends on this infrastructure (Redis, Claude client)
-
----
-
-**Last Updated:** 2026-02-24
-**Status:** Not Started
-**Owner:** Camilo Martinez
+- [ ] `docker compose up -d` starts all 4 containers (postgres, redis, n8n, langfuse) without errors
+- [ ] All health checks pass within 60 seconds
+- [ ] PostgreSQL accepts connections with pgvector extension enabled (`CREATE EXTENSION IF NOT EXISTS vector`)
+- [ ] Redis responds to `PING` with `PONG`
+- [ ] n8n UI is accessible at `http://localhost:5678`
+- [ ] Langfuse UI is accessible at `http://localhost:3000`
+- [ ] Data persists across `docker compose down && docker compose up -d` (volumes are not destroyed)
+- [ ] `.env.example` documents every required environment variable with descriptions
+- [ ] `HolusSettings.load("marketing")` returns a validated config with base + marketing overlay
+- [ ] Missing `ANTHROPIC_API_KEY` raises `EnvironmentError` with message "Required secret ANTHROPIC_API_KEY not found..."
+- [ ] Environment variables override YAML values (e.g., `HOLUS_LOG_LEVEL=DEBUG` overrides YAML `log_level: INFO`)
+- [ ] All YAML config files pass `yamllint` with no errors
+- [ ] `config/base.yaml` contains no secrets (verified by pre-commit hook)
+- [ ] All Claude API calls include `cache_control: {"type": "ephemeral"}` on the system prompt block
+- [ ] `strategic_planning` task routes to Opus; `content_generation` task routes to Sonnet
+- [ ] Every API call is logged to Langfuse with model, token counts, and cache hit metrics
+- [ ] Cache read tokens appear in Langfuse traces (verify prompt caching is working)
+- [ ] Client raises a descriptive error if `ANTHROPIC_API_KEY` is missing or invalid
+- [ ] Batch API wrapper exists for non-urgent tasks (50% cost discount)
+- [ ] `kill_switch.activate("marketing-agent", "test")` sets Redis key `holus:kill:agent:marketing-agent`
+- [ ] `kill_switch.is_active("marketing-agent")` returns `True` when agent-specific OR global switch is active
+- [ ] `kill_switch.is_active("marketing-agent")` returns `True` when domain switch for `marketing` is active
+- [ ] `kill_switch.deactivate("global")` removes the global key and agents resume
+- [ ] `kill_switch.status()` returns all active kill switches with reason and timestamp
+- [ ] CLI command `python -m holus kill --scope global --reason "test"` works
+- [ ] Kill switch check adds <1ms latency per agent action (single Redis `EXISTS` call)
+- [ ] `event_bus.publish("holus.marketing.content", event)` delivers to all pub/sub subscribers AND persists to Redis Stream
+- [ ] `event_bus.read_stream("holus.marketing.content", count=10)` returns the last 10 events from the stream
+- [ ] Stream is capped at 10,000 entries per channel (MAXLEN)
+- [ ] Events with invalid schema (missing required fields) raise `ValidationError` before publishing
+- [ ] `config/events.yaml` documents every channel and event type
+- [ ] Subscriber callback receives deserialized `HolusEvent` objects
+- [ ] Publishing is fire-and-forget (never blocks the publishing agent)
