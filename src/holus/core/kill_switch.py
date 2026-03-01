@@ -132,21 +132,27 @@ class KillSwitch:
           1. Global kill switch.
           2. Domain-level kill switch (if agent belongs to a domain).
           3. Agent-specific kill switch.
+
+        If Redis is unavailable, returns ``False`` (agent proceeds).
         """
-        # Global
-        if self._redis.exists(self.GLOBAL_KEY):
-            return True
+        try:
+            # Global
+            if self._redis.exists(self.GLOBAL_KEY):
+                return True
 
-        # Domain
-        for domain, agents in DOMAIN_AGENTS.items():
-            if agent_name in agents:
-                domain_key = f"{self.DOMAIN_PREFIX}{domain}"
-                if self._redis.exists(domain_key):
-                    return True
+            # Domain
+            for domain, agents in DOMAIN_AGENTS.items():
+                if agent_name in agents:
+                    domain_key = f"{self.DOMAIN_PREFIX}{domain}"
+                    if self._redis.exists(domain_key):
+                        return True
 
-        # Agent-specific
-        agent_key = f"{self.AGENT_PREFIX}{agent_name}"
-        return bool(self._redis.exists(agent_key))
+            # Agent-specific
+            agent_key = f"{self.AGENT_PREFIX}{agent_name}"
+            return bool(self._redis.exists(agent_key))
+        except Exception:
+            logger.warning("Redis unavailable for kill switch check; assuming not active")
+            return False
 
     def get_state(self, scope: str) -> KillSwitchState | None:
         """Return the ``KillSwitchState`` for *scope*, or ``None``."""

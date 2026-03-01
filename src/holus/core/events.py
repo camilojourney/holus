@@ -247,4 +247,7 @@ class EventBus:
     def close(self) -> None:
         """Release resources."""
         self.unsubscribe()
-        self._redis.close()
+        try:
+            self._redis.close()
+        except redis.RedisError:
+            logger.debug("Redis already closed or unavailable")
