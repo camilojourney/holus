@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 from holus.memory.knowledge import (
     KnowledgeFile,
+    archive_knowledge_file,
     load_knowledge_files,
     validate_knowledge_file,
 )
@@ -217,3 +219,95 @@ def test_load_knowledge_files_sorted_by_filename(tmp_path: Path) -> None:
     files = load_knowledge_files(knowledge_dir=tmp_path)
     assert files[0].title == "Knowledge: A Topic"
     assert files[1].title == "Knowledge: Z Topic"
+
+
+# ---------------------------------------------------------------------------
+# archive_knowledge_file tests
+# ---------------------------------------------------------------------------
+
+
+def test_archive_nonexistent_file(tmp_path: Path) -> None:
+    """Archiving a file that does not exist returns None."""
+    result = archive_knowledge_file(
+        tmp_path / "ghost.md",
+        archive_dir=tmp_path / "archive",
+    )
+    assert result is None
+    assert not (tmp_path / "archive").exists()
+
+
+def test_archive_creates_dated_copy(tmp_path: Path) -> None:
+    """Archiving creates a dated copy in the archive directory."""
+    source = _write_knowledge_file(tmp_path, "platforms.md", VALID_KNOWLEDGE_FILE)
+    archive_dir = tmp_path / "archive"
+
+    result = archive_knowledge_file(source, archive_dir=archive_dir)
+
+    assert result is not None
+    assert result.exists()
+    assert result.parent == archive_dir
+    assert "platforms-" in result.name
+    assert result.suffix == ".md"
+    # Source file is NOT removed (copy, not move)
+    assert source.exists()
+    # Content matches
+    assert result.read_text() == source.read_text()
+
+
+def test_archive_creates_archive_dir(tmp_path: Path) -> None:
+    """Archive directory is created if it does not exist."""
+    source = _write_knowledge_file(tmp_path, "test.md", VALID_KNOWLEDGE_FILE)
+    archive_dir = tmp_path / "nested" / "archive"
+
+    result = archive_knowledge_file(source, archive_dir=archive_dir)
+
+    assert result is not None
+    assert archive_dir.exists()
+
+
+def test_archive_same_day_duplicate(tmp_path: Path) -> None:
+    """Multiple archives on the same day get numeric suffixes."""
+    source = _write_knowledge_file(tmp_path, "data.md", VALID_KNOWLEDGE_FILE)
+    archive_dir = tmp_path / "archive"
+
+    first = archive_knowledge_file(source, archive_dir=archive_dir)
+    second = archive_knowledge_file(source, archive_dir=archive_dir)
+
+    assert first is not None
+    assert second is not None
+    assert first != second
+    assert first.exists()
+    assert second.exists()
+    # Second should have a -2 suffix
+    assert "-2" in second.name
+
+
+def test_archive_three_same_day(tmp_path: Path) -> None:
+    """Three archives on the same day get incrementing suffixes."""
+    source = _write_knowledge_file(tmp_path, "data.md", VALID_KNOWLEDGE_FILE)
+    archive_dir = tmp_path / "archive"
+
+    first = archive_knowledge_file(source, archive_dir=archive_dir)
+    second = archive_knowledge_file(source, archive_dir=archive_dir)
+    third = archive_knowledge_file(source, archive_dir=archive_dir)
+
+    assert first is not None and second is not None and third is not None
+    assert len({first, second, third}) == 3
+    assert "-3" in third.name
+
+
+@patch("holus.memory.knowledge.datetime")
+def test_archive_uses_utc_date(mock_dt: object, tmp_path: Path) -> None:
+    """Archive filename uses UTC date."""
+    from datetime import date
+
+    mock_date = date(2026, 6, 15)
+    mock_dt.now.return_value.date.return_value = mock_date  # type: ignore[union-attr]
+
+    source = _write_knowledge_file(tmp_path, "voice.md", VALID_KNOWLEDGE_FILE)
+    archive_dir = tmp_path / "archive"
+
+    result = archive_knowledge_file(source, archive_dir=archive_dir)
+
+    assert result is not None
+    assert "voice-2026-06-15" in result.name

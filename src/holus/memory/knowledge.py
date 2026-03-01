@@ -12,7 +12,9 @@ from __future__ import annotations
 
 import logging
 import re
+import shutil
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -175,3 +177,49 @@ def load_knowledge_files(
 
     logger.info("Loaded %d knowledge files from %s", len(files), knowledge_dir)
     return files
+
+
+DEFAULT_ARCHIVE_DIR = Path(".self-improvement/knowledge/archive")
+
+
+def archive_knowledge_file(
+    path: Path,
+    *,
+    archive_dir: Path = DEFAULT_ARCHIVE_DIR,
+) -> Path | None:
+    """Copy a knowledge file to the archive directory before overwriting.
+
+    The archived copy is named ``{stem}-{YYYY-MM-DD}{suffix}``.  If an
+    archive with the same name already exists (same file archived twice on the
+    same day), a numeric suffix is appended (``-2``, ``-3``, etc.).
+
+    Args:
+        path: Path to the knowledge file to archive.
+        archive_dir: Destination directory for archived copies.
+
+    Returns:
+        Path to the archived copy, or ``None`` if the source file does not
+        exist.
+    """
+    if not path.exists():
+        logger.debug("Nothing to archive — file does not exist: %s", path)
+        return None
+
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    today = datetime.now(UTC).date().isoformat()
+    archive_name = f"{path.stem}-{today}{path.suffix}"
+    archive_path = archive_dir / archive_name
+
+    # Handle same-day duplicates
+    if archive_path.exists():
+        counter = 2
+        while True:
+            archive_name = f"{path.stem}-{today}-{counter}{path.suffix}"
+            archive_path = archive_dir / archive_name
+            if not archive_path.exists():
+                break
+            counter += 1
+
+    shutil.copy2(path, archive_path)
+    logger.info("Archived %s → %s", path.name, archive_path)
+    return archive_path

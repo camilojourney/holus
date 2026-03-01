@@ -2,6 +2,7 @@
 
 from holus.memory.knowledge import (
     KnowledgeFile,
+    archive_knowledge_file,
     load_knowledge_files,
     validate_knowledge_file,
 )
@@ -21,6 +22,7 @@ __all__ = [
     "MemoryLevel",
     "TrajectoryEntry",
     "TrajectoryLogger",
+    "archive_knowledge_file",
     "file_knowledge_gap",
     "list_open_gaps",
     "load_knowledge_files",

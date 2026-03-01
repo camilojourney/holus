@@ -10,12 +10,12 @@ Spec reference: 012-knowledge-learning.md SPEC-003
 from __future__ import annotations
 
 import logging
-import shutil
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from holus.memory.knowledge import archive_knowledge_file
 from holus.memory.knowledge_gaps import list_open_gaps
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
@@ -310,17 +310,6 @@ class WeeklyLearningLoop:
         self.memory_path.write_text(current)
         logger.info("Appended %d insights to MEMORY.md", len(insights))
 
-    def _archive_knowledge_file(self, path: Path) -> None:
-        """Copy a knowledge file to the archive before overwriting."""
-        if not path.exists():
-            return
-        self.archive_dir.mkdir(parents=True, exist_ok=True)
-        today = datetime.now(UTC).date().isoformat()
-        archive_name = f"{path.stem}-{today}{path.suffix}"
-        archive_path = self.archive_dir / archive_name
-        shutil.copy2(path, archive_path)
-        logger.info("Archived %s → %s", path.name, archive_path)
-
     def _update_performance_patterns(
         self,
         insights: list[Insight],
@@ -332,7 +321,7 @@ class WeeklyLearningLoop:
 
         # Archive previous version
         if path.exists() and path.stat().st_size > 200:
-            self._archive_knowledge_file(path)
+            archive_knowledge_file(path, archive_dir=self.archive_dir)
 
         today = datetime.now(UTC).date().isoformat()
         total_pieces = sum(p["count"] for p in patterns.values())
