@@ -109,7 +109,7 @@ def _show_status() -> None:
     print(json.dumps(results, indent=2))
 
     overall = results.get("overall", "unknown")
-    if overall != "healthy":
+    if overall == "unhealthy":
         sys.exit(1)
 
 
@@ -123,7 +123,7 @@ def _run_health_check() -> None:
     print(json.dumps(results, indent=2))
 
     overall = results.get("overall", "unknown")
-    if overall != "healthy":
+    if overall == "unhealthy":
         sys.exit(1)
 
 
