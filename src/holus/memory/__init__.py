@@ -1,5 +1,10 @@
 """Holus memory subsystem: Mem0 integration, trajectory logging, knowledge gaps."""
 
+from holus.memory.knowledge import (
+    KnowledgeFile,
+    load_knowledge_files,
+    validate_knowledge_file,
+)
 from holus.memory.knowledge_gaps import (
     KnowledgeGap,
     file_knowledge_gap,
@@ -11,11 +16,14 @@ from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
 __all__ = [
     "HolusMem0Client",
+    "KnowledgeFile",
     "KnowledgeGap",
     "MemoryLevel",
     "TrajectoryEntry",
     "TrajectoryLogger",
     "file_knowledge_gap",
     "list_open_gaps",
+    "load_knowledge_files",
     "resolve_gap",
+    "validate_knowledge_file",
 ]
