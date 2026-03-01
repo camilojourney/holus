@@ -94,6 +94,18 @@ reject-content piece_id reason="":
 publish-approved:
     python -m holus.agents.marketing.publish_approved
 
+# Review pending videos
+review-videos:
+    python -m holus.agents.marketing.review_videos
+
+# Approve a video for Genpeli delivery
+approve-video piece_id:
+    python -m holus.agents.marketing.review_videos --approve {{piece_id}}
+
+# Reject a video
+reject-video piece_id reason="":
+    python -m holus.agents.marketing.review_videos --reject {{piece_id}} --reason "{{reason}}"
+
 # -- Autonomous Build Sprint (cron-based) -----------------------------------
 
 # Run ONE build cycle (picks next task, implements, logs, commits)
