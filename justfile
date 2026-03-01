@@ -203,6 +203,11 @@ health:
 
 # -- Self-Improvement --------------------------------------------------------
 
+# Run the weekly learning loop (pattern extraction from trajectory + analytics)
+learn:
+    uv run python -m holus.self_improvement.learning_loop
+
+# Run the full manager self-improvement cycle (interactive)
 improve:
     claude --agent .claude/agents/manager.md
 

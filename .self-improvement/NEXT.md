@@ -47,7 +47,7 @@ Last updated: 2026-03-01
 
 - [x] [BUILD] Voice profile capture — Growth engine vision requires content that sounds like Camilo. Analyze existing LinkedIn/Twitter posts to extract voice characteristics. Write results to `.self-improvement/knowledge/current/voice-profile.md`.
 - [x] [BUILD] Structured content framework library — Growth engine vision defines 7 frameworks (Breakdown, Contrarian, Before/After, Thread, BTS, Engagement Bait, Data Drop) + hook templates. Structure these into a machine-readable format in `.self-improvement/knowledge/current/content-frameworks.md`.
-- [ ] [BUILD] Weekly learning loop — Spec 012 SPEC-003. Manager agent reads trajectory + analytics weekly, uses Opus to extract patterns, updates MEMORY.md. Wire up `just improve` to run this.
+- [x] [BUILD] Weekly learning loop — Spec 012 SPEC-003. Manager agent reads trajectory + analytics weekly, uses Opus to extract patterns, updates MEMORY.md. Wire up `just improve` to run this.
 - [ ] [BUILD] Performance patterns knowledge file — Auto-generated from analytics data. Create `.self-improvement/knowledge/current/performance-patterns.md` seeded with the correct metadata header. Updated by the weekly learning loop.
 
 ### P4 — Polish
