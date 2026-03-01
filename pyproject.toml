@@ -34,10 +34,7 @@ dependencies = [
     # Observability
     "structlog>=24.4.0",
     "langfuse>=2.50.0",
-    # Durable execution
-    "temporalio>=1.7.0",
-    # Trading
-    "alpaca-py>=0.30.0",
+    # Browser automation (E2E tests)
     "playwright>=1.58.0",
 ]
 
@@ -114,8 +111,6 @@ module = [
     "mem0ai.*",
     "langgraph.*",
     "langchain_anthropic.*",
-    "temporalio.*",
-    "alpaca.*",
     "langfuse.*",
     "redis.*",
 ]
@@ -129,7 +124,6 @@ module = [
     "holus.core.process_manager",
     "holus.core.kill_switch",
     "holus.core.events",
-    "holus.integrations.alpaca.client",
     "holus.integrations.claude_api.client",
     "holus.observability.langfuse_client",
     "holus.self_improvement.judge",
@@ -139,8 +133,6 @@ module = [
     "holus.agents.content.agent",
     "holus.agents.coordinator.agent",
     "holus.agents.coding.agent",
-    "holus.agents.trading.agent",
-    "holus.agents.trading.models",
     "holus.agents.pilaster.agent",
 ]
 ignore_errors = true

@@ -181,9 +181,9 @@ Acceptance Criteria:
 
 | Field | Value |
 |-------|-------|
-| Description | Manager agent analyzes trajectory data weekly, extracts patterns, updates knowledge base and MEMORY.md |
+| Description | Manager agent analyzes trajectory data + social-media analytics weekly, extracts patterns, updates knowledge base and MEMORY.md |
 | Trigger | Weekly via `just improve` or launchd (Sunday 7am) |
-| Input | trajectory.jsonl, current knowledge files, MEMORY.md |
+| Input | trajectory.jsonl, analytics from social-media MCP, current knowledge files, MEMORY.md |
 | Output | Updated MEMORY.md, updated knowledge files, insights logged |
 | Validation | New insights must have sample_size >= 5 and confidence level |
 | Auth Required | `ANTHROPIC_API_KEY` |
@@ -201,6 +201,10 @@ async def weekly_learning_cycle(self):
         logger.info("Not enough data for pattern extraction", count=len(recent))
         return
 
+    # Fetch real analytics from social-media MCP
+    analytics = await self.call_mcp("social-media", "get_analytics", days=7)
+    top_posts = await self.call_mcp("social-media", "get_top_posts", limit=10)
+
     # Group by content_type + platform
     patterns = {}
     for entry in recent:
@@ -211,7 +215,7 @@ async def weekly_learning_cycle(self):
         patterns[key]["count"] += 1
         patterns[key]["statuses"].append(entry.status)
 
-    # Use Opus to analyze patterns
+    # Use Opus to analyze patterns + real analytics
     response = await self.claude.create_cached_message(
         task_type="strategic_planning",
         system_prompt=LEARNING_SYSTEM_PROMPT,
@@ -222,13 +226,19 @@ async def weekly_learning_cycle(self):
 Trajectory data (last 7 days):
 {json.dumps([e.model_dump() for e in recent], default=str)}
 
+Real platform analytics (last 7 days):
+{json.dumps(analytics, default=str)}
+
+Top performing posts:
+{json.dumps(top_posts, default=str)}
+
 Current MEMORY.md:
 {Path('.self-improvement/MEMORY.md').read_text()}
 
 Return:
 1. New insights to add to MEMORY.md
 2. Knowledge files to update
-3. Strategy adjustments for next week
+3. Strategy adjustments for next week (based on real engagement data)
 """,
         }],
     )
@@ -243,6 +253,7 @@ Return:
 Acceptance Criteria:
 - [ ] Learning loop runs weekly via `just improve`
 - [ ] Analyzes trajectory.jsonl entries from the past 7 days
+- [ ] Fetches real analytics from social-media MCP (`get_analytics`, `get_top_posts`)
 - [ ] Requires minimum 5 data points before extracting patterns
 - [ ] Uses Opus for pattern analysis
 - [ ] Updates MEMORY.md with new insights (appends, doesn't overwrite)
@@ -400,7 +411,6 @@ Knowledge update event (published to event bus):
 ### Out of Scope
 
 - Mem0 vector memory integration (future Phase 2 feature)
-- DSPy prompt optimization (spec 003, monthly cycle)
 - Cross-agent knowledge sharing (coordinator spec)
 - External knowledge sources (web scraping, competitor analysis)
 
@@ -410,7 +420,7 @@ Knowledge update event (published to event bus):
 
 - [010-marketing-agent.md](./010-marketing-agent.md) — the agent that reads knowledge and writes trajectories
 - [009-autonomous-build-system.md](./009-autonomous-build-system.md) — the builder also logs to trajectory
-- [003-content-pipeline.md](./003-content-pipeline.md) — DSPy optimization reads trajectory data
+- [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — provides analytics data for the learning loop
 
 ---
 

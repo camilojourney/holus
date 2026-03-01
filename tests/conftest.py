@@ -81,31 +81,15 @@ def mock_mem0():
 
 
 @pytest.fixture
-def sample_trade_signal() -> dict[str, Any]:
-    """Sample trade signal for trading agent tests."""
+def sample_content_decision() -> dict[str, Any]:
+    """Sample content decision for marketing agent tests."""
     return {
-        "ticker": "AAPL",
-        "direction": "long",
-        "confidence": 0.85,
-        "entry_price": 195.50,
-        "stop_loss": 192.00,
-        "take_profit": 202.00,
-        "reasoning": "Strong momentum with volume confirmation above 20-day average.",
-        "timeframe": "1d",
-    }
-
-
-@pytest.fixture
-def sample_risk_assessment() -> dict[str, Any]:
-    """Sample risk assessment for trading agent tests."""
-    return {
-        "approved": True,
-        "position_size": 50,
-        "stop_loss": 192.00,
-        "take_profit": 202.00,
-        "risk_score": 0.35,
-        "max_loss_usd": 175.00,
-        "rejection_reason": None,
+        "product": "pilaster",
+        "content_type": "tutorial",
+        "platform": "linkedin",
+        "topic": "ComfyUI workflow diff view",
+        "reasoning": "Tutorial posts outperform promo posts 4:1 on LinkedIn.",
+        "priority": 0.85,
     }
 
 

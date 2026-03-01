@@ -86,10 +86,10 @@ From `config/guardrails.yaml` -- check the authority matrix for your specific ag
 
 ## Agent-Specific Notes
 
-### Trading Agent Sessions
-- Always check `config/trading_agent.yaml` for current guardrails
-- Verify paper/live mode before any trading operations
-- Check daily loss limits have not been triggered
+### Marketing Agent Sessions
+- Check `config/marketing.yaml` for current agent configuration
+- Verify kill switch is not active before running cycles
+- Review content queue for pending approvals
 
 ### Content Agent Sessions
 - Check content calendar in Mem0 for scheduled items

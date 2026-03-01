@@ -101,9 +101,7 @@ class LateAPIClient:
         for platform in platforms:
             limit = PLATFORM_LIMITS.get(platform.lower())
             if limit and len(text) > limit:
-                violations.append(
-                    f"{platform}: {len(text)} chars exceeds {limit} limit"
-                )
+                violations.append(f"{platform}: {len(text)} chars exceeds {limit} limit")
         return violations
 
     async def get_accounts(self) -> dict[str, str]:
@@ -193,9 +191,7 @@ class LateAPIClient:
         # Parse response
         post_id = data.get("_id", "unknown")
         platform_results = data.get("platformResults", {})
-        failed = [
-            p for p, r in platform_results.items() if r.get("status") == "failed"
-        ]
+        failed = [p for p, r in platform_results.items() if r.get("status") == "failed"]
         errors = {
             p: r.get("error", "Unknown error")
             for p, r in platform_results.items()
@@ -216,9 +212,7 @@ class LateAPIClient:
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    async def get_analytics(
-        self, post_id: str, platform: str | None = None
-    ) -> list[AnalyticsData]:
+    async def get_analytics(self, post_id: str, platform: str | None = None) -> list[AnalyticsData]:
         """Get analytics for a specific post.
 
         Args:

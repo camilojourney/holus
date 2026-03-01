@@ -36,13 +36,6 @@ Edit `.env` with your actual keys:
 # Required
 ANTHROPIC_API_KEY=sk-ant-...
 
-# Trading agent (optional until spec 002)
-ALPACA_API_KEY=...
-ALPACA_SECRET_KEY=...
-
-# Content agent (optional until spec 003)
-LATE_API_KEY=...
-
 # Infrastructure (defaults work for local dev)
 REDIS_URL=redis://localhost:6379
 DATABASE_URL=postgresql://holus:holus@localhost:5432/holus
@@ -65,7 +58,6 @@ This starts:
 | PostgreSQL + pgvector | 5432 | Primary database, vector embeddings |
 | Redis | 6379 | Event bus, kill switch, caching |
 | n8n | 5678 | Workflow automation, cron replacement |
-| Temporal | 7233 (gRPC), 8233 (UI) | Durable execution for trading workflows |
 | Langfuse | 3000 | Observability, tracing, prompt analytics |
 
 Verify all services are healthy:
@@ -100,14 +92,8 @@ uv run python -m holus config --show
 ## Running a Single Agent (Development Mode)
 
 ```bash
-# Run the trading agent in dev mode (paper trading, verbose logging)
-uv run python -m holus agent run trading --dev
-
-# Run the content agent
-uv run python -m holus agent run content --dev
-
-# Run all agents
-uv run python -m holus agent run all --dev
+# Run the marketing agent in dev mode
+uv run python -m holus agent run marketing --dev
 ```
 
 ## Running Tests
@@ -136,13 +122,13 @@ uv run ruff format --check src/ tests/
 
 ```bash
 # Stop one agent
-redis-cli SET holus:kill:trading-agent '{"reason":"investigating anomaly"}'
+redis-cli SET holus:kill:agent:marketing-agent '{"reason":"investigating anomaly"}'
 
 # Stop everything
 redis-cli SET holus:kill:global '{"reason":"emergency"}'
 
 # Resume
-redis-cli DEL holus:kill:trading-agent
+redis-cli DEL holus:kill:agent:marketing-agent
 redis-cli DEL holus:kill:global
 
 # Check status
@@ -153,11 +139,10 @@ redis-cli KEYS "holus:kill:*"
 
 ```bash
 # Structured logs go to stdout in JSON format
-docker compose logs -f holus-trading
-docker compose logs -f holus-content
+docker compose logs -f holus-marketing
 
 # Or check log files
-tail -f logs/trading-agent.stdout.log
+tail -f logs/marketing-agent.stdout.log
 ```
 
 ### View Event Bus
@@ -167,7 +152,7 @@ tail -f logs/trading-agent.stdout.log
 redis-cli PSUBSCRIBE "holus.*"
 
 # Read event stream history
-redis-cli XRANGE holus:stream:holus.trading.signals - + COUNT 10
+redis-cli XRANGE holus:stream:holus.marketing.content - + COUNT 10
 ```
 
 ---

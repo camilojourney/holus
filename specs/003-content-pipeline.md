@@ -1,5 +1,15 @@
 # Spec 003: Content Pipeline
 
+> **DEPRECATED (2026-02-28):** This spec is superseded by the silo integration specs:
+> - [010-marketing-agent.md](./010-marketing-agent.md) — strategy and content decisions
+> - [014-genpeli-integration.md](./014-genpeli-integration.md) — video editing via MCP
+> - [015-pilaster-integration.md](./015-pilaster-integration.md) — image generation via MCP
+> - [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — posting + analytics via MCP
+>
+> This spec was written before the silo architecture was formalized. It places image
+> generation, video generation, and social media distribution directly inside Holus,
+> violating the MCP boundary principle. Do not implement from this spec.
+
 ## Feature: Multi-stage content generation and distribution pipeline across 13 platforms
 
 ### Overview
@@ -603,8 +613,7 @@ Engagement update event:
 
 ### Related Specs
 
-- [001-core-infrastructure.md](./001-core-infrastructure.md) -- provides Redis (event bus), n8n (scheduling), Claude client (text generation), Langfuse (cost tracking)
-- [002-trading-agent.md](./002-trading-agent.md) -- content agent may subscribe to `holus.trading.signals` for `market_regime_shift` events to generate market-related content
+- [001-core-infrastructure.md](./001-core-infrastructure.md) -- provides Redis (event bus), Claude client (text generation), Langfuse (cost tracking)
 
 ---
 

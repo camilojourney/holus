@@ -6,7 +6,7 @@ Architecture:
   - Cross-repo dependency management
   - Weekly self-improvement cycles (Manager -> Code Improver -> Judge)
 
-The coding agent does NOT run LangGraph in the same way as trading/content.
+The coding agent does NOT run LangGraph in the same way as marketing.
 Instead, it orchestrates Claude Code CLI invocations and manages the
 self-improvement pipeline.
 """

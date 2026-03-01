@@ -67,10 +67,8 @@ Run these periodically (n8n monitors them automatically):
 | PostgreSQL | `pg_isready -h localhost -p 5432` | "accepting connections" |
 | Redis | `redis-cli ping` | "PONG" |
 | n8n | `curl -s http://localhost:5678/healthz` | HTTP 200 |
-| Temporal | `curl -s http://localhost:8233/api/v1/namespaces` | JSON response |
 | Langfuse | `curl -s http://localhost:3000/api/public/health` | HTTP 200 |
-| Trading agent | `redis-cli GET holus:agent:trading:heartbeat` | Timestamp < 5 min ago |
-| Content agent | `redis-cli GET holus:agent:content:heartbeat` | Timestamp < 5 min ago |
+| Marketing agent | `redis-cli GET holus:agent:marketing:heartbeat` | Timestamp < 5 min ago |
 
 ### Automated Health Check
 
@@ -157,14 +155,14 @@ ssh macmini 'redis-cli SET holus:kill:global "{\"reason\":\"emergency\"}"'
 ### Kill One Agent
 
 ```bash
-redis-cli SET holus:kill:trading-agent '{"reason":"investigating anomaly"}'
+redis-cli SET holus:kill:agent:marketing-agent '{"reason":"investigating anomaly"}'
 ```
 
 ### Resume After Kill
 
 ```bash
 # Remove specific kill switch
-redis-cli DEL holus:kill:trading-agent
+redis-cli DEL holus:kill:agent:marketing-agent
 
 # Remove global kill switch
 redis-cli DEL holus:kill:global

@@ -67,8 +67,8 @@ def trace_agent_call(
 
     Usage::
 
-        @trace_agent_call("trading_agent", "trade_signal", tier="strategic")
-        def analyze_trade(market_data: str, portfolio: str) -> dict:
+        @trace_agent_call("marketing_agent", "strategy_decision", tier="strategic")
+        def decide_content(analytics: str, products: str) -> dict:
             ...
     """
 

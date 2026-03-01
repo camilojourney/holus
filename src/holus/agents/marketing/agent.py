@@ -270,7 +270,9 @@ class MarketingAgent(BaseAgent):
                     }
                 )
             except Exception as exc:
-                logger.exception("Act stage failed for decision %s", decision.model_dump(mode="json"))
+                logger.exception(
+                    "Act stage failed for decision %s", decision.model_dump(mode="json")
+                )
                 post_results.append(
                     {
                         "status": "failed",
@@ -398,20 +400,30 @@ class MarketingAgent(BaseAgent):
     def _queue_files(self) -> list[Path]:
         if not self._QUEUE_DIR.exists():
             return []
-        return sorted(self._QUEUE_DIR.glob("*.json"))
+        return sorted(self._QUEUE_DIR.glob("*.yaml"))
 
     def _ensure_queue_dir(self) -> Path:
         self._QUEUE_DIR.mkdir(parents=True, exist_ok=True)
         return self._QUEUE_DIR
 
     def _write_queue_item(self, piece: GeneratedPiece, queue_dir: Path) -> Path:
-        created_at = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-        file_path = queue_dir / f"{created_at}_{piece.piece_id}.json"
-        file_path.write_text(
-            json.dumps(piece.model_dump(mode="json"), indent=2, ensure_ascii=True),
-            encoding="utf-8",
-        )
-        return file_path
+        """Write a content piece to the queue as YAML (matches content_queue.py)."""
+        import yaml
+
+        path = queue_dir / f"{piece.piece_id}.yaml"
+        data = {
+            "piece_id": piece.piece_id,
+            "product": piece.decision.product,
+            "platform": piece.decision.platform.value,
+            "content_type": piece.decision.content_type.value,
+            "topic": piece.decision.topic,
+            "text": piece.text,
+            "reasoning": piece.decision.reasoning,
+            "generated_at": piece.generated_at.isoformat(),
+            "status": "pending_review",
+        }
+        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+        return path
 
     def _parse_content_decisions(self, response_text: str) -> list[ContentDecision]:
         payload = self._decode_json_payload(response_text)
@@ -457,9 +469,7 @@ class MarketingAgent(BaseAgent):
                 platform=platform,
                 content_type=content_type,
                 topic=str(payload.get("topic", "Product tutorial")).strip(),
-                reasoning=str(
-                    payload.get("reasoning", "Value-first educational content")
-                ).strip(),
+                reasoning=str(payload.get("reasoning", "Value-first educational content")).strip(),
                 priority=priority_value,
                 estimated_engagement=estimated_engagement,
             )
@@ -525,7 +535,9 @@ class MarketingAgent(BaseAgent):
 
         if not self.config.anthropic_api_key:
             fallback_text = self._fallback_content_text(decision)
-            return self._enforce_platform_limit(fallback_text, decision.platform), "template-fallback"
+            return self._enforce_platform_limit(
+                fallback_text, decision.platform
+            ), "template-fallback"
 
         system_prompt = SONNET_CONTENT_PROMPT.format(
             product=decision.product,

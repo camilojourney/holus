@@ -4,8 +4,8 @@ Each Holus agent runs as an independent OS process.  The ``ProcessManager``
 handles lifecycle operations (start/stop/restart) and health monitoring
 with exponential backoff on crashes.
 
-This is the supervisor pattern:  a crash in the trading agent does NOT
-affect the content agent.
+This is the supervisor pattern:  a crash in the marketing agent does NOT
+affect the pilaster agent.
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ class AgentProcess:
     """Runtime state for a managed agent process."""
 
     name: str
-    entrypoint: str  # e.g. "holus.agents.trading.agent"
+    entrypoint: str  # e.g. "holus.agents.marketing.agent"
     pid: int | None = None
     status: AgentStatus = AgentStatus.STOPPED
     restart_count: int = 0
@@ -70,8 +70,7 @@ class ProcessManager:
     Usage::
 
         pm = ProcessManager(log_dir=Path("logs"))
-        pm.start_agent("trading-agent", "holus.agents.trading.agent")
-        pm.start_agent("content-agent", "holus.agents.content.agent")
+        pm.start_agent("marketing-agent", "holus.agents.marketing.agent")
 
         # Monitor loop
         pm.check_health()

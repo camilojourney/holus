@@ -98,6 +98,4 @@ class MarketingCycleReport(BaseModel):
     platforms_used: list[Platform] = Field(
         default_factory=list, description="Platforms targeted in this cycle"
     )
-    total_cost_usd: float = Field(
-        default=0.0, ge=0.0, description="Total API cost for this cycle"
-    )
+    total_cost_usd: float = Field(default=0.0, ge=0.0, description="Total API cost for this cycle")

@@ -160,28 +160,19 @@ def mock_claude_client():
 def marketing_agent(mock_config, temp_config_files, monkeypatch):
     """Create a MarketingAgent with mocked dependencies."""
     # Monkeypatch the class-level paths to use temp paths
-    monkeypatch.setattr(
-        MarketingAgent, "_PRODUCTS_PATH", temp_config_files["products_path"]
-    )
-    monkeypatch.setattr(
-        MarketingAgent, "_KNOWLEDGE_DIR", temp_config_files["knowledge_dir"]
-    )
-    monkeypatch.setattr(
-        MarketingAgent, "_MEMORY_PATH", temp_config_files["memory_path"]
-    )
-    monkeypatch.setattr(
-        MarketingAgent, "_QUEUE_DIR", temp_config_files["queue_dir"]
-    )
-    monkeypatch.setattr(
-        MarketingAgent, "_TRAJECTORY_PATH", temp_config_files["trajectory_path"]
-    )
+    monkeypatch.setattr(MarketingAgent, "_PRODUCTS_PATH", temp_config_files["products_path"])
+    monkeypatch.setattr(MarketingAgent, "_KNOWLEDGE_DIR", temp_config_files["knowledge_dir"])
+    monkeypatch.setattr(MarketingAgent, "_MEMORY_PATH", temp_config_files["memory_path"])
+    monkeypatch.setattr(MarketingAgent, "_QUEUE_DIR", temp_config_files["queue_dir"])
+    monkeypatch.setattr(MarketingAgent, "_TRAJECTORY_PATH", temp_config_files["trajectory_path"])
 
     # Mock Redis and other infrastructure
-    with patch("holus.agents.base.redis.Redis") as mock_redis_cls, \
-         patch("holus.agents.base.EventBus") as mock_event_bus_cls, \
-         patch("holus.agents.base.KillSwitch") as mock_kill_switch_cls, \
-         patch("holus.agents.base.HolusClaudeClient") as mock_claude_cls:
-
+    with (
+        patch("holus.agents.base.redis.Redis") as mock_redis_cls,
+        patch("holus.agents.base.EventBus") as mock_event_bus_cls,
+        patch("holus.agents.base.KillSwitch") as mock_kill_switch_cls,
+        patch("holus.agents.base.HolusClaudeClient") as mock_claude_cls,
+    ):
         mock_redis = MagicMock()
         mock_redis_cls.from_url.return_value = mock_redis
 
@@ -239,15 +230,9 @@ async def test_observe_loads_all_data(marketing_agent, temp_config_files):
 async def test_observe_handles_missing_files(marketing_agent, temp_config_files, monkeypatch):
     """Observe stage gracefully handles missing config files."""
     # Point to non-existent paths
-    monkeypatch.setattr(
-        MarketingAgent, "_PRODUCTS_PATH", Path("/nonexistent/products.yaml")
-    )
-    monkeypatch.setattr(
-        MarketingAgent, "_KNOWLEDGE_DIR", Path("/nonexistent/knowledge")
-    )
-    monkeypatch.setattr(
-        MarketingAgent, "_MEMORY_PATH", Path("/nonexistent/MEMORY.md")
-    )
+    monkeypatch.setattr(MarketingAgent, "_PRODUCTS_PATH", Path("/nonexistent/products.yaml"))
+    monkeypatch.setattr(MarketingAgent, "_KNOWLEDGE_DIR", Path("/nonexistent/knowledge"))
+    monkeypatch.setattr(MarketingAgent, "_MEMORY_PATH", Path("/nonexistent/MEMORY.md"))
 
     state = marketing_agent.default_state()
     result = await marketing_agent.observe(state)
@@ -262,11 +247,11 @@ async def test_observe_handles_missing_files(marketing_agent, temp_config_files,
 @pytest.mark.asyncio
 async def test_observe_with_existing_queue_items(marketing_agent, temp_config_files):
     """Observe stage counts existing queue items."""
-    # Create some queue items
+    # Create some queue items (YAML format, matching content_queue.py)
     queue_dir = temp_config_files["queue_dir"]
-    (queue_dir / "item1.json").write_text("{}")
-    (queue_dir / "item2.json").write_text("{}")
-    (queue_dir / "item3.json").write_text("{}")
+    (queue_dir / "item1.yaml").write_text("status: pending\n")
+    (queue_dir / "item2.yaml").write_text("status: pending\n")
+    (queue_dir / "item3.yaml").write_text("status: pending\n")
 
     state = marketing_agent.default_state()
     result = await marketing_agent.observe(state)
@@ -284,35 +269,35 @@ async def test_reason_generates_decisions_with_claude(marketing_agent):
     """Reason stage calls Claude and parses content decisions."""
     state = marketing_agent.default_state()
     state["product_updates"] = {
-        "products": {
-            "pilaster": {"name": "Pilaster", "platforms": ["linkedin", "twitter"]}
-        }
+        "products": {"pilaster": {"name": "Pilaster", "platforms": ["linkedin", "twitter"]}}
     }
     state["knowledge"] = {"platforms": "LinkedIn is professional"}
     state["memory_context"] = "Tutorials perform well"
     state["analytics"] = {}
 
     # Mock Claude response with valid JSON
-    decisions_json = json.dumps([
-        {
-            "product": "pilaster",
-            "platform": "linkedin",
-            "content_type": "tutorial",
-            "topic": "How to generate AI images",
-            "reasoning": "Educational content works well on LinkedIn",
-            "priority": 1,
-            "estimated_engagement": "high",
-        },
-        {
-            "product": "pilaster",
-            "platform": "twitter",
-            "content_type": "tips",
-            "topic": "5 AI image tips",
-            "reasoning": "Quick tips perform on Twitter",
-            "priority": 2,
-            "estimated_engagement": "medium",
-        },
-    ])
+    decisions_json = json.dumps(
+        [
+            {
+                "product": "pilaster",
+                "platform": "linkedin",
+                "content_type": "tutorial",
+                "topic": "How to generate AI images",
+                "reasoning": "Educational content works well on LinkedIn",
+                "priority": 1,
+                "estimated_engagement": "high",
+            },
+            {
+                "product": "pilaster",
+                "platform": "twitter",
+                "content_type": "tips",
+                "topic": "5 AI image tips",
+                "reasoning": "Quick tips perform on Twitter",
+                "priority": 2,
+                "estimated_engagement": "medium",
+            },
+        ]
+    )
 
     def mock_call(**kwargs):
         response = MagicMock()
@@ -373,18 +358,20 @@ async def test_reason_limits_to_three_decisions(marketing_agent):
     state["memory_context"] = ""
 
     # Mock Claude response with 5 decisions
-    decisions_json = json.dumps([
-        {
-            "product": "pilaster",
-            "platform": "linkedin",
-            "content_type": "tutorial",
-            "topic": f"Topic {i}",
-            "reasoning": f"Reason {i}",
-            "priority": i,
-            "estimated_engagement": "medium",
-        }
-        for i in range(1, 6)
-    ])
+    decisions_json = json.dumps(
+        [
+            {
+                "product": "pilaster",
+                "platform": "linkedin",
+                "content_type": "tutorial",
+                "topic": f"Topic {i}",
+                "reasoning": f"Reason {i}",
+                "priority": i,
+                "estimated_engagement": "medium",
+            }
+            for i in range(1, 6)
+        ]
+    )
 
     def mock_call(**kwargs):
         response = MagicMock()
@@ -509,12 +496,12 @@ async def test_act_generates_content_for_decisions(marketing_agent, temp_config_
     assert result["post_results"][0]["status"] == "pending_review"
     assert "queue_path" in result["post_results"][0]
 
-    # Queue file created
-    queue_files = list(temp_config_files["queue_dir"].glob("*.json"))
+    # Queue file created (YAML format)
+    queue_files = list(temp_config_files["queue_dir"].glob("*.yaml"))
     assert len(queue_files) == 1
 
     # Queue file content valid
-    queue_data = json.loads(queue_files[0].read_text())
+    queue_data = yaml.safe_load(queue_files[0].read_text())
     assert queue_data["text"] == generated_text
     assert queue_data["platform"] == "linkedin"
 
@@ -663,8 +650,8 @@ async def test_act_processes_multiple_decisions(marketing_agent, temp_config_fil
     # Both results tracked
     assert len(result["post_results"]) == 2
 
-    # Both queue files created
-    queue_files = list(temp_config_files["queue_dir"].glob("*.json"))
+    # Both queue files created (YAML format)
+    queue_files = list(temp_config_files["queue_dir"].glob("*.yaml"))
     assert len(queue_files) == 2
 
 
@@ -772,7 +759,7 @@ async def test_evaluate_tracks_queue_size_change(marketing_agent, temp_config_fi
     """Evaluate stage tracks queue size before and after."""
     # Create initial queue items
     queue_dir = temp_config_files["queue_dir"]
-    (queue_dir / "existing.json").write_text("{}")
+    (queue_dir / "existing.yaml").write_text("status: pending\n")
 
     state = marketing_agent.default_state()
     state["cycle_id"] = "test-cycle-003"
@@ -795,7 +782,7 @@ async def test_evaluate_tracks_queue_size_change(marketing_agent, temp_config_fi
     state["queue_size_before"] = 1
 
     # Add new queue item (simulating act stage)
-    (queue_dir / "new.json").write_text("{}")
+    (queue_dir / "new.yaml").write_text("status: pending\n")
 
     result = await marketing_agent.evaluate(state)
 
@@ -989,17 +976,19 @@ def test_product_info_missing_product(marketing_agent):
 async def test_full_marketing_cycle(marketing_agent, temp_config_files):
     """Test complete observe -> reason -> act -> evaluate cycle."""
     # Mock Claude responses
-    decisions_json = json.dumps([
-        {
-            "product": "pilaster",
-            "platform": "linkedin",
-            "content_type": "tutorial",
-            "topic": "AI image generation 101",
-            "reasoning": "Educational content for LinkedIn",
-            "priority": 1,
-            "estimated_engagement": "high",
-        }
-    ])
+    decisions_json = json.dumps(
+        [
+            {
+                "product": "pilaster",
+                "platform": "linkedin",
+                "content_type": "tutorial",
+                "topic": "AI image generation 101",
+                "reasoning": "Educational content for LinkedIn",
+                "priority": 1,
+                "estimated_engagement": "high",
+            }
+        ]
+    )
 
     content_text = "Here's everything you need to know about AI image generation..."
 
@@ -1044,8 +1033,8 @@ async def test_full_marketing_cycle(marketing_agent, temp_config_files):
     assert state["evaluation"]["logged"] is True
     assert state["evaluation"]["pieces_created"] == 1
 
-    # Verify queue file created
-    queue_files = list(temp_config_files["queue_dir"].glob("*.json"))
+    # Verify queue file created (YAML format)
+    queue_files = list(temp_config_files["queue_dir"].glob("*.yaml"))
     assert len(queue_files) == 1
 
     # Verify trajectory logged

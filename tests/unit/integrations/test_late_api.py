@@ -1,15 +1,15 @@
 """Tests for the Late API client."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-import httpx
+
+import pytest
 
 from holus.integrations.late_api import (
+    PLATFORM_LIMITS,
+    AnalyticsData,
     LateAPIClient,
     PostRequest,
     PostResult,
-    AnalyticsData,
-    PLATFORM_LIMITS,
 )
 
 

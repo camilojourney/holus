@@ -174,9 +174,9 @@ class PromptOptimizer:
 
         optimizer = PromptOptimizer(api_key="sk-...")
         result = optimizer.optimize(
-            agent_id="trading-agent",
-            task_type="trade_signal",
-            current_prompt="You are the Signal Generator...",
+            agent_id="marketing-agent",
+            task_type="strategy_decision",
+            current_prompt="You are the Marketing Strategist...",
             failure_details=[
                 {"task": "...", "output": "...", "feedback": "..."},
             ],

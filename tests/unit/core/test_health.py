@@ -59,8 +59,17 @@ def test_check_knowledge_with_files(tmp_path: Path) -> None:
     assert "files_count" in result
 
 
-def test_check_content_queue_empty(tmp_path: Path) -> None:
+def test_check_content_queue_empty(tmp_path: Path, monkeypatch) -> None:
     """Content queue check reports healthy when queue doesn't exist."""
+    from pathlib import Path as _Path
+
+    # Point check_content_queue at an empty temp dir so the test is isolated
+    monkeypatch.setattr(
+        "holus.core.health.Path",
+        lambda p: (
+            _Path(str(tmp_path / "nonexistent-queue")) if "content-queue" in str(p) else _Path(p)
+        ),
+    )
     hc = HealthCheck()
     result = hc.check_content_queue()
 

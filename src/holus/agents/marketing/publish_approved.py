@@ -72,9 +72,7 @@ async def publish_all() -> None:
                         mark_published(content.piece_id, result.post_id)
 
                 except Exception as e:
-                    console.print(
-                        f"[red]✗ Error publishing {content.piece_id}: {e}[/red]"
-                    )
+                    console.print(f"[red]✗ Error publishing {content.piece_id}: {e}[/red]")
 
                 progress.remove_task(task)
 

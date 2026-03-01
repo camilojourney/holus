@@ -1,15 +1,20 @@
 # Spec 016: Social Media Integration V2
 
-## Feature: Enhanced multi-platform posting with bilingual routing, analytics, and intelligent scheduling
+## Feature: Multi-platform posting with bilingual routing, analytics, and intelligent scheduling via social-media-automatization
 
 ### Overview
 
-This is the V2 enhancement of Spec 011 (Social Media Integration). It expands the integration beyond LinkedIn and Twitter to all supported platforms (Instagram, Facebook, Threads), adds bilingual EN/ES routing based on account configuration, integrates the local `social-media-automatization` service alongside Late API for platform flexibility, and provides comprehensive analytics feedback. The integration maintains the federated MCP pattern: social services run independently, and the MCP server translates marketing agent intentions into API calls.
+social-media-automatization is the publishing and analytics silo. It already has a working
+FastAPI REST API (12+ endpoints) and an MCP server (9 tools) that handles posting,
+scheduling, bilingual EN/ES routing, voice profiles, and text enhancement. Holus connects
+to it directly — no wrapper code in Holus.
+
+This spec defines what Holus needs from the social-media MCP, what already exists, and what
+needs to be added to the social-media-automatization repo.
 
 ### User Stories
 
 - As the marketing agent, I want to post bilingual content (EN + ES) to platform-specific accounts so that both audiences are reached.
-- As the marketing agent, I want to use the local social-media service for enhanced features (bilingual routing, voice profiles) and Late API as a fallback.
 - As the marketing agent, I want to retrieve analytics for all platforms so that I learn what works across different audiences.
 - As a founder, I want content posted at optimal times per platform so that engagement is maximized.
 - As a founder, I want to approve content before it goes live on high-risk platforms (Instagram, TikTok) while auto-posting to low-risk ones (LinkedIn, Twitter).
@@ -18,374 +23,53 @@ This is the V2 enhancement of Spec 011 (Social Media Integration). It expands th
 
 ### Core Specifications
 
-**SPEC-001: Enhanced Social Media MCP Server**
+**SPEC-001: Social Media MCP Server**
 
 | Field | Value |
 |-------|-------|
-| Description | Unified MCP server that routes to either the local social-media service or Late API based on feature requirements |
+| Description | MCP server in the social-media-automatization repo. Holus connects to it — no wrapper code in Holus. |
 | Trigger | Marketing agent connects to the MCP server at startup |
 | Input | Tool calls from the marketing agent (post content, get analytics, schedule, etc.) |
 | Output | Tool results (post IDs, analytics data, scheduling confirmations) |
-| Validation | All inputs validated before passing to backend services |
-| Auth Required | `SOCIAL_MEDIA_API_KEY` (local), `LATE_API_KEY` (fallback) |
+| Validation | All inputs validated by social-media MCP server |
+| Auth Required | `SOCIAL_MEDIA_API_KEY` (server-side, in social-media-automatization repo) |
 
-```python
-# src/holus/mcp_servers/social_media.py
+**NOTE:** The MCP server code lives in the **social-media-automatization repo**, not in Holus.
 
-from mcp.server.fastmcp import FastMCP
-import httpx
-import os
+**Existing MCP tools (already built):**
 
-mcp = FastMCP("social-media")
+| Tool | Description |
+|------|-------------|
+| `post_text` | Post text content to platforms |
+| `post_with_media` | Post content with images/video |
+| `schedule_post` | Schedule a post for future publishing |
+| `get_job_status` | Check post job status |
+| `list_scheduled` | List pending scheduled posts |
+| `cancel_scheduled` | Cancel a scheduled post |
+| `enhance_text` | Enhance text using voice profiles |
+| `platform_health` | Check platform connection health |
+| `translate` | Translate text for bilingual posting |
 
-LOCAL_API = "http://localhost:8000"
-LOCAL_API_KEY = os.environ.get("SOCIAL_MEDIA_API_KEY", "")
-LATE_API = "https://api.late.so/v1"
-LATE_API_KEY = os.environ.get("LATE_API_KEY", "")
+**MCP tools to be added in social-media-automatization repo:**
 
+| Tool | Description |
+|------|-------------|
+| `get_analytics` | Get engagement analytics for recent posts (impressions, engagement rate, clicks) |
+| `get_top_posts` | Get best performing posts ranked by metric |
+| `post_story` | Post a story to Instagram/Facebook |
+| `get_accounts` | Get list of connected social media accounts |
 
-def get_backend_for_request(request_features: set[str]) -> str:
-    """Route to local or Late API based on feature requirements."""
-    # Features only available on local service
-    local_only_features = {"bilingual", "voice_profile", "story", "bilingual_routing"}
-    
-    if request_features & local_only_features:
-        return "local"
-    
-    # Default to Late API for broader platform support
-    return "late" if LATE_API_KEY else "local"
-
-
-@mcp.tool()
-async def post_content(
-    text: str,
-    platforms: str,
-    media_urls: str = "",
-    bilingual: bool = False,
-    voice_profile_id: str = "",
-    schedule_time: str = "",
-) -> str:
-    """Post content to social media platforms.
-
-    Args:
-        text: Content text
-        platforms: Comma-separated platforms (linkedin,twitter,instagram,facebook,threads)
-        media_urls: Comma-separated media URLs (optional)
-        bilingual: Enable EN/ES bilingual routing (local service only)
-        voice_profile_id: Voice profile for text enhancement (local service only)
-        schedule_time: ISO 8601 datetime for scheduling (optional, empty = immediate)
-
-    Returns:
-        JSON with post IDs and status per platform
-    """
-    request_features = set()
-    if bilingual:
-        request_features.add("bilingual")
-    if voice_profile_id:
-        request_features.add("voice_profile")
-    
-    backend = get_backend_for_request(request_features)
-    
-    if backend == "local":
-        return await _post_via_local(
-            text=text,
-            platforms=platforms.split(","),
-            media_urls=media_urls.split(",") if media_urls else [],
-            bilingual=bilingual,
-            voice_profile_id=voice_profile_id,
-            schedule_time=schedule_time,
-        )
-    else:
-        return await _post_via_late(
-            text=text,
-            platforms=platforms.split(","),
-            media_urls=media_urls.split(",") if media_urls else [],
-            schedule_time=schedule_time,
-        )
-
-
-async def _post_via_local(
-    text: str,
-    platforms: list[str],
-    media_urls: list[str],
-    bilingual: bool,
-    voice_profile_id: str,
-    schedule_time: str,
-) -> str:
-    """Post via local social-media-automatization service."""
-    async with httpx.AsyncClient() as client:
-        endpoint = "/api/post-bilingual" if bilingual else "/api/post"
-        
-        payload = {
-            "text": text,
-            "platforms": platforms,
-            "media_urls": media_urls,
-        }
-        
-        if voice_profile_id:
-            payload["voice_profile_id"] = int(voice_profile_id)
-        
-        if schedule_time:
-            payload["schedule_time"] = schedule_time
-        
-        response = await client.post(
-            f"{LOCAL_API}{endpoint}",
-            json=payload,
-            headers={"X-API-Key": LOCAL_API_KEY},
-            timeout=60.0,
-        )
-        response.raise_for_status()
-        return response.text
-
-
-async def _post_via_late(
-    text: str,
-    platforms: list[str],
-    media_urls: list[str],
-    schedule_time: str,
-) -> str:
-    """Post via Late API."""
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{LATE_API}/posts",
-            json={
-                "text": text,
-                "platforms": platforms,
-                "media_urls": media_urls,
-                "schedule_time": schedule_time or None,
-            },
-            headers={"Authorization": f"Bearer {LATE_API_KEY}"},
-            timeout=30.0,
-        )
-        response.raise_for_status()
-        return response.text
-
-
-@mcp.tool()
-async def post_story(
-    caption: str,
-    media_url: str,
-    platforms: str = "instagram,facebook",
-) -> str:
-    """Post a story with auto-translation per account language.
-
-    Args:
-        caption: Story caption text
-        media_url: Image or video URL
-        platforms: Comma-separated platforms (instagram, facebook supported)
-
-    Returns:
-        JSON with story IDs per platform
-    """
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{LOCAL_API}/api/post-story",
-            json={
-                "caption": caption,
-                "media_url": media_url,
-                "platforms": platforms.split(","),
-            },
-            headers={"X-API-Key": LOCAL_API_KEY},
-        )
-        response.raise_for_status()
-        return response.text
-
-
-@mcp.tool()
-async def get_analytics(
-    days: int = 7,
-    platform: str = "all",
-    product: str = "",
-) -> str:
-    """Get social media engagement analytics for recent posts.
-
-    Args:
-        days: Number of days to look back (default 7)
-        platform: Filter by platform or 'all' for aggregate
-        product: Filter by product mentioned in posts (optional)
-
-    Returns:
-        JSON with analytics summary and per-post breakdown
-    """
-    # Try local service first (has product tagging)
-    if LOCAL_API_KEY:
-        try:
-            return await _get_analytics_local(days, platform, product)
-        except Exception:
-            pass  # Fall back to Late API
-    
-    # Fall back to Late API
-    return await _get_analytics_late(days, platform)
-
-
-async def _get_analytics_local(days: int, platform: str, product: str) -> str:
-    """Get analytics from local service."""
-    async with httpx.AsyncClient() as client:
-        params = {"days": days}
-        if platform != "all":
-            params["platform"] = platform
-        if product:
-            params["product"] = product
-        
-        response = await client.get(
-            f"{LOCAL_API}/api/analytics",
-            params=params,
-            headers={"X-API-Key": LOCAL_API_KEY},
-        )
-        response.raise_for_status()
-        return response.text
-
-
-async def _get_analytics_late(days: int, platform: str) -> str:
-    """Get analytics from Late API."""
-    async with httpx.AsyncClient() as client:
-        params = {"days": days}
-        if platform != "all":
-            params["platform"] = platform
-        
-        response = await client.get(
-            f"{LATE_API}/analytics",
-            params=params,
-            headers={"Authorization": f"Bearer {LATE_API_KEY}"},
-        )
-        response.raise_for_status()
-        return response.text
-
-
-@mcp.tool()
-async def get_top_posts(
-    limit: int = 10,
-    metric: str = "engagement_rate",
-    days: int = 30,
-) -> str:
-    """Get the best performing posts by a metric.
-
-    Args:
-        limit: Number of top posts to return (default 10)
-        metric: Rank by engagement_rate, impressions, clicks, or shares
-        days: Look back period in days (default 30)
-
-    Returns:
-        JSON array of top posts with metrics
-    """
-    analytics = await get_analytics(days=days)
-    import json
-    data = json.loads(analytics)
-    
-    # Sort by metric
-    posts = data.get("posts", [])
-    sorted_posts = sorted(
-        posts,
-        key=lambda p: p.get(metric, 0),
-        reverse=True,
-    )
-    
-    return json.dumps(sorted_posts[:limit])
-
-
-@mcp.tool()
-async def schedule_post(
-    text: str,
-    platforms: str,
-    media_urls: str = "",
-    schedule_time: str = "",
-    bilingual: bool = False,
-) -> str:
-    """Schedule a post for future publishing.
-
-    Args:
-        text: Content text
-        platforms: Comma-separated platforms
-        media_urls: Comma-separated media URLs (optional)
-        schedule_time: ISO 8601 datetime (required for scheduling)
-        bilingual: Enable bilingual routing (local service only)
-
-    Returns:
-        Scheduled post ID and confirmation
-    """
-    if not schedule_time:
-        raise ValueError("schedule_time required for scheduling")
-    
-    return await post_content(
-        text=text,
-        platforms=platforms,
-        media_urls=media_urls,
-        bilingual=bilingual,
-        schedule_time=schedule_time,
-    )
-
-
-@mcp.tool()
-async def get_scheduled_posts() -> str:
-    """Get currently scheduled posts waiting to be published.
-
-    Returns:
-        JSON array of scheduled posts
-    """
-    # Try local service first
-    if LOCAL_API_KEY:
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{LOCAL_API}/api/schedule",
-                    headers={"X-API-Key": LOCAL_API_KEY},
-                )
-                response.raise_for_status()
-                return response.text
-        except Exception:
-            pass
-    
-    # Fall back to Late API
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{LATE_API}/posts/scheduled",
-            headers={"Authorization": f"Bearer {LATE_API_KEY}"},
-        )
-        response.raise_for_status()
-        return response.text
-
-
-@mcp.tool()
-async def get_accounts() -> str:
-    """Get list of connected social media accounts with platform info.
-
-    Returns:
-        JSON array of accounts with platform, handle, and status
-    """
-    # Local service has account management
-    if LOCAL_API_KEY:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{LOCAL_API}/api/accounts",
-                headers={"X-API-Key": LOCAL_API_KEY},
-            )
-            response.raise_for_status()
-            return response.text
-    
-    # Late API doesn't expose account list - return config-based info
-    return json.dumps([
-        {"platform": "linkedin", "status": "connected"},
-        {"platform": "twitter", "status": "connected"},
-        # Add others as configured
-    ])
-
-
-if __name__ == "__main__":
-    mcp.run()
-```
-
-MCP server configuration for marketing agent:
+MCP server configuration for Holus (in `.claude/settings.json`):
 
 ```json
 {
   "mcpServers": {
     "social-media": {
       "command": "python",
-      "args": ["-m", "holus.mcp_servers.social_media"],
-      "cwd": "/Users/mini/.openclaw/workspace/github/holus",
+      "args": ["-m", "social_media_automatization.mcp_server"],
+      "cwd": "/Users/mini/.openclaw/workspace/github/social-media-automatization",
       "env": {
-        "SOCIAL_MEDIA_API_KEY": "${SOCIAL_MEDIA_API_KEY}",
-        "LATE_API_KEY": "${LATE_API_KEY}"
+        "SOCIAL_MEDIA_API_KEY": "${SOCIAL_MEDIA_API_KEY}"
       }
     }
   }
@@ -393,16 +77,14 @@ MCP server configuration for marketing agent:
 ```
 
 Acceptance Criteria:
-- [ ] MCP server starts and responds to `tools/list`
-- [ ] `post_content` tool routes to local service for bilingual posts
-- [ ] `post_content` tool routes to Late API for standard posts
-- [ ] `post_story` tool uses local service for story posting
-- [ ] `get_analytics` tool aggregates data from available backend
-- [ ] `get_top_posts` tool ranks posts by specified metric
+- [ ] Social-media MCP server (in social-media-automatization repo) responds to `tools/list`
+- [ ] `post_text` and `post_with_media` tools publish content to platforms
 - [ ] `schedule_post` tool schedules content for future publishing
-- [ ] `get_scheduled_posts` tool lists pending scheduled posts
-- [ ] `get_accounts` tool returns connected account information
-- [ ] Graceful fallback when one backend is unavailable
+- [ ] `get_analytics` tool returns engagement data (to be added)
+- [ ] `get_top_posts` tool ranks posts by specified metric (to be added)
+- [ ] `post_story` tool posts stories to IG/FB (to be added)
+- [ ] `get_accounts` tool returns connected account info (to be added)
+- [ ] Holus can connect to social-media MCP via `.claude/settings.json` config
 
 ---
 
@@ -417,10 +99,10 @@ Acceptance Criteria:
 | Validation | Content must be in English for translation. Account language mappings must be configured. |
 | Auth Required | Local service API key |
 
-Bilingual routing configuration:
+Bilingual routing configuration (lives in social-media-automatization repo, not Holus):
 
 ```yaml
-# config/social_accounts.yaml
+# social-media-automatization config (for reference)
 
 accounts:
   instagram:
@@ -470,7 +152,7 @@ accounts:
       handle: "@camilo_builds"
 ```
 
-Routing logic:
+Routing logic (handled by social-media-automatization internally):
 
 ```python
 # Bilingual platforms: IG, FB, Threads → EN + ES versions
@@ -680,26 +362,35 @@ Post result (what the MCP server returns):
 
 ### File Locations
 
+**In Holus repo:**
+
 | File | Change Type | Description |
 |------|-------------|-------------|
-| `src/holus/mcp_servers/social_media.py` | Modified | Enhanced MCP server with dual backend support |
-| `config/social_accounts.yaml` | New | Social media account configuration |
+| `.claude/settings.json` | Modified | Add social-media MCP server config |
 | `src/holus/agents/marketing/social_workflow.py` | New | Social media posting workflow |
-| `tests/unit/mcp/test_social_media_v2.py` | New | V2 MCP server tests |
+
+**In social-media-automatization repo (to be added to existing MCP server):**
+
+| Tool | Description |
+|------|-------------|
+| `get_analytics` | Get engagement analytics for recent posts |
+| `get_top_posts` | Get best performing posts ranked by metric |
+| `post_story` | Post stories to Instagram/Facebook |
+| `get_accounts` | Get connected account information |
 
 ---
 
 ### Edge Cases & Error Handling
 
-**EDGE-001: Local service unavailable, Late API available**
-- Scenario: Local social-media service is down
-- Expected behavior: MCP server routes to Late API. Bilingual features unavailable. Warning logged.
-- Recovery: Automatic fallback. Retry local service on next post.
+**EDGE-001: Social-media service unavailable**
+- Scenario: social-media-automatization service is down
+- Expected behavior: Content saved to local queue. Agent logs error and continues with other tasks.
+- Recovery: Retry queue checked every 15 minutes via launchd.
 
-**EDGE-002: Both services unavailable**
-- Scenario: Local service and Late API both down
-- Expected behavior: Content saved to queue. Agent logs error and continues with other tasks.
-- Recovery: Retry queue checked every 15 minutes via cron.
+**EDGE-002: MCP connection lost mid-operation**
+- Scenario: MCP connection drops during posting
+- Expected behavior: Agent retries MCP connection. If persistent, logs error and moves on.
+- Recovery: Next cycle retries the content.
 
 **EDGE-003: Bilingual post requested but no account mapping configured**
 - Scenario: Agent requests bilingual post for a platform without ES account
@@ -733,9 +424,9 @@ Post result (what the MCP server returns):
 
 ### Security Considerations
 
-- `SOCIAL_MEDIA_API_KEY` and `LATE_API_KEY` stored in `.env` only
-- API keys provide publish access to all platforms — protect them
-- Account configuration in `config/social_accounts.yaml` is version controlled but sensitive
+- `SOCIAL_MEDIA_API_KEY` stored in `.env` only
+- API key provides publish access to all platforms — protect it
+- Account configuration lives in social-media-automatization, not in Holus
 - Analytics data may contain follower demographics — privacy compliant aggregation only
 
 ---
@@ -753,12 +444,13 @@ Post result (what the MCP server returns):
 ### Related Specs
 
 - [010-marketing-agent.md](./010-marketing-agent.md) — the agent that calls social media tools
-- [011-social-media-integration.md](./011-social-media-integration.md) — V1 spec (LinkedIn + Twitter only)
+- [011-social-media-integration.md](./011-social-media-integration.md) — V1 spec (deprecated, superseded by this spec)
 - [014-genpeli-integration.md](./014-genpeli-integration.md) — video content for social media
 - [015-pilaster-integration.md](./015-pilaster-integration.md) — image content for social media
+- [012-knowledge-learning.md](./012-knowledge-learning.md) — learning loop consumes analytics from this MCP
 
 ---
 
 **Last Updated:** 2026-02-27  
-**Status:** Draft  
+**Status:** Not Started
 **Owner:** Camilo Martinez

@@ -159,18 +159,16 @@ Make it great. This content represents the product to the world.
 # ---------------------------------------------------------------------------
 
 
-def format_product_info(
-    product: str, products_config: dict[str, dict[str, Any]]
-) -> str:
+def format_product_info(product: str, products_config: dict[str, dict[str, Any]]) -> str:
     """Extract relevant product info from the products config."""
     product_data = products_config.get(product, {})
 
     return f"""**{product.capitalize()}**
 
-Description: {product_data.get('description', 'N/A')}
-Target Audience: {product_data.get('target_audience', 'N/A')}
-Key Features: {', '.join(product_data.get('features', []))}
-Value Proposition: {product_data.get('value_prop', 'N/A')}
+Description: {product_data.get("description", "N/A")}
+Target Audience: {product_data.get("target_audience", "N/A")}
+Key Features: {", ".join(product_data.get("features", []))}
+Value Proposition: {product_data.get("value_prop", "N/A")}
 """
 
 
@@ -188,8 +186,8 @@ def format_platform_guidelines(platform: str, knowledge: dict[str, Any]) -> str:
 
     return f"""**Best Practices for {platform.capitalize()}**
 
-- Character Limit: {platform_data.get('char_limit', 'N/A')}
-- Optimal Post Time: {platform_data.get('best_time', 'N/A')}
-- Engagement Drivers: {', '.join(platform_data.get('engagement_drivers', []))}
-- Content Formats: {', '.join(platform_data.get('formats', []))}
+- Character Limit: {platform_data.get("char_limit", "N/A")}
+- Optimal Post Time: {platform_data.get("best_time", "N/A")}
+- Engagement Drivers: {", ".join(platform_data.get("engagement_drivers", []))}
+- Content Formats: {", ".join(platform_data.get("formats", []))}
 """

@@ -12,12 +12,6 @@ spending:
   monthly_llm_usd_limit: 500.00
   alert_threshold_pct: 80
 
-trading:
-  paper_mode_default: true
-  max_position_pct: 0.05       # 5% of portfolio per trade
-  daily_loss_limit_pct: 0.02   # Stop trading at -2% daily drawdown
-  require_human_approval_usd: 1000  # Trades > $1000 need confirmation
-
 content:
   max_posts_per_hour: 10
   require_approval_for_new_accounts: true

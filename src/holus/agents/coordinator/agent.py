@@ -43,9 +43,7 @@ class CoordinatorState(TypedDict):
     """State for the Holus coordinator graph."""
 
     # Daily inputs
-    trading_summary: dict
-    content_summary: dict
-    coding_summary: dict
+    marketing_summary: dict
     pilaster_summary: dict
 
     # Cross-project outputs
@@ -63,15 +61,15 @@ class CoordinatorState(TypedDict):
 # ---------------------------------------------------------------------------
 
 COORDINATOR_PROMPT = """You are Holus, the cross-project intelligence coordinator.
-You review daily summaries from 4 domain agents and identify:
+You review daily summaries from domain agents and identify:
 
-1. Cross-domain patterns (content engagement predicts market moves?)
-2. Resource allocation opportunities (which project needs more attention?)
-3. Risk factors (trading agent underperforming? content pipeline blocked?)
+1. Cross-domain patterns (which content types drive engagement for which products?)
+2. Resource allocation opportunities (which product needs more marketing attention?)
+3. Risk factors (content pipeline blocked? generation quality dropping?)
 4. Action items for each domain agent
 
 ## Rules
-- You NEVER execute trades, write content, or commit code directly.
+- You NEVER generate content or publish directly.
 - Your job is SYNTHESIS and DELEGATION only.
 - Directives are ADVISORY -- agents can ignore them.
 - Flag anything requiring human attention.
@@ -81,7 +79,7 @@ Return JSON:
 {
   "insights": ["insight 1", "insight 2", ...],
   "directives": [
-    {"agent": "trading", "action": "...", "priority": "high/medium/low"},
+    {"agent": "marketing", "action": "...", "priority": "high/medium/low"},
     ...
   ],
   "risk_flags": ["..."],
@@ -91,9 +89,7 @@ Return JSON:
 
 # Channels the coordinator reads from daily
 CONSUMED_CHANNELS = [
-    "holus.trading.signals",
-    "holus.content.performance",
-    "holus.coding.deploys",
+    "holus.marketing.content",
     "holus.pilaster.workflows",
     "holus.system.alerts",
 ]
@@ -124,23 +120,13 @@ def gather_events(state: CoordinatorState) -> dict[str, Any]:
         bus.close()
 
     # Build per-domain summaries from events
-    trading_events = all_events.get("holus.trading.signals", [])
-    content_events = all_events.get("holus.content.performance", [])
-    coding_events = all_events.get("holus.coding.deploys", [])
+    marketing_events = all_events.get("holus.marketing.content", [])
     pilaster_events = all_events.get("holus.pilaster.workflows", [])
 
     return {
-        "trading_summary": {
-            "event_count": len(trading_events),
-            "events": [e.payload for e in trading_events[:20]],
-        },
-        "content_summary": {
-            "event_count": len(content_events),
-            "events": [e.payload for e in content_events[:20]],
-        },
-        "coding_summary": {
-            "event_count": len(coding_events),
-            "events": [e.payload for e in coding_events[:20]],
+        "marketing_summary": {
+            "event_count": len(marketing_events),
+            "events": [e.payload for e in marketing_events[:20]],
         },
         "pilaster_summary": {
             "event_count": len(pilaster_events),
@@ -171,9 +157,7 @@ def synthesize(state: CoordinatorState) -> dict[str, Any]:
                 "role": "user",
                 "content": (
                     f"## Daily Domain Summaries ({datetime.now(UTC).strftime('%Y-%m-%d')})\n\n"
-                    f"### Trading\n{json.dumps(state['trading_summary'], indent=2)}\n\n"
-                    f"### Content/Media\n{json.dumps(state['content_summary'], indent=2)}\n\n"
-                    f"### Coding Infrastructure\n{json.dumps(state['coding_summary'], indent=2)}\n\n"
+                    f"### Marketing\n{json.dumps(state['marketing_summary'], indent=2)}\n\n"
                     f"### Pilaster.ai\n{json.dumps(state['pilaster_summary'], indent=2)}\n\n"
                     "Analyze these summaries. Return JSON with insights, directives, "
                     "risk_flags, and report_summary."
@@ -265,9 +249,7 @@ class CoordinatorAgent(BaseAgent):
 
     def default_state(self) -> dict[str, Any]:
         return {
-            "trading_summary": {},
-            "content_summary": {},
-            "coding_summary": {},
+            "marketing_summary": {},
             "pilaster_summary": {},
             "insights": [],
             "directives": [],

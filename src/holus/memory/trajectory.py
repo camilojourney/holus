@@ -102,13 +102,13 @@ class TrajectoryLogger:
     Usage::
 
         tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
-        tl.append(TrajectoryEntry(agent_id="trading-agent", ...))
+        tl.append(TrajectoryEntry(agent_id="marketing-agent", ...))
 
         # Read all entries
         entries = tl.read_all()
 
         # Detect failure streaks
-        streak = tl.failure_streak("trading-agent", task_type="trade_signal")
+        streak = tl.failure_streak("marketing-agent", task_type="content_generation")
     """
 
     def __init__(self, path: Path | str) -> None:

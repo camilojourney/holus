@@ -1,6 +1,6 @@
 """Abstract base class for all Holus agents.
 
-Every domain agent (trading, content, coding, pilaster, coordinator)
+Every domain agent (marketing, pilaster, coordinator)
 inherits from ``BaseAgent`` which provides:
 
   - Configuration loading

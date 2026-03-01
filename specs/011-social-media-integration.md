@@ -1,5 +1,13 @@
 # Spec 011: Social Media Integration
 
+> **DEPRECATED (2026-02-28):** This spec is superseded by:
+> - [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — multi-platform posting + analytics
+>
+> This spec was written before `social-media-automatization` had its own MCP server
+> and REST API. That repo now provides all posting, scheduling, bilingual routing,
+> and text enhancement capabilities directly. The Late API is no longer needed.
+> Do not implement from this spec.
+
 ## Feature: Unified social media posting and analytics via Late API with MCP server interface
 
 ### Overview

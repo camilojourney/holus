@@ -9,11 +9,11 @@ Kill switches are stored in Redis for instant, cross-process visibility.
 Every agent action loop must call ``check_kill_switch`` before proceeding.
 
 Activation methods:
-  - CLI: ``python -m holus kill --scope trading-agent``
+  - CLI: ``python -m holus kill --scope marketing-agent``
   - SSH: ``redis-cli SET holus:kill:global ...``
   - n8n webhook: ``POST /webhook/kill-switch``
-  - Automatic: circuit breaker conditions (loss limits, crash counts)
-  - Slack command: ``/holus kill trading-agent``
+  - Automatic: circuit breaker conditions (crash counts)
+  - Slack command: ``/holus kill marketing-agent``
 """
 
 from __future__ import annotations
@@ -39,9 +39,7 @@ logger = logging.getLogger(__name__)
 
 class KillSwitchScope(StrEnum):
     GLOBAL = "global"
-    TRADING = "trading"
-    CONTENT = "content"
-    CODING = "coding"
+    MARKETING = "marketing"
     PILASTER = "pilaster"
     COORDINATOR = "coordinator"
 
@@ -72,9 +70,7 @@ class KillSwitchActive(Exception):  # noqa: N818
 # ---------------------------------------------------------------------------
 
 DOMAIN_AGENTS: dict[str, list[str]] = {
-    "trading": ["trading-agent"],
-    "content": ["content-agent"],
-    "coding": ["coding-agent"],
+    "marketing": ["marketing-agent"],
     "pilaster": ["pilaster-agent"],
     "coordinator": ["holus-coordinator"],
 }
@@ -106,8 +102,8 @@ class KillSwitch:
         """Activate a kill switch.
 
         Args:
-            scope: ``"global"``, a domain name (``"trading"``), or an agent
-                   name (``"trading-agent"``).
+            scope: ``"global"``, a domain name (``"marketing"``), or an agent
+                   name (``"marketing-agent"``).
             reason: Human-readable explanation.
             activated_by: Who triggered it (``"manual"``, ``"circuit_breaker"``).
         """
@@ -238,8 +234,8 @@ def check_kill_switch(kill_switch: KillSwitch, agent_name: str):
 
         ks = KillSwitch(redis_client)
 
-        @check_kill_switch(ks, "trading-agent")
-        def execute_trade(signal):
+        @check_kill_switch(ks, "marketing-agent")
+        def generate_content(decision):
             ...
     """
 

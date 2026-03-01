@@ -9,10 +9,11 @@ Covers:
 from __future__ import annotations
 
 import asyncio
-import json
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 import pytest
 import yaml
@@ -26,13 +27,12 @@ from holus.agents.marketing.content_queue import (
     mark_published,
     reject,
 )
-from holus.agents.marketing.models import ContentType, Platform
-from holus.core.config import AgentConfig, HolusConfig
-
+from holus.core.config import HolusConfig
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_holus_config(tmp_path: Path) -> HolusConfig:
     """Build a minimal HolusConfig that won't try to connect to Redis/Claude."""
@@ -155,7 +155,7 @@ class TestMarketingAgentCycle:
         with (
             patch("holus.agents.base.redis.Redis.from_url", return_value=mock_redis),
             patch("holus.agents.base.EventBus") as mock_event_bus_cls,
-            ):
+        ):
             mock_event_bus_cls.return_value = MagicMock()
 
             config = _make_holus_config(tmp_path)
@@ -193,7 +193,7 @@ class TestMarketingAgentCycle:
 
     def test_observe_loads_products_and_knowledge(self, tmp_path: Path, monkeypatch):
         """Observe phase should load products.yaml and knowledge files."""
-        from holus.agents.marketing.agent import MarketingAgent, MarketingState
+        from holus.agents.marketing.agent import MarketingAgent
 
         monkeypatch.setattr(
             "holus.agents.marketing.agent.MarketingAgent._PRODUCTS_PATH",
@@ -240,14 +240,14 @@ class TestContentQueueRoundTrip:
     """Tests for the content_queue enqueue/approve/reject/mark_published flow."""
 
     def _make_item(self, **kwargs) -> QueuedContent:
-        defaults = dict(
-            product="pilaster",
-            platform="linkedin",
-            content_type="tutorial",
-            topic="Test topic",
-            text="This is a test post about Pilaster.",
-            reasoning="Integration test fixture",
-        )
+        defaults = {
+            "product": "pilaster",
+            "platform": "linkedin",
+            "content_type": "tutorial",
+            "topic": "Test topic",
+            "text": "This is a test post about Pilaster.",
+            "reasoning": "Integration test fixture",
+        }
         defaults.update(kwargs)
         return QueuedContent(**defaults)
 
@@ -302,7 +302,7 @@ class TestContentQueueRoundTrip:
         assert len(pending) == 0
 
         # Read directly from file to verify rejection_reason
-        queue_file = (tmp_path / "queue" / f"{item.piece_id}.yaml")
+        queue_file = tmp_path / "queue" / f"{item.piece_id}.yaml"
         data = yaml.safe_load(queue_file.read_text())
         assert data["status"] == "rejected"
         assert data["rejection_reason"] == "Not relevant this week"

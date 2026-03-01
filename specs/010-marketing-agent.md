@@ -116,16 +116,14 @@ Acceptance Criteria:
 |-------|-------|
 | Description | Collects all context the agent needs to make decisions |
 | Trigger | Start of each marketing cycle |
-| Input | Product config, knowledge files, memory, analytics (when available) |
+| Input | Product config, knowledge files, memory, analytics from social-media MCP |
 | Output | Populated state with analytics, product_updates, memory_context, knowledge |
 | Validation | Must complete within 30 seconds |
-| Auth Required | No (reads local files). Analytics via MCP when available. |
-
-Phase 1 observe (no MCP yet — read local files only):
+| Auth Required | No for local files. Social-media MCP connection for analytics. |
 
 ```python
 async def observe(self, state: MarketingState) -> dict:
-    """Phase 1: Read local context. Phase 2+: Add MCP analytics."""
+    """Read analytics from social-media MCP, product state, knowledge, and memory."""
     import yaml
     from pathlib import Path
 
@@ -141,12 +139,12 @@ async def observe(self, state: MarketingState) -> dict:
     # Read memory
     memory = Path(".self-improvement/MEMORY.md").read_text()
 
-    # Phase 2+: Read analytics from social-media MCP
-    # analytics = await self.call_mcp("social-media", "get_analytics", days=7)
-    analytics = {}  # No analytics in Phase 1
+    # Read analytics from social-media MCP
+    analytics = await self.call_mcp("social-media", "get_analytics", days=7)
+    top_posts = await self.call_mcp("social-media", "get_top_posts", limit=10)
 
     return {
-        "analytics": analytics,
+        "analytics": {"summary": analytics, "top_posts": top_posts},
         "product_updates": products,
         "memory_context": memory,
         "knowledge": knowledge,
@@ -276,8 +274,9 @@ async def act(self, state: MarketingState) -> dict:
         # Phase 1: Save for human review (don't auto-post yet)
         await self.save_for_review(content)
 
-        # Phase 2+: Auto-post via Late API or MCP
-        # result = await self.publish(content)
+        # Phase 2+: Auto-post via social-media MCP
+        # result = await self.call_mcp("social-media", "schedule_post",
+        #     text=content["text"], platforms=content["platform"])
         # post_results.append(result)
 
     return {
@@ -315,7 +314,7 @@ Acceptance Criteria:
 - [ ] Text content generated using Sonnet for each decision
 - [ ] Content respects platform character limits
 - [ ] Phase 1: Content saved to `data/content-queue/` for human review
-- [ ] Phase 2+: Content published via Late API or social-media MCP
+- [ ] Phase 2+: Content published via social-media MCP
 - [ ] Generated content includes platform-specific formatting
 - [ ] Each piece logged with decision context
 
@@ -477,10 +476,9 @@ class MarketingCycleReport(BaseModel):
 
 ### Out of Scope
 
-- Image generation (handled by spec 003, SPEC-002)
-- Video generation (handled by spec 003, SPEC-003)
-- Distribution via Late API (handled by spec 011)
-- Analytics collection (handled by spec 011)
+- Image generation (handled by spec 015 — Pilaster integration)
+- Video generation (handled by spec 014 — genpeli integration)
+- Social media posting mechanics (handled by spec 016 — social-media MCP)
 - Self-improvement / prompt optimization (handled by spec 012)
 
 ---
@@ -488,9 +486,10 @@ class MarketingCycleReport(BaseModel):
 ### Related Specs
 
 - [009-autonomous-build-system.md](./009-autonomous-build-system.md) — the builder will implement this agent
-- [011-social-media-integration.md](./011-social-media-integration.md) — provides the posting and analytics APIs
+- [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — posting and analytics via social-media MCP
 - [012-knowledge-learning.md](./012-knowledge-learning.md) — the knowledge system the agent reads from
-- [003-content-pipeline.md](./003-content-pipeline.md) — the full content pipeline (Phase 2+)
+- [014-genpeli-integration.md](./014-genpeli-integration.md) — video creation via genpeli MCP
+- [015-pilaster-integration.md](./015-pilaster-integration.md) — image generation via Pilaster MCP
 
 ---
 

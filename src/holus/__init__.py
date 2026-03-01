@@ -1,9 +1,8 @@
 """Holus -- Federated AI Operating System.
 
-A multi-agent system for coordinating trading, content creation,
-coding infrastructure, and image generation workflows. Each agent
-runs as an independent process with its own memory scope, communicating
-through a Redis event bus.
+An AI marketing strategist that promotes the product portfolio by
+deciding what content to create, calling silo tools to produce it,
+and learning from results to improve strategy over time.
 
 Architecture: Process-isolated federation with shared event bus.
 """

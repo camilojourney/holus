@@ -6,24 +6,38 @@
 products:
   pilaster:
     name: "Pilaster"
-    tagline: "The memory layer for ComfyUI"
+    tagline: "AI image generation platform with memory"
     description: >
-      Pilaster saves your ComfyUI workflow experiments, diffs versions,
-      and warns you before you repeat a failed experiment.
-      Solves the #1 problem of AI artists: losing track of what worked.
+      Pilaster is an AI image generation platform that remembers what works.
+      It owns three layers: (1) Character registry — LoRAs, reference sheets,
+      and metadata for consistent characters across all generations.
+      (2) Generation abstraction — a backend-agnostic interface that delegates
+      to ComfyUI, Replicate, Runway, or any future engine. Users never see
+      nodes — they pick a character, a template, and hit generate.
+      (3) Experiment memory — tracks every generation with outcomes and
+      quality scores, learns what prompts/settings work, warns before
+      repeating failures. Backends are swappable. The memory and characters
+      are the product.
     url: "https://pilaster.ai"
     status: "mvp_active"
-    audience: "AI artists, ComfyUI users, image generation hobbyists"
-    pain_point: "Can't reproduce my best results. Don't know what changed."
+    audience: "AI artists, content creators, image generation users"
+    pain_point: "Can't keep characters consistent. Can't reproduce my best results. Locked into one tool."
+    capabilities:
+      - character_registry  # Store LoRAs, reference sheets, manage visual identity
+      - generation          # Backend-agnostic image generation (ComfyUI, Replicate, etc.)
+      - templates           # Reusable generation templates ("product shot", "anime scene")
+      - experiment_memory   # Track what worked, what failed, quality scores
+      - short_video         # AnimateDiff/SVD short clips via ComfyUI backend
     platforms:
       - linkedin
       - tiktok
       - youtube_shorts
     content_types:
-      - tutorial          # "How to version your ComfyUI workflows"
-      - before_after      # "Same prompt, 10 iterations — here's what changed"
-      - tips              # "3 ComfyUI mistakes Pilaster prevents"
-      - demo              # Screen recording of the diff engine
+      - tutorial          # "How to keep your AI characters consistent"
+      - before_after      # "Same character, 10 scenes — always consistent"
+      - tips              # "Why LoRAs are the secret to brand consistency"
+      - demo              # Live generation with character + template
+      - character_showcase # "Meet our mascot — made with Pilaster"
 
   genpeli:
     name: "Genpeli"

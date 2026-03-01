@@ -35,18 +35,12 @@ logger = logging.getLogger(__name__)
 class EventType(StrEnum):
     """Canonical event types published across the Holus event bus."""
 
-    # Trading
-    SIGNAL_GENERATED = "signal_generated"
-    TRADE_EXECUTED = "trade_executed"
-    RISK_ALERT = "risk_alert"
-    MARKET_REGIME_SHIFT = "market_regime_shift"
-    DAILY_PNL = "daily_pnl"
-
-    # Content
+    # Marketing
+    CONTENT_GENERATED = "content_generated"
+    CONTENT_APPROVED = "content_approved"
     CONTENT_PUBLISHED = "content_published"
-    ENGAGEMENT_UPDATE = "engagement_update"
-    SEO_RANKING_CHANGE = "seo_ranking_change"
-    TOPIC_TRENDING = "topic_trending"
+    STRATEGY_UPDATED = "strategy_updated"
+    WEEKLY_REPORT = "weekly_report"
 
     # Coding
     PR_MERGED = "pr_merged"
@@ -109,13 +103,13 @@ class EventBus:
         bus = EventBus("redis://localhost:6379")
 
         # Publish (fire-and-forget)
-        bus.publish("holus.trading.signals", event)
+        bus.publish("holus.marketing.content", event)
 
         # Subscribe (callback-based, runs in background thread)
-        bus.subscribe(["holus.trading.signals"], my_handler)
+        bus.subscribe(["holus.marketing.content"], my_handler)
 
         # Read from stream (for coordinator daily replay)
-        events = bus.read_stream("holus.trading.signals", since="-", count=100)
+        events = bus.read_stream("holus.marketing.content", since="-", count=100)
     """
 
     STREAM_MAX_LEN = 10_000  # Rolling window per channel

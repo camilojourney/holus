@@ -237,9 +237,9 @@ class ReflexionLoop:
 
         loop = ReflexionLoop(client, agent_prompt, tier="strategic")
         result = await loop.run(
-            task="Analyze AAPL for trade signals",
-            task_type="trade_signal",
-            agent_id="trading-agent",
+            task="Decide content strategy for Pilaster tutorial",
+            task_type="strategy_decision",
+            agent_id="marketing-agent",
             episodic_memory=["Previous reflection 1", ...],
         )
     """

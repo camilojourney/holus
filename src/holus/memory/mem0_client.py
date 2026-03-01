@@ -42,9 +42,9 @@ class HolusMem0Client:
 
     Usage::
 
-        mem = HolusMem0Client(agent_id="trading-agent")
-        mem.add("Asian session breakouts on gold failed 4/5 times", level=MemoryLevel.AGENT)
-        results = mem.search("gold breakout patterns", level=MemoryLevel.AGENT)
+        mem = HolusMem0Client(agent_id="marketing-agent")
+        mem.add("Tutorial posts outperform promo posts 4:1 on LinkedIn", level=MemoryLevel.AGENT)
+        results = mem.search("content performance patterns", level=MemoryLevel.AGENT)
     """
 
     USER_ID = "camilo"
@@ -220,7 +220,7 @@ class HolusMem0Client:
     # -- Update a memory -----------------------------------------------------
 
     def update(self, memory_id: str, content: str) -> dict[str, Any] | None:
-        """Update an existing memory (e.g., adding trade outcome)."""
+        """Update an existing memory (e.g., adding campaign performance data)."""
         memory = self._get_memory()
         if memory is None:
             return None

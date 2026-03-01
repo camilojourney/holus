@@ -21,17 +21,17 @@ The core infrastructure provides the foundational services that every Holus agen
 
 | Field | Value |
 |-------|-------|
-| Description | Docker Compose configuration that starts PostgreSQL (+ pgvector), Redis, n8n, Temporal.io, and Langfuse as containerized services |
+| Description | Docker Compose configuration that starts PostgreSQL (+ pgvector), Redis, n8n (webhooks/observability only — agent scheduling uses launchd), and Langfuse as containerized services |
 | Trigger | `docker compose up -d` from project root or `infrastructure/` directory |
-| Input | `infrastructure/docker-compose.yml` + `.env` for secrets |
-| Output | 5 running containers with health checks, persistent volumes, and networking |
+| Input | `docker-compose.yml` + `.env` for secrets |
+| Output | 4 running containers with health checks, persistent volumes, and networking |
 | Validation | All containers report healthy within 60 seconds of startup |
 | Auth Required | No (local services) |
 
 Service definitions:
 
 ```yaml
-# infrastructure/docker-compose.yml
+# docker-compose.yml
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -86,29 +86,6 @@ services:
       timeout: 10s
       retries: 3
 
-  temporal:
-    image: temporalio/auto-setup:latest
-    environment:
-      DB: postgresql
-      DB_PORT: 5432
-      POSTGRES_USER: holus
-      POSTGRES_PWD: ${POSTGRES_PASSWORD:-holus}
-      POSTGRES_SEEDS: postgres
-    ports:
-      - "7233:7233"   # gRPC
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  temporal-ui:
-    image: temporalio/ui:latest
-    environment:
-      TEMPORAL_ADDRESS: temporal:7233
-    ports:
-      - "8233:8080"
-    depends_on:
-      - temporal
-
   langfuse:
     image: langfuse/langfuse:latest
     environment:
@@ -134,12 +111,11 @@ volumes:
 ```
 
 Acceptance Criteria:
-- [ ] `docker compose up -d` starts all 6 containers (postgres, redis, n8n, temporal, temporal-ui, langfuse) without errors
+- [ ] `docker compose up -d` starts all 4 containers (postgres, redis, n8n, langfuse) without errors
 - [ ] All health checks pass within 60 seconds
 - [ ] PostgreSQL accepts connections with pgvector extension enabled (`CREATE EXTENSION IF NOT EXISTS vector`)
 - [ ] Redis responds to `PING` with `PONG`
 - [ ] n8n UI is accessible at `http://localhost:5678`
-- [ ] Temporal UI is accessible at `http://localhost:8233`
 - [ ] Langfuse UI is accessible at `http://localhost:3000`
 - [ ] Data persists across `docker compose down && docker compose up -d` (volumes are not destroyed)
 - [ ] `.env.example` documents every required environment variable with descriptions
@@ -151,7 +127,7 @@ Acceptance Criteria:
 | Field | Value |
 |-------|-------|
 | Description | Layered configuration system using pydantic-settings: YAML defaults -> agent-specific YAML -> environment variables (secrets win) |
-| Trigger | `HolusSettings.load(agent_name="trading")` at agent startup |
+| Trigger | `HolusSettings.load(agent_name="marketing")` at agent startup |
 | Input | `config/base.yaml` + `config/{agent_name}.yaml` + environment variables |
 | Output | Validated `HolusSettings` instance with all configuration resolved |
 | Validation | Pydantic validates types, ranges, required fields. Missing secrets raise `EnvironmentError` with descriptive message. |
@@ -177,8 +153,6 @@ class HolusSettings(BaseSettings):
 
     # Secrets (from environment only)
     anthropic_api_key: str = Field(..., alias="ANTHROPIC_API_KEY")
-    alpaca_api_key: str = Field("", alias="ALPACA_API_KEY")
-    alpaca_secret_key: str = Field("", alias="ALPACA_SECRET_KEY")
     redis_url: str = Field("redis://localhost:6379", alias="REDIS_URL")
     postgres_url: str = Field(
         "postgresql://holus:holus@localhost:5432/holus",
@@ -224,29 +198,17 @@ prompt_cache:
 ```
 
 ```yaml
-# config/trading_agent.yaml
-agent_name: trading-agent
+# config/marketing.yaml
+agent_name: marketing-agent
 log_level: DEBUG
 
-guardrails:
-  max_position_pct: 0.02
-  max_portfolio_exposure: 0.30
-  max_single_trade_usd: 500.0
-  daily_loss_limit_pct: 0.05
-  max_trades_per_day: 10
-
-graduation_criteria:
-  minimum_paper_days: 30
-  minimum_trades: 50
-  sharpe_ratio_min: 1.0
-  max_drawdown_max: 0.10
-  win_rate_min: 0.45
-  profit_factor_min: 1.2
-  human_review: required
+default_model_tier: strategic
+max_concurrent_tasks: 1
+timeout_seconds: 600
 ```
 
 Acceptance Criteria:
-- [ ] `HolusSettings.load("trading")` returns a validated config with base + trading overlay
+- [ ] `HolusSettings.load("marketing")` returns a validated config with base + marketing overlay
 - [ ] Missing `ANTHROPIC_API_KEY` raises `EnvironmentError` with message "Required secret ANTHROPIC_API_KEY not found..."
 - [ ] Environment variables override YAML values (e.g., `HOLUS_LOG_LEVEL=DEBUG` overrides YAML `log_level: INFO`)
 - [ ] All YAML config files pass `yamllint` with no errors
@@ -278,7 +240,7 @@ class ModelTier(Enum):
     SONNET = "claude-sonnet-4-6"
 
 OPUS_TASKS = {
-    "risk_validation", "strategic_planning", "cross_project_synthesis",
+    "strategic_planning", "cross_project_synthesis",
     "complex_debugging", "architecture_decisions", "weekly_review",
     "prompt_optimization", "novel_problem_solving",
 }
@@ -345,7 +307,7 @@ class HolusClaudeClient:
 
 Acceptance Criteria:
 - [ ] All Claude API calls include `cache_control: {"type": "ephemeral"}` on the system prompt block
-- [ ] `risk_validation` task routes to Opus; `content_generation` task routes to Sonnet
+- [ ] `strategic_planning` task routes to Opus; `content_generation` task routes to Sonnet
 - [ ] Every API call is logged to Langfuse with model, token counts, and cache hit metrics
 - [ ] Cache read tokens appear in Langfuse traces (verify prompt caching is working)
 - [ ] Client raises a descriptive error if `ANTHROPIC_API_KEY` is missing or invalid
@@ -383,7 +345,7 @@ class KillSwitch:
             return  # Do nothing, log, wait
     """
     GLOBAL_KEY = "holus:kill:global"
-    AGENT_PREFIX = "holus:kill:"
+    AGENT_PREFIX = "holus:kill:agent:"
     DOMAIN_PREFIX = "holus:kill:domain:"
 
     def __init__(self, redis_client: redis.Redis):
@@ -435,17 +397,17 @@ Access methods:
 
 | Method | Command | Latency |
 |--------|---------|---------|
-| CLI | `python -m holus kill --scope trading-agent --reason "investigating"` | Instant |
+| CLI | `python -m holus kill --scope marketing-agent --reason "investigating"` | Instant |
 | Redis CLI | `redis-cli SET holus:kill:global '{"reason":"emergency"}'` | Instant |
 | SSH from phone | `ssh macmini 'redis-cli SET holus:kill:global ...'` | ~2s |
-| n8n webhook | POST `/webhook/kill-switch` `{"scope":"trading-agent","reason":"..."}` | ~1s |
-| Slack | `/holus kill trading-agent` via n8n Slack integration | ~2s |
-| Circuit breaker | Automatic when drawdown exceeds threshold | Automatic |
+| n8n webhook | POST `/webhook/kill-switch` `{"scope":"marketing-agent","reason":"..."}` | ~1s |
+| Slack | `/holus kill marketing-agent` via n8n Slack integration | ~2s |
+| Circuit breaker | Automatic when crash count exceeds threshold | Automatic |
 
 Acceptance Criteria:
-- [ ] `kill_switch.activate("trading-agent", "test")` sets Redis key `holus:kill:trading-agent`
-- [ ] `kill_switch.is_active("trading-agent")` returns `True` when agent-specific OR global switch is active
-- [ ] `kill_switch.is_active("trading-agent", domain="trading")` returns `True` when domain switch is active
+- [ ] `kill_switch.activate("marketing-agent", "test")` sets Redis key `holus:kill:agent:marketing-agent`
+- [ ] `kill_switch.is_active("marketing-agent")` returns `True` when agent-specific OR global switch is active
+- [ ] `kill_switch.is_active("marketing-agent")` returns `True` when domain switch for `marketing` is active
 - [ ] `kill_switch.deactivate("global")` removes the global key and agents resume
 - [ ] `kill_switch.status()` returns all active kill switches with reason and timestamp
 - [ ] CLI command `python -m holus kill --scope global --reason "test"` works
@@ -517,33 +479,15 @@ class EventBus:
 
 ```yaml
 # config/events.yaml -- Schema registry
-trading_agent:
+marketing_agent:
   publishes:
-    - channel: holus.trading.signals
+    - channel: holus.marketing.content
       events:
-        - signal_generated
-        - trade_executed
-        - risk_alert
-        - market_regime_shift
-        - daily_pnl
-
-content_agent:
-  publishes:
-    - channel: holus.content.performance
-      events:
+        - content_generated
+        - content_approved
         - content_published
-        - engagement_update
-        - seo_ranking_change
-        - topic_trending
-
-coding_agent:
-  publishes:
-    - channel: holus.coding.deploys
-      events:
-        - pr_merged
-        - ci_failure
-        - dependency_alert
-        - self_improvement_cycle
+        - strategy_updated
+        - weekly_report
 
 pilaster_agent:
   publishes:
@@ -568,24 +512,23 @@ Example event payload:
 
 ```json
 {
-  "source_agent": "trading-agent",
-  "event_type": "trade_executed",
+  "source_agent": "marketing-agent",
+  "event_type": "content_generated",
   "timestamp": "2026-03-15T14:30:00Z",
   "payload": {
-    "symbol": "AAPL",
-    "direction": "long",
-    "quantity": 10,
-    "price": 185.50,
-    "order_id": "abc123",
-    "risk_score": 0.65
+    "product": "pilaster",
+    "content_type": "tutorial",
+    "platform": "linkedin",
+    "topic": "ComfyUI workflow diff view",
+    "piece_id": "piece-20260315-001"
   },
-  "correlation_id": "signal-20260315-001"
+  "correlation_id": "cycle-20260315-001"
 }
 ```
 
 Acceptance Criteria:
-- [ ] `event_bus.publish("holus.trading.signals", event)` delivers to all pub/sub subscribers AND persists to Redis Stream
-- [ ] `event_bus.read_stream("holus.trading.signals", count=10)` returns the last 10 events from the stream
+- [ ] `event_bus.publish("holus.marketing.content", event)` delivers to all pub/sub subscribers AND persists to Redis Stream
+- [ ] `event_bus.read_stream("holus.marketing.content", count=10)` returns the last 10 events from the stream
 - [ ] Stream is capped at 10,000 entries per channel (MAXLEN)
 - [ ] Events with invalid schema (missing required fields) raise `ValidationError` before publishing
 - [ ] `config/events.yaml` documents every channel and event type
@@ -632,14 +575,11 @@ class HolusEvent(BaseModel):
 
 | File | Change Type | Description |
 |------|-------------|-------------|
-| `infrastructure/docker-compose.yml` | New | All service definitions |
+| `docker-compose.yml` | New | All service definitions |
 | `infrastructure/docker-compose.prod.yml` | New | Production overrides (resource limits) |
 | `.env.example` | New | Template with all required environment variables |
 | `config/base.yaml` | New | Shared configuration defaults |
-| `config/trading_agent.yaml` | New | Trading agent configuration |
-| `config/content_agent.yaml` | New | Content agent configuration |
-| `config/coding_agent.yaml` | New | Coding agent configuration |
-| `config/pilaster_agent.yaml` | New | Pilaster agent configuration |
+| `config/marketing.yaml` | New | Marketing agent configuration |
 | `config/events.yaml` | New | Event bus schema registry |
 | `config/guardrails.yaml` | New | Agent authority matrix |
 | `src/holus/core/__init__.py` | New | Core module init |
@@ -677,10 +617,10 @@ class HolusEvent(BaseModel):
 - Recovery: Automatic once connections are freed. If persistent, increase `max_connections` in docker-compose or investigate connection leaks.
 
 **EDGE-003: Kill switch activated during active operation**
-- Scenario: Kill switch is set while an agent is mid-action (e.g., trading agent has submitted an order)
-- Expected behavior: Current action completes (no mid-action abort), then agent halts before the next action. For trading, the ExecutionHandler completes the current order lifecycle.
+- Scenario: Kill switch is set while an agent is mid-action (e.g., marketing agent is generating content via MCP)
+- Expected behavior: Current action completes (no mid-action abort), then agent halts before the next action.
 - Error message: `INFO: Kill switch active for {agent_name}. Completing current action, then halting.`
-- Recovery: Deactivate kill switch via `redis-cli DEL holus:kill:{scope}`
+- Recovery: Deactivate kill switch via `redis-cli DEL holus:kill:agent:{agent_name}`
 
 **EDGE-004: Event bus receives malformed event**
 - Scenario: A subscriber receives a JSON payload that does not match the `HolusEvent` schema
@@ -703,7 +643,7 @@ class HolusEvent(BaseModel):
 **EDGE-007: Configuration YAML syntax error**
 - Scenario: A YAML config file has invalid syntax (bad indentation, missing colon)
 - Expected behavior: Agent fails to start with a clear error pointing to the file and line number
-- Error message: `FATAL: Cannot parse config/trading_agent.yaml: {yaml_error}. Fix the YAML syntax and restart.`
+- Error message: `FATAL: Cannot parse config/marketing.yaml: {yaml_error}. Fix the YAML syntax and restart.`
 - Recovery: Fix the YAML syntax error and restart the agent
 
 ---
@@ -735,10 +675,9 @@ class HolusEvent(BaseModel):
 
 ### Out of Scope
 
-- Agent-specific logic (trading, content, coding, Pilaster) -- those are specs 002, 003, and future specs
+- Agent-specific logic (marketing, pilaster, coordinator) -- those are specs 010, 015, and 006
 - Mem0 memory system -- will be its own spec when Phase 2 begins
-- Cognee knowledge graph -- Phase 3
-- n8n workflow definitions -- each agent's n8n workflows are documented in their own spec
+- Agent scheduling -- uses launchd, see spec 013
 - CI/CD pipeline -- separate spec
 - Monitoring dashboards and alerting rules -- separate spec
 
@@ -746,8 +685,8 @@ class HolusEvent(BaseModel):
 
 ### Related Specs
 
-- [002-trading-agent.md](./002-trading-agent.md) -- depends on this infrastructure (Redis, Temporal, Claude client, kill switch)
-- [003-content-pipeline.md](./003-content-pipeline.md) -- depends on this infrastructure (Redis, n8n, Claude client)
+- [010-marketing-agent.md](./010-marketing-agent.md) -- depends on this infrastructure (Redis, Claude client, kill switch)
+- [015-pilaster-integration.md](./015-pilaster-integration.md) -- depends on this infrastructure (Redis, Claude client)
 
 ---
 

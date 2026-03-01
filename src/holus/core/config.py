@@ -52,25 +52,6 @@ class AgentConfig(BaseSettings):
 
 
 # ---------------------------------------------------------------------------
-# Trading-specific configuration
-# ---------------------------------------------------------------------------
-
-
-class TradingGuardrailsConfig(BaseSettings):
-    """Trading agent guardrails -- loaded from config/trading_agent.yaml."""
-
-    model_config = SettingsConfigDict(extra="ignore")
-
-    max_position_pct: float = 0.02
-    max_portfolio_exposure: float = 0.30
-    max_single_trade_usd: float = 500.0
-    daily_loss_limit_pct: float = 0.05
-    max_trades_per_day: int = 10
-    allowed_symbols: list[str] | None = None
-    paper_mode: bool = True
-
-
-# ---------------------------------------------------------------------------
 # Global configuration
 # ---------------------------------------------------------------------------
 
@@ -91,8 +72,6 @@ class HolusConfig(BaseSettings):
 
     # ---- Secrets (env-only) ------------------------------------------------
     anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
-    alpaca_api_key: str = Field(default="", alias="ALPACA_API_KEY")
-    alpaca_secret_key: str = Field(default="", alias="ALPACA_SECRET_KEY")
     langfuse_secret_key: str = Field(default="", alias="LANGFUSE_SECRET_KEY")
     langfuse_public_key: str = Field(default="", alias="LANGFUSE_PUBLIC_KEY")
     late_api_key: str = Field(default="", alias="LATE_API_KEY")
@@ -123,9 +102,6 @@ class HolusConfig(BaseSettings):
     haiku_model: str = "claude-haiku-3-5-20241022"
 
     # ---- Sub-configs (populated by load) -----------------------------------
-    trading_guardrails: TradingGuardrailsConfig = Field(
-        default_factory=TradingGuardrailsConfig,
-    )
     agents: dict[str, AgentConfig] = Field(default_factory=dict)
 
     # ---- Validators --------------------------------------------------------

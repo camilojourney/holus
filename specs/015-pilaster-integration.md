@@ -1,17 +1,36 @@
 # Spec 015: Pilaster Integration
 
-## Feature: AI image generation memory layer integration for informed content creation
+## Feature: AI image generation platform integration for consistent, memory-driven content creation
 
 ### Overview
 
-Pilaster is Holus's memory layer for AI image generation experiments. It tracks ComfyUI workflows, compares versions, and warns when repeating failed experiments. This spec defines how the marketing agent discovers and uses Pilaster's capabilities through an MCP server, enabling data-informed image generation decisions. The integration follows the federated MCP pattern: Pilaster runs as an independent Next.js app with its own database, and the MCP server translates marketing agent intentions into Pilaster API calls.
+Pilaster is an AI image generation platform with memory. It owns three layers:
+(1) **Character registry** — LoRAs, reference sheets, and metadata for consistent
+characters across all generations. (2) **Generation abstraction** — a backend-agnostic
+interface that delegates to ComfyUI, Replicate, Runway, or any future engine. Users
+never see nodes — they pick a character, a template, and generate. (3) **Experiment
+memory** — tracks every generation with outcomes and quality scores, learns what
+prompts/settings work, warns before repeating failures.
+
+This spec defines how the marketing agent discovers and uses Pilaster's capabilities
+through its MCP server. The integration follows the federated MCP pattern: Pilaster runs
+as an independent Next.js app with its own database, swappable generation backends, and
+**its own MCP server** (already built, 8 tools). Holus connects to it — no wrapper code
+lives in Holus.
+
+**Key architectural decision (ADR-0004):** Pilaster is a generation platform, not a
+ComfyUI plugin. Backends are swappable. The memory, characters, and templates are the
+product. See `docs/decisions/0004-pilaster-generation-platform.md`.
 
 ### User Stories
 
-- As the marketing agent, I want to query past image generation experiments so that I learn what prompts and settings work.
+- As the marketing agent, I want to generate images of a specific character so that brand identity stays consistent across all posts.
+- As the marketing agent, I want to pick a template ("product shot", "anime scene") so that I don't configure generation settings manually.
+- As the marketing agent, I want to query past experiments so that I learn what prompts and settings work.
 - As the marketing agent, I want to store new experiments with outcomes so that the knowledge base grows.
 - As the marketing agent, I want to retrieve successful parameter sets for reuse so that I don't reinvent the wheel.
-- As a founder, I want a memory of what visual styles performed best so that brand consistency improves over time.
+- As a founder, I want characters to look the same everywhere — social posts, videos, website — without manual effort.
+- As a founder, I want to swap backends (ComfyUI → Replicate → Runway) without losing my characters or memory.
 
 ---
 
@@ -21,210 +40,45 @@ Pilaster is Holus's memory layer for AI image generation experiments. It tracks 
 
 | Field | Value |
 |-------|-------|
-| Description | Local MCP server that exposes Pilaster's experiment memory as tools the marketing agent can discover and call |
+| Description | Pilaster's MCP server (in the pilaster repo) exposes the full platform as tools. Holus connects to it — no wrapper code in Holus. |
 | Trigger | Marketing agent connects to the MCP server at startup |
-| Input | Tool calls from the marketing agent (query experiments, store outcomes, get suggestions) |
-| Output | Tool results (experiment history, parameter recommendations, AI suggestions) |
-| Validation | All inputs validated before passing to Pilaster API |
-| Auth Required | `PILASTER_API_KEY` (server-side) |
+| Input | Tool calls from the marketing agent (generate with character, list characters, query experiments, etc.) |
+| Output | Tool results (generated images, character data, experiment history, recommendations) |
+| Validation | All inputs validated by Pilaster MCP server before processing |
+| Auth Required | `PILASTER_API_KEY` (server-side, in pilaster repo) |
 
-```python
-# src/holus/mcp_servers/pilaster.py
+**NOTE:** The MCP server code lives in the **pilaster repo**, not in Holus.
 
-from mcp.server.fastmcp import FastMCP
-import httpx
-import os
+**Existing Pilaster MCP tools (already built):**
 
-mcp = FastMCP("pilaster")
+| Tool | Description |
+|------|-------------|
+| `create_character` | Register a new character with metadata and reference images |
+| `update_character` | Update character LoRA, references, or metadata |
+| `save_version` | Save a workflow version snapshot |
+| `list_versions` | List all saved versions for a workflow |
+| `load_version` | Load a specific workflow version |
+| `generate_image` | Generate an image using backend-agnostic abstraction |
+| `list_workflows` | List available ComfyUI workflows |
+| `search_snapshots` | Search past generation snapshots by criteria |
 
-PILASTER_API = "http://localhost:3000"
-PILASTER_API_KEY = os.environ["PILASTER_API_KEY"]
+**MCP tools to be added in pilaster repo:**
 
+| Tool | Description |
+|------|-------------|
+| `get_templates` | List reusable generation presets (product-shot, anime, etc.) |
+| `get_successful_prompts` | Get prompts that produced high-quality images |
+| `get_ai_suggestions` | AI-powered recommendations based on past experiments |
 
-@mcp.tool()
-async def query_experiments(
-    query: str,
-    outcome_filter: str = "",
-    limit: int = 10,
-) -> str:
-    """Search past image generation experiments by topic, style, or outcome.
-
-    Args:
-        query: Search query (e.g., "product screenshots", "abstract backgrounds")
-        outcome_filter: Filter by outcome: "worked", "mixed", "failed", or "" for all
-        limit: Maximum results to return (default 10)
-
-    Returns:
-        JSON array of matching experiments with prompts, outcomes, and quality scores
-    """
-    async with httpx.AsyncClient() as client:
-        params = {"q": query, "limit": limit}
-        if outcome_filter:
-            params["outcome"] = outcome_filter
-        
-        response = await client.get(
-            f"{PILASTER_API}/api/snapshots",
-            params=params,
-            headers={"Authorization": f"Bearer {PILASTER_API_KEY}"},
-        )
-        response.raise_for_status()
-        return response.text
-
-
-@mcp.tool()
-async def get_successful_prompts(style: str = "default", limit: int = 5) -> str:
-    """Get prompts that generated high-quality images in the past.
-
-    Args:
-        style: Image style filter (e.g., "product", "abstract", "technical")
-        limit: Maximum prompts to return (default 5)
-
-    Returns:
-        JSON array of successful prompts with quality scores and settings
-    """
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{PILASTER_API}/api/snapshots",
-            params={"outcome": "worked", "style": style, "limit": limit},
-            headers={"Authorization": f"Bearer {PILASTER_API_KEY}"},
-        )
-        response.raise_for_status()
-        data = response.json()
-        
-        # Extract prompts and scores
-        prompts = []
-        for snapshot in data:
-            workflow = snapshot.get("workflow", {})
-            # Parse ComfyUI workflow for prompt nodes
-            for node_id, node in workflow.get("nodes", {}).items():
-                if node.get("class_type") == "CLIPTextEncode":
-                    prompts.append({
-                        "prompt": node["inputs"]["text"],
-                        "quality_score": snapshot.get("quality_score", "N/A"),
-                        "settings": {
-                            "steps": workflow.get("steps", 20),
-                            "cfg": workflow.get("cfg_scale", 7.0),
-                            "sampler": workflow.get("sampler_name", "euler"),
-                        },
-                    })
-        
-        import json
-        return json.dumps(prompts[:limit])
-
-
-@mcp.tool()
-async def store_experiment(
-    intent: str,
-    prompt: str,
-    negative_prompt: str = "",
-    outcome: str = "worked",
-    quality_score: float = 0.0,
-    settings: str = "{}",
-) -> str:
-    """Store a new image generation experiment with outcome.
-
-    Args:
-        intent: What you were trying to create
-        prompt: The generation prompt used
-        negative_prompt: Negative prompt (optional)
-        outcome: Result: "worked", "mixed", or "failed"
-        quality_score: Quality assessment score (0-10)
-        settings: JSON string with generation parameters
-
-    Returns:
-        snapshot_id for the stored experiment
-    """
-    import json
-    
-    # Build minimal ComfyUI workflow structure
-    workflow = {
-        "nodes": {
-            "1": {
-                "class_type": "CLIPTextEncode",
-                "inputs": {"text": prompt},
-            },
-            "2": {
-                "class_type": "CLIPTextEncode",
-                "inputs": {"text": negative_prompt},
-            },
-        },
-        "settings": json.loads(settings),
-    }
-    
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{PILASTER_API}/api/snapshots",
-            json={
-                "intent": intent,
-                "outcome": outcome,
-                "workflow": workflow,
-                "quality_score": quality_score,
-            },
-            headers={"Authorization": f"Bearer {PILASTER_API_KEY}"},
-        )
-        response.raise_for_status()
-        data = response.json()
-        return data["snapshot_id"]
-
-
-@mcp.tool()
-async def get_ai_suggestions(topic: str, context: str = "") -> str:
-    """Get AI-powered suggestions for image generation based on past experiments.
-
-    Args:
-        topic: What you want to create
-        context: Additional context (platform, purpose, etc.)
-
-    Returns:
-        AI suggestions with prompt recommendations
-    """
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{PILASTER_API}/api/snapshots/suggestions",
-            json={"topic": topic, "context": context},
-            headers={"Authorization": f"Bearer {PILASTER_API_KEY}"},
-        )
-        response.raise_for_status()
-        return response.text
-
-
-@mcp.tool()
-async def get_gallery_images(
-    limit: int = 20,
-    quality_min: float = 7.0,
-) -> str:
-    """Get recent high-quality generated images from the gallery.
-
-    Args:
-        limit: Maximum images to return (default 20)
-        quality_min: Minimum quality score (default 7.0)
-
-    Returns:
-        JSON array of image URLs with metadata
-    """
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{PILASTER_API}/api/gallery",
-            params={"limit": limit, "min_quality": quality_min},
-            headers={"Authorization": f"Bearer {PILASTER_API_KEY}"},
-        )
-        response.raise_for_status()
-        return response.text
-
-
-if __name__ == "__main__":
-    mcp.run()
-```
-
-MCP server configuration for marketing agent:
+MCP server configuration for Holus (in `.claude/settings.json`):
 
 ```json
 {
   "mcpServers": {
     "pilaster": {
-      "command": "python",
-      "args": ["-m", "holus.mcp_servers.pilaster"],
-      "cwd": "/Users/mini/.openclaw/workspace/github/holus",
+      "command": "node",
+      "args": ["mcp-server/index.js"],
+      "cwd": "/Users/mini/.openclaw/workspace/github/pilaster",
       "env": {
         "PILASTER_API_KEY": "${PILASTER_API_KEY}"
       }
@@ -234,12 +88,13 @@ MCP server configuration for marketing agent:
 ```
 
 Acceptance Criteria:
-- [ ] MCP server starts and responds to `tools/list`
-- [ ] `query_experiments` tool searches past experiments by topic/style
-- [ ] `get_successful_prompts` tool returns prompts that worked well
-- [ ] `store_experiment` tool saves new experiments with outcomes
-- [ ] `get_ai_suggestions` tool provides AI-powered recommendations
-- [ ] `get_gallery_images` tool retrieves high-quality generated images
+- [ ] Pilaster MCP server (in pilaster repo) responds to `tools/list`
+- [ ] `generate_image` tool generates images with character + template support
+- [ ] `search_snapshots` tool searches past experiments by topic/style
+- [ ] `get_successful_prompts` tool returns prompts that worked well (to be added)
+- [ ] `get_templates` tool lists available generation presets (to be added)
+- [ ] `get_ai_suggestions` tool provides AI-powered recommendations (to be added)
+- [ ] Holus can connect to pilaster MCP via `.claude/settings.json` config
 - [ ] All tools have clear descriptions and typed arguments
 
 ---
@@ -362,8 +217,8 @@ Acceptance Criteria:
 | **Product screenshots** (UI captures) | ✅ YES | None (query "product screenshots") |
 | **Abstract backgrounds** (social headers) | ✅ YES | None (query "abstract backgrounds") |
 | **Technical diagrams** (architecture visuals) | ✅ YES | None (query "technical diagrams") |
-| **AI-generated scenes** (Flux Schnell via Replicate) | ✅ YES | Replicate integration (Spec 003) |
-| **ComfyUI custom workflows** (advanced generation) | ⚠️ PARTIAL | ComfyUI integration (Spec 003) |
+| **AI-generated scenes** (Flux Schnell via Replicate) | ✅ YES | Replicate backend in Pilaster |
+| **ComfyUI custom workflows** (advanced generation) | ⚠️ PARTIAL | ComfyUI backend in Pilaster |
 | **Template-based graphics** (quote cards, announcements) | ❌ NO | Image template engine (new tool) |
 | **Photo editing** (adjustments, filters) | ❌ NO | Image editing pipeline |
 | **Multi-image compositions** (collages, comparisons) | ❌ NO | Composition engine |
@@ -464,14 +319,22 @@ Pilaster experiment (what the MCP server returns):
 
 ### File Locations
 
+**In Holus repo:**
+
 | File | Change Type | Description |
 |------|-------------|-------------|
-| `src/holus/mcp_servers/__init__.py` | Modified | Export pilaster server |
-| `src/holus/mcp_servers/pilaster.py` | New | Pilaster MCP server |
+| `.claude/settings.json` | Modified | Add pilaster MCP server config |
 | `src/holus/agents/marketing/image_workflow.py` | New | Image creation workflow |
 | `src/holus/agents/marketing/image_optimization.py` | New | Monthly image strategy optimization |
 | `.self-improvement/knowledge/current/image-generation.md` | New | Image generation best practices |
-| `tests/unit/mcp/test_pilaster.py` | New | Pilaster MCP server tests |
+
+**In pilaster repo (to be added to existing MCP server):**
+
+| Tool | Description |
+|------|-------------|
+| `get_templates` | List reusable generation presets |
+| `get_successful_prompts` | Get prompts with high quality scores |
+| `get_ai_suggestions` | AI-powered generation recommendations |
 
 ---
 
@@ -533,11 +396,11 @@ Pilaster experiment (what the MCP server returns):
 ### Related Specs
 
 - [010-marketing-agent.md](./010-marketing-agent.md) — the agent that calls Pilaster tools
-- [003-content-pipeline.md](./003-content-pipeline.md) — full image generation pipeline
-- [011-social-media-integration.md](./011-social-media-integration.md) — social media distribution
+- [016-social-media-integration-v2.md](./016-social-media-integration-v2.md) — social media distribution
+- [014-genpeli-integration.md](./014-genpeli-integration.md) — video creation silo
 
 ---
 
 **Last Updated:** 2026-02-27  
-**Status:** Draft  
+**Status:** Not Started
 **Owner:** Camilo Martinez
