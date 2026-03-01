@@ -56,4 +56,4 @@ Last updated: 2026-03-01
 - [x] [BUILD] Knowledge archive rotation — Spec 012 requires old knowledge versions to be moved to `archive/` when updated. Add utility function.
 - [x] [BUILD] Knowledge README.md index — Create `.self-improvement/knowledge/README.md` indexing all current knowledge files, their topics, and confidence levels.
 - [x] [REVIEW] Update specs/README.md status — Spec 010 is listed as "Not Started" but is Implemented. Spec 012 status should be "Partial". Sync all spec statuses.
-- [ ] [REVIEW] Verify launchd scheduling works — Spec 013. Test `just schedule` and `just schedule-status`. Verify marketing agent cron runs every 30 min.
+- [x] [REVIEW] Verify launchd scheduling works — Spec 013. Test `just schedule` and `just schedule-status`. Verify marketing agent cron runs every 30 min.
