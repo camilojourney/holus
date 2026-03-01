@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "social-media": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/mini/.openclaw/workspace/github/social-media-automatization",
+        "run",
+        "python",
+        "-m",
+        "mcp_server"
+      ],
+      "env": {
+        "API_BASE_URL": "http://localhost:8000",
+        "POSTING_API_KEY": "${POSTING_API_KEY}"
+      }
+    }
+  }
+}
