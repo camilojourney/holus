@@ -51,6 +51,4 @@ just audit            # run security sentinel
 - Agent roles: @AGENTS.md
 - Env template: @.env.example
 
-## Rule Imports
-
-@import .claude/rules/delegation.md
+@import .claude/rules/workflow.md

@@ -20,6 +20,11 @@ The core design principle is **process-isolated federation**: agents operate ind
 
 The system includes a self-improvement loop where agents publish structured events, the Coordinator identifies cross-project patterns, and DSPy/Reflexion optimize prompts over time. A global kill switch, per-agent circuit breakers, and a codified authority matrix ensure governance at every level.
 
+
+## Workflow: Explore → Plan → Execute → Review
+
+Opus in VS Code plans and launches autonomous CLI agents in the background — the user never leaves the conversation. Agents run via `env -u CLAUDECODE claude --dangerously-skip-permissions --model [model] -p '...'` with output redirected to files. Multiple cycles ensure quality: Sonnet implements, Opus reviews. See `.claude/rules/workflow.md` for full details.
+
 ## Key Docs
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) -- System design, component map, data flow
