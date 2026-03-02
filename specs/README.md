@@ -45,6 +45,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | 015 | [Pilaster Integration](015-pilaster-integration.md)              | Backend | Partial     |
 | 016 | [Social Media Integration V2](016-social-media-integration-v2.md) | Backend | Partial     |
 
+## Authority Engine Sprint
+
+| #   | Spec                                                             | Type    | Status      |
+| --- | ---------------------------------------------------------------- | ------- | ----------- |
+| 017 | [Authority Engine Agent Update](017-authority-engine-agent-update.md) | Backend | Not Started |
+
 ---
 
 ## Spec Status Legend

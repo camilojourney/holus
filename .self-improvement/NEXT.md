@@ -62,7 +62,7 @@ Source document: `tasks/next.md`
 
 ### P3 — Agent Code Updates (Spec 010 v2)
 
-- [ ] [BUILD] Write spec 017 — Authority Engine Agent Update. Covers: brand.yaml loading in observe, niche research step, authority framing in reason, content repurposing in act (LinkedIn → Twitter → Instagram → Threads → Facebook). This is the agent code spec for Sprint 2.
+- [x] [BUILD] Write spec 017 — Authority Engine Agent Update. Covers: brand.yaml loading in observe, niche research step, authority framing in reason, content repurposing in act (LinkedIn → Twitter → Instagram → Threads → Facebook). This is the agent code spec for Sprint 2.
 - [ ] [BUILD] Implement brand.yaml config loader — Add `config/brand.yaml` reading to `src/holus/core/config.py`. Pydantic model for brand identity. Loaded into every marketing agent cycle.
 - [ ] [BUILD] Update marketing agent prompts — Replace product-promotion framing with authority-building framing in `src/holus/agents/marketing/prompts.py`. Reference brand.yaml, use consulting language, builder mindset.
 - [ ] [BUILD] Implement content repurposing logic — New module `src/holus/agents/marketing/repurpose.py`. Takes LinkedIn post → adapts for Twitter (condensed), Instagram (visual), Threads (conversational), Facebook (bilingual ES if applicable). Platform-specific formatting.
