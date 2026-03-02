@@ -100,7 +100,7 @@ This sprint closes the loop from "system built" to "system producing real output
 
 - [x] [BUILD] Create `just generate` command — Runs ONE marketing agent cycle in generate-only mode (no publishing). Requires ANTHROPIC_API_KEY. Agent executes: observe (load brand, knowledge, niche research) → reason (Opus decides what to write) → act (Sonnet writes LinkedIn post + repurposes) → evaluate (log trajectory). Output goes to `data/content-queue/` for review. This is the first time the agent produces real content.
 - [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY in `.env` is expired/invalid (401).** Cycle 43 fixed `.env` loading (preflight + generate both read from `.env`), validated 380 tests pass, but actual generation needs a valid key. Camilo must update the key.
-- [ ] [BUILD] Prompt tuning based on first run — After reviewing the first real output, adjust prompts in `prompts.py` for better voice match, hook quality, and content depth. This is iterative — may take 2-3 cycles of generate → review → tune.
+- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real agent run (API key invalid).** After reviewing the first real output, adjust prompts in `prompts.py` for better voice match, hook quality, and content depth. This is iterative — may take 2-3 cycles of generate → review → tune.
 
 ### P2 — Review & Publishing Pipeline
 
@@ -117,5 +117,6 @@ This sprint closes the loop from "system built" to "system producing real output
 ### P4 — Quality & Cleanup
 
 - [x] [BUILD] Reconcile agent analytics path — Removed Late API client package, tests, config, knowledge file, and all references. Social-media MCP is now the sole analytics path. 405 tests passing. (Cycle 48)
-- [ ] [REVIEW] Review Sprint 2 module quality — Code review `repurpose.py`, `niche_research` functions in `agent.py`, updated `prompts.py`. Check for: dead code, error handling gaps, missing edge cases. Fix anything found.
-- [ ] [BUILD] Add content quality scoring — Before queuing content for review, run a quick quality check: character limits respected, no anti-pattern language detected, hook present, pillar assigned. Reject low-quality content automatically.
+- [x] [REVIEW] Review Sprint 2 module quality — Reviewed repurpose.py (278 LOC), niche research in agent.py (~400 LOC), prompts.py (412 LOC). Found 3 issues: dead `_product_info` wrapper, unused `format_platform_guidelines`, redundant inner `import yaml`. All fixed. No security or error handling gaps. 405 tests passing. (Cycle 49)
+- [x] [BUILD] Add content quality scoring — New `quality_score.py` module (270 LOC): checks char limits, anti-pattern phrases (13 default + brand.yaml extras), forbidden topics (trading/pythia), hook quality, pillar assignment, exclamation/emoji density. Integrated into `act()` — content below score 60 is auto-rejected. 42 new tests, 447 total. (Cycle 50)
+- [x] [BUILD] Add quality score display to review CLI — Enhance `just review-content --show <id>` with quality score breakdown: overall score (color-coded), char count vs platform limit, violation details, and pass/fail badge. Bridges QueuedContent → GeneratedPiece for scoring. (Cycle 51)

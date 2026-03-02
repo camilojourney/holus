@@ -1,5 +1,7 @@
 """CLI for reviewing and approving social media content."""
 
+from __future__ import annotations
+
 import argparse
 import sys
 
@@ -7,9 +9,92 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from .content_queue import approve, list_pending, reject
+from .content_queue import QueuedContent, approve, list_pending, reject
+from .models import ContentDecision, ContentType, GeneratedPiece, Platform
+from .quality_score import PLATFORM_CHAR_LIMITS, QualityResult, score_content
 
 console = Console()
+
+
+def _queued_to_generated(content: QueuedContent) -> GeneratedPiece:
+    """Convert a QueuedContent to GeneratedPiece for quality scoring."""
+    try:
+        platform = Platform(content.platform)
+    except ValueError:
+        platform = Platform.LINKEDIN
+
+    try:
+        content_type = ContentType(content.content_type)
+    except ValueError:
+        content_type = ContentType.TUTORIAL
+
+    decision = ContentDecision(
+        product=content.product,
+        platform=platform,
+        content_type=content_type,
+        topic=content.topic,
+        reasoning=content.reasoning,
+    )
+    return GeneratedPiece(
+        piece_id=content.piece_id,
+        decision=decision,
+        text=content.text,
+        platform=platform,
+        generated_at=content.generated_at,
+        model_used="unknown",
+        status=content.status,
+    )
+
+
+def _score_color(score: int) -> str:
+    """Return rich color tag for a quality score."""
+    if score >= 80:
+        return "green"
+    if score >= 60:
+        return "yellow"
+    return "red"
+
+
+def _render_quality_panel(result: QualityResult, text: str, platform: Platform) -> Panel:
+    """Build a rich Panel showing quality score breakdown."""
+    color = _score_color(result.score)
+    badge = "[green]PASS[/green]" if result.passed else "[red]FAIL[/red]"
+
+    lines: list[str] = []
+    lines.append(f"Score: [{color}]{result.score}/100[/{color}]  {badge}")
+    lines.append("")
+
+    # Character count vs limit
+    char_limit = PLATFORM_CHAR_LIMITS.get(platform)
+    char_count = len(text)
+    if char_limit:
+        ratio = min(char_count / char_limit, 1.0)
+        bar_width = 20
+        filled = int(ratio * bar_width)
+        bar = "█" * filled + "░" * (bar_width - filled)
+        status = "OK" if char_count <= char_limit else "OVER"
+        bar_color = "green" if char_count <= char_limit else "red"
+        lines.append(
+            f"Chars: [{bar_color}]{bar}[/{bar_color}] {char_count}/{char_limit} ({status})"
+        )
+    else:
+        lines.append(f"Chars: {char_count} (no limit for {platform.value})")
+
+    # Violations
+    if result.violations:
+        lines.append("")
+        lines.append(f"[yellow]Violations ({len(result.violations)}):[/yellow]")
+        for v in result.violations:
+            lines.append(f"  -{v.penalty}  {v.message}")
+    else:
+        lines.append("")
+        lines.append("[green]No violations found.[/green]")
+
+    return Panel(
+        "\n".join(lines),
+        title="[cyan]Quality Score[/cyan]",
+        border_style="dim",
+    )
 
 
 def display_pending() -> None:
@@ -25,15 +110,22 @@ def display_pending() -> None:
     table.add_column("Product", style="magenta")
     table.add_column("Platform", style="blue")
     table.add_column("Type", style="green")
+    table.add_column("Score", justify="right")
     table.add_column("Topic", style="yellow")
     table.add_column("Generated", style="dim")
 
     for content in pending:
+        piece = _queued_to_generated(content)
+        result = score_content(piece)
+        color = _score_color(result.score)
+        score_str = f"[{color}]{result.score}[/{color}]"
+
         table.add_row(
             content.piece_id,
             content.product,
             content.platform,
             content.content_type,
+            score_str,
             content.topic,
             content.generated_at.strftime("%Y-%m-%d %H:%M"),
         )
@@ -75,6 +167,12 @@ Generated: {content.generated_at.strftime("%Y-%m-%d %H:%M")}
 
     console.print(header.strip())
     console.print(panel)
+
+    # Quality score
+    piece = _queued_to_generated(content)
+    result = score_content(piece)
+    console.print(_render_quality_panel(result, content.text, piece.platform))
+
     console.print(f"\n[yellow]Reasoning:[/yellow] {content.reasoning}\n")
 
     # Actions
