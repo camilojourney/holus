@@ -42,14 +42,24 @@ class ContentType(StrEnum):
 class ContentDecision(BaseModel):
     """A strategic decision about what content to create.
 
-    The reason stage outputs a list of these decisions.
-    Each decision specifies: what to create, for which product, on which platform, and why.
+    The reason stage outputs these decisions.  Each specifies what to create,
+    for which product (used as proof, not pitch), on which platform, and why.
+    New authority-engine fields (content_pillar, hook, framework, repurpose_notes)
+    have defaults so existing fallback decisions keep working.
     """
 
-    product: str = Field(description="Product to promote (pilaster | genpeli | invoz)")
-    platform: Platform = Field(description="Target social media platform")
+    product: str = Field(description="Product used as proof (pilaster | genpeli | invoz | none)")
+    platform: Platform = Field(
+        default=Platform.LINKEDIN, description="Target social media platform"
+    )
     content_type: ContentType = Field(description="Type of content to create")
+    content_pillar: str = Field(
+        default="builder_stories",
+        description="Authority pillar: builder_stories, ai_frameworks, industry_analysis, results_proof, contrarian_takes",
+    )
     topic: str = Field(description="What the content is about")
+    hook: str = Field(default="", description="Opening line of the post")
+    framework: str = Field(default="original", description="Viral/content framework used")
     reasoning: str = Field(description="Why this content, why now")
     priority: int = Field(default=1, ge=1, le=3, description="Priority (1=highest, 3=lowest)")
     estimated_engagement: str = Field(
@@ -57,6 +67,7 @@ class ContentDecision(BaseModel):
         pattern="^(low|medium|high)$",
         description="Expected engagement level",
     )
+    repurpose_notes: str = Field(default="", description="Adaptation notes for repurposing")
 
 
 class GeneratedPiece(BaseModel):

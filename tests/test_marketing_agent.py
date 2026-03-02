@@ -930,7 +930,7 @@ def test_decode_json_payload_invalid(marketing_agent):
 
 
 def test_fallback_content_text_twitter(marketing_agent):
-    """_fallback_content_text generates Twitter-specific fallback."""
+    """_fallback_content_text generates Twitter-specific fallback with authority voice."""
     decision = ContentDecision(
         product="pilaster",
         platform=Platform.TWITTER,
@@ -941,25 +941,26 @@ def test_fallback_content_text_twitter(marketing_agent):
 
     text = marketing_agent._fallback_content_text(decision)
 
-    assert "AI image tips" in text
     assert "pilaster" in text
+    assert "I learned" in text or "AI image tips" in text  # authority voice
     assert len(text) <= 280  # Twitter limit
 
 
 def test_fallback_content_text_linkedin(marketing_agent):
-    """_fallback_content_text generates LinkedIn-specific fallback."""
+    """_fallback_content_text generates LinkedIn-specific fallback with authority voice."""
     decision = ContentDecision(
         product="genpeli",
         platform=Platform.LINKEDIN,
         content_type=ContentType.TUTORIAL,
         topic="Video editing workflow",
+        hook="I automated my video editing pipeline.",
         reasoning="Test",
     )
 
     text = marketing_agent._fallback_content_text(decision)
 
-    assert "video editing workflow" in text.lower()
     assert "genpeli" in text
+    assert "I built" in text or "I automated" in text  # first person builder voice
     assert len(text) > 100  # LinkedIn allows longer content
 
 
@@ -982,7 +983,7 @@ def test_enforce_platform_limit(marketing_agent):
 
 
 def test_product_info_extraction(marketing_agent):
-    """_product_info extracts relevant product details."""
+    """_product_info extracts relevant product details with authority framing."""
     products_data = {
         "products": {
             "pilaster": {
@@ -997,7 +998,8 @@ def test_product_info_extraction(marketing_agent):
 
     info = marketing_agent._product_info("pilaster", products_data)
 
-    assert "Pilaster.ai" in info
+    assert "Pilaster" in info
+    assert "proof point" in info  # authority framing
     assert "AI images made easy" in info
     assert "Content creators" in info
     assert "Complex AI tools" in info
@@ -1009,8 +1011,8 @@ def test_product_info_missing_product(marketing_agent):
 
     info = marketing_agent._product_info("nonexistent", products_data)
 
-    # Should show N/A for missing fields
-    assert "nonexistent" in info
+    # Should show N/A for missing fields (capitalized product name)
+    assert "Nonexistent" in info
     assert "N/A" in info
 
 
@@ -1194,3 +1196,214 @@ def test_default_state_includes_brand_identity(marketing_agent):
 
     assert "brand_identity" in state
     assert state["brand_identity"] == {}
+
+
+# ---------------------------------------------------------------------------
+# Test Authority Engine Fields
+# ---------------------------------------------------------------------------
+
+
+def test_coerce_decision_with_authority_fields(marketing_agent):
+    """_coerce_decision handles new authority-engine fields."""
+    payload = {
+        "product": "pilaster",
+        "platform": "linkedin",
+        "content_type": "tutorial",
+        "content_pillar": "builder_stories",
+        "topic": "What I learned building Pilaster",
+        "hook": "I built an AI image platform from scratch.",
+        "framework": "builder_journey",
+        "reasoning": "Builder stories resonate with consulting prospects",
+        "priority": 1,
+        "estimated_engagement": "high",
+        "repurpose_notes": "Good for Twitter thread too",
+    }
+
+    decision = marketing_agent._coerce_decision(payload)
+
+    assert decision is not None
+    assert decision.content_pillar == "builder_stories"
+    assert decision.hook == "I built an AI image platform from scratch."
+    assert decision.framework == "builder_journey"
+    assert decision.repurpose_notes == "Good for Twitter thread too"
+
+
+def test_coerce_decision_authority_defaults(marketing_agent):
+    """_coerce_decision uses defaults for missing authority fields (backward compat)."""
+    payload = {
+        "product": "pilaster",
+        "platform": "linkedin",
+        "content_type": "tutorial",
+        "topic": "Old-style decision without new fields",
+        "reasoning": "Test",
+    }
+
+    decision = marketing_agent._coerce_decision(payload)
+
+    assert decision is not None
+    assert decision.content_pillar == "builder_stories"  # default
+    assert decision.hook == ""  # default
+    assert decision.framework == "original"  # default
+    assert decision.repurpose_notes == ""  # default
+
+
+def test_fallback_decisions_use_authority_framing(marketing_agent):
+    """Fallback decisions use builder stories pillar and authority voice."""
+    products_data = {
+        "products": {
+            "pilaster": {"name": "Pilaster", "platforms": ["linkedin"]},
+        }
+    }
+
+    decisions = marketing_agent._fallback_decisions(products_data)
+
+    assert len(decisions) >= 1
+    decision = decisions[0]
+    assert decision.content_pillar == "builder_stories"
+    assert decision.platform == Platform.LINKEDIN
+    assert "learned" in decision.topic.lower() or "building" in decision.topic.lower()
+    assert decision.hook != ""  # hook is populated
+
+
+def test_fallback_decisions_cold_start_authority(marketing_agent):
+    """Cold-start fallback uses authority framing."""
+    decisions = marketing_agent._fallback_decisions({})
+
+    assert len(decisions) == 1
+    decision = decisions[0]
+    assert decision.content_pillar == "builder_stories"
+    assert decision.hook != ""
+    assert "built" in decision.hook.lower() or "build" in decision.hook.lower()
+
+
+# ---------------------------------------------------------------------------
+# Test Prompt Formatting Helpers
+# ---------------------------------------------------------------------------
+
+
+def test_format_brand_identity():
+    """format_brand_identity renders brand into readable text."""
+    from holus.agents.marketing.prompts import format_brand_identity
+
+    brand = {
+        "story": {
+            "origin": "Colombian AI engineer in NYC",
+            "journey": ["Built Pilaster", "Built genpeli"],
+        },
+        "positioning": {
+            "one_liner": "I build AI systems that work.",
+            "category": "AI consultant",
+            "differentiation": ["Builder, not advisor"],
+        },
+        "products_as_proof": {
+            "framing": "Products are evidence of expertise.",
+            "pilaster": {"proof_narrative": "I built an AI image platform."},
+        },
+    }
+
+    text = format_brand_identity(brand)
+
+    assert "Colombian AI engineer" in text
+    assert "I build AI systems" in text
+    assert "Builder, not advisor" in text
+    assert "Products are evidence" in text
+    assert "I built an AI image platform" in text
+
+
+def test_format_brand_identity_empty():
+    """format_brand_identity handles empty brand gracefully."""
+    from holus.agents.marketing.prompts import format_brand_identity
+
+    text = format_brand_identity({})
+    assert "No brand identity" in text
+
+
+def test_format_voice():
+    """format_voice renders voice profile."""
+    from holus.agents.marketing.prompts import format_voice
+
+    brand = {
+        "voice": {
+            "archetype": "Builder-philosopher",
+            "summary": "Direct and honest",
+            "tone": ["First person always", "Short paragraphs"],
+            "hooks": {"contrarian": "Most people are playing with AI."},
+            "closers": {"question": "What would you build?"},
+        }
+    }
+
+    text = format_voice(brand)
+
+    assert "Builder-philosopher" in text
+    assert "First person always" in text
+    assert "Most people are playing" in text
+    assert "What would you build" in text
+
+
+def test_format_anti_patterns():
+    """format_anti_patterns renders anti-pattern rules."""
+    from holus.agents.marketing.prompts import format_anti_patterns
+
+    brand = {
+        "anti_patterns": {
+            "language": ["leverage synergies", "game-changing"],
+            "style": ["Walls of text"],
+        }
+    }
+
+    text = format_anti_patterns(brand)
+
+    assert "leverage synergies" in text
+    assert "game-changing" in text
+    assert "Walls of text" in text
+
+
+def test_format_content_pillars():
+    """format_content_pillars renders pillar list."""
+    from holus.agents.marketing.prompts import format_content_pillars
+
+    brand = {
+        "content_pillars": [
+            {
+                "id": "builder_stories",
+                "name": "Builder Stories",
+                "description": "I built X, here's what I learned",
+                "frequency": "2x/week",
+                "goal": "Demonstrate expertise",
+            },
+            {
+                "id": "ai_frameworks",
+                "name": "AI Frameworks",
+                "description": "How to deploy AI",
+                "frequency": "1x/week",
+            },
+        ]
+    }
+
+    text = format_content_pillars(brand)
+
+    assert "Builder Stories" in text
+    assert "builder_stories" in text
+    assert "2x/week" in text
+    assert "AI Frameworks" in text
+
+
+def test_format_niche_research(marketing_agent):
+    """_format_niche_research renders research results."""
+    niche = {
+        "trending_topics": ["AI agents", "Claude MCP integration"],
+        "recommended_angles": ["Builder perspective on AI agents"],
+        "insights": [{"topic": "AI agent hype"}],
+    }
+
+    text = marketing_agent._format_niche_research(niche)
+
+    assert "AI agents" in text
+    assert "Builder perspective" in text
+    assert "1 insights extracted" in text
+
+
+def test_format_niche_research_empty(marketing_agent):
+    """_format_niche_research handles empty research."""
+    text = marketing_agent._format_niche_research({})
+    assert "No niche research" in text

@@ -29,7 +29,16 @@ from holus.agents.marketing.models import (
     GeneratedPiece,
     Platform,
 )
-from holus.agents.marketing.prompts import OPUS_STRATEGY_PROMPT, SONNET_CONTENT_PROMPT
+from holus.agents.marketing.prompts import (
+    OPUS_STRATEGY_PROMPT,
+    SONNET_CONTENT_PROMPT,
+    format_anti_patterns,
+    format_brand_identity,
+    format_content_pillars,
+    format_positioning,
+    format_product_info,
+    format_voice,
+)
 from holus.integrations.claude_api.client import CachedPrompt
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
@@ -180,28 +189,40 @@ class MarketingAgent(BaseAgent):
             return raw
 
     async def reason(self, state: MarketingState) -> dict[str, Any]:
-        """Reason phase: produce validated ContentDecision objects."""
+        """Reason phase: produce validated ContentDecision objects.
+
+        Uses authority-building framing — decides ONE LinkedIn-first post that
+        maps to a content pillar, targets consulting prospects, and uses
+        Camilo's builder-philosopher voice.
+        """
         self.check_kill_switch()
 
         products = state.get("product_updates", {})
         knowledge = state.get("knowledge", {})
         memory_context = state.get("memory_context", "")
         analytics = state.get("analytics", {})
+        brand = state.get("brand_identity", {})
 
         decisions: list[ContentDecision] = []
         reasoning = ""
 
         if self.config.anthropic_api_key:
             strategy_prompt = OPUS_STRATEGY_PROMPT.format(
-                products=json.dumps(products, indent=2, ensure_ascii=True),
+                brand_identity=format_brand_identity(brand),
+                content_pillars=format_content_pillars(brand),
                 platform_knowledge=knowledge.get("platforms", "No platform knowledge available."),
                 audience_knowledge=knowledge.get(
                     "audience-profiles",
                     "No audience profiles available.",
                 ),
+                niche_research=self._format_niche_research(state.get("niche_research", {})),
                 content_formats=knowledge.get(
                     "content-formats",
                     "No content format guidance available.",
+                ),
+                viral_frameworks=knowledge.get(
+                    "viral-frameworks",
+                    "No viral frameworks documented yet.",
                 ),
                 memory=memory_context or "No memory context available.",
                 analytics=(
@@ -209,6 +230,7 @@ class MarketingAgent(BaseAgent):
                     if analytics
                     else "No analytics yet (cold start)."
                 ),
+                anti_patterns=format_anti_patterns(brand),
             )
 
             try:
@@ -218,9 +240,10 @@ class MarketingAgent(BaseAgent):
                         {
                             "role": "user",
                             "content": (
-                                "Return 1-3 prioritized content decisions as a JSON array. "
-                                "Include product, platform, content_type, topic, reasoning, "
-                                "priority, and estimated_engagement."
+                                "Return ONE content decision as a JSON object. "
+                                "Include product, platform, content_type, content_pillar, "
+                                "topic, hook, framework, reasoning, priority, "
+                                "estimated_engagement, and repurpose_notes."
                             ),
                         }
                     ],
@@ -248,6 +271,30 @@ class MarketingAgent(BaseAgent):
             "strategy_reasoning": reasoning,
         }
 
+    def _format_niche_research(self, niche: dict[str, Any]) -> str:
+        """Format niche research results for the strategy prompt."""
+        if not niche:
+            return "No niche research available this cycle."
+
+        parts: list[str] = []
+        trending = niche.get("trending_topics", [])
+        if trending:
+            parts.append("**Trending topics:**")
+            for topic in trending[:5]:
+                parts.append(f"  - {topic}")
+
+        angles = niche.get("recommended_angles", [])
+        if angles:
+            parts.append("**Recommended angles:**")
+            for angle in angles[:5]:
+                parts.append(f"  - {angle}")
+
+        insights = niche.get("insights", [])
+        if insights:
+            parts.append(f"**{len(insights)} insights extracted from niche research.**")
+
+        return "\n".join(parts) if parts else "No niche research available this cycle."
+
     async def act(self, state: MarketingState) -> dict[str, Any]:
         """Act phase: generate text per platform and queue for human review."""
         self.check_kill_switch()
@@ -258,6 +305,7 @@ class MarketingAgent(BaseAgent):
         queue_dir = self._ensure_queue_dir()
         knowledge = state.get("knowledge", {})
         products = state.get("product_updates", {})
+        brand = state.get("brand_identity", {})
 
         for index, raw_decision in enumerate(state.get("content_decisions", []), start=1):
             self.check_kill_switch()
@@ -278,6 +326,7 @@ class MarketingAgent(BaseAgent):
                     decision=decision,
                     knowledge=knowledge,
                     products=products,
+                    brand=brand,
                 )
                 piece = GeneratedPiece(
                     piece_id=f"{state.get('cycle_id', 'cycle')}-{index}-{uuid4().hex[:8]}",
@@ -496,36 +545,42 @@ class MarketingAgent(BaseAgent):
                 product=str(payload.get("product", "pilaster")).strip().lower(),
                 platform=platform,
                 content_type=content_type,
+                content_pillar=str(payload.get("content_pillar", "builder_stories")).strip(),
                 topic=str(payload.get("topic", "Product tutorial")).strip(),
+                hook=str(payload.get("hook", "")).strip(),
+                framework=str(payload.get("framework", "original")).strip(),
                 reasoning=str(payload.get("reasoning", "Value-first educational content")).strip(),
                 priority=priority_value,
                 estimated_engagement=estimated_engagement,
+                repurpose_notes=str(payload.get("repurpose_notes", "")).strip(),
             )
         except (ValidationError, ValueError, TypeError):
             logger.warning("Skipping invalid content decision: %s", payload)
             return None
 
     def _fallback_decisions(self, products_data: dict[str, Any]) -> list[ContentDecision]:
+        """Generate fallback decisions with authority-building framing.
+
+        Products are used as proof points for consulting expertise,
+        not as the primary pitch.
+        """
         products = products_data.get("products", {})
         if not isinstance(products, dict):
             products = {}
 
+        # Authority-framing fallback: one LinkedIn builder story per product
         decisions: list[ContentDecision] = []
-        for index, (product_key, product_data) in enumerate(products.items(), start=1):
-            platform = Platform.LINKEDIN
-            if isinstance(product_data, dict):
-                platforms_raw = product_data.get("platforms", [])
-                if isinstance(platforms_raw, list) and platforms_raw:
-                    candidate = str(platforms_raw[0]).strip().lower()
-                    platform = self._PLATFORM_ALIASES.get(candidate, Platform.LINKEDIN)
-
+        for index, (product_key, _product_data) in enumerate(products.items(), start=1):
             decisions.append(
                 ContentDecision(
                     product=product_key,
-                    platform=platform,
+                    platform=Platform.LINKEDIN,
                     content_type=ContentType.TUTORIAL,
-                    topic=f"{product_key.capitalize()} quick-start tutorial",
-                    reasoning="Fallback strategy prioritizes evergreen educational content.",
+                    content_pillar="builder_stories",
+                    topic=f"What I learned building {product_key.capitalize()} — lessons for AI teams",
+                    hook=f"I built {product_key.capitalize()} from scratch. Here's what surprised me.",
+                    framework="original",
+                    reasoning="Fallback strategy: builder stories demonstrate consulting expertise.",
                     priority=min(index, 3),
                     estimated_engagement="medium",
                 )
@@ -541,8 +596,11 @@ class MarketingAgent(BaseAgent):
                 product="pilaster",
                 platform=Platform.LINKEDIN,
                 content_type=ContentType.TUTORIAL,
-                topic="How to start with Pilaster in 10 minutes",
-                reasoning="Cold-start fallback when config/model output is unavailable.",
+                content_pillar="builder_stories",
+                topic="What I learned building 3 AI products — patterns every team should know",
+                hook="I built 3 AI products in production. Here's what I wish someone told me.",
+                framework="original",
+                reasoning="Cold-start fallback: builder story as consulting proof point.",
                 priority=1,
                 estimated_engagement="medium",
             )
@@ -554,12 +612,16 @@ class MarketingAgent(BaseAgent):
         decision: ContentDecision,
         knowledge: dict[str, str],
         products: dict[str, Any],
+        brand: dict[str, Any] | None = None,
     ) -> tuple[str, str]:
-        platform_guidelines = knowledge.get(
-            "platforms",
-            "Use concise, value-first content with a clear CTA.",
-        )
-        product_info = self._product_info(decision.product, products)
+        """Generate content text for a decision using authority-building prompts.
+
+        Uses Camilo's voice, brand positioning, and anti-patterns from brand.yaml.
+        Falls back to template text when API key is unavailable.
+        """
+        brand = brand or {}
+        products_dict = products.get("products", {})
+        product_info = format_product_info(decision.product, products_dict)
 
         if not self.config.anthropic_api_key:
             fallback_text = self._fallback_content_text(decision)
@@ -568,13 +630,15 @@ class MarketingAgent(BaseAgent):
             ), "template-fallback"
 
         system_prompt = SONNET_CONTENT_PROMPT.format(
-            product=decision.product,
-            platform=decision.platform.value,
-            content_type=decision.content_type.value,
             topic=decision.topic,
+            content_pillar=decision.content_pillar,
+            hook=decision.hook or "(generate an engaging hook)",
+            framework=decision.framework,
             reasoning=decision.reasoning,
-            platform_guidelines=platform_guidelines,
+            voice=format_voice(brand),
+            positioning=format_positioning(brand),
             product_info=product_info,
+            anti_patterns=format_anti_patterns(brand),
         )
 
         response = self.claude.call(
@@ -593,53 +657,40 @@ class MarketingAgent(BaseAgent):
         return self._enforce_platform_limit(text, decision.platform), self.config.sonnet_model
 
     def _product_info(self, product_key: str, products_data: dict[str, Any]) -> str:
+        """Legacy product info helper — delegates to format_product_info."""
         products = products_data.get("products", {})
         if not isinstance(products, dict):
             return "No product details available."
-
-        product = products.get(product_key, {})
-        if not isinstance(product, dict):
-            return "No product details available."
-
-        name = str(product.get("name", product_key)).strip()
-        tagline = str(product.get("tagline", "")).strip()
-        description = str(product.get("description", "")).strip()
-        audience = str(product.get("audience", "")).strip()
-        pain_point = str(product.get("pain_point", "")).strip()
-
-        return "\n".join(
-            [
-                f"Name: {name}",
-                f"Tagline: {tagline or 'N/A'}",
-                f"Description: {description or 'N/A'}",
-                f"Audience: {audience or 'N/A'}",
-                f"Pain point: {pain_point or 'N/A'}",
-            ]
-        )
+        return format_product_info(product_key, products)
 
     def _fallback_content_text(self, decision: ContentDecision) -> str:
+        """Generate fallback content with authority-building voice."""
+        hook = decision.hook or decision.topic
+
         if decision.platform is Platform.TWITTER:
             return (
-                f"{decision.topic}\n\n"
-                f"Built for {decision.product} users: one practical step you can apply today.\n"
-                "Reply with your biggest blocker and I will share a tailored walkthrough."
+                f"{hook}\n\n"
+                f"I learned this building {decision.product}. "
+                "One pattern that transfers to any AI team."
             )
 
         if decision.platform is Platform.LINKEDIN:
             return (
-                f"Most teams overcomplicate {decision.topic.lower()}.\n\n"
-                f"Here is a practical framework we use in {decision.product}:\n"
-                "1) Start with the fastest testable workflow\n"
-                "2) Capture the baseline result\n"
-                "3) Improve one variable per iteration\n\n"
-                "Which step slows your team down the most?"
+                f"{hook}\n\n"
+                f"I built {decision.product} from scratch. "
+                "Here's the framework that actually worked:\n\n"
+                "1) Start with the smallest testable workflow\n"
+                "2) Measure the baseline before optimizing\n"
+                "3) Change one variable per iteration\n\n"
+                "Most teams skip step 2. That's where the expensive mistakes happen.\n\n"
+                "What's the biggest bottleneck in your AI implementation?"
             )
 
         return (
-            f"{decision.topic}\n\n"
-            f"Practical insight for {decision.product}: focus on one repeatable action "
-            "you can apply this week.\n"
-            "Save this and try it today."
+            f"{hook}\n\n"
+            f"Building {decision.product} taught me this: focus on one repeatable pattern "
+            "and get it right before scaling.\n\n"
+            "What are you building?"
         )
 
     def _enforce_platform_limit(self, text: str, platform: Platform) -> str:

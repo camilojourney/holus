@@ -150,6 +150,67 @@ def test_content_decision_from_dict() -> None:
     assert decision.platform == Platform.LINKEDIN
 
 
+def test_content_decision_authority_fields() -> None:
+    """ContentDecision accepts authority-engine fields."""
+    decision = ContentDecision(
+        product="pilaster",
+        platform=Platform.LINKEDIN,
+        content_type=ContentType.TUTORIAL,
+        content_pillar="builder_stories",
+        topic="What I learned building Pilaster",
+        hook="I built an AI image platform from scratch.",
+        framework="builder_journey",
+        reasoning="Builder stories resonate with consulting prospects",
+        repurpose_notes="Good for Twitter thread",
+    )
+
+    assert decision.content_pillar == "builder_stories"
+    assert decision.hook == "I built an AI image platform from scratch."
+    assert decision.framework == "builder_journey"
+    assert decision.repurpose_notes == "Good for Twitter thread"
+
+
+def test_content_decision_authority_defaults() -> None:
+    """ContentDecision has sensible defaults for authority fields."""
+    decision = ContentDecision(
+        product="genpeli",
+        content_type=ContentType.DEMO,
+        topic="Video editing automation",
+        reasoning="Test",
+    )
+
+    assert decision.platform == Platform.LINKEDIN  # default
+    assert decision.content_pillar == "builder_stories"  # default
+    assert decision.hook == ""  # default
+    assert decision.framework == "original"  # default
+    assert decision.repurpose_notes == ""  # default
+
+
+def test_content_decision_authority_serialization() -> None:
+    """ContentDecision authority fields serialize correctly."""
+    decision = ContentDecision(
+        product="invoz",
+        content_type=ContentType.EDUCATIONAL,
+        content_pillar="ai_frameworks",
+        topic="Whisper in production",
+        hook="Most Whisper tutorials skip the hard part.",
+        framework="contrarian_opener",
+        reasoning="Framework content for consulting prospects",
+        repurpose_notes="Condense for Twitter",
+    )
+
+    data = decision.model_dump(mode="json")
+    assert data["content_pillar"] == "ai_frameworks"
+    assert data["hook"] == "Most Whisper tutorials skip the hard part."
+    assert data["framework"] == "contrarian_opener"
+    assert data["repurpose_notes"] == "Condense for Twitter"
+
+    # Roundtrip
+    restored = ContentDecision(**data)
+    assert restored.content_pillar == decision.content_pillar
+    assert restored.hook == decision.hook
+
+
 # ---------------------------------------------------------------------------
 # GeneratedPiece Tests
 # ---------------------------------------------------------------------------
