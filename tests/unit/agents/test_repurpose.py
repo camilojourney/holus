@@ -63,7 +63,9 @@ def mock_claude_client() -> MagicMock:
         if prompt and hasattr(prompt, "system_prompt"):
             sp = prompt.system_prompt
             if "Twitter" in sp:
-                return _make_claude_response("I built Pilaster from scratch. The lesson: start small.")
+                return _make_claude_response(
+                    "I built Pilaster from scratch. The lesson: start small."
+                )
             if "Instagram" in sp:
                 return _make_claude_response(
                     "I built Pilaster from scratch.\n\n"
@@ -71,7 +73,9 @@ def mock_claude_client() -> MagicMock:
                     "#AI #Builder #Pilaster"
                 )
             if "Threads" in sp:
-                return _make_claude_response("Honestly, building Pilaster taught me one thing: start small.")
+                return _make_claude_response(
+                    "Honestly, building Pilaster taught me one thing: start small."
+                )
             if "Facebook" in sp:
                 return _make_claude_response(
                     "I built Pilaster from scratch and it changed how I think about AI.\n\n"

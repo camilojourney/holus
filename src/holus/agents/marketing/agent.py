@@ -267,14 +267,14 @@ class MarketingAgent(BaseAgent):
         trending = [i.topic for i in insights if i.topic][:5]
         angles = [i.relevance_to_camilo for i in insights if i.relevance_to_camilo][:5]
 
-        result = NicheResearchResult(
+        research_result = NicheResearchResult(
             queries_run=queries,
             insights=insights,
             trending_topics=trending,
             recommended_angles=angles,
             research_duration_ms=elapsed_ms,
         )
-        return result.model_dump(mode="json")
+        return research_result.model_dump(mode="json")
 
     def _parse_research_queries(self) -> dict[str, Any]:
         """Parse the YAML block from niche-research-queries.md."""

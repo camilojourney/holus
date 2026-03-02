@@ -12,40 +12,40 @@ install:
 # -- Run ---------------------------------------------------------------------
 
 run:
-    python -m holus
+    uv run python -m holus
 
 run-agent agent:
-    python -m holus agent start {{agent}}
+    uv run python -m holus agent start {{agent}}
 
 run-all:
-    python -m holus agent start --all
+    uv run python -m holus agent start --all
 
 # -- Test --------------------------------------------------------------------
 
 test:
-    pytest tests/ -x -v
+    uv run pytest tests/ -x -v
 
 test-unit:
-    pytest tests/unit/ -x -v
+    uv run pytest tests/unit/ -x -v
 
 test-integration:
-    pytest tests/integration/ -x -v
+    uv run pytest tests/integration/ -x -v
 
 test-cov:
-    pytest tests/ --cov=src/holus --cov-report=term-missing --cov-report=html
+    uv run pytest tests/ --cov=src/holus --cov-report=term-missing --cov-report=html
 
 # -- Code Quality ------------------------------------------------------------
 
 lint:
-    ruff check src/ tests/
-    mypy src/
+    uv run ruff check src/ tests/
+    uv run mypy src/
 
 format:
-    ruff format src/ tests/
-    ruff check src/ tests/ --fix
+    uv run ruff format src/ tests/
+    uv run ruff check src/ tests/ --fix
 
 format-check:
-    ruff format src/ tests/ --check
+    uv run ruff format src/ tests/ --check
 
 check: lint format-check test
 
@@ -76,35 +76,35 @@ clean:
 # -- Marketing Agent ---------------------------------------------------------
 
 run-marketing:
-    python -m holus run marketing --once
+    uv run python -m holus run marketing --once
 
 # Review pending social media content
 review-content:
-    python -m holus.agents.marketing.review
+    uv run python -m holus.agents.marketing.review
 
 # Approve a content piece for publishing
 approve-content piece_id:
-    python -m holus.agents.marketing.review --approve {{piece_id}}
+    uv run python -m holus.agents.marketing.review --approve {{piece_id}}
 
 # Reject a content piece
 reject-content piece_id reason="":
-    python -m holus.agents.marketing.review --reject {{piece_id}} --reason "{{reason}}"
+    uv run python -m holus.agents.marketing.review --reject {{piece_id}} --reason "{{reason}}"
 
 # Publish all approved content to social media
 publish-approved:
-    python -m holus.agents.marketing.publish_approved
+    uv run python -m holus.agents.marketing.publish_approved
 
 # Review pending videos
 review-videos:
-    python -m holus.agents.marketing.review_videos
+    uv run python -m holus.agents.marketing.review_videos
 
 # Approve a video for Genpeli delivery
 approve-video piece_id:
-    python -m holus.agents.marketing.review_videos --approve {{piece_id}}
+    uv run python -m holus.agents.marketing.review_videos --approve {{piece_id}}
 
 # Reject a video
 reject-video piece_id reason="":
-    python -m holus.agents.marketing.review_videos --reject {{piece_id}} --reason "{{reason}}"
+    uv run python -m holus.agents.marketing.review_videos --reject {{piece_id}} --reason "{{reason}}"
 
 # -- Autonomous Build Sprint (cron-based) -----------------------------------
 
@@ -199,7 +199,7 @@ schedule-status:
 # -- Health ------------------------------------------------------------------
 
 health:
-    python -m holus health
+    uv run python -m holus health
 
 # -- Self-Improvement --------------------------------------------------------
 

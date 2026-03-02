@@ -147,9 +147,7 @@ async def repurpose_content(
         )
         pieces.append(piece)
 
-    logger.info(
-        "Repurposed LinkedIn post to %d secondary platforms", len(pieces)
-    )
+    logger.info("Repurposed LinkedIn post to %d secondary platforms", len(pieces))
     return pieces
 
 
