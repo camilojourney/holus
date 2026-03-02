@@ -1,0 +1,289 @@
+# Holus — Brand Identity
+# The foundational "who is Camilo" file. Loaded into every marketing agent cycle.
+# This file defines the identity, positioning, and voice that ALL content must reflect.
+# Last updated: 2026-03-01
+# Status: SCAFFOLD — sections marked TODO need Camilo's input before launch.
+
+# ─── STORY ───────────────────────────────────────────────────────────────────
+
+story:
+  origin: >
+    Colombian AI engineer who moved to NYC and built 3 production AI products
+    while studying at one of the most competitive universities in the city.
+    Not a consultant who reads slides — a builder who ships.
+  journey:
+    - "Built Pilaster — an AI image generation platform with memory (character registry, backend-agnostic generation, experiment tracking)"
+    - "Built genpeli — automated video editing pipeline (silence removal, caption burning, audio normalization)"
+    - "Built invoz — Whisper-powered audio ML API (transcription, diarization, silence detection)"
+    - "Built holus — AI marketing orchestrator that runs the content engine autonomously"
+  turning_point: >
+    Realized that building AI products is only half the equation.
+    Companies need someone who's done it to guide their transformation.
+    The shift from "I build AI tools" to "I help companies build with AI."
+  # TODO: Camilo input needed — what specific moment triggered the consulting pivot?
+  # Was it a conversation, a client request, a realization? The real story matters.
+
+# ─── POSITIONING ─────────────────────────────────────────────────────────────
+
+positioning:
+  one_liner: "I build AI systems that actually work in production. I help companies do the same."
+  category: "AI implementation consultant / technical founder"
+  differentiation:
+    - "Builder, not advisor — I ship code, not slide decks"
+    - "Multi-product track record — 3 production AI systems, not just POCs"
+    - "Full-stack AI — from ML models to deployment to monitoring"
+    - "Practitioner perspective — I know what breaks at 3am"
+  what_i_am:
+    - "A builder who shows the work"
+    - "A technical founder with production experience"
+    - "Someone who helps companies skip the expensive mistakes"
+  what_i_am_not:
+    - "Not a guru selling a course"
+    - "Not an AI influencer chasing trends"
+    - "Not 'transform your business with AI in 30 days'"
+    - "Not a consultant who's never built anything"
+  market: "NYC initially, then remote/national"
+
+# ─── THE OFFER ───────────────────────────────────────────────────────────────
+
+offer:
+  headline: "AI transition consulting for companies that want to ship, not just explore"
+  description: >
+    Help companies integrate AI into their workflows. Pick the right tools,
+    avoid the hype, build internal capability, ship real results.
+  services:
+    - name: "AI Readiness Assessment"
+      description: "Evaluate your team, stack, and workflows. Identify where AI adds real value vs. where it's a distraction."
+      # TODO: Camilo input needed — pricing, duration, deliverables
+    - name: "Implementation Partnership"
+      description: "Hands-on AI integration. I work with your engineering team to build, deploy, and monitor AI systems."
+      # TODO: Camilo input needed — pricing, engagement model (retainer, project-based?)
+    - name: "Architecture Review"
+      description: "Audit your AI infrastructure. Identify bottlenecks, security risks, scaling issues. Actionable recommendations."
+      # TODO: Camilo input needed — is this a standalone offering or part of the above?
+  # TODO: Camilo input needed — which of these services is the entry point?
+  # What's the discovery call → engagement pipeline look like?
+  cta:
+    primary: "DM me on LinkedIn"
+    secondary: "Book a discovery call"
+    # TODO: Camilo input needed — discovery call link (Calendly or similar)
+
+# ─── TARGET CLIENT ───────────────────────────────────────────────────────────
+
+target_client:
+  primary:
+    title: "CTO / VP Engineering / Technical Founder"
+    company_size: "50-500 employees"
+    industry: "Tech-adjacent companies considering AI transformation"
+    geography: "NYC metro (initially), then remote"
+    pain_points:
+      - "Board is asking about AI strategy but team doesn't know where to start"
+      - "Tried ChatGPT / Copilot but can't get from POC to production"
+      - "Hiring an AI team is expensive and slow — need someone who's done it"
+      - "Overwhelmed by vendor pitches, need a practitioner's perspective"
+    triggers:
+      - "Just got budget approval for AI initiatives"
+      - "Competitor launched an AI feature"
+      - "New CTO/VP who wants to modernize"
+      - "Failed AI POC, need someone to diagnose what went wrong"
+    where_they_are:
+      - "LinkedIn (primary — this is where they read and engage)"
+      - "Industry conferences and meetups (NYC)"
+      - "Slack communities (AI/ML channels)"
+    # TODO: Camilo input needed — any specific companies or verticals to focus on?
+    # Finance? Healthcare? E-commerce? Media? What verticals has Camilo worked in?
+
+  secondary:
+    - audience: "AI artists and image generation users"
+      role: "Brand building, not consulting pipeline"
+      product: "pilaster"
+    - audience: "Content creators and video editors"
+      role: "Brand building, not consulting pipeline"
+      product: "genpeli"
+    - audience: "Developers building audio-first apps"
+      role: "Brand building, not consulting pipeline"
+      product: "invoz"
+
+# ─── PRODUCTS AS PROOF ───────────────────────────────────────────────────────
+
+products_as_proof:
+  framing: >
+    Products are evidence of builder expertise. Every product story is a
+    consulting proof point: "I did this myself. I can help you do it too."
+
+  pilaster:
+    proof_narrative: "I built an AI image platform with memory. Here's what I learned about production AI systems."
+    consulting_angle: "Character consistency, experiment tracking, backend abstraction — the patterns transfer to any AI deployment."
+    key_stories:
+      - "How I made AI image generation backend-agnostic (and why your AI stack should be too)"
+      - "The experiment memory pattern — why every AI system needs to remember what works"
+      - "From ComfyUI nodes to production API — the abstraction that changed everything"
+
+  genpeli:
+    proof_narrative: "I automated my video editing pipeline. Here's the architecture."
+    consulting_angle: "Workflow automation, Whisper integration, processing pipelines — real production AI, not demos."
+    key_stories:
+      - "How I replaced 4 hours of video editing with one command"
+      - "Whisper in production — the lessons nobody talks about"
+      - "Building an AI pipeline that handles edge cases (not just the happy path)"
+
+  invoz:
+    proof_narrative: "I built an audio ML API. Here's how Whisper works in production."
+    consulting_angle: "API design, ML model serving, production reliability — the engineering behind the magic."
+    key_stories:
+      - "Why Whisper setup is painful and how to fix it"
+      - "Speaker diarization in the real world — it's harder than the demos suggest"
+      - "Building an ML API that developers actually want to use"
+
+  # TODO: Camilo input needed — which product stories resonate most?
+  # Which ones have gotten the best reaction when told in person?
+
+# ─── VOICE ───────────────────────────────────────────────────────────────────
+# Derived from analysis of 15 published posts (see knowledge/current/voice-profile.md)
+
+voice:
+  archetype: "Builder-philosopher"
+  summary: >
+    Direct, intellectually honest, first-person narratives that connect
+    personal experience to bigger patterns. Confident but not arrogant.
+    Shows the work, admits the uncertainty.
+
+  tone:
+    - "First person always — 'I built', 'I learned', 'I realized'"
+    - "Short paragraphs — 1-3 sentences max"
+    - "Arrow bullets (→) for technical lists"
+    - "One paradox or inversion per post"
+    - "Close with a direct question or forward-looking statement"
+    - "Contractions always — don't, won't, that's"
+    - "Em-dashes for asides"
+    - "Ground claims in evidence — data, names, research"
+    - "Confident but honest — builder, not guru"
+
+  hooks:
+    contrarian: "Most people are playing with AI. A few are building with it."
+    confession: "I used to believe the formula was simple..."
+    bold_claim: "The AI OS doesn't replace you. It amplifies the ratio of output-per-hour."
+    observation: "We talk a lot about echo chambers. But the one I didn't notice was my own."
+
+  closers:
+    question: "What would you build if you had 4x the output capacity?"
+    forward: "Still early. Still messy. But that's exactly why it's interesting."
+    aphorism: "The co-pilot helps you fly. But you still need a crew."
+    one_word: "Building."
+
+  language:
+    primary: "en"
+    secondary: "es"
+    spanish_register: "tu (informal)"
+    spanish_note: "Translate concepts, not words. Technical terms stay in English when natural."
+
+# ─── ANTI-PATTERNS ───────────────────────────────────────────────────────────
+# Content that should NEVER be generated. Hard rules.
+
+anti_patterns:
+  language:
+    - "leverage synergies"
+    - "drive engagement"
+    - "unlock potential"
+    - "game-changing"
+    - "revolutionary"
+    - "transformative (without evidence)"
+    - "Let's dive in!"
+    - "In today's fast-paced world"
+    - "Here's the thing"
+    - "Great question!"
+    - "Furthermore / Additionally / Moreover"
+  style:
+    - "Walls of text (>3 sentences per paragraph)"
+    - "Passive voice ('this was built' instead of 'I built this')"
+    - "Exclamation marks (confidence doesn't shout)"
+    - "Heavy emoji usage"
+    - "Listicle titles ('5 Ways AI Will Change Your Life')"
+    - "Sycophantic openings"
+  content:
+    - "Financial advice or investment decisions"
+    - "Trading content (pythia/milo are isolated systems, never referenced)"
+    - "Unsubstantiated claims about AI capabilities"
+    - "Attacking competitors by name"
+    - "Political content unrelated to AI/tech"
+    - "Personal information about clients or prospects"
+
+# ─── COMPETITOR ACCOUNTS ─────────────────────────────────────────────────────
+# Accounts to study for patterns, hooks, and what's working in the niche.
+# NOT to copy — to learn frameworks and adapt them.
+
+competitor_accounts:
+  # TODO: Camilo input needed — who does he follow, who's doing this well?
+  # Fill in real accounts that resonate with the positioning.
+  linkedin:
+    - handle: ""  # TODO: Camilo input needed
+      why: "Similar positioning — AI builder turned consultant"
+    - handle: ""  # TODO: Camilo input needed
+      why: "Great hook patterns and engagement"
+    - handle: ""  # TODO: Camilo input needed
+      why: "Technical content that gets executive engagement"
+  twitter:
+    - handle: ""  # TODO: Camilo input needed
+      why: "AI builder with strong following"
+  # Categories to search for if no specific accounts:
+  search_categories:
+    - "AI consultants who build in public"
+    - "Technical founders doing LinkedIn thought leadership"
+    - "AI implementation consultants (not just strategy)"
+    - "Builder-first content creators in AI space"
+
+# ─── CONTENT PILLARS ─────────────────────────────────────────────────────────
+# The 5 themes all content should fall into.
+
+content_pillars:
+  - id: "builder_stories"
+    name: "Builder Stories"
+    description: "I built X, here's what I learned"
+    frequency: "2x/week"
+    products: ["pilaster", "genpeli", "invoz"]
+    goal: "Demonstrate expertise through real experience"
+
+  - id: "ai_frameworks"
+    name: "AI Implementation Frameworks"
+    description: "How to actually deploy AI in your company"
+    frequency: "1x/week"
+    products: []  # Product-agnostic, consulting-focused
+    goal: "Provide actionable value to consulting prospects"
+
+  - id: "industry_analysis"
+    name: "Industry Analysis"
+    description: "What's working in AI right now and what's hype"
+    frequency: "1x/week"
+    products: []
+    goal: "Position as someone who sees the full landscape"
+
+  - id: "results_proof"
+    name: "Results & Proof"
+    description: "Real numbers, real architectures, real outcomes"
+    frequency: "0.5x/week"
+    products: ["pilaster", "genpeli", "invoz"]
+    goal: "Back up authority with evidence"
+
+  - id: "contrarian_takes"
+    name: "Contrarian Takes"
+    description: "Everyone's doing X wrong. Here's why."
+    frequency: "0.5x/week"
+    products: []
+    goal: "Stand out, spark discussion, demonstrate independent thinking"
+
+# ─── PLATFORM STRATEGY ───────────────────────────────────────────────────────
+
+platform_strategy:
+  primary: "linkedin"
+  cadence:
+    linkedin: "5x/week"
+    twitter: "3x/week (repurposed)"
+    instagram: "2x/week (repurposed)"
+    threads: "2x/week (repurposed)"
+    facebook: "1x/week (bilingual ES)"
+  flow: >
+    LinkedIn post (primary, optimized for algorithm)
+    → Twitter (condensed, more direct)
+    → Instagram (visual version or condensed caption)
+    → Threads (conversational version)
+    → Facebook (bilingual ES if applicable)
