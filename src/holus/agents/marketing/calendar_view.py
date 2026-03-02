@@ -160,12 +160,8 @@ def _show_summary(console: Console, all_items: list[dict[str, Any]]) -> None:
 def main() -> None:
     """CLI entry point for content calendar."""
     parser = argparse.ArgumentParser(description="Content calendar view")
-    parser.add_argument(
-        "--weeks", type=int, default=1, help="Number of weeks to show (default: 1)"
-    )
-    parser.add_argument(
-        "--all", action="store_true", help="Show all content regardless of date"
-    )
+    parser.add_argument("--weeks", type=int, default=1, help="Number of weeks to show (default: 1)")
+    parser.add_argument("--all", action="store_true", help="Show all content regardless of date")
 
     args = parser.parse_args()
 

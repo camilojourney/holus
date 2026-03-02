@@ -338,9 +338,7 @@ class TestGetAnalytics:
 
             assert result["total_posts"] == 15
             assert "platforms" in result
-            mock_httpx_client.get.assert_called_once_with(
-                "/api/analytics", params={"days": 7}
-            )
+            mock_httpx_client.get.assert_called_once_with("/api/analytics", params={"days": 7})
 
     @pytest.mark.asyncio
     async def test_get_analytics_with_platform_filter(self, client, mock_httpx_client):

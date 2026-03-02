@@ -86,7 +86,7 @@ class NoFootageError(Exception):
 class GenpeliClient:
     """Async HTTP client for the Genpeli REST API.
 
-    Follows the same context-manager pattern as LateAPIClient.
+    Follows the same async context-manager pattern as SocialMediaClient.
     """
 
     def __init__(

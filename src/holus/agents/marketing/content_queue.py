@@ -134,7 +134,7 @@ def mark_published(piece_id: str, post_id: str) -> None:
 
     Args:
         piece_id: ID of the content piece
-        post_id: Post ID returned by Late API
+        post_id: Post ID returned by the social-media API
     """
     path = QUEUE_DIR / f"{piece_id}.yaml"
     if not path.exists():

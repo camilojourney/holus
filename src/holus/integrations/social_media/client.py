@@ -1,7 +1,7 @@
 """Client for the social-media-automatization local API.
 
-Replaces the Late API client for publishing. Calls the FastAPI server at
-http://localhost:8000 (or SOCIAL_MEDIA_API_BASE_URL).
+Calls the FastAPI server at http://localhost:8000 (or SOCIAL_MEDIA_API_BASE_URL).
+Handles publishing, analytics, and top-posts queries.
 
 The server accepts POST /api/publish and returns 202 Accepted with a
 publish_id and per-target status. Publishing is async on the server side.

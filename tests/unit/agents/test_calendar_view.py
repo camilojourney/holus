@@ -37,22 +37,26 @@ class TestListAll:
         queue_dir.mkdir()
 
         (queue_dir / "abc.yaml").write_text(
-            yaml.dump({
-                "piece_id": "abc12345",
-                "product": "pilaster",
-                "platform": "linkedin",
-                "status": "pending_review",
-                "topic": "Test topic",
-            })
+            yaml.dump(
+                {
+                    "piece_id": "abc12345",
+                    "product": "pilaster",
+                    "platform": "linkedin",
+                    "status": "pending_review",
+                    "topic": "Test topic",
+                }
+            )
         )
         (queue_dir / "def.yaml").write_text(
-            yaml.dump({
-                "piece_id": "def67890",
-                "product": "genpeli",
-                "platform": "twitter",
-                "status": "approved",
-                "topic": "Another topic",
-            })
+            yaml.dump(
+                {
+                    "piece_id": "def67890",
+                    "product": "genpeli",
+                    "platform": "twitter",
+                    "status": "approved",
+                    "topic": "Another topic",
+                }
+            )
         )
 
         result = list_all(queue_dir)
@@ -148,15 +152,17 @@ class TestDisplayCalendar:
 
         now = datetime.now(tz=UTC)
         (content_dir / "piece1.yaml").write_text(
-            yaml.dump({
-                "piece_id": "abc12345",
-                "product": "pilaster",
-                "platform": "linkedin",
-                "content_type": "tutorial",
-                "topic": "Test tutorial post",
-                "status": "pending_review",
-                "generated_at": now.isoformat(),
-            })
+            yaml.dump(
+                {
+                    "piece_id": "abc12345",
+                    "product": "pilaster",
+                    "platform": "linkedin",
+                    "content_type": "tutorial",
+                    "topic": "Test tutorial post",
+                    "status": "pending_review",
+                    "generated_at": now.isoformat(),
+                }
+            )
         )
 
         display_calendar(
@@ -181,15 +187,17 @@ class TestDisplayCalendar:
         now = datetime.now(tz=UTC)
         for i, status in enumerate(["pending_review", "approved", "published", "rejected"]):
             (content_dir / f"piece{i}.yaml").write_text(
-                yaml.dump({
-                    "piece_id": f"id{i:06d}",
-                    "product": "pilaster",
-                    "platform": "linkedin",
-                    "content_type": "tutorial",
-                    "topic": f"Topic {status}",
-                    "status": status,
-                    "generated_at": now.isoformat(),
-                })
+                yaml.dump(
+                    {
+                        "piece_id": f"id{i:06d}",
+                        "product": "pilaster",
+                        "platform": "linkedin",
+                        "content_type": "tutorial",
+                        "topic": f"Topic {status}",
+                        "status": status,
+                        "generated_at": now.isoformat(),
+                    }
+                )
             )
 
         display_calendar(
@@ -214,15 +222,17 @@ class TestDisplayCalendar:
 
         old_date = datetime.now(tz=UTC) - timedelta(weeks=3)
         (content_dir / "old.yaml").write_text(
-            yaml.dump({
-                "piece_id": "old12345",
-                "product": "pilaster",
-                "platform": "linkedin",
-                "content_type": "tutorial",
-                "topic": "Old topic",
-                "status": "published",
-                "generated_at": old_date.isoformat(),
-            })
+            yaml.dump(
+                {
+                    "piece_id": "old12345",
+                    "product": "pilaster",
+                    "platform": "linkedin",
+                    "content_type": "tutorial",
+                    "topic": "Old topic",
+                    "status": "published",
+                    "generated_at": old_date.isoformat(),
+                }
+            )
         )
 
         display_calendar(
@@ -244,15 +254,17 @@ class TestDisplayCalendar:
 
         now = datetime.now(tz=UTC)
         (video_dir / "vid1.yaml").write_text(
-            yaml.dump({
-                "piece_id": "vid12345",
-                "product": "genpeli",
-                "platform": "tiktok",
-                "content_type": "video_reel",
-                "topic": "Video demo",
-                "status": "pending_review",
-                "generated_at": now.isoformat(),
-            })
+            yaml.dump(
+                {
+                    "piece_id": "vid12345",
+                    "product": "genpeli",
+                    "platform": "tiktok",
+                    "content_type": "video_reel",
+                    "topic": "Video demo",
+                    "status": "pending_review",
+                    "generated_at": now.isoformat(),
+                }
+            )
         )
 
         display_calendar(
@@ -311,9 +323,7 @@ class TestMain:
     """Test CLI entry point."""
 
     def test_default_weeks(self):
-        with patch(
-            "holus.agents.marketing.calendar_view.display_calendar"
-        ) as mock_display:
+        with patch("holus.agents.marketing.calendar_view.display_calendar") as mock_display:
             with patch("sys.argv", ["calendar_view"]):
                 from holus.agents.marketing.calendar_view import main
 
@@ -321,9 +331,7 @@ class TestMain:
             mock_display.assert_called_once_with(weeks=1)
 
     def test_custom_weeks(self):
-        with patch(
-            "holus.agents.marketing.calendar_view.display_calendar"
-        ) as mock_display:
+        with patch("holus.agents.marketing.calendar_view.display_calendar") as mock_display:
             with patch("sys.argv", ["calendar_view", "--weeks", "4"]):
                 from holus.agents.marketing.calendar_view import main
 
@@ -331,9 +339,7 @@ class TestMain:
             mock_display.assert_called_once_with(weeks=4)
 
     def test_all_flag(self):
-        with patch(
-            "holus.agents.marketing.calendar_view.display_calendar"
-        ) as mock_display:
+        with patch("holus.agents.marketing.calendar_view.display_calendar") as mock_display:
             with patch("sys.argv", ["calendar_view", "--all"]):
                 from holus.agents.marketing.calendar_view import main
 

@@ -4,7 +4,7 @@ Four-stage pipeline:
   1. text_generator   -- Sonnet produces article/post text.
   2. image_generator  -- ComfyUI or Replicate generates visuals.
   3. video_generator  -- Kling AI + ElevenLabs + Creatomate for video.
-  4. distributor      -- Late API publishes to 13+ platforms.
+  4. distributor      -- Social-media API publishes to platforms.
 
 Performance feedback is stored in Mem0 and feeds back into strategy.
 """
@@ -160,7 +160,7 @@ def video_generator(state: ContentState) -> dict[str, Any]:
 
 
 def distributor(state: ContentState) -> dict[str, Any]:
-    """Distribute content to platforms via Late API."""
+    """Distribute content to platforms via social-media API."""
 
     brief = state["content_brief"]
     text = state.get("text_output", "")
@@ -172,7 +172,7 @@ def distributor(state: ContentState) -> dict[str, Any]:
             "messages": [{"node": "distributor", "output": "Skipped"}],
         }
 
-    # In production, this calls the Late API client
+    # In production, this calls the social-media API client
     # For now, log the distribution intent
     result = {
         "status": "queued",
@@ -186,7 +186,7 @@ def distributor(state: ContentState) -> dict[str, Any]:
 
     return {
         "distribution_result": result,
-        "post_ids": [],  # Populated by Late API response
+        "post_ids": [],  # Populated by social-media API response
         "messages": [{"node": "distributor", "output": result}],
     }
 

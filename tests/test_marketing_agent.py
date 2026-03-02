@@ -322,9 +322,7 @@ async def test_observe_fetches_analytics_when_configured(marketing_agent, mock_c
     mock_analytics = {"total_posts": 10, "success_rate": 0.9}
     mock_top_posts = {"posts": [{"id": 1, "content": "Top post"}]}
 
-    with patch(
-        "holus.agents.marketing.agent.SocialMediaClient"
-    ) as mock_client_cls:
+    with patch("holus.agents.marketing.agent.SocialMediaClient") as mock_client_cls:
         mock_client = AsyncMock()
         mock_client.get_analytics = AsyncMock(return_value=mock_analytics)
         mock_client.get_top_posts = AsyncMock(return_value=mock_top_posts)
@@ -358,13 +356,9 @@ async def test_observe_analytics_graceful_degradation(marketing_agent, mock_conf
     mock_config.posting_api_key = "test-posting-key"
     mock_config.social_media_api_base_url = "http://localhost:8000"
 
-    with patch(
-        "holus.agents.marketing.agent.SocialMediaClient"
-    ) as mock_client_cls:
+    with patch("holus.agents.marketing.agent.SocialMediaClient") as mock_client_cls:
         mock_client = AsyncMock()
-        mock_client.get_analytics = AsyncMock(
-            side_effect=Exception("Connection refused")
-        )
+        mock_client.get_analytics = AsyncMock(side_effect=Exception("Connection refused"))
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_client_cls.return_value = mock_client
@@ -397,9 +391,7 @@ async def test_fetch_analytics_returns_structured_data(marketing_agent, mock_con
         ],
     }
 
-    with patch(
-        "holus.agents.marketing.agent.SocialMediaClient"
-    ) as mock_client_cls:
+    with patch("holus.agents.marketing.agent.SocialMediaClient") as mock_client_cls:
         mock_client = AsyncMock()
         mock_client.get_analytics = AsyncMock(return_value=mock_analytics)
         mock_client.get_top_posts = AsyncMock(return_value=mock_top_posts)

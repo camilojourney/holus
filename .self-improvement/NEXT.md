@@ -112,10 +112,10 @@ This sprint closes the loop from "system built" to "system producing real output
 
 - [x] [BUILD] Test launchd scheduling — Fixed 3 plists: added EnvironmentVariables (PATH, HOME), switched `.venv/bin/python` to `/opt/homebrew/bin/uv run python`, added `just validate-plists` and `just schedule-test` commands. All plists validated with `plutil -lint`, health check runs successfully. To activate: `just schedule`. (Cycle 45)
 - [x] [BUILD] Add analytics feedback to observe — Added `get_analytics()` and `get_top_posts()` to `SocialMediaClient`. Marketing agent `observe()` now fetches real analytics from social-media API (7-day summary + top 5 posts). Graceful degradation: skips if no API key or API unreachable. 9 new tests (client + agent). 398 total passing. (Cycle 46)
-- [ ] [BUILD] Create weekly content calendar view — `just calendar` shows the week's content plan: what was generated, what's in review, what's published, what's scheduled. Simple CLI table.
+- [x] [BUILD] Create weekly content calendar view — `just calendar` shows content pipeline status: pending review, approved, published, rejected. Reads both content-queue and video-queue. Supports `--weeks N` and `--all` flags. 22 new tests, 420 total. (Cycle 47)
 
 ### P4 — Quality & Cleanup
 
-- [ ] [BUILD] Reconcile agent analytics path — The agent has two analytics sources: Late API `get_all_analytics()` and social-media MCP `get_analytics`. Consolidate to one path (social-media MCP). Remove Late API analytics code.
+- [x] [BUILD] Reconcile agent analytics path — Removed Late API client package, tests, config, knowledge file, and all references. Social-media MCP is now the sole analytics path. 405 tests passing. (Cycle 48)
 - [ ] [REVIEW] Review Sprint 2 module quality — Code review `repurpose.py`, `niche_research` functions in `agent.py`, updated `prompts.py`. Check for: dead code, error handling gaps, missing edge cases. Fix anything found.
 - [ ] [BUILD] Add content quality scoring — Before queuing content for review, run a quick quality check: character limits respected, no anti-pattern language detected, hook present, pillar assigned. Reject low-quality content automatically.
