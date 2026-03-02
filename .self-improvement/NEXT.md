@@ -111,7 +111,7 @@ This sprint closes the loop from "system built" to "system producing real output
 ### P3 — Automation & Feedback Loop
 
 - [x] [BUILD] Test launchd scheduling — Fixed 3 plists: added EnvironmentVariables (PATH, HOME), switched `.venv/bin/python` to `/opt/homebrew/bin/uv run python`, added `just validate-plists` and `just schedule-test` commands. All plists validated with `plutil -lint`, health check runs successfully. To activate: `just schedule`. (Cycle 45)
-- [ ] [BUILD] Add analytics feedback to observe — Connect the marketing agent's observe stage to real analytics data. Use social-media MCP `get_analytics` and `get_top_posts` tools to read performance data. Currently mocked — make it real.
+- [x] [BUILD] Add analytics feedback to observe — Added `get_analytics()` and `get_top_posts()` to `SocialMediaClient`. Marketing agent `observe()` now fetches real analytics from social-media API (7-day summary + top 5 posts). Graceful degradation: skips if no API key or API unreachable. 9 new tests (client + agent). 398 total passing. (Cycle 46)
 - [ ] [BUILD] Create weekly content calendar view — `just calendar` shows the week's content plan: what was generated, what's in review, what's published, what's scheduled. Simple CLI table.
 
 ### P4 — Quality & Cleanup

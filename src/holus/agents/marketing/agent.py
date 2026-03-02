@@ -45,6 +45,7 @@ from holus.agents.marketing.prompts import (
 )
 from holus.agents.marketing.repurpose import repurpose_content
 from holus.integrations.claude_api.client import CachedPrompt
+from holus.integrations.social_media import SocialMediaClient
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
 logger = logging.getLogger(__name__)
@@ -163,13 +164,20 @@ class MarketingAgent(BaseAgent):
         }
 
     async def observe(self, state: MarketingState) -> dict[str, Any]:
-        """Observe phase: load config, knowledge, memory, brand, and niche research."""
+        """Observe phase: load config, knowledge, memory, brand, analytics, and niche research."""
         self.check_kill_switch()
 
         products = self._read_yaml(self._PRODUCTS_PATH)
         knowledge = self._read_knowledge_files(self._KNOWLEDGE_DIR)
         memory_context = self._read_text(self._MEMORY_PATH)
         brand_identity = self._load_brand_identity()
+
+        # Analytics from social-media API (graceful degradation)
+        analytics: dict[str, Any] = {}
+        try:
+            analytics = await self._fetch_analytics()
+        except Exception:
+            logger.warning("Analytics fetch failed; continuing without it", exc_info=True)
 
         # Niche research (graceful degradation)
         niche_research: dict[str, Any] = {}
@@ -182,7 +190,7 @@ class MarketingAgent(BaseAgent):
             "product_updates": products,
             "knowledge": knowledge,
             "memory_context": memory_context,
-            "analytics": state.get("analytics", {}),
+            "analytics": analytics,
             "queue_size_before": len(self._queue_files()),
             "brand_identity": brand_identity,
             "niche_research": niche_research,
@@ -204,6 +212,38 @@ class MarketingAgent(BaseAgent):
         except ValidationError:
             logger.warning("brand.yaml validation failed; using raw dict", exc_info=True)
             return raw
+
+    # -- Analytics fetch --------------------------------------------------------
+
+    _ANALYTICS_LOOKBACK_DAYS = 7
+    _TOP_POSTS_LIMIT = 5
+    _TOP_POSTS_LOOKBACK_DAYS = 30
+
+    async def _fetch_analytics(self) -> dict[str, Any]:
+        """Fetch recent analytics from social-media-automatization API.
+
+        Returns a dict with ``summary`` (aggregate stats) and ``top_posts``
+        (best performing recent posts).  Returns empty dict if the API is
+        unreachable or credentials are missing — the agent continues without
+        analytics (cold start behavior).
+        """
+        if not self.config.posting_api_key:
+            logger.info("Analytics fetch skipped: no POSTING_API_KEY configured")
+            return {}
+
+        async with SocialMediaClient(
+            base_url=self.config.social_media_api_base_url,
+            api_key=self.config.posting_api_key,
+        ) as client:
+            summary = await client.get_analytics(days=self._ANALYTICS_LOOKBACK_DAYS)
+            top_posts = await client.get_top_posts(
+                limit=self._TOP_POSTS_LIMIT,
+                days=self._TOP_POSTS_LOOKBACK_DAYS,
+            )
+            return {
+                "summary": summary,
+                "top_posts": top_posts,
+            }
 
     # -- Niche research sub-step -----------------------------------------------
 

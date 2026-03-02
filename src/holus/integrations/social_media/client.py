@@ -170,6 +170,43 @@ class SocialMediaClient:
         data: dict[str, Any] = response.json()
         return data
 
+    async def get_analytics(
+        self,
+        *,
+        days: int = 7,
+        platform: str | None = None,
+    ) -> dict[str, Any]:
+        """Fetch publishing analytics for recent posts.
+
+        Calls GET /api/analytics on the social-media-automatization server.
+        Returns summary stats: total posts, success rates, per-platform breakdowns.
+        """
+        params: dict[str, Any] = {"days": days}
+        if platform:
+            params["platform"] = platform
+        response = await self.client.get("/api/analytics", params=params)
+        response.raise_for_status()
+        data: dict[str, Any] = response.json()
+        return data
+
+    async def get_top_posts(
+        self,
+        *,
+        limit: int = 10,
+        days: int = 30,
+        metric: str = "recent",
+    ) -> dict[str, Any]:
+        """Fetch top performing published posts.
+
+        Calls GET /api/analytics/top-posts on the social-media-automatization server.
+        Returns posts sorted by the given metric.
+        """
+        params: dict[str, Any] = {"limit": limit, "days": days, "metric": metric}
+        response = await self.client.get("/api/analytics/top-posts", params=params)
+        response.raise_for_status()
+        data: dict[str, Any] = response.json()
+        return data
+
     async def close(self) -> None:
         """Close the HTTP client."""
         await self.client.aclose()

@@ -313,3 +313,105 @@ class TestModels:
         assert req.style == "raw"
         assert req.bilingual is False
         assert req.media_url is None
+
+
+class TestGetAnalytics:
+    """Test analytics fetching."""
+
+    @pytest.mark.asyncio
+    async def test_get_analytics_default(self, client, mock_httpx_client):
+        """Analytics returns summary data with default params."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "total_posts": 15,
+            "success_rate": 0.93,
+            "platforms": {
+                "linkedin": {"posts": 8, "success_rate": 1.0},
+                "twitter": {"posts": 7, "success_rate": 0.86},
+            },
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            result = await client.get_analytics()
+
+            assert result["total_posts"] == 15
+            assert "platforms" in result
+            mock_httpx_client.get.assert_called_once_with(
+                "/api/analytics", params={"days": 7}
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_analytics_with_platform_filter(self, client, mock_httpx_client):
+        """Analytics can filter by platform."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "total_posts": 8,
+            "success_rate": 1.0,
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            result = await client.get_analytics(days=14, platform="linkedin")
+
+            assert result["total_posts"] == 8
+            mock_httpx_client.get.assert_called_once_with(
+                "/api/analytics", params={"days": 14, "platform": "linkedin"}
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_analytics_empty(self, client, mock_httpx_client):
+        """Analytics returns empty when no posts exist."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"total_posts": 0, "platforms": {}}
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            result = await client.get_analytics()
+
+            assert result["total_posts"] == 0
+
+
+class TestGetTopPosts:
+    """Test top posts fetching."""
+
+    @pytest.mark.asyncio
+    async def test_get_top_posts_default(self, client, mock_httpx_client):
+        """Top posts returns list with default params."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "posts": [
+                {"id": 1, "content": "Great post", "platform": "linkedin"},
+                {"id": 2, "content": "Another post", "platform": "twitter"},
+            ],
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            result = await client.get_top_posts()
+
+            assert len(result["posts"]) == 2
+            mock_httpx_client.get.assert_called_once_with(
+                "/api/analytics/top-posts",
+                params={"limit": 10, "days": 30, "metric": "recent"},
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_top_posts_custom_params(self, client, mock_httpx_client):
+        """Top posts respects custom params."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"posts": []}
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            await client.get_top_posts(limit=5, days=7, metric="success_rate")
+
+            mock_httpx_client.get.assert_called_once_with(
+                "/api/analytics/top-posts",
+                params={"limit": 5, "days": 7, "metric": "success_rate"},
+            )

@@ -164,6 +164,8 @@ def mock_config(temp_config_files):
     config.langfuse_public_key = None
     config.langfuse_secret_key = None
     config.langfuse_host = "http://localhost:3001"
+    config.posting_api_key = ""
+    config.social_media_api_base_url = "http://localhost:8000"
 
     agent_config = AgentConfig(
         enabled=True,
@@ -304,6 +306,113 @@ async def test_observe_with_existing_queue_items(marketing_agent, temp_config_fi
     result = await marketing_agent.observe(state)
 
     assert result["queue_size_before"] == 3
+
+
+# ---------------------------------------------------------------------------
+# Test Analytics in Observe Stage
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_observe_fetches_analytics_when_configured(marketing_agent, mock_config):
+    """Observe populates analytics when POSTING_API_KEY is set."""
+    mock_config.posting_api_key = "test-posting-key"
+    mock_config.social_media_api_base_url = "http://localhost:8000"
+
+    mock_analytics = {"total_posts": 10, "success_rate": 0.9}
+    mock_top_posts = {"posts": [{"id": 1, "content": "Top post"}]}
+
+    with patch(
+        "holus.agents.marketing.agent.SocialMediaClient"
+    ) as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.get_analytics = AsyncMock(return_value=mock_analytics)
+        mock_client.get_top_posts = AsyncMock(return_value=mock_top_posts)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
+
+        state = marketing_agent.default_state()
+        result = await marketing_agent.observe(state)
+
+        assert result["analytics"]["summary"] == mock_analytics
+        assert result["analytics"]["top_posts"] == mock_top_posts
+        mock_client.get_analytics.assert_awaited_once_with(days=7)
+        mock_client.get_top_posts.assert_awaited_once_with(limit=5, days=30)
+
+
+@pytest.mark.asyncio
+async def test_observe_skips_analytics_without_api_key(marketing_agent, mock_config):
+    """Observe returns empty analytics when POSTING_API_KEY is not set."""
+    mock_config.posting_api_key = ""
+
+    state = marketing_agent.default_state()
+    result = await marketing_agent.observe(state)
+
+    assert result["analytics"] == {}
+
+
+@pytest.mark.asyncio
+async def test_observe_analytics_graceful_degradation(marketing_agent, mock_config):
+    """Observe continues without analytics if API is unreachable."""
+    mock_config.posting_api_key = "test-posting-key"
+    mock_config.social_media_api_base_url = "http://localhost:8000"
+
+    with patch(
+        "holus.agents.marketing.agent.SocialMediaClient"
+    ) as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.get_analytics = AsyncMock(
+            side_effect=Exception("Connection refused")
+        )
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
+
+        state = marketing_agent.default_state()
+        result = await marketing_agent.observe(state)
+
+        # Analytics should be empty but observe should succeed
+        assert result["analytics"] == {}
+        # Other data should still be loaded
+        assert "product_updates" in result
+        assert "knowledge" in result
+
+
+@pytest.mark.asyncio
+async def test_fetch_analytics_returns_structured_data(marketing_agent, mock_config):
+    """_fetch_analytics returns dict with summary and top_posts keys."""
+    mock_config.posting_api_key = "test-posting-key"
+    mock_config.social_media_api_base_url = "http://localhost:8000"
+
+    mock_analytics = {
+        "total_posts": 15,
+        "success_rate": 0.93,
+        "platforms": {"linkedin": {"posts": 8}},
+    }
+    mock_top_posts = {
+        "posts": [
+            {"id": 1, "content": "Post A", "platform": "linkedin"},
+            {"id": 2, "content": "Post B", "platform": "twitter"},
+        ],
+    }
+
+    with patch(
+        "holus.agents.marketing.agent.SocialMediaClient"
+    ) as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.get_analytics = AsyncMock(return_value=mock_analytics)
+        mock_client.get_top_posts = AsyncMock(return_value=mock_top_posts)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client_cls.return_value = mock_client
+
+        result = await marketing_agent._fetch_analytics()
+
+        assert "summary" in result
+        assert "top_posts" in result
+        assert result["summary"]["total_posts"] == 15
+        assert len(result["top_posts"]["posts"]) == 2
 
 
 # ---------------------------------------------------------------------------
