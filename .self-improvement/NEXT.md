@@ -1,28 +1,29 @@
 # NEXT.md — Holus Task Priority Queue
 
-Last updated: 2026-03-01
+Last updated: 2026-03-02
 
 ## Priority Guide
 - **P0** — Blocking. Nothing else works until this is fixed.
-- **P1** — Critical path. Required for first authority-building content cycle.
-- **P2** — High value. Enables automated research and content repurposing.
-- **P3** — Medium value. Agent code updates for the new strategy.
-- **P4** — Nice to have. Polish or future prep.
+- **P1** — Critical path. Required for first real content cycle.
+- **P2** — High value. Enables publishing and review flow.
+- **P3** — Medium value. Automation and scheduling prep.
+- **P4** — Nice to have. Polish, cleanup, future prep.
 
 ---
 
-## Spec Status (as of 2026-03-01)
+## Spec Status (as of 2026-03-02)
 
 | Spec | Name | Status |
 |------|------|--------|
 | 001 | Core Infrastructure | Partial (config, kill switch, events, health: done; docker compose, event bus integration: not tested) |
 | 009 | Autonomous Build System | Partial (builder agent, run lock, trajectory logging: done; launchd scheduler: not tested) |
-| 010 | Marketing Agent | Implemented (ReAct loop, content queue, review CLI, 247 tests) — NEEDS UPDATE for authority engine |
+| 010 | Marketing Agent | Implemented (ReAct loop, content queue, review CLI, authority prompts, niche research, brand loader: all done) |
 | 012 | Knowledge & Learning | Implemented (knowledge base, trajectory, learning loop, knowledge gaps, archive rotation, README index: all done) |
 | 013 | Scheduling & Runtime | Partial (launchd plists exist; not tested/activated) |
 | 014 | Genpeli Integration | Partial (video_workflow.py + video_queue.py built; genpeli MCP server: not built) |
 | 015 | Pilaster Integration | Partial (pilaster MCP connected + image_workflow.py built; end-to-end not tested) |
 | 016 | Social Media Integration V2 | Partial (MCP connected + get_analytics/get_top_posts tools added; end-to-end not tested) |
+| 017 | Authority Engine Agent Update | Implemented (brand loader, niche research, authority prompts, content repurposing: all 4 SPECs done, 330 tests) |
 
 ---
 
@@ -73,3 +74,48 @@ Source document: `tasks/next.md`
 - [x] [BUILD] Fix `just check` PATH issue — ruff needs `uv run` prefix in justfile. Minor but annoying.
 - [x] [REVIEW] End-to-end authority engine test — Run full marketing agent cycle with brand.yaml → research → reason → create content → review queue. Verify content sounds like Camilo, uses authority framing, targets consulting prospects.
 - [x] [BUILD] Update `.self-improvement/MEMORY.md` — Refresh system memory with Sprint 2 learnings: what changed strategically, new file locations, updated agent behavior.
+
+---
+
+## Sprint 3: First Real Content Cycle
+
+Goal: Holus generates its first real LinkedIn post, Camilo reviews and approves it, and it gets published.
+This sprint closes the loop from "system built" to "system producing real output."
+
+**Key context:**
+- Marketing agent uses Claude API (ANTHROPIC_API_KEY) for LLM calls — strategy (Opus) + content generation (Sonnet)
+- Publishing uses the local social-media-automatization API (http://localhost:8000) via MCP tools
+- Late API client (late.so) exists but is redundant — social-media MCP is the canonical publishing path
+- Agent has `just run-marketing` but it has never been run with real API keys
+- 6 sections in `config/brand.yaml` need Camilo's input (marked with TODO)
+- 330 tests passing, all mocked — no real API calls tested
+
+### P0 — System Runability
+
+- [x] [BUILD] Create `just preflight` command — Validates environment before running: checks ANTHROPIC_API_KEY is set, brand.yaml exists and parses, knowledge files exist, data dirs exist. Print clear pass/fail for each check with fix instructions. No external calls needed.
+- [x] [BUILD] Replace Late API publishing path with social-media MCP — The agent's `publish_approved.py` uses Late API (third-party SaaS). Publishing should go through social-media-automatization's local API instead, which is already running and has MCP tools available. Update `publish_approved.py` to call the social-media API at `http://localhost:8000` (or use the MCP `publish` tool). Remove Late API dependency.
+- [x] [BUILD] Update spec 017 status to Implemented — Mark all acceptance criteria as done. Update `specs/README.md` status table. This is bookkeeping from Sprint 2 completion.
+
+### P1 — First Content Generation
+
+- [x] [BUILD] Create `just generate` command — Runs ONE marketing agent cycle in generate-only mode (no publishing). Requires ANTHROPIC_API_KEY. Agent executes: observe (load brand, knowledge, niche research) → reason (Opus decides what to write) → act (Sonnet writes LinkedIn post + repurposes) → evaluate (log trajectory). Output goes to `data/content-queue/` for review. This is the first time the agent produces real content.
+- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY in `.env` is expired/invalid (401).** Cycle 43 fixed `.env` loading (preflight + generate both read from `.env`), validated 380 tests pass, but actual generation needs a valid key. Camilo must update the key.
+- [ ] [BUILD] Prompt tuning based on first run — After reviewing the first real output, adjust prompts in `prompts.py` for better voice match, hook quality, and content depth. This is iterative — may take 2-3 cycles of generate → review → tune.
+
+### P2 — Review & Publishing Pipeline
+
+- [ ] [BUILD] Add dry-run mode to publishing — `just publish --dry-run` shows what would be posted (platform, content preview, character count) without actually posting. Safety net before first real publish.
+- [ ] [BUILD] End-to-end publish test — Generate content → approve via `just approve-content` → publish via updated publisher → verify post appears on social media. First real published content through the full pipeline.
+- [ ] [REVIEW] Camilo reviews brand.yaml TODOs — 6 sections need human input: consulting pivot story, service pricing/deliverables, entry-point service, discovery call link, target verticals, competitor accounts. Schedule a session. Not blocked by other tasks — agent works with current scaffold.
+
+### P3 — Automation & Feedback Loop
+
+- [ ] [BUILD] Test launchd scheduling — Activate the marketing agent launchd plist (Spec 013). Verify it triggers `just generate` on schedule. Start with manual activation, verify one triggered cycle produces content, then leave active.
+- [ ] [BUILD] Add analytics feedback to observe — Connect the marketing agent's observe stage to real analytics data. Use social-media MCP `get_analytics` and `get_top_posts` tools to read performance data. Currently mocked — make it real.
+- [ ] [BUILD] Create weekly content calendar view — `just calendar` shows the week's content plan: what was generated, what's in review, what's published, what's scheduled. Simple CLI table.
+
+### P4 — Quality & Cleanup
+
+- [ ] [BUILD] Reconcile agent analytics path — The agent has two analytics sources: Late API `get_all_analytics()` and social-media MCP `get_analytics`. Consolidate to one path (social-media MCP). Remove Late API analytics code.
+- [ ] [REVIEW] Review Sprint 2 module quality — Code review `repurpose.py`, `niche_research` functions in `agent.py`, updated `prompts.py`. Check for: dead code, error handling gaps, missing edge cases. Fix anything found.
+- [ ] [BUILD] Add content quality scoring — Before queuing content for review, run a quick quality check: character limits respected, no anti-pattern language detected, hook present, pillar assigned. Reject low-quality content automatically.

@@ -1,10 +1,10 @@
 # Spec 017: Authority Engine Agent Update
 
-**Status:** Not Started
+**Status:** Implemented
 **Phase:** Sprint 2
 **Author:** Builder Agent (cycle 30)
 **Created:** 2026-03-01
-**Updated:** 2026-03-01
+**Updated:** 2026-03-02
 
 ## Problem
 
@@ -793,48 +793,48 @@ Each SPEC is independently deployable and revertible:
 ## Acceptance Criteria
 
 ### SPEC-001: Brand Config Loader
-- [ ] `BrandIdentity` Pydantic model in models.py validates brand.yaml structure
-- [ ] `_load_brand_identity()` reads and validates `config/brand.yaml`
-- [ ] `brand_identity` dict present in MarketingState after observe
-- [ ] Graceful fallback when brand.yaml is missing (empty dict, warning logged)
-- [ ] Graceful fallback when brand.yaml has invalid structure
-- [ ] Tests: brand loaded, missing file, invalid YAML
+- [x] `BrandIdentity` Pydantic model in models.py validates brand.yaml structure
+- [x] `_load_brand_identity()` reads and validates `config/brand.yaml`
+- [x] `brand_identity` dict present in MarketingState after observe
+- [x] Graceful fallback when brand.yaml is missing (empty dict, warning logged)
+- [x] Graceful fallback when brand.yaml has invalid structure
+- [x] Tests: brand loaded, missing file, invalid YAML
 
 ### SPEC-002: Niche Research Step
-- [ ] `NicheInsight` and `NicheResearchResult` models in models.py
-- [ ] `_niche_research()` called from observe stage
-- [ ] Web search via Claude tool_use with `web_search_20250305`
-- [ ] Query rotation: max 5 per cycle, respects daily/weekly cooldowns
-- [ ] Rotation state tracked in `data/.niche-research-state.json`
-- [ ] Insights extracted with structured Claude prompt
-- [ ] Deduplication against viral-frameworks.md
-- [ ] `niche_research` dict flows into reason stage
-- [ ] Graceful degradation: if research fails, observe continues
-- [ ] 30-second timeout enforced
-- [ ] Tests: query selection, rotation, search fallback, extraction
+- [x] `NicheInsight` and `NicheResearchResult` models in models.py
+- [x] `_niche_research()` called from observe stage
+- [x] Web search via Claude tool_use with `web_search_20250305`
+- [x] Query rotation: max 5 per cycle, respects daily/weekly cooldowns
+- [x] Rotation state tracked in `data/.niche-research-state.json`
+- [x] Insights extracted with structured Claude prompt
+- [x] Deduplication against viral-frameworks.md
+- [x] `niche_research` dict flows into reason stage
+- [x] Graceful degradation: if research fails, observe continues
+- [x] 30-second timeout enforced
+- [x] Tests: query selection, rotation, search fallback, extraction
 
 ### SPEC-003: Authority Prompts
-- [ ] `OPUS_STRATEGY_PROMPT` rewritten with authority framing
-- [ ] Prompt includes brand identity, content pillars, niche research, viral frameworks, anti-patterns
-- [ ] Decision output is ONE LinkedIn-first post (not 1-3 multi-platform)
-- [ ] `ContentDecision` has `content_pillar`, `hook`, `framework`, `repurpose_notes` fields
-- [ ] `SONNET_CONTENT_PROMPT` rewritten with Camilo's voice, anti-patterns, builder framing
-- [ ] `REPURPOSE_PROMPT` created for platform adaptation
-- [ ] Reason stage formats all new context into Opus prompt
-- [ ] Tests: prompt formatting, new field parsing, backward compatibility
+- [x] `OPUS_STRATEGY_PROMPT` rewritten with authority framing
+- [x] Prompt includes brand identity, content pillars, niche research, viral frameworks, anti-patterns
+- [x] Decision output is ONE LinkedIn-first post (not 1-3 multi-platform)
+- [x] `ContentDecision` has `content_pillar`, `hook`, `framework`, `repurpose_notes` fields
+- [x] `SONNET_CONTENT_PROMPT` rewritten with Camilo's voice, anti-patterns, builder framing
+- [x] `REPURPOSE_PROMPT` created for platform adaptation
+- [x] Reason stage formats all new context into Opus prompt
+- [x] Tests: prompt formatting, new field parsing, backward compatibility
 
 ### SPEC-004: Content Repurposing
-- [ ] `repurpose.py` module created with `repurpose_content()` function
-- [ ] LinkedIn post → Twitter (condensed), Instagram (visual caption), Threads (conversational), Facebook (full)
-- [ ] Platform-specific adaptation rules applied
-- [ ] Character limits enforced per platform
-- [ ] Fallback when Claude unavailable (mechanical truncation)
-- [ ] Platform rotation respects cadence from brand.yaml
-- [ ] All repurposed pieces queued for human review
-- [ ] Evaluate stage logs all pieces (existing code handles this automatically)
-- [ ] Tests: repurposing per platform, fallback, char limits, rotation
+- [x] `repurpose.py` module created with `repurpose_content()` function
+- [x] LinkedIn post → Twitter (condensed), Instagram (visual caption), Threads (conversational), Facebook (full)
+- [x] Platform-specific adaptation rules applied
+- [x] Character limits enforced per platform
+- [x] Fallback when Claude unavailable (mechanical truncation)
+- [x] Platform rotation respects cadence from brand.yaml
+- [x] All repurposed pieces queued for human review
+- [x] Evaluate stage logs all pieces (existing code handles this automatically)
+- [x] Tests: repurposing per platform, fallback, char limits, rotation
 
 ### Integration
-- [ ] All existing 247+ tests still pass
-- [ ] `just check` passes (lint + typecheck + tests)
-- [ ] Full cycle runs in fallback mode (no API key) without errors
+- [x] All existing 247+ tests still pass (330 tests passing as of Sprint 2 completion)
+- [x] `just check` passes (lint + typecheck + tests)
+- [x] Full cycle runs in fallback mode (no API key) without errors

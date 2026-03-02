@@ -49,7 +49,7 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 
 | #   | Spec                                                             | Type    | Status      |
 | --- | ---------------------------------------------------------------- | ------- | ----------- |
-| 017 | [Authority Engine Agent Update](017-authority-engine-agent-update.md) | Backend | Not Started |
+| 017 | [Authority Engine Agent Update](017-authority-engine-agent-update.md) | Backend | Implemented |
 
 ---
 
