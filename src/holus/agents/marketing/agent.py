@@ -43,6 +43,7 @@ from holus.agents.marketing.prompts import (
     format_product_info,
     format_voice,
 )
+from holus.agents.marketing.quality_score import score_content
 from holus.agents.marketing.repurpose import repurpose_content
 from holus.integrations.claude_api.client import CachedPrompt
 from holus.integrations.social_media import SocialMediaClient
@@ -631,12 +632,36 @@ class MarketingAgent(BaseAgent):
                     platform=decision.platform,
                     model_used=model_used,
                 )
+
+                # Quality gate — score before queuing
+                brand_anti_phrases = brand.get("anti_patterns", {}).get("language", [])
+                quality = score_content(piece, brand_anti_patterns=brand_anti_phrases)
+
+                if not quality.passed:
+                    logger.warning(
+                        "Content auto-rejected by quality gate: %s (score=%d)",
+                        piece.piece_id,
+                        quality.score,
+                    )
+                    post_results.append(
+                        {
+                            "piece_id": piece.piece_id,
+                            "status": "auto_rejected",
+                            "quality_score": quality.score,
+                            "violations": [v.to_dict() for v in quality.violations],
+                            "platform": decision.platform.value,
+                            "product": decision.product,
+                        }
+                    )
+                    continue
+
                 queue_path = self._write_queue_item(piece, queue_dir)
                 generated_content.append(piece.model_dump(mode="json"))
                 post_results.append(
                     {
                         "piece_id": piece.piece_id,
                         "status": "pending_review",
+                        "quality_score": quality.score,
                         "queue_path": str(queue_path),
                         "platform": decision.platform.value,
                         "product": decision.product,
@@ -655,12 +680,22 @@ class MarketingAgent(BaseAgent):
                         agent_id=self.agent_name,
                     )
                     for rp in repurposed:
+                        rp_quality = score_content(rp, brand_anti_patterns=brand_anti_phrases)
+                        if not rp_quality.passed:
+                            logger.warning(
+                                "Repurposed content auto-rejected: %s (%s, score=%d)",
+                                rp.piece_id,
+                                rp.platform.value,
+                                rp_quality.score,
+                            )
+                            continue
                         rp_queue_path = self._write_queue_item(rp, queue_dir)
                         generated_content.append(rp.model_dump(mode="json"))
                         post_results.append(
                             {
                                 "piece_id": rp.piece_id,
                                 "status": "pending_review",
+                                "quality_score": rp_quality.score,
                                 "queue_path": str(rp_queue_path),
                                 "platform": rp.platform.value,
                                 "product": decision.product,
