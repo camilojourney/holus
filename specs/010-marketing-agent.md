@@ -478,3 +478,353 @@ class MarketingCycleReport(BaseModel):
 - [ ] Metadata includes product, platform, content_type, and reasoning
 - [ ] Failed generations logged with error details
 - [ ] MEMORY.md updated when significant patterns emerge (Phase 2+)
+
+---
+
+### SPEC-006: Niche Research Step (Observe Sub-Step)
+
+| Field | Value |
+|-------|-------|
+| Description | Web search sub-step inside observe that finds trending AI consulting content on LinkedIn |
+| Trigger | Every marketing cycle, as part of observe (before reason) |
+| Input | Curated search queries from `niche-research-queries.md`, previous research from knowledge base |
+| Output | `niche_research` dict added to MarketingState: trending topics, competitor hooks, engagement patterns |
+| Validation | Must complete within 30 seconds. Max 5 search queries per cycle. |
+| Auth Required | `ANTHROPIC_API_KEY` (for Claude tool_use with web_search) |
+
+#### Problem
+
+The marketing agent creates content in a vacuum. It reads the knowledge base (static files
+written by humans) but never checks **what's trending right now** in the AI consulting niche.
+Top performers in this space study what's working before creating — the agent should too.
+
+Without niche research, the agent:
+- Misses trending topics that consulting prospects are engaging with
+- Can't detect new viral patterns or formats
+- Creates content based on stale frameworks instead of current momentum
+- Falls behind competitors who react to industry news in real-time
+
+#### Design
+
+Niche research is a **sub-step of observe**, not a new graph node. This keeps the
+4-stage ReAct architecture intact while adding real-time intelligence.
+
+```
+observe
+  ├── read products.yaml           (existing — SPEC-002)
+  ├── read knowledge base          (existing — SPEC-002)
+  ├── read MEMORY.md               (existing — SPEC-002)
+  ├── read analytics via MCP       (existing — SPEC-002)
+  └── niche research (NEW)         ← SPEC-006
+        ├── load search queries from niche-research-queries.md
+        ├── select 3-5 queries for this cycle (rotate, don't repeat)
+        ├── execute web searches via Claude tool_use
+        ├── extract: hooks, topics, engagement signals, formats
+        ├── deduplicate against viral-frameworks.md (don't re-extract known patterns)
+        └── return NicheResearchResult → state["niche_research"]
+```
+
+#### Search Query Design
+
+Queries live in `.self-improvement/knowledge/current/niche-research-queries.md` as a
+machine-readable YAML block. Categories:
+
+```yaml
+queries:
+  competitor_content:
+    description: "What top AI consultants are posting on LinkedIn"
+    queries:
+      - "site:linkedin.com AI consulting thought leadership 2026"
+      - "site:linkedin.com AI implementation strategy CTO"
+      - "site:linkedin.com AI transformation consultant results"
+    rotation: weekly  # cycle through, don't repeat same query within a week
+
+  trending_topics:
+    description: "What AI topics are getting engagement right now"
+    queries:
+      - "LinkedIn trending AI enterprise 2026"
+      - "AI deployment challenges enterprise this week"
+      - "AI consulting demand trends 2026"
+    rotation: daily
+
+  viral_patterns:
+    description: "High-performing post structures in the niche"
+    queries:
+      - "site:linkedin.com viral AI post builder story"
+      - "LinkedIn AI consultant post went viral"
+      - "best LinkedIn posts AI implementation case study"
+    rotation: weekly
+
+  industry_news:
+    description: "Breaking AI news that consulting prospects care about"
+    queries:
+      - "enterprise AI news this week"
+      - "AI regulation enterprise impact 2026"
+      - "AI vendor landscape changes 2026"
+    rotation: daily
+```
+
+**Query selection per cycle:** Pick 3-5 queries, rotating across categories.
+Never run the same query twice in 24 hours. Track last-run timestamps in state
+or a lightweight cache file (`data/.niche-research-state.json`).
+
+#### Extraction Patterns
+
+For each search result, Claude extracts structured data:
+
+```python
+class NicheInsight(BaseModel):
+    """A single insight extracted from niche research."""
+    source_url: str
+    source_title: str
+    category: str  # "competitor_content" | "trending_topic" | "viral_pattern" | "industry_news"
+    hook: str | None  # The opening line if it's a post
+    topic: str  # What the content is about
+    format: str  # "text" | "carousel" | "video" | "document" | "image"
+    engagement_signals: str  # Description of engagement (likes, comments, shares if visible)
+    why_it_works: str  # Brief analysis of why this content performed
+    relevance_to_camilo: str  # How Camilo could create similar content with his angle
+    pillar_fit: list[str]  # Which content pillars this maps to
+    extracted_at: str  # ISO timestamp
+
+class NicheResearchResult(BaseModel):
+    """Complete niche research output for one cycle."""
+    queries_run: list[str]
+    insights: list[NicheInsight]
+    trending_topics: list[str]  # Top 3-5 trending topics distilled from all results
+    recommended_angles: list[str]  # Suggested content angles for this cycle
+    research_duration_ms: int
+```
+
+**Extraction prompt for Claude:**
+
+```
+You are analyzing search results about AI consulting content on LinkedIn.
+
+For each relevant result, extract:
+1. The hook or opening line (if visible)
+2. The topic it covers
+3. The format (text post, carousel, video, etc.)
+4. Why it likely performed well (engagement psychology)
+5. How Camilo (an AI builder-consultant) could create similar content with his unique angle
+6. Which content pillar it maps to: builder_stories, ai_frameworks, industry_analysis, results_proof, contrarian_takes
+
+Only extract results that are:
+- Relevant to AI consulting/implementation/deployment
+- Posted by builders, consultants, or thought leaders (not news aggregators)
+- From LinkedIn or about LinkedIn content strategies
+
+Skip: generic AI news, product announcements, academic papers, job postings.
+
+Return structured JSON.
+```
+
+#### Integration with Reason Stage
+
+The `niche_research` dict flows into the reason stage alongside existing context.
+The Opus strategy prompt gains a new section:
+
+```
+## What's Trending in the Niche Right Now
+
+{niche_research}
+
+Use this to:
+- Pick topics that have momentum (trending topics get more initial engagement)
+- Use hook patterns that are working right now (not just historical patterns)
+- React to industry news before competitors do
+- Avoid topics that are oversaturated (everyone's posting about it = noise)
+```
+
+The reason stage uses niche research as **input signal**, not as a directive.
+The agent still makes autonomous strategy decisions — niche research informs,
+it doesn't dictate.
+
+#### State Changes
+
+New fields in `MarketingState`:
+
+```python
+class MarketingState(TypedDict):
+    # ... existing fields ...
+
+    # Niche Research (new — SPEC-006)
+    niche_research: dict[str, Any]  # NicheResearchResult as dict
+```
+
+#### Implementation Approach
+
+```python
+async def _niche_research(self) -> dict[str, Any]:
+    """Sub-step of observe: search for trending AI consulting content."""
+    import time
+
+    start_ms = int(time.time() * 1000)
+
+    # 1. Load query config
+    queries_path = self._KNOWLEDGE_DIR / "niche-research-queries.md"
+    query_config = self._parse_research_queries(queries_path)
+
+    # 2. Select queries for this cycle (rotate, deduplicate)
+    selected = self._select_queries(query_config, max_queries=5)
+
+    # 3. Execute searches via Claude tool_use with web_search
+    raw_results = []
+    for query in selected:
+        try:
+            result = await self._web_search(query)
+            raw_results.append({"query": query, "results": result})
+        except Exception:
+            logger.warning("Niche research query failed: %s", query)
+
+    # 4. Extract insights using Claude
+    insights = await self._extract_insights(raw_results)
+
+    # 5. Deduplicate against known frameworks
+    known = self._read_text(self._KNOWLEDGE_DIR / "viral-frameworks.md")
+    insights = self._deduplicate_insights(insights, known)
+
+    # 6. Distill trending topics and recommended angles
+    trending = self._distill_trending(insights)
+
+    duration_ms = int(time.time() * 1000) - start_ms
+
+    return {
+        "queries_run": selected,
+        "insights": [i.model_dump(mode="json") for i in insights],
+        "trending_topics": trending["topics"],
+        "recommended_angles": trending["angles"],
+        "research_duration_ms": duration_ms,
+    }
+
+async def _web_search(self, query: str) -> list[dict[str, Any]]:
+    """Execute a single web search via Claude tool_use."""
+    response = self.claude.call(
+        cached_prompt=CachedPrompt(
+            system_prompt="Search the web and return relevant results."
+        ),
+        messages=[{"role": "user", "content": f"Search for: {query}"}],
+        tier="operational",  # Sonnet — mechanical task
+        max_tokens=2048,
+        tools=[{"type": "web_search_20250305"}],
+        agent_id=self.agent_name,
+    )
+    return self._extract_search_results(response)
+```
+
+#### Observe Phase Update
+
+```python
+async def observe(self, state: MarketingState) -> dict[str, Any]:
+    """Observe phase: load context + niche research."""
+    self.check_kill_switch()
+
+    # Existing (SPEC-002)
+    products = self._read_yaml(self._PRODUCTS_PATH)
+    knowledge = self._read_knowledge_files(self._KNOWLEDGE_DIR)
+    memory_context = self._read_text(self._MEMORY_PATH)
+
+    # New (SPEC-006) — niche research
+    niche_research = {}
+    try:
+        niche_research = await self._niche_research()
+    except Exception:
+        logger.warning("Niche research failed; continuing without it")
+
+    return {
+        "product_updates": products,
+        "knowledge": knowledge,
+        "memory_context": memory_context,
+        "analytics": state.get("analytics", {}),
+        "queue_size_before": len(self._queue_files()),
+        "niche_research": niche_research,
+    }
+```
+
+#### Failure Modes
+
+**EDGE-005: Web search returns no results**
+- Scenario: All queries return empty or irrelevant results
+- Expected behavior: `niche_research` is empty dict. Reason stage proceeds with
+  existing knowledge base only. Logged as warning.
+- Recovery: Automatic — next cycle tries different queries from the rotation.
+
+**EDGE-006: Web search times out**
+- Scenario: Claude tool_use web search exceeds 30-second budget
+- Expected behavior: Cancel remaining queries. Return partial results.
+  Log timeout with queries completed vs. skipped.
+- Recovery: Automatic — budget enforced per query (10s each), not total.
+
+**EDGE-007: Extraction finds only known patterns**
+- Scenario: All extracted insights duplicate content already in viral-frameworks.md
+- Expected behavior: `insights` is empty after dedup. Reason stage gets
+  `trending_topics` (which may still be novel) but no new frameworks.
+- Recovery: This is fine — it means the knowledge base is current.
+
+**EDGE-008: Search results are spam or off-topic**
+- Scenario: Results include AI news aggregators, job postings, or product ads
+- Expected behavior: Extraction prompt explicitly filters these out. Only
+  builder/consultant/thought-leader content passes the filter.
+- Recovery: Automatic — extraction prompt is the filter.
+
+#### Query Rotation Cache
+
+To avoid repeating the same searches, maintain a lightweight state file:
+
+```python
+# data/.niche-research-state.json
+{
+  "last_run": "2026-03-01T10:00:00Z",
+  "query_history": {
+    "site:linkedin.com AI consulting thought leadership 2026": "2026-03-01T10:00:00Z",
+    "LinkedIn trending AI enterprise 2026": "2026-03-01T10:00:00Z"
+  },
+  "category_last_used": {
+    "competitor_content": "2026-03-01",
+    "trending_topics": "2026-03-01",
+    "viral_patterns": "2026-02-28",
+    "industry_news": "2026-03-01"
+  }
+}
+```
+
+This file is gitignored (runtime data). The rotation algorithm:
+1. Group queries by category
+2. Sort categories by staleness (least recently used first)
+3. Pick 1-2 queries from the stalest category
+4. Fill remaining slots from `trending_topics` and `industry_news` (always fresh)
+5. Never repeat a query within its rotation period (daily or weekly)
+
+#### Acceptance Criteria (SPEC-006)
+
+- [ ] `niche-research-queries.md` created with 4 categories, 3+ queries each
+- [ ] `NicheInsight` and `NicheResearchResult` Pydantic models in `models.py`
+- [ ] `_niche_research()` sub-step called from observe
+- [ ] Web search executed via Claude tool_use with `web_search` tool
+- [ ] Max 5 queries per cycle, rotated across categories
+- [ ] Results extracted using Claude with structured extraction prompt
+- [ ] Deduplication against viral-frameworks.md (don't re-extract known patterns)
+- [ ] `niche_research` flows into reason stage prompt
+- [ ] Graceful degradation: if research fails, observe continues without it
+- [ ] Research completes within 30 seconds (timeout enforced)
+- [ ] Query rotation state tracked in `data/.niche-research-state.json`
+- [ ] All search queries and results logged in trajectory
+- [ ] `trending_topics` and `recommended_angles` extracted from raw results
+
+#### File Locations (SPEC-006)
+
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `.self-improvement/knowledge/current/niche-research-queries.md` | New | Curated search queries by category |
+| `src/holus/agents/marketing/models.py` | Modified | Add `NicheInsight`, `NicheResearchResult` |
+| `src/holus/agents/marketing/agent.py` | Modified | Add `_niche_research()`, update `observe()` |
+| `src/holus/agents/marketing/prompts.py` | Modified | Add niche research extraction prompt, update Opus strategy prompt |
+| `data/.niche-research-state.json` | New (gitignored) | Query rotation cache |
+| `tests/unit/agents/test_marketing.py` | Modified | Tests for niche research sub-step |
+
+#### Dependencies
+
+- Requires: Claude API with `web_search` tool support (Anthropic API 2025-03+)
+- Requires: `niche-research-queries.md` created (separate task in NEXT.md)
+- Blocked by: Nothing — can be implemented independently
+- Related: SPEC-002 (Observe Stage), SPEC-003 (Reason Stage)

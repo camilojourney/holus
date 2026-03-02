@@ -57,7 +57,7 @@ Source document: `tasks/next.md`
 ### P2 — Niche Research Capability
 
 - [x] [BUILD] Seed `viral-frameworks.md` — New knowledge file. Research LinkedIn AI consulting/builder space. Document 10+ examples of viral posts: hook, structure, proof element, CTA, why it worked. Machine-readable format like content-frameworks.md.
-- [ ] [BUILD] Design niche research step — Write spec addendum for Spec 010: new observe sub-step that uses web search to find trending AI consulting content on LinkedIn. Define search queries, extraction patterns, output format. Write to `specs/010-marketing-agent.md` as SPEC-005.
+- [x] [BUILD] Design niche research step — Write spec addendum for Spec 010: new observe sub-step that uses web search to find trending AI consulting content on LinkedIn. Define search queries, extraction patterns, output format. Written to `specs/010-marketing-agent.md` as SPEC-006 (SPEC-005 was already taken by Evaluate Stage).
 - [ ] [BUILD] Define search queries for niche research — Create `.self-improvement/knowledge/current/niche-research-queries.md` with curated search queries for monitoring the AI consulting/builder niche. Categories: competitor posts, trending topics, viral patterns, industry news.
 
 ### P3 — Agent Code Updates (Spec 010 v2)
