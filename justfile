@@ -73,6 +73,12 @@ clean:
     find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
     rm -rf dist/ build/ htmlcov/ .coverage coverage.xml
 
+# -- Preflight ---------------------------------------------------------------
+
+# Validate environment before running (API keys, config, knowledge files)
+preflight:
+    uv run python -m holus.preflight
+
 # -- Marketing Agent ---------------------------------------------------------
 
 run-marketing:
