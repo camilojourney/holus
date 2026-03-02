@@ -108,7 +108,11 @@ class TestPrintSummary:
 class TestMainNoApiKey:
     def test_exits_without_api_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-        with patch("holus.generate.QUEUE_DIR", Path("/tmp/holus-test-fake")):
+        with (
+            patch("holus.generate.QUEUE_DIR", Path("/tmp/holus-test-fake")),
+            patch("holus.generate._read_key_from_dotenv", return_value=""),
+            patch("holus.preflight._read_key_from_dotenv", return_value=""),
+        ):
             try:
                 main()
                 raised = False

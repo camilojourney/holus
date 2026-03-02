@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from holus.preflight import (
     CheckResult,
+    _read_key_from_dotenv,
     check_api_key,
     check_brand_yaml,
     check_data_dirs,
@@ -35,9 +36,11 @@ class TestCheckApiKey:
         assert result.passed is True
         assert "sk-ant-" in result.detail
 
-    def test_missing_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_missing_key(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-        result = check_api_key()
+        # Patch .env path to a non-existent file so dotenv fallback also fails
+        with patch("holus.preflight._read_key_from_dotenv", return_value=""):
+            result = check_api_key()
         assert result.passed is False
         assert "Not set" in result.detail
         assert result.fix
@@ -47,6 +50,59 @@ class TestCheckApiKey:
         result = check_api_key()
         assert result.passed is False
         assert "doesn't look like" in result.detail
+
+    def test_key_from_dotenv(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        with patch(
+            "holus.preflight._read_key_from_dotenv",
+            return_value="sk-ant-api03-from-dotenv",
+        ):
+            result = check_api_key()
+        assert result.passed is True
+        assert ".env" in result.detail
+
+
+class TestReadKeyFromDotenv:
+    def test_reads_from_dotenv(self, tmp_path: Path) -> None:
+        env = tmp_path / ".env"
+        env.write_text("ANTHROPIC_API_KEY=sk-ant-test123\nOTHER_VAR=foo\n")
+        with patch("holus.preflight.Path", return_value=env):
+            # Directly test the function with a patched path
+            pass
+        # Direct test without patching Path (use monkeypatch chdir instead)
+        import os
+
+        old = os.getcwd()
+        try:
+            os.chdir(tmp_path)
+            key = _read_key_from_dotenv()
+        finally:
+            os.chdir(old)
+        assert key == "sk-ant-test123"
+
+    def test_no_dotenv_file(self, tmp_path: Path) -> None:
+        import os
+
+        old = os.getcwd()
+        try:
+            os.chdir(tmp_path)
+            key = _read_key_from_dotenv()
+        finally:
+            os.chdir(old)
+        assert key == ""
+
+    def test_quoted_value(self, tmp_path: Path) -> None:
+        env = tmp_path / ".env"
+        env.write_text('ANTHROPIC_API_KEY="sk-ant-quoted"\n')
+        import os
+
+        old = os.getcwd()
+        try:
+            os.chdir(tmp_path)
+            key = _read_key_from_dotenv()
+        finally:
+            os.chdir(old)
+        assert key == "sk-ant-quoted"
 
 
 # ---------------------------------------------------------------------------

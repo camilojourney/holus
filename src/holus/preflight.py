@@ -59,14 +59,36 @@ class CheckResult:
 # ---------------------------------------------------------------------------
 
 
+def _read_key_from_dotenv() -> str:
+    """Read ANTHROPIC_API_KEY from .env file (fallback when not in os.environ)."""
+    env_path = Path(".env")
+    if not env_path.exists():
+        return ""
+    try:
+        for line in env_path.read_text().splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#") or "=" not in stripped:
+                continue
+            name, _, value = stripped.partition("=")
+            if name.strip() == "ANTHROPIC_API_KEY":
+                return value.strip().strip("\"'")
+    except Exception:
+        pass
+    return ""
+
+
 def check_api_key() -> CheckResult:
-    """Check that ANTHROPIC_API_KEY is set."""
+    """Check that ANTHROPIC_API_KEY is set (env var or .env file)."""
     key = os.environ.get("ANTHROPIC_API_KEY", "")
+    source = "env"
+    if not key:
+        key = _read_key_from_dotenv()
+        source = ".env"
     if key and key.startswith("sk-ant-"):
         return CheckResult(
             "ANTHROPIC_API_KEY",
             passed=True,
-            detail=f"Set (sk-ant-...{key[-4:]})",
+            detail=f"Set via {source} (sk-ant-...{key[-4:]})",
         )
     if key:
         return CheckResult(

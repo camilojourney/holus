@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 import time
 from pathlib import Path
@@ -18,7 +19,7 @@ from typing import Any
 
 import yaml
 
-from holus.preflight import check_api_key, run_preflight
+from holus.preflight import _read_key_from_dotenv, check_api_key, run_preflight
 
 QUEUE_DIR = Path("data/content-queue")
 
@@ -91,6 +92,12 @@ async def _run_agent() -> dict[str, Any]:
 
 def main() -> None:
     """CLI entry point: preflight → generate → summary."""
+    # -- Load .env into os.environ if not already set --------------------------
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        dotenv_key = _read_key_from_dotenv()
+        if dotenv_key:
+            os.environ["ANTHROPIC_API_KEY"] = dotenv_key
+
     # -- Preflight (require API key) ------------------------------------------
     api_check = check_api_key()
     if not api_check.passed:
