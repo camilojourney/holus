@@ -1083,21 +1083,21 @@ def test_enforce_platform_limit(marketing_agent):
     assert len(result) == 500  # Not truncated
 
 
-def test_product_info_extraction(marketing_agent):
-    """_product_info extracts relevant product details with authority framing."""
-    products_data = {
-        "products": {
-            "pilaster": {
-                "name": "Pilaster.ai",
-                "tagline": "AI images made easy",
-                "description": "Generate stunning AI images",
-                "audience": "Content creators",
-                "pain_point": "Complex AI tools",
-            }
+def test_product_info_extraction():
+    """format_product_info extracts relevant product details with authority framing."""
+    from holus.agents.marketing.prompts import format_product_info
+
+    products = {
+        "pilaster": {
+            "name": "Pilaster.ai",
+            "tagline": "AI images made easy",
+            "description": "Generate stunning AI images",
+            "audience": "Content creators",
+            "pain_point": "Complex AI tools",
         }
     }
 
-    info = marketing_agent._product_info("pilaster", products_data)
+    info = format_product_info("pilaster", products)
 
     assert "Pilaster" in info
     assert "proof point" in info  # authority framing
@@ -1106,11 +1106,11 @@ def test_product_info_extraction(marketing_agent):
     assert "Complex AI tools" in info
 
 
-def test_product_info_missing_product(marketing_agent):
-    """_product_info handles missing product gracefully."""
-    products_data = {"products": {}}
+def test_product_info_missing_product():
+    """format_product_info handles missing product gracefully."""
+    from holus.agents.marketing.prompts import format_product_info
 
-    info = marketing_agent._product_info("nonexistent", products_data)
+    info = format_product_info("nonexistent", {})
 
     # Should show N/A for missing fields (capitalized product name)
     assert "Nonexistent" in info

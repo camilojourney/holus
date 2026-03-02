@@ -812,8 +812,6 @@ class MarketingAgent(BaseAgent):
 
     def _write_queue_item(self, piece: GeneratedPiece, queue_dir: Path) -> Path:
         """Write a content piece to the queue as YAML (matches content_queue.py)."""
-        import yaml
-
         path = queue_dir / f"{piece.piece_id}.yaml"
         data = {
             "piece_id": piece.piece_id,
@@ -982,13 +980,6 @@ class MarketingAgent(BaseAgent):
             text = self._fallback_content_text(decision)
 
         return self._enforce_platform_limit(text, decision.platform), self.config.sonnet_model
-
-    def _product_info(self, product_key: str, products_data: dict[str, Any]) -> str:
-        """Legacy product info helper — delegates to format_product_info."""
-        products = products_data.get("products", {})
-        if not isinstance(products, dict):
-            return "No product details available."
-        return format_product_info(product_key, products)
 
     def _fallback_content_text(self, decision: ContentDecision) -> str:
         """Generate fallback content with authority-building voice."""

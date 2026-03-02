@@ -388,24 +388,3 @@ Key Features: {", ".join(product_data.get("features", []))}
 Value Proposition: {product_data.get("value_prop", product_data.get("tagline", "N/A"))}
 Pain Point Solved: {product_data.get("pain_point", "N/A")}
 """
-
-
-# ---------------------------------------------------------------------------
-# Helper: Format Platform Guidelines
-# ---------------------------------------------------------------------------
-
-
-def format_platform_guidelines(platform: str, knowledge: dict[str, Any]) -> str:
-    """Extract platform-specific guidelines from the knowledge base."""
-    platform_data = knowledge.get("platforms", {}).get(platform, {})
-
-    if not platform_data:
-        return "No specific platform guidelines available."
-
-    return f"""**Best Practices for {platform.capitalize()}**
-
-- Character Limit: {platform_data.get("char_limit", "N/A")}
-- Optimal Post Time: {platform_data.get("best_time", "N/A")}
-- Engagement Drivers: {", ".join(platform_data.get("engagement_drivers", []))}
-- Content Formats: {", ".join(platform_data.get("formats", []))}
-"""
