@@ -1,19 +1,83 @@
-"""Publish all approved social media content via the social-media-automatization API."""
+"""Publish all approved social media content via the social-media-automatization API.
+
+Supports --dry-run to preview what would be posted without actually publishing.
+"""
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import os
 import sys
 
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
-from holus.integrations.social_media import PublishRequest, SocialMediaClient
+from holus.integrations.social_media import (
+    PLATFORM_CHAR_LIMITS,
+    PublishRequest,
+    SocialMediaClient,
+)
 
 from .content_queue import list_approved, mark_published
 
 console = Console()
+
+
+def dry_run() -> None:
+    """Show what would be published without actually posting."""
+    approved = list_approved()
+    if not approved:
+        console.print("[yellow]No approved content to publish.[/yellow]")
+        return
+
+    console.print(f"[cyan]DRY RUN — {len(approved)} approved piece(s)[/cyan]\n")
+
+    table = Table(title="Content Preview")
+    table.add_column("ID", style="cyan", width=10)
+    table.add_column("Platform", style="green", width=12)
+    table.add_column("Chars", justify="right", width=8)
+    table.add_column("Limit", justify="right", width=8)
+    table.add_column("Status", width=8)
+    table.add_column("Preview", max_width=60)
+
+    warnings: list[str] = []
+    for content in approved:
+        char_count = len(content.text)
+        limit = PLATFORM_CHAR_LIMITS.get(content.platform.lower(), 0)
+        over = char_count > limit if limit else False
+        status = "[red]OVER[/red]" if over else "[green]OK[/green]"
+
+        if over:
+            warnings.append(
+                f"{content.piece_id}: {content.platform} — {char_count} chars exceeds {limit} limit"
+            )
+
+        # Truncate preview to first 55 chars, replace newlines
+        preview = content.text.replace("\n", " ")[:55]
+        if len(content.text) > 55:
+            preview += "..."
+
+        table.add_row(
+            content.piece_id,
+            content.platform,
+            str(char_count),
+            str(limit) if limit else "n/a",
+            status,
+            preview,
+        )
+
+    console.print(table)
+
+    if warnings:
+        console.print("\n[red]Warnings:[/red]")
+        for w in warnings:
+            console.print(f"  [red]x {w}[/red]")
+    else:
+        console.print("\n[green]All content within platform limits.[/green]")
+
+    console.print("\n[dim]Run [bold]just publish-approved[/bold] to publish for real.[/dim]")
 
 
 async def publish_all() -> None:
@@ -78,8 +142,19 @@ async def publish_all() -> None:
 
 def main() -> None:
     """Main entry point."""
+    parser = argparse.ArgumentParser(description="Publish approved content")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be published without actually posting",
+    )
+    args = parser.parse_args()
+
     try:
-        asyncio.run(publish_all())
+        if args.dry_run:
+            dry_run()
+        else:
+            asyncio.run(publish_all())
     except KeyboardInterrupt:
         console.print("\n[yellow]Publishing cancelled by user.[/yellow]")
         sys.exit(1)
