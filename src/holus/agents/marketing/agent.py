@@ -39,6 +39,7 @@ from holus.agents.marketing.prompts import (
     format_product_info,
     format_voice,
 )
+from holus.agents.marketing.repurpose import repurpose_content
 from holus.integrations.claude_api.client import CachedPrompt
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
@@ -115,6 +116,8 @@ class MarketingAgent(BaseAgent):
         Platform.TWITTER: 280,
         Platform.LINKEDIN: 3000,
         Platform.INSTAGRAM: 2200,
+        Platform.THREADS: 500,
+        Platform.FACEBOOK: 63206,
     }
 
     def build_graph(self) -> StateGraph[MarketingState]:
@@ -346,6 +349,37 @@ class MarketingAgent(BaseAgent):
                         "product": decision.product,
                     }
                 )
+
+                # Repurpose LinkedIn post to secondary platforms
+                try:
+                    repurposed = await repurpose_content(
+                        original_text=generated_text,
+                        decision=decision,
+                        claude_client=self.claude,
+                        brand=brand,
+                        cycle_id=state.get("cycle_id", "cycle"),
+                        piece_index=index,
+                        agent_id=self.agent_name,
+                    )
+                    for rp in repurposed:
+                        rp_queue_path = self._write_queue_item(rp, queue_dir)
+                        generated_content.append(rp.model_dump(mode="json"))
+                        post_results.append(
+                            {
+                                "piece_id": rp.piece_id,
+                                "status": "pending_review",
+                                "queue_path": str(rp_queue_path),
+                                "platform": rp.platform.value,
+                                "product": decision.product,
+                            }
+                        )
+                except Exception as repurpose_exc:
+                    logger.warning(
+                        "Repurposing failed for decision %d: %s",
+                        index,
+                        repurpose_exc,
+                    )
+
             except Exception as exc:
                 logger.exception(
                     "Act stage failed for decision %s", decision.model_dump(mode="json")
