@@ -4,9 +4,9 @@ Last updated: 2026-03-01
 
 ## Priority Guide
 - **P0** — Blocking. Nothing else works until this is fixed.
-- **P1** — Critical path. Required for first end-to-end marketing cycle.
-- **P2** — High value. Major feature or integration.
-- **P3** — Medium value. Enhancement or optimization.
+- **P1** — Critical path. Required for first authority-building content cycle.
+- **P2** — High value. Enables automated research and content repurposing.
+- **P3** — Medium value. Agent code updates for the new strategy.
 - **P4** — Nice to have. Polish or future prep.
 
 ---
@@ -17,7 +17,7 @@ Last updated: 2026-03-01
 |------|------|--------|
 | 001 | Core Infrastructure | Partial (config, kill switch, events, health: done; docker compose, event bus integration: not tested) |
 | 009 | Autonomous Build System | Partial (builder agent, run lock, trajectory logging: done; launchd scheduler: not tested) |
-| 010 | Marketing Agent | Implemented (ReAct loop, content queue, review CLI, 247 tests) |
+| 010 | Marketing Agent | Implemented (ReAct loop, content queue, review CLI, 247 tests) — NEEDS UPDATE for authority engine |
 | 012 | Knowledge & Learning | Implemented (knowledge base, trajectory, learning loop, knowledge gaps, archive rotation, README index: all done) |
 | 013 | Scheduling & Runtime | Partial (launchd plists exist; not tested/activated) |
 | 014 | Genpeli Integration | Partial (video_workflow.py + video_queue.py built; genpeli MCP server: not built) |
@@ -26,34 +26,50 @@ Last updated: 2026-03-01
 
 ---
 
-## Queue
+## Sprint 1 Complete (2026-03-01)
 
-### P1 — First End-to-End Marketing Cycle
+All 18 tasks from the infrastructure sprint are done:
+- Core infrastructure, marketing agent, knowledge learning: IMPLEMENTED
+- Silo integrations (video/image workflows, MCP configs): BUILT
+- Knowledge base (voice profile, content frameworks, 9 files): SEEDED
+- 247 tests passing, health checks working, launchd plists validated
+- See `.self-improvement/reports/builder/` for cycle details
 
-- [x] [BUILD] Implement `knowledge_gaps.py` — Spec 012 SPEC-004. Agent needs to flag missing info. Create `src/holus/memory/knowledge_gaps.py` with `file_knowledge_gap()` and `list_open_gaps()`. Add tests.
-- [x] [BUILD] Add metadata headers to all knowledge files — Spec 012 requires each file in `.self-improvement/knowledge/current/` to have `Last updated`, `Updated by`, `Confidence`, `Affects`, `Research cadence` headers. Audit all 6 files.
-- [x] [INTEGRATE] Add social-media MCP config — Add social-media MCP server entry to Holus MCP config so the marketing agent can call `post_text`, `schedule_post`, etc. Config points to `/Users/mini/.openclaw/workspace/github/social-media-automatization`.
-- [x] [INTEGRATE] Add pilaster MCP config — Add pilaster MCP server entry to Holus MCP config. Config points to `/Users/mini/.openclaw/workspace/github/pilaster`.
-- [x] [REVIEW] Verify marketing agent runs end-to-end in fallback mode — Run `uv run python -m holus run marketing --once` without API keys. Agent should use fallback decisions and template content. Fix any runtime errors.
+---
 
-### P2 — Silo Integration (Close the Loop)
+## Sprint 2: Authority Engine Build
 
-- [x] [INTEGRATE] Add `get_analytics` tool to social-media MCP — Spec 016 SPEC-004. The social-media-automatization repo needs this tool added to its MCP server so the marketing agent's observe stage can read real analytics.
-- [x] [INTEGRATE] Add `get_top_posts` tool to social-media MCP — Same as above. Needed for the learning loop to know what content performs best.
-- [x] [BUILD] Implement video workflow (`video_workflow.py`) — Spec 014 SPEC-002. Marketing agent integration for Genpeli video processing. Create `src/holus/agents/marketing/video_workflow.py`.
-- [x] [BUILD] Implement image workflow (`image_workflow.py`) — Spec 015 SPEC-002. Marketing agent integration for Pilaster image generation. Create `src/holus/agents/marketing/image_workflow.py`.
-- [x] [BUILD] Implement video queue (`video_queue.py`) — Spec 014 SPEC-004. Review queue for videos, similar to content queue. Create `src/holus/agents/marketing/video_queue.py` and `review_videos.py`.
+Strategic shift: from "promote products" to "build authority for AI consulting pipeline."
+Source document: `tasks/next.md`
 
-### P3 — Growth Engine (Strategy Quality)
+### P0 — Identity Foundation
 
-- [x] [BUILD] Voice profile capture — Growth engine vision requires content that sounds like Camilo. Analyze existing LinkedIn/Twitter posts to extract voice characteristics. Write results to `.self-improvement/knowledge/current/voice-profile.md`.
-- [x] [BUILD] Structured content framework library — Growth engine vision defines 7 frameworks (Breakdown, Contrarian, Before/After, Thread, BTS, Engagement Bait, Data Drop) + hook templates. Structure these into a machine-readable format in `.self-improvement/knowledge/current/content-frameworks.md`.
-- [x] [BUILD] Weekly learning loop — Spec 012 SPEC-003. Manager agent reads trajectory + analytics weekly, uses Opus to extract patterns, updates MEMORY.md. Wire up `just improve` to run this.
-- [x] [BUILD] Performance patterns knowledge file — Auto-generated from analytics data. Create `.self-improvement/knowledge/current/performance-patterns.md` seeded with the correct metadata header. Updated by the weekly learning loop.
+- [x] [BUILD] Draft `config/brand.yaml` scaffold — Create the file structure with all required sections (story, positioning, offer, target client, products-as-proof, voice, anti-patterns, competitor accounts). Fill in what's known from tasks/next.md. Mark sections needing Camilo's input with `# TODO: Camilo input needed`. This unblocks downstream tasks.
+- [x] [BUILD] Reframe `config/products.yaml` — Shift product descriptions from "features to promote" to "proof points for consulting authority." Each product becomes evidence of builder expertise, not the primary pitch.
 
-### P4 — Polish
+### P1 — Strategy Knowledge Rewrite
 
-- [x] [BUILD] Knowledge archive rotation — Spec 012 requires old knowledge versions to be moved to `archive/` when updated. Add utility function.
-- [x] [BUILD] Knowledge README.md index — Create `.self-improvement/knowledge/README.md` indexing all current knowledge files, their topics, and confidence levels.
-- [x] [REVIEW] Update specs/README.md status — Spec 010 is listed as "Not Started" but is Implemented. Spec 012 status should be "Partial". Sync all spec statuses.
-- [x] [REVIEW] Verify launchd scheduling works — Spec 013. Test `just schedule` and `just schedule-status`. Verify marketing agent cron runs every 30 min.
+- [x] [BUILD] Rewrite `content-marketing-strategy.md` — Replace generic research questions with authority-building strategy: LinkedIn-primary, 5 content pillars (builder stories, AI implementation frameworks, industry analysis, results/proof, contrarian takes), 5x/week LinkedIn cadence, consulting lead generation focus.
+- [ ] [BUILD] Rewrite `audience-profiles.md` — Add primary audience: consulting prospects (CTOs, VPs Eng, founders at 50-500 employee companies considering AI transformation, NYC market). Keep product audiences as secondary (brand builders, not pipeline).
+- [ ] [BUILD] Rewrite `platforms.md` — LinkedIn-first playbook: hook patterns, post formats (text/carousel/document/video), engagement tactics (comments, DMs, community), algorithm signals (dwell time, comments > likes, shares = gold). Other platforms = repurpose, don't create separate.
+- [ ] [BUILD] Update `growth-engine-vision.md` — Align with consulting goal: authority-building engine, not product promotion engine. Update target results to consulting metrics (inbound DMs, discovery calls, not just views).
+
+### P2 — Niche Research Capability
+
+- [ ] [BUILD] Seed `viral-frameworks.md` — New knowledge file. Research LinkedIn AI consulting/builder space. Document 10+ examples of viral posts: hook, structure, proof element, CTA, why it worked. Machine-readable format like content-frameworks.md.
+- [ ] [BUILD] Design niche research step — Write spec addendum for Spec 010: new observe sub-step that uses web search to find trending AI consulting content on LinkedIn. Define search queries, extraction patterns, output format. Write to `specs/010-marketing-agent.md` as SPEC-005.
+- [ ] [BUILD] Define search queries for niche research — Create `.self-improvement/knowledge/current/niche-research-queries.md` with curated search queries for monitoring the AI consulting/builder niche. Categories: competitor posts, trending topics, viral patterns, industry news.
+
+### P3 — Agent Code Updates (Spec 010 v2)
+
+- [ ] [BUILD] Write spec 017 — Authority Engine Agent Update. Covers: brand.yaml loading in observe, niche research step, authority framing in reason, content repurposing in act (LinkedIn → Twitter → Instagram → Threads → Facebook). This is the agent code spec for Sprint 2.
+- [ ] [BUILD] Implement brand.yaml config loader — Add `config/brand.yaml` reading to `src/holus/core/config.py`. Pydantic model for brand identity. Loaded into every marketing agent cycle.
+- [ ] [BUILD] Update marketing agent prompts — Replace product-promotion framing with authority-building framing in `src/holus/agents/marketing/prompts.py`. Reference brand.yaml, use consulting language, builder mindset.
+- [ ] [BUILD] Implement content repurposing logic — New module `src/holus/agents/marketing/repurpose.py`. Takes LinkedIn post → adapts for Twitter (condensed), Instagram (visual), Threads (conversational), Facebook (bilingual ES if applicable). Platform-specific formatting.
+- [ ] [BUILD] Implement niche research step in observe stage — Add web search capability to marketing agent's observe phase. Agent searches for trending content, extracts patterns, stores in knowledge base. Uses Claude tool_use with web_search.
+
+### P4 — Polish & Infrastructure
+
+- [ ] [BUILD] Fix `just check` PATH issue — ruff needs `uv run` prefix in justfile. Minor but annoying.
+- [ ] [REVIEW] End-to-end authority engine test — Run full marketing agent cycle with brand.yaml → research → reason → create content → review queue. Verify content sounds like Camilo, uses authority framing, targets consulting prospects.
+- [ ] [BUILD] Update `.self-improvement/MEMORY.md` — Refresh system memory with Sprint 2 learnings: what changed strategically, new file locations, updated agent behavior.
