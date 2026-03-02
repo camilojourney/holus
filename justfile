@@ -184,6 +184,30 @@ sprint-loop:
 
 # -- Scheduling (launchd) — marketing + health crons -----------------------
 
+# Validate all launchd plist files (syntax + paths)
+validate-plists:
+    @echo "=== Plist Syntax ==="
+    @plutil -lint infra/launchd/com.holus.marketing.plist
+    @plutil -lint infra/launchd/com.holus.health.plist
+    @plutil -lint infra/launchd/com.holus.improve.plist
+    @plutil -lint infra/launchd/com.holus.builder.plist
+    @echo ""
+    @echo "=== Path Checks ==="
+    @test -d /Users/mini/.openclaw/workspace/github/holus && echo "PASS: working directory exists" || echo "FAIL: working directory missing"
+    @test -x /opt/homebrew/bin/uv && echo "PASS: uv found at /opt/homebrew/bin/uv" || echo "FAIL: uv not found"
+    @test -x /opt/homebrew/bin/just && echo "PASS: just found at /opt/homebrew/bin/just" || echo "FAIL: just not found"
+    @test -d logs && echo "PASS: logs/ directory exists" || echo "WARN: logs/ missing — run mkdir -p logs"
+    @echo ""
+    @echo "All plist validation complete."
+
+# Test scheduling by running health check once (safe, no API keys needed)
+schedule-test:
+    @mkdir -p logs
+    @echo "Running health check to verify plist command works..."
+    @cd /Users/mini/.openclaw/workspace/github/holus && /opt/homebrew/bin/uv run python -m holus health
+    @echo ""
+    @echo "Health check succeeded. Plist command is valid."
+
 schedule:
     mkdir -p logs
     cp infra/launchd/com.holus.marketing.plist ~/Library/LaunchAgents/ 2>/dev/null || true

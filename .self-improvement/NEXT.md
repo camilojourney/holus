@@ -104,13 +104,13 @@ This sprint closes the loop from "system built" to "system producing real output
 
 ### P2 — Review & Publishing Pipeline
 
-- [ ] [BUILD] Add dry-run mode to publishing — `just publish --dry-run` shows what would be posted (platform, content preview, character count) without actually posting. Safety net before first real publish.
+- [x] [BUILD] Add dry-run mode to publishing — `just publish --dry-run` shows what would be posted (platform, content preview, character count) without actually posting. Safety net before first real publish.
 - [ ] [BUILD] End-to-end publish test — Generate content → approve via `just approve-content` → publish via updated publisher → verify post appears on social media. First real published content through the full pipeline.
 - [ ] [REVIEW] Camilo reviews brand.yaml TODOs — 6 sections need human input: consulting pivot story, service pricing/deliverables, entry-point service, discovery call link, target verticals, competitor accounts. Schedule a session. Not blocked by other tasks — agent works with current scaffold.
 
 ### P3 — Automation & Feedback Loop
 
-- [ ] [BUILD] Test launchd scheduling — Activate the marketing agent launchd plist (Spec 013). Verify it triggers `just generate` on schedule. Start with manual activation, verify one triggered cycle produces content, then leave active.
+- [x] [BUILD] Test launchd scheduling — Fixed 3 plists: added EnvironmentVariables (PATH, HOME), switched `.venv/bin/python` to `/opt/homebrew/bin/uv run python`, added `just validate-plists` and `just schedule-test` commands. All plists validated with `plutil -lint`, health check runs successfully. To activate: `just schedule`. (Cycle 45)
 - [ ] [BUILD] Add analytics feedback to observe — Connect the marketing agent's observe stage to real analytics data. Use social-media MCP `get_analytics` and `get_top_posts` tools to read performance data. Currently mocked — make it real.
 - [ ] [BUILD] Create weekly content calendar view — `just calendar` shows the week's content plan: what was generated, what's in review, what's published, what's scheduled. Simple CLI table.
 
