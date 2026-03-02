@@ -75,6 +75,11 @@ class HolusConfig(BaseSettings):
     langfuse_secret_key: str = Field(default="", alias="LANGFUSE_SECRET_KEY")
     langfuse_public_key: str = Field(default="", alias="LANGFUSE_PUBLIC_KEY")
     late_api_key: str = Field(default="", alias="LATE_API_KEY")
+    posting_api_key: str = Field(default="", alias="POSTING_API_KEY")
+    social_media_api_base_url: str = Field(
+        default="http://localhost:8000",
+        alias="SOCIAL_MEDIA_API_BASE_URL",
+    )
 
     # ---- Infrastructure (env or YAML) --------------------------------------
     redis_url: str = Field(default="redis://localhost:6379", alias="REDIS_URL")

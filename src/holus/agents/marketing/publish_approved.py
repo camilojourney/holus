@@ -1,4 +1,6 @@
-"""Publish all approved social media content via Late API."""
+"""Publish all approved social media content via the social-media-automatization API."""
+
+from __future__ import annotations
 
 import asyncio
 import os
@@ -7,7 +9,7 @@ import sys
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from holus.integrations.late_api import LateAPIClient, PostRequest
+from holus.integrations.social_media import PublishRequest, SocialMediaClient
 
 from .content_queue import list_approved, mark_published
 
@@ -15,13 +17,14 @@ console = Console()
 
 
 async def publish_all() -> None:
-    """Publish all approved content pieces."""
-    # Check for API key
-    api_key = os.getenv("LATE_API_KEY")
+    """Publish all approved content pieces via the social-media API."""
+    api_key = os.getenv("POSTING_API_KEY", "")
     if not api_key:
-        console.print("[red]ERROR: LATE_API_KEY not set in environment[/red]")
-        console.print("[dim]Set it in .env or export LATE_API_KEY=your_key[/dim]")
+        console.print("[red]ERROR: POSTING_API_KEY not set in environment[/red]")
+        console.print("[dim]Set it in .env or export POSTING_API_KEY=your_key[/dim]")
         sys.exit(1)
+
+    base_url = os.getenv("SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000")
 
     # Get approved content
     approved = list_approved()
@@ -31,8 +34,7 @@ async def publish_all() -> None:
 
     console.print(f"[cyan]Found {len(approved)} approved content pieces[/cyan]\n")
 
-    # Initialize Late API client
-    async with LateAPIClient(api_key) as client:
+    async with SocialMediaClient(base_url=base_url, api_key=api_key) as client:
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -45,34 +47,29 @@ async def publish_all() -> None:
                 )
 
                 try:
-                    # Create post request
-                    request = PostRequest(
-                        text=content.text,
+                    request = PublishRequest(
+                        content=content.text,
                         platforms=[content.platform],
-                        media_urls=[],
-                        schedule_time=None,  # Immediate posting
+                        style="raw",  # Content is already written by the agent
                     )
 
-                    # Publish
                     result = await client.publish(request)
 
-                    # Check for failures
-                    if result.failed_platforms:
-                        console.print(
-                            f"[red]✗ Failed to publish {content.piece_id} to "
-                            f"{', '.join(result.failed_platforms)}[/red]"
-                        )
-                        for platform, error in result.error_details.items():
-                            console.print(f"  [dim]{platform}: {error}[/dim]")
+                    if result.failed_targets:
+                        for target in result.failed_targets:
+                            console.print(
+                                f"[red]x Failed {content.piece_id} on "
+                                f"{target.platform}: {target.error}[/red]"
+                            )
                     else:
                         console.print(
-                            f"[green]✓ Published {content.piece_id} to "
-                            f"{content.platform} (post_id: {result.post_id})[/green]"
+                            f"[green]v Published {content.piece_id} to "
+                            f"{content.platform} (id: {result.publish_id})[/green]"
                         )
-                        mark_published(content.piece_id, result.post_id)
+                        mark_published(content.piece_id, result.publish_id)
 
                 except Exception as e:
-                    console.print(f"[red]✗ Error publishing {content.piece_id}: {e}[/red]")
+                    console.print(f"[red]x Error publishing {content.piece_id}: {e}[/red]")
 
                 progress.remove_task(task)
 
