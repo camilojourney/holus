@@ -153,6 +153,35 @@ class BrandIdentity(BaseModel):
     platform_strategy: dict[str, Any] = Field(default_factory=dict)
 
 
+class NicheInsight(BaseModel):
+    """A single insight extracted from niche research."""
+
+    source_url: str = ""
+    source_title: str = ""
+    category: str = Field(
+        default="trending_topic",
+        description="competitor_content | trending_topic | viral_pattern | industry_news",
+    )
+    hook: str | None = None
+    topic: str = ""
+    format: str = Field(default="text", description="text | carousel | video | document | image")
+    engagement_signals: str = ""
+    why_it_works: str = ""
+    relevance_to_camilo: str = ""
+    pillar_fit: list[str] = Field(default_factory=list)
+    extracted_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
+
+
+class NicheResearchResult(BaseModel):
+    """Complete niche research output for one cycle."""
+
+    queries_run: list[str] = Field(default_factory=list)
+    insights: list[NicheInsight] = Field(default_factory=list)
+    trending_topics: list[str] = Field(default_factory=list)
+    recommended_angles: list[str] = Field(default_factory=list)
+    research_duration_ms: int = 0
+
+
 class MarketingCycleReport(BaseModel):
     """Summary of a complete marketing cycle run.
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import yaml
@@ -1064,7 +1064,8 @@ async def test_full_marketing_cycle(marketing_agent, temp_config_files):
     # Run full cycle
     state = marketing_agent.default_state()
 
-    # Observe
+    # Observe (skip niche research — it uses claude.call and would interfere with mock_call counter)
+    marketing_agent._niche_research = AsyncMock(return_value={})  # type: ignore[method-assign]
     state.update(await marketing_agent.observe(state))
     assert "products" in state["product_updates"]
 
