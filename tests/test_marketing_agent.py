@@ -87,6 +87,51 @@ def temp_config_files(tmp_path):
         "- Best posting time: 9-11am EST\n"
     )
 
+    # Brand config
+    brand_path = tmp_path / "config" / "brand.yaml"
+    brand_data = {
+        "story": {
+            "origin": "Colombian AI engineer who moved to NYC",
+            "journey": ["Built Pilaster", "Built genpeli"],
+        },
+        "positioning": {
+            "one_liner": "I build AI systems that actually work in production.",
+            "category": "AI implementation consultant",
+            "differentiation": ["Builder, not advisor"],
+            "what_i_am": ["A builder who shows the work"],
+            "what_i_am_not": ["Not a guru selling a course"],
+            "market": "NYC",
+        },
+        "voice": {
+            "archetype": "Builder-philosopher",
+            "summary": "Direct, intellectually honest",
+            "tone": ["First person always", "Short paragraphs"],
+            "hooks": {"contrarian": "Most people are playing with AI."},
+            "closers": {"question": "What would you build?"},
+            "language": {"primary": "en", "secondary": "es"},
+        },
+        "anti_patterns": {
+            "language": ["leverage synergies", "game-changing"],
+            "style": ["Walls of text"],
+            "content": ["Financial advice"],
+        },
+        "content_pillars": [
+            {
+                "id": "builder_stories",
+                "name": "Builder Stories",
+                "description": "I built X, here's what I learned",
+                "frequency": "2x/week",
+                "products": ["pilaster", "genpeli"],
+                "goal": "Demonstrate expertise",
+            }
+        ],
+        "platform_strategy": {
+            "primary": "linkedin",
+            "cadence": {"linkedin": "5x/week", "twitter": "3x/week"},
+        },
+    }
+    brand_path.write_text(yaml.dump(brand_data))
+
     # Queue directory
     queue_dir = tmp_path / "data" / "content-queue"
     queue_dir.mkdir(parents=True, exist_ok=True)
@@ -98,6 +143,7 @@ def temp_config_files(tmp_path):
 
     return {
         "products_path": products_path,
+        "brand_path": brand_path,
         "knowledge_dir": knowledge_dir,
         "memory_path": memory_path,
         "queue_dir": queue_dir,
@@ -161,6 +207,7 @@ def marketing_agent(mock_config, temp_config_files, monkeypatch):
     """Create a MarketingAgent with mocked dependencies."""
     # Monkeypatch the class-level paths to use temp paths
     monkeypatch.setattr(MarketingAgent, "_PRODUCTS_PATH", temp_config_files["products_path"])
+    monkeypatch.setattr(MarketingAgent, "_BRAND_PATH", temp_config_files["brand_path"])
     monkeypatch.setattr(MarketingAgent, "_KNOWLEDGE_DIR", temp_config_files["knowledge_dir"])
     monkeypatch.setattr(MarketingAgent, "_MEMORY_PATH", temp_config_files["memory_path"])
     monkeypatch.setattr(MarketingAgent, "_QUEUE_DIR", temp_config_files["queue_dir"])
@@ -1041,3 +1088,109 @@ async def test_full_marketing_cycle(marketing_agent, temp_config_files):
     trajectory_path = temp_config_files["trajectory_path"]
     content = trajectory_path.read_text()
     assert len(content.strip()) > 0
+
+
+# ---------------------------------------------------------------------------
+# Test Brand Identity Loading
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_observe_loads_brand_identity(marketing_agent, temp_config_files):
+    """Observe stage loads and validates brand identity from brand.yaml."""
+    state = marketing_agent.default_state()
+
+    result = await marketing_agent.observe(state)
+
+    assert "brand_identity" in result
+    brand = result["brand_identity"]
+
+    # Positioning validated through Pydantic model
+    assert (
+        brand["positioning"]["one_liner"] == "I build AI systems that actually work in production."
+    )
+    assert brand["positioning"]["category"] == "AI implementation consultant"
+    assert "Builder, not advisor" in brand["positioning"]["differentiation"]
+
+    # Voice validated
+    assert brand["voice"]["archetype"] == "Builder-philosopher"
+    assert "First person always" in brand["voice"]["tone"]
+    assert brand["voice"]["hooks"]["contrarian"] == "Most people are playing with AI."
+
+    # Content pillars validated
+    assert len(brand["content_pillars"]) == 1
+    assert brand["content_pillars"][0]["id"] == "builder_stories"
+
+    # Anti-patterns loaded
+    assert "leverage synergies" in brand["anti_patterns"]["language"]
+
+    # Platform strategy loaded
+    assert brand["platform_strategy"]["primary"] == "linkedin"
+
+
+@pytest.mark.asyncio
+async def test_observe_handles_missing_brand_yaml(marketing_agent, monkeypatch):
+    """Observe stage returns empty brand_identity when brand.yaml is missing."""
+    monkeypatch.setattr(MarketingAgent, "_BRAND_PATH", Path("/nonexistent/brand.yaml"))
+
+    state = marketing_agent.default_state()
+    result = await marketing_agent.observe(state)
+
+    assert result["brand_identity"] == {}
+
+
+@pytest.mark.asyncio
+async def test_observe_handles_invalid_brand_yaml(marketing_agent, temp_config_files):
+    """Observe stage falls back to raw dict when brand.yaml has invalid structure."""
+    # Write invalid YAML that is valid YAML but fails Pydantic validation
+    brand_path = temp_config_files["brand_path"]
+    brand_path.write_text(
+        yaml.dump(
+            {
+                "content_pillars": [
+                    {"missing_required": "id field"}  # ContentPillar requires id, name, description
+                ]
+            }
+        )
+    )
+
+    state = marketing_agent.default_state()
+    result = await marketing_agent.observe(state)
+
+    # Should fall back to the raw dict (not crash)
+    assert isinstance(result["brand_identity"], dict)
+    assert "content_pillars" in result["brand_identity"]
+
+
+@pytest.mark.asyncio
+async def test_observe_handles_empty_brand_yaml(marketing_agent, temp_config_files):
+    """Observe stage returns empty dict for empty brand.yaml."""
+    brand_path = temp_config_files["brand_path"]
+    brand_path.write_text("")
+
+    state = marketing_agent.default_state()
+    result = await marketing_agent.observe(state)
+
+    assert result["brand_identity"] == {}
+
+
+def test_load_brand_identity_validates_structure(marketing_agent, temp_config_files):
+    """_load_brand_identity validates brand.yaml through Pydantic model."""
+    brand = marketing_agent._load_brand_identity()
+
+    assert isinstance(brand, dict)
+    # All top-level BrandIdentity fields present
+    assert "positioning" in brand
+    assert "voice" in brand
+    assert "content_pillars" in brand
+    assert "anti_patterns" in brand
+    assert "platform_strategy" in brand
+    assert "story" in brand
+
+
+def test_default_state_includes_brand_identity(marketing_agent):
+    """default_state includes brand_identity key."""
+    state = marketing_agent.default_state()
+
+    assert "brand_identity" in state
+    assert state["brand_identity"] == {}

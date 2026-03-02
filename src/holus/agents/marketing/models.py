@@ -1,12 +1,14 @@
 """Marketing agent data models.
 
-Pydantic models for content decisions, generated content, and marketing cycle reports.
+Pydantic models for content decisions, generated content, marketing cycle reports,
+and brand identity configuration.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -78,6 +80,66 @@ class GeneratedPiece(BaseModel):
         description="Content lifecycle status",
     )
     post_url: str | None = Field(default=None, description="URL after publishing (if published)")
+
+
+# ---------------------------------------------------------------------------
+# Brand Identity models (loaded from config/brand.yaml)
+# ---------------------------------------------------------------------------
+
+
+class BrandVoice(BaseModel):
+    """Voice configuration from brand.yaml."""
+
+    archetype: str = ""
+    summary: str = ""
+    tone: list[str] = Field(default_factory=list)
+    hooks: dict[str, str] = Field(default_factory=dict)
+    closers: dict[str, str] = Field(default_factory=dict)
+    language: dict[str, str] = Field(default_factory=dict)
+
+
+class BrandPositioning(BaseModel):
+    """Positioning from brand.yaml."""
+
+    one_liner: str = ""
+    category: str = ""
+    differentiation: list[str] = Field(default_factory=list)
+    what_i_am: list[str] = Field(default_factory=list)
+    what_i_am_not: list[str] = Field(default_factory=list)
+    market: str = ""
+
+
+class ContentPillar(BaseModel):
+    """Content pillar from brand.yaml."""
+
+    id: str
+    name: str
+    description: str
+    frequency: str = ""
+    products: list[str] = Field(default_factory=list)
+    goal: str = ""
+
+
+class BrandIdentity(BaseModel):
+    """Full brand identity loaded from config/brand.yaml.
+
+    Graceful defaults for all fields so the agent works even with
+    a partially filled brand.yaml or a missing file.
+    Extra fields from YAML are ignored so the schema can evolve.
+    """
+
+    model_config = {"extra": "ignore"}
+
+    story: dict[str, Any] = Field(default_factory=dict)
+    positioning: BrandPositioning = Field(default_factory=BrandPositioning)
+    offer: dict[str, Any] = Field(default_factory=dict)
+    target_client: dict[str, Any] = Field(default_factory=dict)
+    products_as_proof: dict[str, Any] = Field(default_factory=dict)
+    voice: BrandVoice = Field(default_factory=BrandVoice)
+    anti_patterns: dict[str, list[str]] = Field(default_factory=dict)
+    competitor_accounts: dict[str, Any] = Field(default_factory=dict)
+    content_pillars: list[ContentPillar] = Field(default_factory=list)
+    platform_strategy: dict[str, Any] = Field(default_factory=dict)
 
 
 class MarketingCycleReport(BaseModel):

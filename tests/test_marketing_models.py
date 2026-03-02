@@ -8,7 +8,11 @@ import pytest
 from pydantic import ValidationError
 
 from holus.agents.marketing.models import (
+    BrandIdentity,
+    BrandPositioning,
+    BrandVoice,
     ContentDecision,
+    ContentPillar,
     ContentType,
     GeneratedPiece,
     MarketingCycleReport,
@@ -358,3 +362,104 @@ def test_marketing_cycle_report_to_dict() -> None:
     assert data["decisions_made"] == 2
     assert data["products_covered"] == ["pilaster"]
     assert data["platforms_used"] == [Platform.LINKEDIN]
+
+
+# ---------------------------------------------------------------------------
+# BrandIdentity Tests
+# ---------------------------------------------------------------------------
+
+
+def test_brand_identity_empty_defaults() -> None:
+    """BrandIdentity has sensible defaults for all fields."""
+    brand = BrandIdentity()
+
+    assert brand.story == {}
+    assert brand.positioning.one_liner == ""
+    assert brand.voice.archetype == ""
+    assert brand.content_pillars == []
+    assert brand.anti_patterns == {}
+    assert brand.platform_strategy == {}
+
+
+def test_brand_identity_full() -> None:
+    """BrandIdentity validates a fully populated config."""
+    brand = BrandIdentity(
+        story={"origin": "Colombian AI engineer"},
+        positioning=BrandPositioning(
+            one_liner="I build AI systems",
+            category="AI consultant",
+            differentiation=["Builder, not advisor"],
+        ),
+        voice=BrandVoice(
+            archetype="Builder-philosopher",
+            summary="Direct, honest",
+            tone=["First person always"],
+        ),
+        content_pillars=[
+            ContentPillar(
+                id="builder_stories",
+                name="Builder Stories",
+                description="I built X",
+            )
+        ],
+        anti_patterns={"language": ["leverage synergies"]},
+        platform_strategy={"primary": "linkedin"},
+    )
+
+    assert brand.story["origin"] == "Colombian AI engineer"
+    assert brand.positioning.one_liner == "I build AI systems"
+    assert brand.voice.archetype == "Builder-philosopher"
+    assert len(brand.content_pillars) == 1
+    assert brand.content_pillars[0].id == "builder_stories"
+    assert "leverage synergies" in brand.anti_patterns["language"]
+
+
+def test_brand_identity_model_dump() -> None:
+    """BrandIdentity serializes to JSON-compatible dict."""
+    brand = BrandIdentity(
+        positioning=BrandPositioning(one_liner="Test"),
+        voice=BrandVoice(archetype="Builder"),
+    )
+
+    data = brand.model_dump(mode="json")
+    assert isinstance(data, dict)
+    assert data["positioning"]["one_liner"] == "Test"
+    assert data["voice"]["archetype"] == "Builder"
+
+
+def test_brand_positioning_defaults() -> None:
+    """BrandPositioning has empty string defaults."""
+    pos = BrandPositioning()
+    assert pos.one_liner == ""
+    assert pos.category == ""
+    assert pos.differentiation == []
+    assert pos.market == ""
+
+
+def test_brand_voice_defaults() -> None:
+    """BrandVoice has empty defaults."""
+    voice = BrandVoice()
+    assert voice.archetype == ""
+    assert voice.tone == []
+    assert voice.hooks == {}
+    assert voice.closers == {}
+
+
+def test_content_pillar_requires_fields() -> None:
+    """ContentPillar requires id, name, and description."""
+    with pytest.raises(ValidationError):
+        ContentPillar()  # type: ignore[call-arg]
+
+    pillar = ContentPillar(id="test", name="Test", description="Description")
+    assert pillar.id == "test"
+    assert pillar.frequency == ""  # optional
+    assert pillar.products == []  # optional
+
+
+def test_brand_identity_extra_fields_ignored() -> None:
+    """BrandIdentity ignores unknown top-level keys from YAML."""
+    brand = BrandIdentity(
+        unknown_field="should be ignored",  # type: ignore[call-arg]
+        positioning=BrandPositioning(one_liner="Test"),
+    )
+    assert brand.positioning.one_liner == "Test"

@@ -22,7 +22,13 @@ from langgraph.graph import END, START, StateGraph
 from pydantic import ValidationError
 
 from holus.agents.base import BaseAgent
-from holus.agents.marketing.models import ContentDecision, ContentType, GeneratedPiece, Platform
+from holus.agents.marketing.models import (
+    BrandIdentity,
+    ContentDecision,
+    ContentType,
+    GeneratedPiece,
+    Platform,
+)
 from holus.agents.marketing.prompts import OPUS_STRATEGY_PROMPT, SONNET_CONTENT_PROMPT
 from holus.integrations.claude_api.client import CachedPrompt
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
@@ -42,6 +48,7 @@ class MarketingState(TypedDict):
     knowledge: dict[str, str]
     memory_context: str
     queue_size_before: int
+    brand_identity: dict[str, Any]
 
     # Reason
     content_decisions: list[dict[str, Any]]
@@ -62,6 +69,7 @@ class MarketingAgent(BaseAgent):
     agent_name = "marketing-agent"
 
     _PRODUCTS_PATH = Path("config/products.yaml")
+    _BRAND_PATH = Path("config/brand.yaml")
     _KNOWLEDGE_DIR = Path(".self-improvement/knowledge/current")
     _MEMORY_PATH = Path(".self-improvement/MEMORY.md")
     _QUEUE_DIR = Path("data/content-queue")
@@ -127,6 +135,7 @@ class MarketingAgent(BaseAgent):
             "knowledge": {},
             "memory_context": "",
             "queue_size_before": 0,
+            "brand_identity": {},
             "content_decisions": [],
             "strategy_reasoning": "",
             "generated_content": [],
@@ -136,12 +145,13 @@ class MarketingAgent(BaseAgent):
         }
 
     async def observe(self, state: MarketingState) -> dict[str, Any]:
-        """Observe phase: load products config, knowledge base, and memory."""
+        """Observe phase: load products config, knowledge base, memory, and brand identity."""
         self.check_kill_switch()
 
         products = self._read_yaml(self._PRODUCTS_PATH)
         knowledge = self._read_knowledge_files(self._KNOWLEDGE_DIR)
         memory_context = self._read_text(self._MEMORY_PATH)
+        brand_identity = self._load_brand_identity()
 
         return {
             "product_updates": products,
@@ -149,7 +159,25 @@ class MarketingAgent(BaseAgent):
             "memory_context": memory_context,
             "analytics": state.get("analytics", {}),
             "queue_size_before": len(self._queue_files()),
+            "brand_identity": brand_identity,
         }
+
+    def _load_brand_identity(self) -> dict[str, Any]:
+        """Load and validate config/brand.yaml.
+
+        Returns a validated dict (via BrandIdentity Pydantic model) or an
+        empty dict if the file is missing or invalid.
+        """
+        raw = self._read_yaml(self._BRAND_PATH)
+        if not raw:
+            logger.warning("brand.yaml not found or empty; using empty brand identity")
+            return {}
+        try:
+            brand = BrandIdentity(**raw)
+            return brand.model_dump(mode="json")
+        except ValidationError:
+            logger.warning("brand.yaml validation failed; using raw dict", exc_info=True)
+            return raw
 
     async def reason(self, state: MarketingState) -> dict[str, Any]:
         """Reason phase: produce validated ContentDecision objects."""
