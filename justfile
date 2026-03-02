@@ -81,6 +81,10 @@ preflight:
 
 # -- Marketing Agent ---------------------------------------------------------
 
+# Generate ONE content cycle (no publishing). Requires ANTHROPIC_API_KEY.
+generate:
+    uv run python -m holus.generate
+
 run-marketing:
     uv run python -m holus run marketing --once
 
