@@ -1,81 +1,128 @@
-# Holus — Products Being Promoted
-# This is the source of truth for what Holus markets.
-# Update when products launch new features or audience changes.
-# Last updated: 2026-02-25
+# Holus — Products as Proof Points
+# Each product is evidence of builder expertise — not the primary pitch.
+# Content about these products serves the consulting authority goal:
+# "I built this. Here's what I learned. I can help you do the same."
+# Last updated: 2026-03-01
 
 products:
   pilaster:
     name: "Pilaster"
-    tagline: "AI image generation platform with memory"
+    tagline: "I built an AI image platform with memory"
     description: >
-      Pilaster is an AI image generation platform that remembers what works.
-      It owns three layers: (1) Character registry — LoRAs, reference sheets,
-      and metadata for consistent characters across all generations.
-      (2) Generation abstraction — a backend-agnostic interface that delegates
-      to ComfyUI, Replicate, Runway, or any future engine. Users never see
-      nodes — they pick a character, a template, and hit generate.
-      (3) Experiment memory — tracks every generation with outcomes and
-      quality scores, learns what prompts/settings work, warns before
-      repeating failures. Backends are swappable. The memory and characters
-      are the product.
+      Production AI system with three architectural layers I designed and shipped:
+      (1) Character registry — LoRAs, reference sheets, consistent identity across
+      thousands of generations. (2) Backend-agnostic generation — ComfyUI, Replicate,
+      Runway are swappable engines behind one interface. Users never see nodes.
+      (3) Experiment memory — every generation tracked with quality scores, the system
+      learns what works and warns before repeating failures.
+      The proof: backend abstraction, ML experiment tracking, and production reliability
+      patterns that transfer to any AI deployment.
     url: "https://pilaster.ai"
     status: "mvp_active"
-    audience: "AI artists, content creators, image generation users"
-    pain_point: "Can't keep characters consistent. Can't reproduce my best results. Locked into one tool."
+    audience: "Consulting prospects (CTOs/VPs evaluating AI platforms), AI artists, content creators"
+    pain_point: "Companies lock into one AI vendor. Can't reproduce results. No experiment tracking. Sound familiar?"
+    proof_narrative: "I built an AI image platform with memory. Here's what I learned about production AI systems."
+    consulting_angle: "Character consistency, experiment tracking, backend abstraction — the patterns transfer to any AI deployment."
+    key_stories:
+      - "How I made AI image generation backend-agnostic (and why your AI stack should be too)"
+      - "The experiment memory pattern — why every AI system needs to remember what works"
+      - "From ComfyUI nodes to production API — the abstraction that changed everything"
     capabilities:
-      - character_registry  # Store LoRAs, reference sheets, manage visual identity
-      - generation          # Backend-agnostic image generation (ComfyUI, Replicate, etc.)
-      - templates           # Reusable generation templates ("product shot", "anime scene")
-      - experiment_memory   # Track what worked, what failed, quality scores
-      - short_video         # AnimateDiff/SVD short clips via ComfyUI backend
+      - character_registry
+      - generation
+      - templates
+      - experiment_memory
+      - short_video
     platforms:
       - linkedin
       - tiktok
       - youtube_shorts
     content_types:
-      - tutorial          # "How to keep your AI characters consistent"
-      - before_after      # "Same character, 10 scenes — always consistent"
-      - tips              # "Why LoRAs are the secret to brand consistency"
-      - demo              # Live generation with character + template
-      - character_showcase # "Meet our mascot — made with Pilaster"
+      - builder_story      # "How I built backend-agnostic AI generation"
+      - framework          # "The experiment memory pattern for production AI"
+      - before_after       # "Same architecture, 3 different backends — zero code change"
+      - contrarian         # "Your AI vendor lock-in is a choice, not a requirement"
+      - results_proof      # "10K generations tracked. Here's what the data says."
 
   genpeli:
     name: "Genpeli"
-    tagline: "AI video editing pipeline"
+    tagline: "I automated my entire video editing pipeline with AI"
     description: >
-      Genpeli takes your raw video, removes silences and fillers,
-      burns captions, normalizes audio, and pushes to social.
-      For content creators who want polished shorts without manual editing.
+      End-to-end AI video processing pipeline I built for my own content:
+      silence/filler removal (Whisper), word-by-word caption burning (ffmpeg),
+      audio normalization, direct social media delivery. One command turns raw
+      footage into polished shorts. The engineering: Whisper in production,
+      ffmpeg pipeline orchestration, quality control automation.
+      The proof: real workflow automation that saves 4+ hours per video.
     url: ""
     status: "internal_pipeline"
-    audience: "Content creators, YouTubers, short-form video creators"
-    pain_point: "Video editing takes hours. I just want to press record and have it ready."
+    audience: "Consulting prospects (leaders evaluating workflow automation), content creators"
+    pain_point: "Your team spends hours on tasks AI could handle in minutes. Video editing is just one example."
+    proof_narrative: "I automated my video editing pipeline. Here's the architecture."
+    consulting_angle: "Workflow automation, Whisper integration, processing pipelines — real production AI, not demos."
+    key_stories:
+      - "How I replaced 4 hours of video editing with one command"
+      - "Whisper in production — the lessons nobody talks about"
+      - "Building an AI pipeline that handles edge cases (not just the happy path)"
+    capabilities:
+      - silence_removal
+      - caption_burning
+      - audio_normalization
+      - social_delivery
     platforms:
       - linkedin
       - instagram
     content_types:
-      - demo              # Before/after of raw vs processed video
-      - case_study        # "How I edited 10 videos in 1 hour"
-      - tutorial          # "Setting up your AI video pipeline"
+      - builder_story      # "How I built an AI video pipeline from scratch"
+      - framework          # "The 3-step pattern for AI workflow automation"
+      - results_proof      # "4 hours → 2 minutes. Real numbers, real pipeline."
+      - contrarian         # "Most AI demos skip the hard part: edge cases"
 
   invoz:
     name: "Invoz"
-    tagline: "Audio ML API"
+    tagline: "I built an audio ML API because Whisper setup shouldn't be painful"
     description: >
-      Invoz is a Whisper-powered audio processing API.
-      Transcription, speaker diarization, silence detection.
-      For developers building audio-first applications.
+      Whisper-powered audio processing API I built: transcription, speaker
+      diarization, silence detection. Clean REST interface over complex ML models.
+      The engineering: ML model serving, API design for developer experience,
+      production reliability for audio processing at scale.
+      The proof: turning bleeding-edge ML into developer-friendly APIs.
     url: ""
     status: "in_development"
-    audience: "Developers, technical founders"
-    pain_point: "Whisper setup is painful. I just need a clean API."
+    audience: "Consulting prospects (CTOs evaluating ML APIs), developers, technical founders"
+    pain_point: "Your team wants to use ML models but the gap from research to API is enormous."
+    proof_narrative: "I built an audio ML API. Here's how Whisper works in production."
+    consulting_angle: "API design, ML model serving, production reliability — the engineering behind the magic."
+    key_stories:
+      - "Why Whisper setup is painful and how to fix it"
+      - "Speaker diarization in the real world — it's harder than the demos suggest"
+      - "Building an ML API that developers actually want to use"
+    capabilities:
+      - transcription
+      - speaker_diarization
+      - silence_detection
     platforms:
       - linkedin
       - twitter
     content_types:
-      - technical_post    # API usage examples
-      - demo              # Transcription accuracy comparison
+      - builder_story      # "Why I built my own audio ML API"
+      - framework          # "From ML model to production API — the missing middle"
+      - results_proof      # "API response times, accuracy benchmarks, real usage"
+      - contrarian         # "Whisper is not plug-and-play. Here's what they don't tell you."
+
+# ─── CROSS-PRODUCT AUTHORITY THEMES ──────────────────────────────────────────
+# Stories that span multiple products, demonstrating breadth of AI expertise.
+
+cross_product_themes:
+  - theme: "Production AI patterns"
+    description: "Patterns that repeat across all three products — backend abstraction, experiment tracking, edge case handling."
+    products: ["pilaster", "genpeli", "invoz"]
+  - theme: "Builder vs. buyer"
+    description: "Why building gives you perspective that buying never will. Each product is a lesson in what vendors won't tell you."
+    products: ["pilaster", "genpeli", "invoz"]
+  - theme: "From side project to production"
+    description: "The journey from 'this works on my laptop' to 'this runs 24/7 with monitoring.' Each product made this jump."
+    products: ["pilaster", "genpeli", "invoz"]
 
 # Analytics source: social-media-automatization
 # Holus reads analytics via social-media-mcp — never stores them here.
-# To query analytics directly: check social-media-automatization repo.
