@@ -108,6 +108,10 @@ publish *args:
 publish-approved:
     uv run python -m holus.agents.marketing.publish_approved
 
+# Show weekly content calendar (pipeline status overview)
+calendar *args:
+    uv run python -m holus.agents.marketing.calendar_view {{args}}
+
 # Review pending videos
 review-videos:
     uv run python -m holus.agents.marketing.review_videos
