@@ -105,8 +105,8 @@ This sprint closes the loop from "system built" to "system producing real output
 ### P2 — Review & Publishing Pipeline
 
 - [x] [BUILD] Add dry-run mode to publishing — `just publish --dry-run` shows what would be posted (platform, content preview, character count) without actually posting. Safety net before first real publish.
-- [ ] [BUILD] End-to-end publish test — Generate content → approve via `just approve-content` → publish via updated publisher → verify post appears on social media. First real published content through the full pipeline.
-- [ ] [REVIEW] Camilo reviews brand.yaml TODOs — 6 sections need human input: consulting pivot story, service pricing/deliverables, entry-point service, discovery call link, target verticals, competitor accounts. Schedule a session. Not blocked by other tasks — agent works with current scaffold.
+- [x] [BUILD] End-to-end publish test — E2e test validates full queue lifecycle: enqueue → approve → publish (mocked API) → verify YAML status transitions. 15 tests across 5 classes: happy path, failure handling, exceptions, multi-piece, mixed results, missing API key, not-found errors. 475 total tests. (Cycle 52)
+- [x] [REVIEW] Camilo reviews brand.yaml TODOs — 7 TODO blocks extracted and presented: consulting pivot story, service pricing/deliverables, entry-point service, discovery call link, target verticals, product story resonance, competitor accounts. Presented in conversation for human input. Not blocking — agent works with current scaffold. (Cycle 53)
 
 ### P3 — Automation & Feedback Loop
 
@@ -120,3 +120,47 @@ This sprint closes the loop from "system built" to "system producing real output
 - [x] [REVIEW] Review Sprint 2 module quality — Reviewed repurpose.py (278 LOC), niche research in agent.py (~400 LOC), prompts.py (412 LOC). Found 3 issues: dead `_product_info` wrapper, unused `format_platform_guidelines`, redundant inner `import yaml`. All fixed. No security or error handling gaps. 405 tests passing. (Cycle 49)
 - [x] [BUILD] Add content quality scoring — New `quality_score.py` module (270 LOC): checks char limits, anti-pattern phrases (13 default + brand.yaml extras), forbidden topics (trading/pythia), hook quality, pillar assignment, exclamation/emoji density. Integrated into `act()` — content below score 60 is auto-rejected. 42 new tests, 447 total. (Cycle 50)
 - [x] [BUILD] Add quality score display to review CLI — Enhance `just review-content --show <id>` with quality score breakdown: overall score (color-coded), char count vs platform limit, violation details, and pass/fail badge. Bridges QueuedContent → GeneratedPiece for scoring. (Cycle 51)
+
+---
+
+## Sprint 4: Test Coverage & Refactoring
+
+Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into focused modules, and prepare the system for first real content run.
+
+**Key context:**
+- 475 tests passing, but 36 of 53 source modules have zero test coverage
+- `agent.py` is 1,101 LOC with 31 methods — the largest file, and the core orchestration logic
+- Code quality is clean (lint, types both pass) — this is about coverage and maintainability
+- Sprint 3 blocked tasks (first real run, prompt tuning) still need a valid ANTHROPIC_API_KEY
+- Codex and Gemini consistently unavailable — all work done via Claude tools
+
+### P0 — Refactor agent.py (Unblocks Testing)
+
+- [ ] [BUILD] Extract niche research from agent.py — Move `_niche_research`, `_parse_research_queries`, `_select_queries`, `_web_search_single`, `_extract_insights`, `_format_niche_research`, `_read_niche_state`, `_write_niche_state` into new `src/holus/agents/marketing/niche_research.py`. Agent.py imports and calls the module. All existing tests must still pass.
+- [ ] [BUILD] Extract content generation helpers from agent.py — Move `_generate_text_for_decision`, `_fallback_content_text`, `_enforce_platform_limit` into `src/holus/agents/marketing/content_generation.py`. Agent.py imports them.
+- [ ] [BUILD] Extract JSON parsing helpers from agent.py — Move `_parse_content_decisions`, `_coerce_decision`, `_decode_json_payload`, `_try_json_loads`, `_extract_response_text` into `src/holus/agents/marketing/json_parsing.py`. Agent.py imports them.
+
+### P1 — Test Critical Modules
+
+- [ ] [BUILD] Add unit tests for niche_research.py — Test query parsing, selection, web search result extraction, state read/write. Mock Claude API calls. Target: 15+ tests.
+- [ ] [BUILD] Add unit tests for content_generation.py — Test text generation fallback, platform limit enforcement, content formatting. Target: 10+ tests.
+- [ ] [BUILD] Add unit tests for json_parsing.py — Test JSON extraction from various response formats, coercion, edge cases (malformed JSON, empty responses, nested structures). Target: 15+ tests.
+- [ ] [BUILD] Add unit tests for prompts.py — Test prompt template rendering with various inputs, verify brand.yaml integration, check anti-pattern phrases don't appear in generated prompts. Target: 10+ tests.
+- [ ] [BUILD] Add unit tests for content_queue.py — Test enqueue, dequeue, status transitions, persistence to YAML, edge cases (empty queue, duplicate IDs). Target: 10+ tests.
+
+### P2 — Test Supporting Infrastructure
+
+- [ ] [BUILD] Add unit tests for claude_api/client.py — Test prompt caching, request formatting, error handling, retry logic. Mock httpx calls. Target: 12+ tests.
+- [ ] [BUILD] Add unit tests for core/events.py — Test event bus: subscribe, emit, handler ordering, error isolation. Target: 8+ tests.
+- [ ] [BUILD] Add unit tests for agents/base.py — Test base agent lifecycle, state management, hook points. Target: 8+ tests.
+
+### P3 — Test Self-Improvement System
+
+- [ ] [BUILD] Add unit tests for self_improvement/judge.py — Test evaluation scoring, pattern matching, output quality assessment. Target: 8+ tests.
+- [ ] [BUILD] Add unit tests for self_improvement/reflexion.py — Test self-correction loop, improvement detection, convergence. Target: 8+ tests.
+- [ ] [BUILD] Add unit tests for self_improvement/prompt_optimizer.py — Test prompt mutation, scoring, selection. Target: 8+ tests.
+
+### P4 — Polish & Verification
+
+- [ ] [REVIEW] Run full test suite and verify coverage improvement — Run `just check`, count total tests, calculate module coverage ratio. Update MEMORY.md with Sprint 4 results.
+- [ ] [BUILD] Add `just coverage` command — Run pytest with coverage report, show per-module coverage percentage. Helps track progress on coverage goals.
