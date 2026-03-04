@@ -152,7 +152,7 @@ Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into
 
 - [x] [BUILD] Add unit tests for claude_api/client.py — 38 tests across 9 classes: CachedPrompt system blocks (5), CachedPrompt tools cache (4), Client.call routing (8), cost tracking (7), define_tool (3), handle_tool_loop (8), constants (3). 719 total tests. (Cycle 68)
 - [x] [BUILD] Add unit tests for core/events.py — 14 new tests across 5 classes: EventType enum (3), subscribe setup/handler/errors (5), unsubscribe (2), read_streams_since (2), close (2). 734 total tests. (Cycle 69)
-- [ ] [BUILD] Add unit tests for agents/base.py — Test base agent lifecycle, state management, hook points. Target: 8+ tests.
+- [x] [BUILD] Add unit tests for agents/base.py — 32 tests across 8 classes: init (4), abstract interface (3), hooks (5), cached prompt (3), kill switch (3), event publishing (3), compile/run lifecycle (6), cleanup (3). Mocked Redis, EventBus, KillSwitch, Claude client. 766 total tests. (Cycle 70)
 
 ### P3 — Test Self-Improvement System
 
