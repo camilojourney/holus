@@ -136,13 +136,13 @@ Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into
 
 ### P0 — Refactor agent.py (Unblocks Testing)
 
-- [ ] [BUILD] Extract niche research from agent.py — Move `_niche_research`, `_parse_research_queries`, `_select_queries`, `_web_search_single`, `_extract_insights`, `_format_niche_research`, `_read_niche_state`, `_write_niche_state` into new `src/holus/agents/marketing/niche_research.py`. Agent.py imports and calls the module. All existing tests must still pass.
-- [ ] [BUILD] Extract content generation helpers from agent.py — Move `_generate_text_for_decision`, `_fallback_content_text`, `_enforce_platform_limit` into `src/holus/agents/marketing/content_generation.py`. Agent.py imports them.
-- [ ] [BUILD] Extract JSON parsing helpers from agent.py — Move `_parse_content_decisions`, `_coerce_decision`, `_decode_json_payload`, `_try_json_loads`, `_extract_response_text` into `src/holus/agents/marketing/json_parsing.py`. Agent.py imports them.
+- [x] [BUILD] Extract niche research from agent.py — Moved 8 methods into `src/holus/agents/marketing/niche_research.py` as `NicheResearcher` class (375 LOC). Agent.py reduced from 1,101 to 840 LOC. All 489 tests pass. Test files updated to use NicheResearcher directly. (Cycle 60)
+- [x] [BUILD] Extract content generation helpers from agent.py — Moved `_generate_text_for_decision`, `_fallback_content_text`, `_enforce_platform_limit`, `_extract_response_text` into `src/holus/agents/marketing/content_generation.py` as standalone functions. Agent.py delegates via thin proxies. 770 LOC (down from ~840). 489 tests pass. (Cycle 61)
+- [x] [BUILD] Extract JSON parsing helpers from agent.py — Moved `parse_content_decisions`, `coerce_decision`, `decode_json_payload`, `try_json_loads`, `extract_response_text` into `src/holus/agents/marketing/json_parsing.py` (181 LOC). Agent.py delegates via thin proxies. Consolidated duplicates from niche_research.py and content_generation.py. Agent.py: 770 → 665 LOC. 489 tests pass. (Cycle 62)
 
 ### P1 — Test Critical Modules
 
-- [ ] [BUILD] Add unit tests for niche_research.py — Test query parsing, selection, web search result extraction, state read/write. Mock Claude API calls. Target: 15+ tests.
+- [x] [BUILD] Add unit tests for niche_research.py — 14 new tests added (43 total): state read/write (5), query selection edge cases (3), parse edge (1), web search error (1), extract JSON fences (1), format truncation (2), None API key (1). 503 total tests. (Cycle 63)
 - [ ] [BUILD] Add unit tests for content_generation.py — Test text generation fallback, platform limit enforcement, content formatting. Target: 10+ tests.
 - [ ] [BUILD] Add unit tests for json_parsing.py — Test JSON extraction from various response formats, coercion, edge cases (malformed JSON, empty responses, nested structures). Target: 15+ tests.
 - [ ] [BUILD] Add unit tests for prompts.py — Test prompt template rendering with various inputs, verify brand.yaml integration, check anti-pattern phrases don't appear in generated prompts. Target: 10+ tests.
