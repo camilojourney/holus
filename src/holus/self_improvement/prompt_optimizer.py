@@ -159,11 +159,11 @@ Recent failures:
 5. Focus on PRECISION -- add specific instructions where the prompt was vague.
 
 ## Output Format (JSON only)
-{
+{{
     "analysis": "What went wrong and why",
     "changes_made": ["List of specific changes"],
     "new_prompt": "The complete rewritten prompt"
-}
+}}
 """
 
 
