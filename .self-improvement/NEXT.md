@@ -182,7 +182,7 @@ Goal: Push test coverage from 78% to 90%+ by testing the remaining untested modu
 
 - [x] [BUILD] Add unit tests for agents/marketing/image_workflow.py — 62 tests across 16 classes: models (ExperimentMatch, RenderJob, ImageResult), exceptions, constants, PilasterClient (init, search, generate, status, poll, list_projects, context manager), extract_common_elements, build_image_prompt (platform + content type guidance), create_image_content orchestrator (happy path, no_snapshot, unavailable, fallback search, generation failed, timeout, env vars, query mapping). 922 total tests. (Cycle 77)
 - [x] [BUILD] Add unit tests for agents/marketing/video_workflow.py — 70 tests across 13 classes: models (VideoJob, VideoResult), exceptions, constants, GenpeliClient (init, submit_job, check_status, poll_until_ready, get_preview_url, approve, reject, context manager), find_source_footage (missing dirs, sort, extensions), build_instruction (VIDEO_REEL, short platforms, topic), create_video_content (happy path, NoFootageError, env vars, error propagation). 992 total tests. (Cycle 78)
-- [ ] [BUILD] Add unit tests for agents/marketing/video_queue.py — Video queue management. Test enqueue, status transitions, approval/rejection flows.
+- [x] [BUILD] Add unit tests for agents/marketing/video_queue.py — 31 tests across 8 classes: QueuedVideo model (4), enqueue_video (5), list_pending_videos (5), list_approved_videos (3), approve_video (3), reject_video (4), mark_published (4), full lifecycle (3). 1023 total tests. (Cycle 79)
 
 ### P1 — Test Core Infrastructure
 
