@@ -199,9 +199,7 @@ class NicheResearcher:
             logger.warning("Failed to parse YAML from niche queries file", exc_info=True)
             return {}
 
-    def select_queries(
-        self, query_config: dict[str, Any], *, max_queries: int = 5
-    ) -> list[str]:
+    def select_queries(self, query_config: dict[str, Any], *, max_queries: int = 5) -> list[str]:
         """Pick queries for this cycle, rotating across categories.
 
         Categories are sorted by staleness (least recently used first).
@@ -236,9 +234,7 @@ class NicheResearcher:
                 continue
 
             for q_item in cat_queries:
-                query_text = (
-                    q_item.get("query", "") if isinstance(q_item, dict) else str(q_item)
-                )
+                query_text = q_item.get("query", "") if isinstance(q_item, dict) else str(q_item)
                 if not query_text:
                     continue
 

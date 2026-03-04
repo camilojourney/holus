@@ -504,7 +504,9 @@ class TestFormatNicheResearch:
     """Tests for NicheResearcher.format_niche_research()."""
 
     def test_empty_input(self) -> None:
-        assert NicheResearcher.format_niche_research({}) == "No niche research available this cycle."
+        assert (
+            NicheResearcher.format_niche_research({}) == "No niche research available this cycle."
+        )
 
     def test_trending_topics(self) -> None:
         result = NicheResearcher.format_niche_research(

@@ -22,6 +22,12 @@ from langgraph.graph import END, START, StateGraph
 from pydantic import ValidationError
 
 from holus.agents.base import BaseAgent
+from holus.agents.marketing.content_generation import (
+    enforce_platform_limit,
+    extract_response_text,
+    fallback_content_text,
+    generate_text_for_decision,
+)
 from holus.agents.marketing.models import (
     BrandIdentity,
     ContentDecision,
@@ -32,13 +38,9 @@ from holus.agents.marketing.models import (
 from holus.agents.marketing.niche_research import NicheResearcher
 from holus.agents.marketing.prompts import (
     OPUS_STRATEGY_PROMPT,
-    SONNET_CONTENT_PROMPT,
     format_anti_patterns,
     format_brand_identity,
     format_content_pillars,
-    format_positioning,
-    format_product_info,
-    format_voice,
 )
 from holus.agents.marketing.quality_score import score_content
 from holus.agents.marketing.repurpose import repurpose_content
@@ -114,14 +116,6 @@ class MarketingAgent(BaseAgent):
         "educational": ContentType.EDUCATIONAL,
         "technical_post": ContentType.EDUCATIONAL,
         "before_after": ContentType.DEMO,
-    }
-
-    _PLATFORM_CHAR_LIMITS: ClassVar[dict[Platform, int]] = {
-        Platform.TWITTER: 280,
-        Platform.LINKEDIN: 3000,
-        Platform.INSTAGRAM: 2200,
-        Platform.THREADS: 500,
-        Platform.FACEBOOK: 63206,
     }
 
     def build_graph(self) -> StateGraph[MarketingState]:
@@ -713,94 +707,29 @@ class MarketingAgent(BaseAgent):
         products: dict[str, Any],
         brand: dict[str, Any] | None = None,
     ) -> tuple[str, str]:
-        """Generate content text for a decision using authority-building prompts.
-
-        Uses Camilo's voice, brand positioning, and anti-patterns from brand.yaml.
-        Falls back to template text when API key is unavailable.
-        """
-        brand = brand or {}
-        products_dict = products.get("products", {})
-        product_info = format_product_info(decision.product, products_dict)
-
-        if not self.config.anthropic_api_key:
-            fallback_text = self._fallback_content_text(decision)
-            return self._enforce_platform_limit(
-                fallback_text, decision.platform
-            ), "template-fallback"
-
-        system_prompt = SONNET_CONTENT_PROMPT.format(
-            topic=decision.topic,
-            content_pillar=decision.content_pillar,
-            hook=decision.hook or "(generate an engaging hook)",
-            framework=decision.framework,
-            reasoning=decision.reasoning,
-            voice=format_voice(brand),
-            positioning=format_positioning(brand),
-            product_info=product_info,
-            anti_patterns=format_anti_patterns(brand),
-        )
-
-        response = self.claude.call(
-            cached_prompt=CachedPrompt(system_prompt=system_prompt),
-            messages=[{"role": "user", "content": "Generate the final content now."}],
-            tier="operational",
-            max_tokens=1536,
-            temperature=0.4,
+        """Delegate to content_generation module."""
+        return generate_text_for_decision(
+            decision=decision,
+            knowledge=knowledge,
+            products=products,
+            brand=brand,
+            claude=self.claude,
+            anthropic_api_key=self.config.anthropic_api_key,
+            sonnet_model=self.config.sonnet_model,
             agent_id=self.agent_name,
         )
 
-        text = self._extract_response_text(response).strip()
-        if not text:
-            text = self._fallback_content_text(decision)
-
-        return self._enforce_platform_limit(text, decision.platform), self.config.sonnet_model
-
     def _fallback_content_text(self, decision: ContentDecision) -> str:
-        """Generate fallback content with authority-building voice."""
-        hook = decision.hook or decision.topic
-
-        if decision.platform is Platform.TWITTER:
-            return (
-                f"{hook}\n\n"
-                f"I learned this building {decision.product}. "
-                "One pattern that transfers to any AI team."
-            )
-
-        if decision.platform is Platform.LINKEDIN:
-            return (
-                f"{hook}\n\n"
-                f"I built {decision.product} from scratch. "
-                "Here's the framework that actually worked:\n\n"
-                "1) Start with the smallest testable workflow\n"
-                "2) Measure the baseline before optimizing\n"
-                "3) Change one variable per iteration\n\n"
-                "Most teams skip step 2. That's where the expensive mistakes happen.\n\n"
-                "What's the biggest bottleneck in your AI implementation?"
-            )
-
-        return (
-            f"{hook}\n\n"
-            f"Building {decision.product} taught me this: focus on one repeatable pattern "
-            "and get it right before scaling.\n\n"
-            "What are you building?"
-        )
+        """Delegate to content_generation module."""
+        return fallback_content_text(decision)
 
     def _enforce_platform_limit(self, text: str, platform: Platform) -> str:
-        limit = self._PLATFORM_CHAR_LIMITS.get(platform)
-        if limit is None or len(text) <= limit:
-            return text
-
-        trimmed = text[: max(limit - 3, 0)].rstrip()
-        return f"{trimmed}..."
+        """Delegate to content_generation module."""
+        return enforce_platform_limit(text, platform)
 
     def _extract_response_text(self, response: Any) -> str:
-        blocks = getattr(response, "content", [])
-        parts: list[str] = []
-        for block in blocks:
-            text = getattr(block, "text", None)
-            if isinstance(text, str):
-                parts.append(text)
-        return "\n".join(parts).strip()
+        """Delegate to content_generation module."""
+        return extract_response_text(response)
 
     def _decode_json_payload(self, text: str) -> Any | None:
         stripped = text.strip()
