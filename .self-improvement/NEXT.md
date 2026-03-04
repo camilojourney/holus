@@ -181,7 +181,7 @@ Goal: Push test coverage from 78% to 90%+ by testing the remaining untested modu
 ### P0 — Test Critical Workflow Modules
 
 - [x] [BUILD] Add unit tests for agents/marketing/image_workflow.py — 62 tests across 16 classes: models (ExperimentMatch, RenderJob, ImageResult), exceptions, constants, PilasterClient (init, search, generate, status, poll, list_projects, context manager), extract_common_elements, build_image_prompt (platform + content type guidance), create_image_content orchestrator (happy path, no_snapshot, unavailable, fallback search, generation failed, timeout, env vars, query mapping). 922 total tests. (Cycle 77)
-- [ ] [BUILD] Add unit tests for agents/marketing/video_workflow.py — 424 LOC, Genpeli integration path. Test video job creation, status polling, completion handling, timeout behavior.
+- [x] [BUILD] Add unit tests for agents/marketing/video_workflow.py — 70 tests across 13 classes: models (VideoJob, VideoResult), exceptions, constants, GenpeliClient (init, submit_job, check_status, poll_until_ready, get_preview_url, approve, reject, context manager), find_source_footage (missing dirs, sort, extensions), build_instruction (VIDEO_REEL, short platforms, topic), create_video_content (happy path, NoFootageError, env vars, error propagation). 992 total tests. (Cycle 78)
 - [ ] [BUILD] Add unit tests for agents/marketing/video_queue.py — Video queue management. Test enqueue, status transitions, approval/rejection flows.
 
 ### P1 — Test Core Infrastructure
