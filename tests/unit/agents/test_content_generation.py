@@ -66,8 +66,13 @@ class TestPlatformCharLimits:
 
     def test_all_major_platforms_have_limits(self) -> None:
         """Every key platform has a character limit defined."""
-        for p in (Platform.TWITTER, Platform.LINKEDIN, Platform.INSTAGRAM,
-                  Platform.THREADS, Platform.FACEBOOK):
+        for p in (
+            Platform.TWITTER,
+            Platform.LINKEDIN,
+            Platform.INSTAGRAM,
+            Platform.THREADS,
+            Platform.FACEBOOK,
+        ):
             assert p in PLATFORM_CHAR_LIMITS
 
     def test_twitter_limit_is_280(self) -> None:
@@ -228,9 +233,7 @@ class TestGenerateTextForDecision:
         """When API key is present, calls Claude and returns generated text."""
         decision = _make_decision()
         mock_claude = MagicMock()
-        mock_claude.call.return_value = _make_claude_response(
-            "Here's my AI consulting insight..."
-        )
+        mock_claude.call.return_value = _make_claude_response("Here's my AI consulting insight...")
         text, model = generate_text_for_decision(
             decision=decision,
             knowledge={},
