@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from holus.agents.marketing.json_parsing import extract_response_text
 from holus.agents.marketing.models import ContentDecision, Platform
 from holus.agents.marketing.prompts import (
     SONNET_CONTENT_PROMPT,
@@ -76,17 +77,6 @@ def enforce_platform_limit(text: str, platform: Platform) -> str:
 
     trimmed = text[: max(limit - 3, 0)].rstrip()
     return f"{trimmed}..."
-
-
-def extract_response_text(response: Any) -> str:
-    """Extract text content from a Claude API response."""
-    blocks = getattr(response, "content", [])
-    parts: list[str] = []
-    for block in blocks:
-        text = getattr(block, "text", None)
-        if isinstance(text, str):
-            parts.append(text)
-    return "\n".join(parts).strip()
 
 
 # ---------------------------------------------------------------------------

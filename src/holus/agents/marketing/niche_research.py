@@ -16,69 +16,12 @@ from typing import Any
 import yaml
 from pydantic import ValidationError
 
+from holus.agents.marketing.json_parsing import decode_json_payload, extract_response_text
 from holus.agents.marketing.models import NicheInsight, NicheResearchResult
 from holus.agents.marketing.prompts import NICHE_EXTRACTION_PROMPT
 from holus.integrations.claude_api.client import CachedPrompt, HolusClaudeClient
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Utility helpers (pure functions, no instance state)
-# ---------------------------------------------------------------------------
-
-
-def extract_response_text(response: Any) -> str:
-    """Extract text content from a Claude API response."""
-    blocks = getattr(response, "content", [])
-    parts: list[str] = []
-    for block in blocks:
-        text = getattr(block, "text", None)
-        if isinstance(text, str):
-            parts.append(text)
-    return "\n".join(parts).strip()
-
-
-def decode_json_payload(text: str) -> Any | None:
-    """Extract a JSON object or array from LLM response text.
-
-    Tries in order: direct parse, fenced code blocks, bare ``[...]`` / ``{...}``.
-    """
-    stripped = text.strip()
-    if not stripped:
-        return None
-
-    direct = _try_json_loads(stripped)
-    if direct is not None:
-        return direct
-
-    fenced_blocks = re.findall(r"```(?:json)?\s*(.*?)```", stripped, flags=re.DOTALL)
-    for block in fenced_blocks:
-        parsed = _try_json_loads(block.strip())
-        if parsed is not None:
-            return parsed
-
-    left = stripped.find("[")
-    right = stripped.rfind("]")
-    if left != -1 and right != -1 and right > left:
-        parsed = _try_json_loads(stripped[left : right + 1])
-        if parsed is not None:
-            return parsed
-
-    left = stripped.find("{")
-    right = stripped.rfind("}")
-    if left != -1 and right != -1 and right > left:
-        parsed = _try_json_loads(stripped[left : right + 1])
-        if parsed is not None:
-            return parsed
-
-    return None
-
-
-def _try_json_loads(text: str) -> Any | None:
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        return None
 
 
 # ---------------------------------------------------------------------------

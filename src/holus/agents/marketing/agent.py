@@ -11,10 +11,9 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, ClassVar, TypedDict
+from typing import Any, TypedDict
 from uuid import uuid4
 
 import yaml
@@ -24,9 +23,14 @@ from pydantic import ValidationError
 from holus.agents.base import BaseAgent
 from holus.agents.marketing.content_generation import (
     enforce_platform_limit,
-    extract_response_text,
     fallback_content_text,
     generate_text_for_decision,
+)
+from holus.agents.marketing.json_parsing import (
+    coerce_decision,
+    decode_json_payload,
+    extract_response_text,
+    parse_content_decisions,
 )
 from holus.agents.marketing.models import (
     BrandIdentity,
@@ -90,33 +94,6 @@ class MarketingAgent(BaseAgent):
     _MEMORY_PATH = Path(".self-improvement/MEMORY.md")
     _QUEUE_DIR = Path("data/content-queue")
     _TRAJECTORY_PATH = Path(".self-improvement/memory/trajectory.jsonl")
-
-    _PLATFORM_ALIASES: ClassVar[dict[str, Platform]] = {
-        "linkedin": Platform.LINKEDIN,
-        "twitter": Platform.TWITTER,
-        "x": Platform.TWITTER,
-        "tiktok": Platform.TIKTOK,
-        "instagram": Platform.INSTAGRAM,
-        "facebook": Platform.FACEBOOK,
-        "threads": Platform.THREADS,
-        "youtube": Platform.YOUTUBE,
-        "youtube_shorts": Platform.YOUTUBE,
-        "yt_shorts": Platform.YOUTUBE,
-    }
-
-    _CONTENT_TYPE_ALIASES: ClassVar[dict[str, ContentType]] = {
-        "tutorial": ContentType.TUTORIAL,
-        "demo": ContentType.DEMO,
-        "tips": ContentType.TIPS,
-        "thread": ContentType.THREAD,
-        "case_study": ContentType.CASE_STUDY,
-        "carousel": ContentType.CAROUSEL,
-        "video_reel": ContentType.VIDEO_REEL,
-        "announcement": ContentType.ANNOUNCEMENT,
-        "educational": ContentType.EDUCATIONAL,
-        "technical_post": ContentType.EDUCATIONAL,
-        "before_after": ContentType.DEMO,
-    }
 
     def build_graph(self) -> StateGraph[MarketingState]:
         """Construct the marketing observe -> reason -> act -> evaluate graph."""
@@ -596,60 +573,12 @@ class MarketingAgent(BaseAgent):
         return path
 
     def _parse_content_decisions(self, response_text: str) -> list[ContentDecision]:
-        payload = self._decode_json_payload(response_text)
-        if payload is None:
-            return []
-
-        items: list[dict[str, Any]]
-        if isinstance(payload, list):
-            items = [item for item in payload if isinstance(item, dict)]
-        elif isinstance(payload, dict):
-            items = [payload]
-        else:
-            return []
-
-        decisions: list[ContentDecision] = []
-        for item in items:
-            decision = self._coerce_decision(item)
-            if decision is not None:
-                decisions.append(decision)
-        return decisions
+        """Delegate to json_parsing module."""
+        return parse_content_decisions(response_text)
 
     def _coerce_decision(self, payload: Any) -> ContentDecision | None:
-        if not isinstance(payload, dict):
-            return None
-
-        platform_raw = str(payload.get("platform", "linkedin")).strip().lower()
-        content_type_raw = str(payload.get("content_type", "tutorial")).strip().lower()
-
-        platform = self._PLATFORM_ALIASES.get(platform_raw, Platform.LINKEDIN)
-        content_type = self._CONTENT_TYPE_ALIASES.get(content_type_raw, ContentType.TUTORIAL)
-
-        priority_value = 1
-        try:
-            priority_value = int(payload.get("priority", 1) or 1)
-        except (TypeError, ValueError):
-            priority_value = 1
-
-        estimated_engagement = str(payload.get("estimated_engagement", "medium")).strip()
-
-        try:
-            return ContentDecision(
-                product=str(payload.get("product", "pilaster")).strip().lower(),
-                platform=platform,
-                content_type=content_type,
-                content_pillar=str(payload.get("content_pillar", "builder_stories")).strip(),
-                topic=str(payload.get("topic", "Product tutorial")).strip(),
-                hook=str(payload.get("hook", "")).strip(),
-                framework=str(payload.get("framework", "original")).strip(),
-                reasoning=str(payload.get("reasoning", "Value-first educational content")).strip(),
-                priority=priority_value,
-                estimated_engagement=estimated_engagement,
-                repurpose_notes=str(payload.get("repurpose_notes", "")).strip(),
-            )
-        except (ValidationError, ValueError, TypeError):
-            logger.warning("Skipping invalid content decision: %s", payload)
-            return None
+        """Delegate to json_parsing module."""
+        return coerce_decision(payload)
 
     def _fallback_decisions(self, products_data: dict[str, Any]) -> list[ContentDecision]:
         """Generate fallback decisions with authority-building framing.
@@ -732,38 +661,5 @@ class MarketingAgent(BaseAgent):
         return extract_response_text(response)
 
     def _decode_json_payload(self, text: str) -> Any | None:
-        stripped = text.strip()
-        if not stripped:
-            return None
-
-        direct = self._try_json_loads(stripped)
-        if direct is not None:
-            return direct
-
-        fenced_blocks = re.findall(r"```(?:json)?\s*(.*?)```", stripped, flags=re.DOTALL)
-        for block in fenced_blocks:
-            parsed = self._try_json_loads(block.strip())
-            if parsed is not None:
-                return parsed
-
-        left = stripped.find("[")
-        right = stripped.rfind("]")
-        if left != -1 and right != -1 and right > left:
-            parsed = self._try_json_loads(stripped[left : right + 1])
-            if parsed is not None:
-                return parsed
-
-        left = stripped.find("{")
-        right = stripped.rfind("}")
-        if left != -1 and right != -1 and right > left:
-            parsed = self._try_json_loads(stripped[left : right + 1])
-            if parsed is not None:
-                return parsed
-
-        return None
-
-    def _try_json_loads(self, text: str) -> Any | None:
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            return None
+        """Delegate to json_parsing module."""
+        return decode_json_payload(text)
