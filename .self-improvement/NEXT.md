@@ -146,7 +146,7 @@ Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into
 - [x] [BUILD] Add unit tests for content_generation.py — 26 tests added: fallback templates (5), platform limit enforcement (8), generate_text_for_decision API calls and fallbacks (10), constant validation (3). 529 total tests. (Cycle 64)
 - [x] [BUILD] Add unit tests for json_parsing.py — 66 tests added across 7 classes: try_json_loads (9), decode_json_payload (13), extract_response_text (7), coerce_decision (17), parse_content_decisions (9), PLATFORM_ALIASES (6), CONTENT_TYPE_ALIASES (5). 595 total tests. (Cycle 65)
 - [x] [BUILD] Add unit tests for prompts.py — 55 tests added across 7 classes: prompt template placeholders (8), format_brand_identity (11), format_content_pillars (7), format_voice (8), format_positioning (7), format_anti_patterns (6), format_product_info (8). 650 total tests. (Cycle 66)
-- [ ] [BUILD] Add unit tests for content_queue.py — Test enqueue, dequeue, status transitions, persistence to YAML, edge cases (empty queue, duplicate IDs). Target: 10+ tests.
+- [x] [BUILD] Add unit tests for content_queue.py — 31 tests added across 8 classes: QueuedContent model (3), enqueue YAML persistence (5), list_pending filtering (6), list_approved filtering (3), approve transitions (3), reject transitions (4), mark_published transitions (4), full lifecycle (3). 681 total tests. (Cycle 67)
 
 ### P2 — Test Supporting Infrastructure
 
