@@ -150,7 +150,7 @@ Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into
 
 ### P2 — Test Supporting Infrastructure
 
-- [ ] [BUILD] Add unit tests for claude_api/client.py — Test prompt caching, request formatting, error handling, retry logic. Mock httpx calls. Target: 12+ tests.
+- [x] [BUILD] Add unit tests for claude_api/client.py — 38 tests across 9 classes: CachedPrompt system blocks (5), CachedPrompt tools cache (4), Client.call routing (8), cost tracking (7), define_tool (3), handle_tool_loop (8), constants (3). 719 total tests. (Cycle 68)
 - [ ] [BUILD] Add unit tests for core/events.py — Test event bus: subscribe, emit, handler ordering, error isolation. Target: 8+ tests.
 - [ ] [BUILD] Add unit tests for agents/base.py — Test base agent lifecycle, state management, hook points. Target: 8+ tests.
 
