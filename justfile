@@ -34,6 +34,10 @@ test-integration:
 test-cov:
     uv run pytest tests/ --cov=src/holus --cov-report=term-missing --cov-report=html
 
+# Per-module coverage summary (quick view of coverage percentages)
+coverage:
+    uv run pytest tests/ --cov=src/holus --cov-report=term -q --no-header --tb=no
+
 # -- Code Quality ------------------------------------------------------------
 
 lint:
