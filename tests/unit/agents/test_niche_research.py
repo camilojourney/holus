@@ -169,6 +169,13 @@ class TestParseResearchQueries:
         result = researcher.parse_research_queries()
         assert result == {}
 
+    def test_returns_empty_when_yaml_parses_to_list(self, tmp_path: Path) -> None:
+        """YAML block that parses to a list instead of dict returns {}."""
+        list_yaml = "# Queries\n\n```yaml\n- item1\n- item2\n```\n"
+        researcher = _make_researcher(tmp_path, queries_md=list_yaml)
+        result = researcher.parse_research_queries()
+        assert result == {}
+
 
 # ---------------------------------------------------------------------------
 # Tests: select_queries()
@@ -262,6 +269,71 @@ class TestSelectQueries:
         queries = researcher.select_queries(config, max_queries=5)
         assert "AI deployment challenges enterprise" in queries
 
+    def test_queries_as_plain_strings(self, tmp_path: Path) -> None:
+        """Query items that are plain strings (not dicts) are handled."""
+        researcher = _make_researcher(tmp_path)
+        config = {
+            "queries": {
+                "plain_category": {
+                    "rotation": "daily",
+                    "queries": ["plain query one", "plain query two"],
+                }
+            }
+        }
+        queries = researcher.select_queries(config, max_queries=5)
+        assert "plain query one" in queries
+        assert "plain query two" in queries
+
+    def test_weekly_cooldown_respected(self, tmp_path: Path) -> None:
+        """Weekly rotation uses 168h cooldown, not 24h."""
+        researcher = _make_researcher(tmp_path)
+
+        # 25h has elapsed — past daily cooldown but still within weekly (168h)
+        old_time = (datetime.now(UTC) - timedelta(hours=25)).isoformat()
+        state = {
+            "query_history": {
+                "site:linkedin.com AI consulting 2026": old_time,
+            },
+            "category_last_used": {},
+        }
+        researcher.write_niche_state(state)
+
+        config = {
+            "queries": {
+                "competitor_content": {
+                    "rotation": "weekly",
+                    "queries": [
+                        {"query": "site:linkedin.com AI consulting 2026", "intent": "test"}
+                    ],
+                }
+            }
+        }
+        queries = researcher.select_queries(config, max_queries=5)
+        assert "site:linkedin.com AI consulting 2026" not in queries
+
+    def test_empty_categories_skipped(self, tmp_path: Path) -> None:
+        """Category with empty or non-list queries field is skipped."""
+        researcher = _make_researcher(tmp_path)
+        config = {
+            "queries": {
+                "empty_category": {
+                    "rotation": "daily",
+                    "queries": [],
+                },
+                "non_list_category": {
+                    "rotation": "daily",
+                    "queries": "not a list",
+                },
+                "valid_category": {
+                    "rotation": "daily",
+                    "queries": [{"query": "valid query", "intent": "test"}],
+                },
+            }
+        }
+        queries = researcher.select_queries(config, max_queries=5)
+        assert "valid query" in queries
+        assert len(queries) == 1
+
 
 # ---------------------------------------------------------------------------
 # Tests: web_search_single()
@@ -301,6 +373,64 @@ class TestWebSearchSingle:
 
         result = researcher.web_search_single("test query")
         assert result == ""
+
+    def test_raises_on_claude_error(self, tmp_path: Path) -> None:
+        """When claude.call raises, the exception propagates."""
+        researcher = _make_researcher(tmp_path)
+        researcher.claude.call = MagicMock(side_effect=RuntimeError("API error"))
+
+        with pytest.raises(RuntimeError, match="API error"):
+            researcher.web_search_single("test query")
+
+
+# ---------------------------------------------------------------------------
+# Tests: read_niche_state() / write_niche_state()
+# ---------------------------------------------------------------------------
+
+
+class TestReadWriteNicheState:
+    """Tests for read_niche_state() and write_niche_state()."""
+
+    def test_read_returns_empty_on_missing_file(self, tmp_path: Path) -> None:
+        """Non-existent state file returns {}."""
+        researcher = _make_researcher(tmp_path)
+        # state_path points to a file that does not exist yet
+        result = researcher.read_niche_state()
+        assert result == {}
+
+    def test_read_returns_empty_on_malformed_json(self, tmp_path: Path) -> None:
+        """Malformed JSON in state file returns {}."""
+        researcher = _make_researcher(tmp_path)
+        researcher.state_path.parent.mkdir(parents=True, exist_ok=True)
+        researcher.state_path.write_text("{ invalid json }", encoding="utf-8")
+        result = researcher.read_niche_state()
+        assert result == {}
+
+    def test_read_returns_empty_on_non_dict_json(self, tmp_path: Path) -> None:
+        """JSON that parses to a list returns {}."""
+        researcher = _make_researcher(tmp_path)
+        researcher.state_path.parent.mkdir(parents=True, exist_ok=True)
+        researcher.state_path.write_text('["item1", "item2"]', encoding="utf-8")
+        result = researcher.read_niche_state()
+        assert result == {}
+
+    def test_write_creates_parent_dirs(self, tmp_path: Path) -> None:
+        """Writing state creates parent directories."""
+        researcher = _make_researcher(tmp_path)
+        researcher.state_path = tmp_path / "deep" / "nested" / "state.json"
+        researcher.write_niche_state({"key": "value"})
+        assert researcher.state_path.exists()
+
+    def test_roundtrip(self, tmp_path: Path) -> None:
+        """Write then read returns same data."""
+        researcher = _make_researcher(tmp_path)
+        state = {
+            "query_history": {"q1": "2026-03-01T00:00:00+00:00"},
+            "last_run": "2026-03-01T00:00:00+00:00",
+        }
+        researcher.write_niche_state(state)
+        result = researcher.read_niche_state()
+        assert result == state
 
 
 # ---------------------------------------------------------------------------
@@ -358,6 +488,17 @@ class TestExtractInsights:
 
         insights = researcher.extract_insights("Results.")
         assert insights == []
+
+    def test_json_in_code_fences(self, tmp_path: Path) -> None:
+        """JSON wrapped in ```json ... ``` is extracted correctly."""
+        researcher = _make_researcher(tmp_path)
+        researcher.claude = MagicMock()
+        fenced_json = f"```json\n{SAMPLE_INSIGHTS_JSON}\n```"
+        researcher.claude.call.return_value = _make_claude_response(fenced_json)
+
+        insights = researcher.extract_insights("Some results.")
+        assert len(insights) == 2
+        assert all(isinstance(i, NicheInsight) for i in insights)
 
 
 # ---------------------------------------------------------------------------
@@ -433,6 +574,23 @@ class TestNicheResearch:
         researcher.select_queries(config, max_queries=100)
 
         # Now niche research should find no eligible queries
+        result = await researcher.research()
+        assert result == {}
+
+    @pytest.mark.asyncio()
+    async def test_research_none_api_key(self, tmp_path: Path) -> None:
+        """api_key=None (not just empty string) also returns {}."""
+        mock_claude = MagicMock()
+        queries_path = tmp_path / "niche-research-queries.md"
+        queries_path.write_text(SAMPLE_QUERIES_MD, encoding="utf-8")
+        state_path = tmp_path / "niche-state.json"
+        researcher = NicheResearcher(
+            claude_client=mock_claude,
+            api_key=None,
+            agent_name="test-agent",
+            queries_path=queries_path,
+            state_path=state_path,
+        )
         result = await researcher.research()
         assert result == {}
 
@@ -526,3 +684,25 @@ class TestFormatNicheResearch:
             {"insights": [{"topic": "a"}, {"topic": "b"}]}
         )
         assert "2 insights" in result
+
+    def test_truncates_at_five_topics(self) -> None:
+        """More than 5 topics are truncated to 5."""
+        result = NicheResearcher.format_niche_research(
+            {"trending_topics": ["t1", "t2", "t3", "t4", "t5", "t6", "t7"]}
+        )
+        assert "t5" in result
+        assert "t6" not in result
+        assert "t7" not in result
+
+    def test_combined_sections(self) -> None:
+        """Result with topics + angles + insights shows all sections."""
+        result = NicheResearcher.format_niche_research(
+            {
+                "trending_topics": ["AI agents"],
+                "recommended_angles": ["Builder story"],
+                "insights": [{"topic": "test"}],
+            }
+        )
+        assert "AI agents" in result
+        assert "Builder story" in result
+        assert "1 insights" in result
