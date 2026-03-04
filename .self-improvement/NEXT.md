@@ -164,3 +164,47 @@ Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into
 
 - [x] [REVIEW] Run full test suite and verify coverage improvement — 860 tests passing (475→860, +385). Module coverage: 32%→78% (32/41 modules tested). Fixed 3 lint/format issues in test files from recent cycles. Updated MEMORY.md with Sprint 3+4 summaries, new file references, and What's Next section. (Cycle 74)
 - [x] [BUILD] Add `just coverage` command — `just coverage` runs pytest with per-module coverage summary (quick view). Existing `just test-cov` retained for full report with missing lines + HTML. 860 tests, 78.31% coverage. (Cycle 75)
+
+---
+
+## Sprint 5: Coverage Push & Module Testing
+
+Goal: Push test coverage from 78% to 90%+ by testing the remaining untested modules. All 9 "untested" modules from Sprint 4 review are real implementations (2,300+ LOC total), not stubs. Also test critical workflow modules (image_workflow.py, video_workflow.py) that are on the content generation path.
+
+**Key context:**
+- 860 tests passing, 32/41 modules tested (78%)
+- 9 modules listed as untested are ALL real implementations (avg 258 LOC each)
+- image_workflow.py (548 LOC) and video_workflow.py (424 LOC) are critical untested paths
+- First real content cycle still blocked on expired ANTHROPIC_API_KEY
+- Codex and Gemini consistently unavailable — all work via Claude tools
+
+### P0 — Test Critical Workflow Modules
+
+- [ ] [BUILD] Add unit tests for agents/marketing/image_workflow.py — 548 LOC, Pilaster integration path. Test image generation request building, workflow state machine, error handling, graceful degradation when Pilaster API unavailable.
+- [ ] [BUILD] Add unit tests for agents/marketing/video_workflow.py — 424 LOC, Genpeli integration path. Test video job creation, status polling, completion handling, timeout behavior.
+- [ ] [BUILD] Add unit tests for agents/marketing/video_queue.py — Video queue management. Test enqueue, status transitions, approval/rejection flows.
+
+### P1 — Test Core Infrastructure
+
+- [ ] [BUILD] Add unit tests for core/process_manager.py — 248 LOC, supervisor with exponential backoff. Test agent process lifecycle, restart logic, SIGTERM/SIGKILL handling, backoff calculation.
+- [ ] [BUILD] Add unit tests for preflight.py — 300 LOC, environment validator. Test each check (API key, brand.yaml, knowledge files, data dirs), pass/fail reporting.
+- [ ] [BUILD] Add unit tests for __main__.py — 167 LOC, CLI entry point. Test argparse commands, run lock, kill switch control.
+
+### P2 — Test Agent Implementations
+
+- [ ] [BUILD] Add unit tests for agents/coding/agent.py — 298 LOC, Claude Code wrapper + LangGraph routing. Test subprocess handling, timeout logic, routing decisions.
+- [ ] [BUILD] Add unit tests for agents/content/agent.py — 285 LOC, 5-stage generation pipeline. Test stage transitions, JSON parsing fallbacks, LLM call mocking.
+- [ ] [BUILD] Add unit tests for agents/coordinator/agent.py — 281 LOC, event synthesis + cross-project logic. Test Redis stream reads, event publishing, synthesis decisions.
+- [ ] [BUILD] Add unit tests for agents/pilaster/agent.py — 313 LOC, workflow versioning + quality scoring. Test version management, save/load/diff, Claude Vision scoring mocks.
+
+### P3 — Test Memory & Observability
+
+- [ ] [BUILD] Add unit tests for memory/mem0_client.py — 265 LOC, 3-tier memory hierarchy. Test session/agent/user memory tiers, semantic search, pgvector backend mocking.
+- [ ] [BUILD] Add unit tests for observability/langfuse_client.py — 326 LOC, tracing + Judge + DSPy datasets. Test trace_agent_call decorator, LLM/tool logging, Judge scoring.
+
+### P4 — Test Remaining Gaps & Polish
+
+- [ ] [BUILD] Add unit tests for agents/marketing/review_videos.py — 139 LOC, CLI for video approval. Test Rich table formatting, video queue integration.
+- [ ] [BUILD] Add unit tests for agents/marketing/publish_approved.py — Publishing via social-media MCP. Test publish flow, dry-run mode, error handling.
+- [ ] [REVIEW] Run full test suite and verify 90%+ module coverage — Final verification. Update MEMORY.md with Sprint 5 results.
+- [ ] [CREATE] Plan Sprint 6 — Based on Sprint 5 results and whether ANTHROPIC_API_KEY has been renewed, plan next sprint (first real content cycle or further hardening).
