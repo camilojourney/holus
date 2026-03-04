@@ -186,7 +186,7 @@ Goal: Push test coverage from 78% to 90%+ by testing the remaining untested modu
 
 ### P1 — Test Core Infrastructure
 
-- [ ] [BUILD] Add unit tests for core/process_manager.py — 248 LOC, supervisor with exponential backoff. Test agent process lifecycle, restart logic, SIGTERM/SIGKILL handling, backoff calculation.
+- [x] [BUILD] Add unit tests for core/process_manager.py — 41 tests across 10 classes: AgentStatus enum (3), AgentProcess defaults/is_alive (4), ProcessManager init (3), start_agent (5), stop_agent (5), restart_agent (3), shutdown_all (3), check_health (5), _handle_crash (5), introspection+reset (5). 1064 total tests. (Cycle 80)
 - [ ] [BUILD] Add unit tests for preflight.py — 300 LOC, environment validator. Test each check (API key, brand.yaml, knowledge files, data dirs), pass/fail reporting.
 - [ ] [BUILD] Add unit tests for __main__.py — 167 LOC, CLI entry point. Test argparse commands, run lock, kill switch control.
 
