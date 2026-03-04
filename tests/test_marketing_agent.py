@@ -1166,8 +1166,9 @@ async def test_full_marketing_cycle(marketing_agent, temp_config_files):
     state = marketing_agent.default_state()
 
     # Observe (skip niche research — it uses claude.call and would interfere with mock_call counter)
-    marketing_agent._niche_research = AsyncMock(return_value={})  # type: ignore[method-assign]
-    state.update(await marketing_agent.observe(state))
+    with patch("holus.agents.marketing.agent.NicheResearcher") as mock_nr:
+        mock_nr.return_value.research = AsyncMock(return_value={})
+        state.update(await marketing_agent.observe(state))
     assert "products" in state["product_updates"]
 
     # Reason
@@ -1490,22 +1491,26 @@ def test_format_content_pillars():
     assert "AI Frameworks" in text
 
 
-def test_format_niche_research(marketing_agent):
-    """_format_niche_research renders research results."""
+def test_format_niche_research():
+    """NicheResearcher.format_niche_research renders research results."""
+    from holus.agents.marketing.niche_research import NicheResearcher
+
     niche = {
         "trending_topics": ["AI agents", "Claude MCP integration"],
         "recommended_angles": ["Builder perspective on AI agents"],
         "insights": [{"topic": "AI agent hype"}],
     }
 
-    text = marketing_agent._format_niche_research(niche)
+    text = NicheResearcher.format_niche_research(niche)
 
     assert "AI agents" in text
     assert "Builder perspective" in text
     assert "1 insights extracted" in text
 
 
-def test_format_niche_research_empty(marketing_agent):
-    """_format_niche_research handles empty research."""
-    text = marketing_agent._format_niche_research({})
+def test_format_niche_research_empty():
+    """NicheResearcher.format_niche_research handles empty research."""
+    from holus.agents.marketing.niche_research import NicheResearcher
+
+    text = NicheResearcher.format_niche_research({})
     assert "No niche research" in text

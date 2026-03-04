@@ -1,12 +1,11 @@
-"""Tests for the niche research step in the marketing agent observe stage.
+"""Tests for the NicheResearcher extracted module.
 
 Covers:
-  - _parse_research_queries() — YAML parsing from markdown
-  - _select_queries() — rotation, cooldown, staleness sorting
-  - _web_search_single() — Claude API call with web_search tool
-  - _extract_insights() — JSON parsing into NicheInsight models
-  - _niche_research() — full flow, timeout, graceful degradation
-  - observe() integration — niche_research flows into state
+  - parse_research_queries() — YAML parsing from markdown
+  - select_queries() — rotation, cooldown, staleness sorting
+  - web_search_single() — Claude API call with web_search tool
+  - extract_insights() — JSON parsing into NicheInsight models
+  - research() — full flow, timeout, graceful degradation
 """
 
 from __future__ import annotations
@@ -14,11 +13,12 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from holus.agents.marketing.models import NicheInsight, NicheResearchResult
+from holus.agents.marketing.niche_research import NicheResearcher
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -107,51 +107,34 @@ def _make_claude_response(text: str) -> MagicMock:
     return response
 
 
-def _make_agent(
+def _make_researcher(
     tmp_path: Path,
     *,
     api_key: str = "sk-test-key",
     queries_md: str = SAMPLE_QUERIES_MD,
-) -> Any:
-    """Create a MarketingAgent with mocked infrastructure."""
-    from holus.agents.marketing.agent import MarketingAgent
+) -> NicheResearcher:
+    """Create a NicheResearcher with mocked claude client and temp paths."""
+    mock_claude = MagicMock()
 
-    mock_config = MagicMock()
-    mock_config.anthropic_api_key = api_key
-    mock_config.redis_url = "redis://localhost:6379"
-    mock_config.mem0_api_url = "http://localhost:8080"
-    mock_config.langfuse_host = "http://localhost:3001"
-    mock_config.langfuse_public_key = ""
-    mock_config.langfuse_secret_key = ""
-    mock_config.sonnet_model = "claude-sonnet-4-6"
-    mock_config.opus_model = "claude-opus-4-6"
-    mock_config.haiku_model = "claude-haiku-3-5"
-
-    mock_agent_config = MagicMock()
-    mock_agent_config.default_model_tier = "operational"
-    mock_agent_config.mem0_scope = "marketing"
-
-    with (
-        patch("holus.agents.base.redis.Redis.from_url", return_value=MagicMock()),
-        patch("holus.agents.base.EventBus", return_value=MagicMock()),
-        patch("holus.agents.base.KillSwitch", return_value=MagicMock()),
-    ):
-        agent = MarketingAgent(config=mock_config, agent_config=mock_agent_config)
-
-    # Override paths to use tmp_path
     queries_path = tmp_path / "niche-research-queries.md"
     if queries_md:
         queries_path.write_text(queries_md, encoding="utf-8")
-    agent._NICHE_QUERIES_PATH = queries_path
+    else:
+        queries_path = tmp_path / "nonexistent.md"
 
     state_path = tmp_path / "niche-state.json"
-    agent._NICHE_STATE_PATH = state_path
 
-    return agent
+    return NicheResearcher(
+        claude_client=mock_claude,
+        api_key=api_key,
+        agent_name="test-agent",
+        queries_path=queries_path,
+        state_path=state_path,
+    )
 
 
 # ---------------------------------------------------------------------------
-# Tests: _parse_research_queries()
+# Tests: parse_research_queries()
 # ---------------------------------------------------------------------------
 
 
@@ -160,8 +143,8 @@ class TestParseResearchQueries:
 
     def test_parses_yaml_block(self, tmp_path: Path) -> None:
         """Extracts and parses the YAML block from markdown."""
-        agent = _make_agent(tmp_path)
-        result = agent._parse_research_queries()
+        researcher = _make_researcher(tmp_path)
+        result = researcher.parse_research_queries()
 
         assert "queries" in result
         assert "competitor_content" in result["queries"]
@@ -169,27 +152,26 @@ class TestParseResearchQueries:
 
     def test_returns_empty_when_file_missing(self, tmp_path: Path) -> None:
         """Returns empty dict when the queries file doesn't exist."""
-        agent = _make_agent(tmp_path, queries_md="")
-        agent._NICHE_QUERIES_PATH = tmp_path / "nonexistent.md"
-        result = agent._parse_research_queries()
+        researcher = _make_researcher(tmp_path, queries_md="")
+        result = researcher.parse_research_queries()
         assert result == {}
 
     def test_returns_empty_when_no_yaml_block(self, tmp_path: Path) -> None:
         """Returns empty dict when the file has no YAML block."""
-        agent = _make_agent(tmp_path, queries_md="# No YAML here\nJust text.")
-        result = agent._parse_research_queries()
+        researcher = _make_researcher(tmp_path, queries_md="# No YAML here\nJust text.")
+        result = researcher.parse_research_queries()
         assert result == {}
 
     def test_returns_empty_on_invalid_yaml(self, tmp_path: Path) -> None:
         """Returns empty dict when the YAML block is malformed."""
         bad_yaml = "# Queries\n\n```yaml\n[invalid: yaml: {{\n```\n"
-        agent = _make_agent(tmp_path, queries_md=bad_yaml)
-        result = agent._parse_research_queries()
+        researcher = _make_researcher(tmp_path, queries_md=bad_yaml)
+        result = researcher.parse_research_queries()
         assert result == {}
 
 
 # ---------------------------------------------------------------------------
-# Tests: _select_queries()
+# Tests: select_queries()
 # ---------------------------------------------------------------------------
 
 
@@ -198,30 +180,30 @@ class TestSelectQueries:
 
     def test_selects_up_to_max_queries(self, tmp_path: Path) -> None:
         """Selects at most max_queries queries."""
-        agent = _make_agent(tmp_path)
-        config = agent._parse_research_queries()
-        queries = agent._select_queries(config, max_queries=3)
+        researcher = _make_researcher(tmp_path)
+        config = researcher.parse_research_queries()
+        queries = researcher.select_queries(config, max_queries=3)
         assert len(queries) <= 3
         assert len(queries) > 0
 
     def test_respects_cooldown(self, tmp_path: Path) -> None:
         """Queries recently run are skipped."""
-        agent = _make_agent(tmp_path)
-        config = agent._parse_research_queries()
+        researcher = _make_researcher(tmp_path)
+        config = researcher.parse_research_queries()
 
         # Run once to populate state
-        first_run = agent._select_queries(config, max_queries=5)
+        first_run = researcher.select_queries(config, max_queries=5)
         assert len(first_run) > 0
 
         # Run again immediately — all queries should be on cooldown
-        second_run = agent._select_queries(config, max_queries=5)
+        second_run = researcher.select_queries(config, max_queries=5)
         # Should not return the same queries (they're on cooldown)
         overlap = set(first_run) & set(second_run)
         assert len(overlap) == 0
 
     def test_stale_categories_first(self, tmp_path: Path) -> None:
         """Categories sorted by staleness — least recently used first."""
-        agent = _make_agent(tmp_path)
+        researcher = _make_researcher(tmp_path)
 
         # Pre-populate state: competitor_content used recently, others never
         now = datetime.now(UTC)
@@ -231,10 +213,10 @@ class TestSelectQueries:
             },
             "query_history": {},
         }
-        agent._write_niche_state(state)
+        researcher.write_niche_state(state)
 
-        config = agent._parse_research_queries()
-        queries = agent._select_queries(config, max_queries=2)
+        config = researcher.parse_research_queries()
+        queries = researcher.select_queries(config, max_queries=2)
 
         # Should pick from trending_topics or industry_news first
         # (competitor_content was used recently)
@@ -247,24 +229,24 @@ class TestSelectQueries:
 
     def test_returns_empty_when_no_queries_section(self, tmp_path: Path) -> None:
         """Returns empty list when config has no queries section."""
-        agent = _make_agent(tmp_path)
-        result = agent._select_queries({"other": "data"}, max_queries=5)
+        researcher = _make_researcher(tmp_path)
+        result = researcher.select_queries({"other": "data"}, max_queries=5)
         assert result == []
 
     def test_state_persisted(self, tmp_path: Path) -> None:
         """State file is written after query selection."""
-        agent = _make_agent(tmp_path)
-        config = agent._parse_research_queries()
-        agent._select_queries(config, max_queries=3)
+        researcher = _make_researcher(tmp_path)
+        config = researcher.parse_research_queries()
+        researcher.select_queries(config, max_queries=3)
 
-        assert agent._NICHE_STATE_PATH.exists()
-        state = json.loads(agent._NICHE_STATE_PATH.read_text(encoding="utf-8"))
+        assert researcher.state_path.exists()
+        state = json.loads(researcher.state_path.read_text(encoding="utf-8"))
         assert "query_history" in state
         assert "last_run" in state
 
     def test_handles_expired_cooldown(self, tmp_path: Path) -> None:
         """Queries with expired cooldown are eligible again."""
-        agent = _make_agent(tmp_path)
+        researcher = _make_researcher(tmp_path)
 
         # Set query history to 25 hours ago (past daily cooldown)
         old_time = (datetime.now(UTC) - timedelta(hours=25)).isoformat()
@@ -274,15 +256,15 @@ class TestSelectQueries:
             },
             "category_last_used": {},
         }
-        agent._write_niche_state(state)
+        researcher.write_niche_state(state)
 
-        config = agent._parse_research_queries()
-        queries = agent._select_queries(config, max_queries=5)
+        config = researcher.parse_research_queries()
+        queries = researcher.select_queries(config, max_queries=5)
         assert "AI deployment challenges enterprise" in queries
 
 
 # ---------------------------------------------------------------------------
-# Tests: _web_search_single()
+# Tests: web_search_single()
 # ---------------------------------------------------------------------------
 
 
@@ -291,14 +273,14 @@ class TestWebSearchSingle:
 
     def test_calls_claude_with_web_search_tool(self, tmp_path: Path) -> None:
         """Claude is called with the web_search_20250305 tool."""
-        agent = _make_agent(tmp_path)
-        agent.claude = MagicMock()
-        agent.claude.call.return_value = _make_claude_response("Search results summary here.")
+        researcher = _make_researcher(tmp_path)
+        researcher.claude = MagicMock()
+        researcher.claude.call.return_value = _make_claude_response("Search results summary here.")
 
-        result = agent._web_search_single("AI consulting 2026")
+        result = researcher.web_search_single("AI consulting 2026")
 
-        agent.claude.call.assert_called_once()
-        call_kwargs = agent.claude.call.call_args
+        researcher.claude.call.assert_called_once()
+        call_kwargs = researcher.claude.call.call_args
         cached_prompt = call_kwargs.kwargs.get("cached_prompt") or call_kwargs[1].get(
             "cached_prompt"
         )
@@ -310,19 +292,19 @@ class TestWebSearchSingle:
 
     def test_returns_empty_on_empty_response(self, tmp_path: Path) -> None:
         """Returns empty string when Claude returns no text."""
-        agent = _make_agent(tmp_path)
-        agent.claude = MagicMock()
+        researcher = _make_researcher(tmp_path)
+        researcher.claude = MagicMock()
 
         response = MagicMock()
         response.content = []
-        agent.claude.call.return_value = response
+        researcher.claude.call.return_value = response
 
-        result = agent._web_search_single("test query")
+        result = researcher.web_search_single("test query")
         assert result == ""
 
 
 # ---------------------------------------------------------------------------
-# Tests: _extract_insights()
+# Tests: extract_insights()
 # ---------------------------------------------------------------------------
 
 
@@ -331,11 +313,11 @@ class TestExtractInsights:
 
     def test_extracts_valid_insights(self, tmp_path: Path) -> None:
         """Parses JSON response into NicheInsight objects."""
-        agent = _make_agent(tmp_path)
-        agent.claude = MagicMock()
-        agent.claude.call.return_value = _make_claude_response(SAMPLE_INSIGHTS_JSON)
+        researcher = _make_researcher(tmp_path)
+        researcher.claude = MagicMock()
+        researcher.claude.call.return_value = _make_claude_response(SAMPLE_INSIGHTS_JSON)
 
-        insights = agent._extract_insights("Some search results here.")
+        insights = researcher.extract_insights("Some search results here.")
         assert len(insights) == 2
         assert all(isinstance(i, NicheInsight) for i in insights)
         assert insights[0].topic == "AI pipeline architecture"
@@ -343,17 +325,17 @@ class TestExtractInsights:
 
     def test_returns_empty_on_invalid_json(self, tmp_path: Path) -> None:
         """Returns empty list when Claude returns invalid JSON."""
-        agent = _make_agent(tmp_path)
-        agent.claude = MagicMock()
-        agent.claude.call.return_value = _make_claude_response("Not valid JSON at all.")
+        researcher = _make_researcher(tmp_path)
+        researcher.claude = MagicMock()
+        researcher.claude.call.return_value = _make_claude_response("Not valid JSON at all.")
 
-        insights = agent._extract_insights("Some results.")
+        insights = researcher.extract_insights("Some results.")
         assert insights == []
 
     def test_skips_invalid_insight_items(self, tmp_path: Path) -> None:
         """Skips items that don't validate as NicheInsight."""
-        agent = _make_agent(tmp_path)
-        agent.claude = MagicMock()
+        researcher = _make_researcher(tmp_path)
+        researcher.claude = MagicMock()
 
         mixed = json.dumps(
             [
@@ -363,23 +345,23 @@ class TestExtractInsights:
                 {"topic": "Another valid", "category": "industry_news"},
             ]
         )
-        agent.claude.call.return_value = _make_claude_response(mixed)
+        researcher.claude.call.return_value = _make_claude_response(mixed)
 
-        insights = agent._extract_insights("Results.")
+        insights = researcher.extract_insights("Results.")
         assert len(insights) == 2
 
     def test_handles_empty_response(self, tmp_path: Path) -> None:
         """Returns empty list when Claude returns empty string."""
-        agent = _make_agent(tmp_path)
-        agent.claude = MagicMock()
-        agent.claude.call.return_value = _make_claude_response("")
+        researcher = _make_researcher(tmp_path)
+        researcher.claude = MagicMock()
+        researcher.claude.call.return_value = _make_claude_response("")
 
-        insights = agent._extract_insights("Results.")
+        insights = researcher.extract_insights("Results.")
         assert insights == []
 
 
 # ---------------------------------------------------------------------------
-# Tests: _niche_research() (full flow)
+# Tests: research() (full flow)
 # ---------------------------------------------------------------------------
 
 
@@ -389,23 +371,21 @@ class TestNicheResearch:
     @pytest.mark.asyncio()
     async def test_returns_empty_without_api_key(self, tmp_path: Path) -> None:
         """Skips niche research when no API key is configured."""
-        agent = _make_agent(tmp_path, api_key="")
-        result = await agent._niche_research()
+        researcher = _make_researcher(tmp_path, api_key="")
+        result = await researcher.research()
         assert result == {}
 
     @pytest.mark.asyncio()
     async def test_returns_empty_without_queries_file(self, tmp_path: Path) -> None:
         """Returns empty when queries file is missing."""
-        agent = _make_agent(tmp_path, queries_md="")
-        agent._NICHE_QUERIES_PATH = tmp_path / "nonexistent.md"
-        result = await agent._niche_research()
+        researcher = _make_researcher(tmp_path, queries_md="")
+        result = await researcher.research()
         assert result == {}
 
     @pytest.mark.asyncio()
     async def test_full_flow_returns_result(self, tmp_path: Path) -> None:
         """Full flow: parse queries, search, extract, return result."""
-        agent = _make_agent(tmp_path)
-        agent.claude = MagicMock()
+        researcher = _make_researcher(tmp_path)
 
         # First calls are web searches, last call is extraction
         search_response = _make_claude_response("Found: AI consulting post about pipelines.")
@@ -421,9 +401,9 @@ class TestNicheResearch:
                 return search_response
             return extraction_response
 
-        agent.claude.call = MagicMock(side_effect=_side_effect)
+        researcher.claude.call = MagicMock(side_effect=_side_effect)
 
-        result = await agent._niche_research()
+        result = await researcher.research()
 
         assert "queries_run" in result
         assert len(result["queries_run"]) > 0
@@ -434,11 +414,10 @@ class TestNicheResearch:
     @pytest.mark.asyncio()
     async def test_graceful_on_search_failure(self, tmp_path: Path) -> None:
         """Returns result with queries_run but empty insights on failure."""
-        agent = _make_agent(tmp_path)
-        agent.claude = MagicMock()
-        agent.claude.call = MagicMock(side_effect=RuntimeError("API unavailable"))
+        researcher = _make_researcher(tmp_path)
+        researcher.claude.call = MagicMock(side_effect=RuntimeError("API unavailable"))
 
-        result = await agent._niche_research()
+        result = await researcher.research()
 
         # Should still return a valid result dict with queries_run
         assert "queries_run" in result
@@ -447,14 +426,14 @@ class TestNicheResearch:
     @pytest.mark.asyncio()
     async def test_returns_empty_when_all_queries_on_cooldown(self, tmp_path: Path) -> None:
         """Returns empty when all queries were recently run."""
-        agent = _make_agent(tmp_path)
+        researcher = _make_researcher(tmp_path)
 
         # Run once to exhaust all queries
-        config = agent._parse_research_queries()
-        agent._select_queries(config, max_queries=100)
+        config = researcher.parse_research_queries()
+        researcher.select_queries(config, max_queries=100)
 
         # Now niche research should find no eligible queries
-        result = await agent._niche_research()
+        result = await researcher.research()
         assert result == {}
 
 
@@ -514,3 +493,34 @@ class TestModels:
         assert data["queries_run"] == ["query1"]
         assert len(data["insights"]) == 1
         assert data["research_duration_ms"] == 500
+
+
+# ---------------------------------------------------------------------------
+# Tests: format_niche_research() static method
+# ---------------------------------------------------------------------------
+
+
+class TestFormatNicheResearch:
+    """Tests for NicheResearcher.format_niche_research()."""
+
+    def test_empty_input(self) -> None:
+        assert NicheResearcher.format_niche_research({}) == "No niche research available this cycle."
+
+    def test_trending_topics(self) -> None:
+        result = NicheResearcher.format_niche_research(
+            {"trending_topics": ["AI agents", "RAG pipelines"]}
+        )
+        assert "AI agents" in result
+        assert "RAG pipelines" in result
+
+    def test_recommended_angles(self) -> None:
+        result = NicheResearcher.format_niche_research(
+            {"recommended_angles": ["Builder story angle"]}
+        )
+        assert "Builder story angle" in result
+
+    def test_insights_count(self) -> None:
+        result = NicheResearcher.format_niche_research(
+            {"insights": [{"topic": "a"}, {"topic": "b"}]}
+        )
+        assert "2 insights" in result

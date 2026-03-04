@@ -707,8 +707,6 @@ def _patch_agent_paths(monkeypatch: Any, tmp_path: Path) -> None:
     traj_dir = tmp_path / ".self-improvement" / "memory"
     traj_dir.mkdir(parents=True, exist_ok=True)
     monkeypatch.setattr(f"{prefix}._TRAJECTORY_PATH", traj_dir / "trajectory.jsonl")
-    # Disable niche research (no queries file in temp dir)
-    monkeypatch.setattr(f"{prefix}._NICHE_QUERIES_PATH", tmp_path / "nonexistent.md")
 
 
 class TestAuthorityEngineE2E:
