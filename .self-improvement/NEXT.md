@@ -157,7 +157,7 @@ Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into
 ### P3 — Test Self-Improvement System
 
 - [x] [BUILD] Add unit tests for self_improvement/judge.py — 27 tests across 8 classes: JudgeVerdict enum (3), JudgeEvaluation dataclass (3), constants (3), init (3), evaluate happy path (7), evaluate errors (5), batch evaluate (3). 793 total tests. (Cycle 71)
-- [ ] [BUILD] Add unit tests for self_improvement/reflexion.py — Test self-correction loop, improvement detection, convergence. Target: 8+ tests.
+- [x] [BUILD] Add unit tests for self_improvement/reflexion.py — 34 tests across 9 classes: should_retry routing (6), finish nodes (4), execute_node context building (5), evaluate_node judge integration (1), reflect_node generation (4), REFLECTION_PROMPT (2), ReflexionLoop init+graph (4), ReflectionMemoryManager store/retrieve/patterns (8). 827 total tests. (Cycle 72)
 - [ ] [BUILD] Add unit tests for self_improvement/prompt_optimizer.py — Test prompt mutation, scoring, selection. Target: 8+ tests.
 
 ### P4 — Polish & Verification
