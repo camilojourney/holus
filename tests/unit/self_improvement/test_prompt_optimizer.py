@@ -85,8 +85,15 @@ class TestPromptVersion:
         pv = _make_version()
         d = pv.to_dict()
         expected_keys = {
-            "version_id", "agent_id", "prompt_text", "created_at",
-            "source", "parent_version", "performance_score", "is_active", "metadata",
+            "version_id",
+            "agent_id",
+            "prompt_text",
+            "created_at",
+            "source",
+            "parent_version",
+            "performance_score",
+            "is_active",
+            "metadata",
         }
         assert set(d.keys()) == expected_keys
 
@@ -268,9 +275,7 @@ class TestPromptOptimizerOptimize:
             "changes_made": ["Added JSON output format"],
             "new_prompt": "You are a better agent.",
         }
-        mock_client.messages.create.return_value = _mock_claude_response(
-            json.dumps(response_data)
-        )
+        mock_client.messages.create.return_value = _mock_claude_response(json.dumps(response_data))
 
         result = opt.optimize(
             agent_id="test-agent",
@@ -291,11 +296,11 @@ class TestPromptOptimizerOptimize:
         opt, mock_client, _store = _make_optimizer(tmp_path)
 
         response_data = {"analysis": "ok", "changes_made": [], "new_prompt": "new"}
-        mock_client.messages.create.return_value = _mock_claude_response(
-            json.dumps(response_data)
-        )
+        mock_client.messages.create.return_value = _mock_claude_response(json.dumps(response_data))
 
-        failures = [{"task": f"task{i}", "output": f"out{i}", "feedback": f"fb{i}"} for i in range(10)]
+        failures = [
+            {"task": f"task{i}", "output": f"out{i}", "feedback": f"fb{i}"} for i in range(10)
+        ]
         opt.optimize(
             agent_id="test-agent",
             task_type="batch",
@@ -342,9 +347,7 @@ class TestPromptOptimizerOptimize:
         opt, mock_client, store = _make_optimizer(tmp_path)
 
         response_data = {"analysis": "ok", "changes_made": [], "new_prompt": "new"}
-        mock_client.messages.create.return_value = _mock_claude_response(
-            json.dumps(response_data)
-        )
+        mock_client.messages.create.return_value = _mock_claude_response(json.dumps(response_data))
 
         # Save an existing active version
         existing = _make_version(version_id="v_existing", is_active=True)
@@ -366,9 +369,7 @@ class TestPromptOptimizerOptimize:
         opt, mock_client, _store = _make_optimizer(tmp_path)
 
         response_data = {"analysis": "ok", "changes_made": [], "new_prompt": "new"}
-        mock_client.messages.create.return_value = _mock_claude_response(
-            json.dumps(response_data)
-        )
+        mock_client.messages.create.return_value = _mock_claude_response(json.dumps(response_data))
 
         # Failures with no task/output/feedback keys
         opt.optimize(

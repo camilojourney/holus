@@ -162,5 +162,5 @@ Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into
 
 ### P4 — Polish & Verification
 
-- [ ] [REVIEW] Run full test suite and verify coverage improvement — Run `just check`, count total tests, calculate module coverage ratio. Update MEMORY.md with Sprint 4 results.
+- [x] [REVIEW] Run full test suite and verify coverage improvement — 860 tests passing (475→860, +385). Module coverage: 32%→78% (32/41 modules tested). Fixed 3 lint/format issues in test files from recent cycles. Updated MEMORY.md with Sprint 3+4 summaries, new file references, and What's Next section. (Cycle 74)
 - [ ] [BUILD] Add `just coverage` command — Run pytest with coverage report, show per-module coverage percentage. Helps track progress on coverage goals.

@@ -16,10 +16,10 @@ from holus.integrations.claude_api.client import (
     handle_tool_loop,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_response(
     text: str = "ok",
@@ -278,7 +278,9 @@ class TestCostTracking:
         assert client.total_cost("a") == 0.0
 
     def test_total_cost_nonzero(self, client):
-        r = _make_response(input_tokens=1_000_000, output_tokens=1_000_000, cache_read=0, cache_write=0)
+        r = _make_response(
+            input_tokens=1_000_000, output_tokens=1_000_000, cache_read=0, cache_write=0
+        )
         client._track_cost(r, "claude-sonnet-4-5-20250514", "x")
         # input: 1M * $3/M = $3, output: 1M * $15/M = $15, total $18
         assert client.total_cost("x") == pytest.approx(18.0, abs=0.01)
@@ -425,9 +427,7 @@ class TestHandleToolLoop:
         client.client.messages.create.return_value = tool_resp
 
         cp = _make_prompt()
-        result = handle_tool_loop(
-            client, cp, "hi", {"loop": lambda: "ok"}, max_turns=3
-        )
+        result = handle_tool_loop(client, cp, "hi", {"loop": lambda: "ok"}, max_turns=3)
         assert result == "Max tool turns reached without final response."
         assert client.client.messages.create.call_count == 3
 

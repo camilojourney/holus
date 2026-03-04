@@ -195,13 +195,9 @@ class TestEvaluateHappyPath:
 
     def test_fail_verdict(self) -> None:
         agent, mock_client = _make_agent()
-        mock_client.messages.create.return_value = _mock_api_response(
-            _default_payload("FAIL", 0.3)
-        )
+        mock_client.messages.create.return_value = _mock_api_response(_default_payload("FAIL", 0.3))
 
-        result = agent.evaluate(
-            task="Analyze AAPL", task_type="trade_signal", output="Buy"
-        )
+        result = agent.evaluate(task="Analyze AAPL", task_type="trade_signal", output="Buy")
 
         assert result.verdict == JudgeVerdict.FAIL
         assert result.score == 0.3
@@ -212,18 +208,14 @@ class TestEvaluateHappyPath:
         payload["pass_threshold_met"] = False
         mock_client.messages.create.return_value = _mock_api_response(payload)
 
-        result = agent.evaluate(
-            task="Review PR", task_type="code_review", output="LGTM"
-        )
+        result = agent.evaluate(task="Review PR", task_type="code_review", output="LGTM")
 
         assert result.verdict == JudgeVerdict.PARTIAL
         assert result.pass_threshold_met is False
 
     def test_uses_content_rubric(self) -> None:
         agent, mock_client = _make_agent()
-        mock_client.messages.create.return_value = _mock_api_response(
-            _default_payload()
-        )
+        mock_client.messages.create.return_value = _mock_api_response(_default_payload())
 
         agent.evaluate(task="Write post", task_type="content", output="Post text")
 
@@ -234,13 +226,9 @@ class TestEvaluateHappyPath:
 
     def test_uses_default_rubric_for_unknown_type(self) -> None:
         agent, mock_client = _make_agent()
-        mock_client.messages.create.return_value = _mock_api_response(
-            _default_payload()
-        )
+        mock_client.messages.create.return_value = _mock_api_response(_default_payload())
 
-        agent.evaluate(
-            task="Unknown task", task_type="mystery_type", output="Some output"
-        )
+        agent.evaluate(task="Unknown task", task_type="mystery_type", output="Some output")
 
         call_args = mock_client.messages.create.call_args
         user_msg = call_args[1]["messages"][0]["content"]
@@ -249,14 +237,10 @@ class TestEvaluateHappyPath:
 
     def test_custom_rubric_overrides_default(self) -> None:
         agent, mock_client = _make_agent()
-        mock_client.messages.create.return_value = _mock_api_response(
-            _default_payload()
-        )
+        mock_client.messages.create.return_value = _mock_api_response(_default_payload())
 
         custom = "Check that output contains exactly 3 bullet points."
-        agent.evaluate(
-            task="Summarize", task_type="content", output="...", custom_rubric=custom
-        )
+        agent.evaluate(task="Summarize", task_type="content", output="...", custom_rubric=custom)
 
         call_args = mock_client.messages.create.call_args
         user_msg = call_args[1]["messages"][0]["content"]
@@ -264,9 +248,7 @@ class TestEvaluateHappyPath:
 
     def test_api_called_with_correct_params(self) -> None:
         agent, mock_client = _make_agent()
-        mock_client.messages.create.return_value = _mock_api_response(
-            _default_payload()
-        )
+        mock_client.messages.create.return_value = _mock_api_response(_default_payload())
 
         agent.evaluate(task="Test task", task_type="default", output="Test output")
 

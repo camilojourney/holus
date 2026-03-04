@@ -2,8 +2,8 @@
 
 Accumulated knowledge from agent operations. Updated by the manager agent after each cycle.
 
-**Last updated:** 2026-03-02
-**Updated by:** Builder (cycle 37 — Sprint 2 complete)
+**Last updated:** 2026-03-04
+**Updated by:** Builder (cycle 74 — Sprint 4 review)
 
 ---
 
@@ -118,17 +118,81 @@ go-to AI transition consultant?"
 
 ---
 
+## Sprint 3 Summary (2026-03-03, cycles 38-53)
+
+**First Real Content Cycle — PARTIAL.** 16/18 tasks done, 2 blocked on expired ANTHROPIC_API_KEY.
+
+What was built:
+- `just preflight` — environment validation before running
+- Publishing path switched from Late API to social-media MCP
+- `just generate` — runs one marketing agent cycle in generate-only mode
+- Dry-run publishing mode (`just publish --dry-run`)
+- E2E publish pipeline tests (15 tests across 5 classes)
+- Analytics feedback loop in observe stage
+- Weekly content calendar view (`just calendar`)
+- Content quality scoring with auto-reject below score 60
+- Quality score display in review CLI
+- Late API fully removed — social-media MCP is sole path
+- launchd scheduling tested and validated
+
+**Blocked:** First real agent run + prompt tuning (ANTHROPIC_API_KEY expired)
+**Key stats:** 475 tests, ~10K LOC
+
+---
+
+## Sprint 4 Summary (2026-03-03—04, cycles 54-74)
+
+**Test Coverage & Refactoring — COMPLETE.** 19/19 tasks done.
+
+### Refactoring
+- `agent.py` refactored: 1,101 → 665 LOC (−40%)
+- Extracted 3 new modules: `niche_research.py` (314 LOC), `content_generation.py` (136 LOC), `json_parsing.py` (181 LOC)
+- Source modules reduced from 53 to 41 (consolidated duplicates during refactor)
+
+### Test Coverage
+- **860 tests** (475 → 860, +385 new tests)
+- **Module coverage: 32% → 78%** (target was 60%+, exceeded)
+- 32/41 modules have dedicated tests
+- 9 untested: `__main__.py` (entry point), 4 stub agents (coding, content, coordinator, pilaster), `review_videos.py`, `process_manager.py`, `mem0_client.py`, `langfuse_client.py`
+
+### New test files added (Sprint 4)
+| Module | Tests | Cycle |
+|--------|-------|-------|
+| niche_research.py | 43 | 63 |
+| content_generation.py | 26 | 64 |
+| json_parsing.py | 66 | 65 |
+| prompts.py | 55 | 66 |
+| content_queue.py | 31 | 67 |
+| claude_api/client.py | 38 | 68 |
+| core/events.py | 14 | 69 |
+| agents/base.py | 32 | 70 |
+| self_improvement/judge.py | 27 | 71 |
+| self_improvement/reflexion.py | 34 | 72 |
+| self_improvement/prompt_optimizer.py | 33 | 73 |
+
+### Bug found & fixed
+- `prompt_optimizer.py`: `OPTIMIZER_PROMPT` had unescaped `{}` in JSON example template — caused KeyError at runtime. Fixed in cycle 73.
+
+**Key stats:** 860 tests, 10,941 source LOC, 13,970 test LOC, 34 test files
+
+---
+
 ## Key Files Reference
 
 ### Agent Code
 | File | Purpose |
 |------|---------|
-| `src/holus/agents/marketing/agent.py` | Main ReAct loop (observe → reason → act → evaluate) |
+| `src/holus/agents/marketing/agent.py` | Main ReAct loop (665 LOC, refactored from 1,101) |
+| `src/holus/agents/marketing/niche_research.py` | NicheResearcher class (extracted from agent.py) |
+| `src/holus/agents/marketing/content_generation.py` | Text generation helpers (extracted from agent.py) |
+| `src/holus/agents/marketing/json_parsing.py` | JSON parsing utilities (extracted from agent.py) |
 | `src/holus/agents/marketing/prompts.py` | Authority-building prompt templates |
 | `src/holus/agents/marketing/models.py` | ContentDecision, BrandIdentity, NicheInsight, etc. |
 | `src/holus/agents/marketing/repurpose.py` | LinkedIn → 4 platform adaptation |
 | `src/holus/agents/marketing/content_queue.py` | Content review queue |
+| `src/holus/agents/marketing/quality_score.py` | Content quality scoring (auto-reject < 60) |
 | `src/holus/agents/marketing/review.py` | Human review CLI |
+| `src/holus/agents/marketing/publish_approved.py` | Publishing via social-media MCP |
 
 ### Config
 | File | Purpose |
@@ -175,14 +239,15 @@ Holus reads it via MCP — never stores it.
 
 ---
 
-## What's Next (Sprint 3 candidates)
+## What's Next (Sprint 5 candidates)
 
-**Not yet prioritized. Sprint 3 should focus on:**
-1. **First real content cycle** — Run the agent end-to-end with real MCP calls, produce content Camilo approves
-2. **MCP server connections** — genpeli MCP (not built), pilaster MCP (not e2e tested), social-media MCP (not e2e tested)
-3. **Camilo brand.yaml review** — 6 TODO blocks need his input
-4. **Scheduling activation** — launchd plists exist but aren't activated (Spec 013)
-5. **Finance agent** — Simple weekly P&L report (Phase 1.5 in ARCHITECTURE.md)
+**Not yet prioritized. Sprint 5 should focus on:**
+1. **First real content cycle** — BLOCKED on ANTHROPIC_API_KEY (expired since Sprint 3). Camilo must update.
+2. **Prompt tuning** — Depends on first real run output.
+3. **`just coverage` command** — Run pytest with coverage report for per-module percentages.
+4. **MCP server e2e testing** — genpeli MCP (not built), pilaster MCP (not tested), social-media MCP (not tested)
+5. **Camilo brand.yaml review** — 6 TODO blocks need his input
+6. **Scheduling activation** — launchd plists tested, not yet activated
 
 ---
 
