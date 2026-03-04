@@ -143,9 +143,9 @@ Goal: Bring test coverage from 32% to 60%+, refactor the 1,101-LOC agent.py into
 ### P1 — Test Critical Modules
 
 - [x] [BUILD] Add unit tests for niche_research.py — 14 new tests added (43 total): state read/write (5), query selection edge cases (3), parse edge (1), web search error (1), extract JSON fences (1), format truncation (2), None API key (1). 503 total tests. (Cycle 63)
-- [ ] [BUILD] Add unit tests for content_generation.py — Test text generation fallback, platform limit enforcement, content formatting. Target: 10+ tests.
-- [ ] [BUILD] Add unit tests for json_parsing.py — Test JSON extraction from various response formats, coercion, edge cases (malformed JSON, empty responses, nested structures). Target: 15+ tests.
-- [ ] [BUILD] Add unit tests for prompts.py — Test prompt template rendering with various inputs, verify brand.yaml integration, check anti-pattern phrases don't appear in generated prompts. Target: 10+ tests.
+- [x] [BUILD] Add unit tests for content_generation.py — 26 tests added: fallback templates (5), platform limit enforcement (8), generate_text_for_decision API calls and fallbacks (10), constant validation (3). 529 total tests. (Cycle 64)
+- [x] [BUILD] Add unit tests for json_parsing.py — 66 tests added across 7 classes: try_json_loads (9), decode_json_payload (13), extract_response_text (7), coerce_decision (17), parse_content_decisions (9), PLATFORM_ALIASES (6), CONTENT_TYPE_ALIASES (5). 595 total tests. (Cycle 65)
+- [x] [BUILD] Add unit tests for prompts.py — 55 tests added across 7 classes: prompt template placeholders (8), format_brand_identity (11), format_content_pillars (7), format_voice (8), format_positioning (7), format_anti_patterns (6), format_product_info (8). 650 total tests. (Cycle 66)
 - [ ] [BUILD] Add unit tests for content_queue.py — Test enqueue, dequeue, status transitions, persistence to YAML, edge cases (empty queue, duplicate IDs). Target: 10+ tests.
 
 ### P2 — Test Supporting Infrastructure
