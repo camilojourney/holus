@@ -2,7 +2,7 @@
 
 ## One Sentence
 
-Holus becomes the federated AI operating system that runs a solo founder's entire portfolio -- trading, content, code, and creative -- through coordinated autonomous agents that learn from each other without tight coupling.
+Holus is the AI marketing brain that runs a solo founder's content portfolio -- a senior marketing director that never sleeps, learns from every post, and gets sharper every week.
 
 ---
 
@@ -12,37 +12,34 @@ Solo founders cannot scale beyond their own hours. Hiring is expensive, slow, an
 
 The insight: a federated system of AI agents, each owning one domain, sharing a lightweight event bus for cross-project learning, captures 80% of the value of a unified AI OS while avoiding the compound error problem that makes unified systems brittle. Every production multi-agent system studied (Replit, Vercel, Cognition/Devin, Anthropic) converges on this same pattern: independent agents with bounded communication channels.
 
-Holus is not a chatbot. It is not a wrapper around Claude. It is an operational system where agents make real decisions -- execute trades, publish content, review code, optimize workflows -- with safety guardrails, memory, and genuine self-improvement loops.
+Holus is not a chatbot. It is not a wrapper around Claude. It is an operational system where agents make real decisions -- decide what content to create, brief visual specialists, schedule publishing, and evaluate what worked -- with safety guardrails, memory, and genuine self-improvement loops.
 
-The core philosophy: **intelligence is the primary constraint, not cost.** Every agent runs on the highest-capability model available. Claude Opus 4 handles strategic decisions. Claude Sonnet 4.5 handles high-volume operations. The Mac Mini serves as infrastructure only -- databases, orchestration, workflow automation, memory systems -- not as an AI inference layer. When you are paying for maximum intelligence, the marginal cost of smarter decisions far exceeds the marginal cost of API tokens.
+The core philosophy: **intelligence is the primary constraint, not cost.** Every agent runs on the highest-capability model appropriate for its task. Claude Opus handles strategic decisions. Claude Sonnet handles high-volume content generation and evaluation. The Mac Mini serves as infrastructure only -- databases, orchestration, workflow automation, memory systems -- not as an AI inference layer.
 
 ---
 
 ## What Success Looks Like
 
-### Phase 1 (Months 1-2): Foundations
+### Phase 1 (Months 1-2): One Working Loop
 
-- Infrastructure running: PostgreSQL, Redis, n8n, Temporal, Langfuse via Docker Compose
-- Configuration management working: YAML + env vars + pydantic-settings
-- Claude API client operational with prompt caching (>80% cache hit rate)
-- Kill switch system tested from CLI, SSH, and webhook
-- Event bus publishing and consuming events between agents
+- Marketing strategist agent runs weekly: observe analytics → decide content → brief specialists → publish
+- 4+ content pieces per week across Pilaster, genpeli, invoz
+- Every decision logged to `trajectory.jsonl` — the memory that makes learning possible
+- Observatory dashboard reads from file-based state: agent status, recent decisions, evaluation scores
 
-### Phase 2 (Months 2-4): Independent Agents
+### Phase 2 (Months 2-4): Autonomous Output at Scale
 
-- **4 autonomous agents** running daily with <5% error rate requiring human intervention
-- **Trading agent** achieves Sharpe ratio >1.0 on paper trading within 60 days, graduates to live
 - **Content pipeline** publishes 30+ pieces/month across 13 platforms with measurable engagement growth
-- **Coding agent** handles 70%+ of routine PRs (reviews, bug fixes, dependency updates) autonomously
-- **Pilaster agent** manages ComfyUI workflows with version control and quality assessment
-- DSPy prompt optimization running monthly on all agents (15-30% accuracy improvement per cycle)
+- **32 agents** running with <5% error rate requiring human intervention
+- **Self-improvement loop** operational: JudgeAgent evaluates outputs → patterns extracted weekly → prompt variants A/B tested
+- **Cost discipline**: full intelligence-forward operation under $500/month
 
-### Phase 3 (Months 4-6): Federated Intelligence
+### Phase 3 (Months 4-6): Compounding Intelligence
 
-- **Cross-project learning** produces at least 1 actionable insight per week
-- Cognee knowledge graph stores 100+ cross-project relationships
-- Coordinator daily synthesis identifies optimization opportunities across all agents
-- Self-improvement loop operational: Manager -> Code Improver -> Judge -> Optimizer
+- Performance data is rich enough to detect what content categories convert per product
+- Coordinator synthesis identifies cross-product patterns (e.g., tutorial posts for Pilaster drive invoz signups)
+- Prompt optimizer has run 3+ cycles with statistically significant A/B test results
+- Observatory dashboard serves as a portfolio artifact: shows a fully autonomous agent system operating live
 
 ### Ongoing Metrics
 
@@ -53,21 +50,128 @@ The core philosophy: **intelligence is the primary constraint, not cost.** Every
 
 ---
 
+## Agent Intelligence System
+
+Holus operates as a team of 32 agents organized the way a senior marketing director builds a team: a strategist at the top, specialist teams by content category, domain-expert evaluators, and ops agents running the plumbing.
+
+### The Brain: marketing-strategist (ReAct loop)
+
+One Opus-powered manager runs the full observe → reason → act → evaluate cycle. It reads analytics from the social-media silo, decides what content will drive growth, briefs the right specialist team, and logs every decision for the learning loop.
+
+### Specialist Teams (22 agents, 6 categories)
+
+**Written Authority** (50% of output) — the highest-ROI category:
+- `hook-architect` — opens that stop the scroll
+- `storyteller` — narrative arc from founding to feature
+- `technical-translator` — complex ideas made accessible
+- `voice-guardian` — ensures every post sounds like the same person
+- `cta-strategist` — converts readers into users
+
+**Visual Content** (25%):
+- `carousel-architect` — 5-10 slide educational carousels
+- `data-visualizer` — metrics and benchmarks as shareable graphics
+- `before-after-designer` — transformation stories as split visuals
+- `brand-designer` — visual consistency across all products
+
+**Video Content** (15%):
+- `script-writer` — short-form video scripts (60-90 seconds)
+- `brief-composer` — production briefs for genpeli
+- `caption-specialist` — hooks, hashtags, platform-specific formatting
+
+**Growth** (frequency-capped to avoid spam):
+- `lead-magnet-designer` — downloadable tools and templates
+- `comment-trigger-expert` — posts engineered to start conversations
+- `community-builder` — relationship content that builds audience loyalty
+
+**Research** (feeds all other specialists):
+- `niche-researcher` — trend and topic discovery
+- `seo-strategist` — keyword targeting and search intent
+- `audience-analyst` — ICP refinement from engagement patterns
+- `competitive-intel` — what competitors are doing that works
+
+**Repurposing** (every piece × 4 platforms):
+- `platform-adapter` — LinkedIn post → Twitter thread → Instagram caption
+- `bilingual-localizer` — English and Spanish versions
+- `format-converter` — text → carousel brief, blog → script
+
+### Evaluators (7 domain-expert judges)
+
+Not generic quality judges. Domain experts who know what good looks like in their category: a hook expert judges hooks, an SEO expert judges SEO, a narrative expert judges storytelling. Each evaluator returns a score + structured critique that feeds the learning loop.
+
+### Ops Agents (2)
+
+- `security-sentinel` — scans for leaked credentials, reviews API usage anomalies
+- `knowledge-keeper` — maintains `.self-improvement/MEMORY.md` and extracts patterns from trajectory data
+
+### Agent Registry
+
+`agents/AGENTS.yaml` is the single source of truth for all 32 agents: name, model, role, input/output contract, and which evaluation rubric applies.
+
+---
+
+## Self-Improvement Loop
+
+Every content output is evaluated. Every evaluation feeds learning. The system gets measurably better over time.
+
+**JudgeAgent** evaluates every content piece using domain-specific rubrics -- not "is this good?" but "does the hook follow the 3-second rule?", "is the CTA specific and low-friction?", "does this match the product's audience profile?"
+
+**Weekly pattern extraction** reads `trajectory.jsonl` and identifies what is working: which content categories are outperforming, which platforms are rewarding which post structures, which specialist combinations produce the best evaluation scores.
+
+**Prompt optimizer** A/B tests prompt variants once enough data has accumulated. Variant A ships to 50% of runs, variant B to the other 50%. After 20+ samples, the winner becomes the new baseline. Tracked in `config/prompts/`.
+
+**Reflexion** provides verbal reinforcement learning: after each cycle, the agent reads its own trajectory and writes a short reflection on what it would do differently. This reflection seeds the next cycle's reasoning.
+
+**Langfuse tracing** provides full observability: tokens, cost, latency, and evaluation scores per agent per run. The Observatory dashboard reads from Langfuse and `eval_history.jsonl` to surface trends.
+
+---
+
+## Three-Layer Prompt Architecture
+
+Prompts are the product. Code is the plumbing.
+
+**Layer 1 — Human-authored baselines** (`agents/*.md`): Written by hand, following the KERNEL template (Role, Scope, Steps, Negatives, Output Contract, Contrastive Examples). Git-versioned. These are the source of truth for agent behavior.
+
+**Layer 2 — Optimizer-generated variants** (`config/prompts/`): A/B test variants produced by the prompt optimizer. Named by agent + variant ID. Never edited by hand -- only the optimizer writes here.
+
+**Layer 3 — Hardcoded constants** (Python): Migration fallback only. If the prompt file cannot be loaded, the agent uses a minimal hardcoded version that keeps the system alive while the file issue is debugged.
+
+Promotion path: optimizer generates a variant → A/B test runs → winner gets promoted to Layer 1 by a human → old variant archived.
+
+---
+
+## Observatory Dashboard
+
+Holus runs headless. But the work it does should be visible -- both for operational debugging and as a portfolio artifact for interviews and demos.
+
+The Observatory is a FastAPI backend + Next.js 15 frontend that reads from existing file-based state. No new database. It reads `trajectory.jsonl`, `AGENTS.yaml`, `eval_history.jsonl`, and Langfuse to surface:
+
+- **Agent status grid** -- which agents ran today, last run time, success/error
+- **Trajectory timeline** -- a chronological feed of decisions and their rationale
+- **Content pipeline kanban** -- content in-flight: researching → drafted → evaluated → published
+- **Evaluation scores over time** -- per-agent quality trends by content category
+- **Cost tracking** -- daily/weekly spend per agent, actual vs. budget
+- **Knowledge browser** -- searchable view of `.self-improvement/MEMORY.md` and lessons
+- **System health** -- MCP silo connectivity, Redis, Langfuse
+
+Dual purpose: day-to-day operations + interview demo. A live dashboard showing a fully autonomous 32-agent content system is a stronger portfolio signal than any résumé line.
+
+---
+
 ## What We Explicitly Don't Do
 
-- **Local LLM inference for reasoning** -- we use cloud Claude (Opus 4 + Sonnet 4.5). Local models save tokens but sacrifice the reasoning quality that makes agents genuinely useful. The Mac Mini runs infrastructure, not intelligence. Exception: FinBERT for financial sentiment classification (specialized fine-tuned model, not a reasoning task).
+- **Local LLM inference for reasoning** -- we use cloud Claude (Opus + Sonnet). Local models save tokens but sacrifice the reasoning quality that makes agents genuinely useful. The Mac Mini runs infrastructure, not intelligence. Exception: FinBERT for financial sentiment classification.
 
-- **Real-time trading** -- we use daily/swing timeframes. Sub-second execution requires co-located infrastructure and latency optimization that is a completely different system.
+- **Real-time trading** -- Holus is a marketing system. pythia and milo-to-the-moon are completely isolated and never touched by Holus.
 
-- **General-purpose chatbot** -- Holus is not a conversational interface. It is a headless operational system triggered by schedules, events, and webhooks. There is no chat UI.
+- **General-purpose chatbot** -- Holus is a headless operational system triggered by schedules, events, and webhooks. The Observatory is read-only. There is no chat UI.
 
-- **Multi-tenant / SaaS** -- this is built for one founder's portfolio. No user management, no billing, no multi-tenancy abstractions. If this ever becomes a product, it is a complete rewrite.
+- **Multi-tenant / SaaS** -- built for one founder's portfolio. No user management, no billing, no multi-tenancy abstractions.
 
-- **Custom model training** -- we optimize prompts (DSPy, TextGrad, Reflexion), not weights. Fine-tuning is a supplement for classification tasks via LoRA on local 7B-8B models, not a core capability.
+- **Custom model training** -- we optimize prompts (A/B testing, Reflexion), not weights. Fine-tuning is a supplement for classification tasks, not a core capability.
 
-- **Unified real-time orchestration** -- the coordinator runs daily, not in real-time. Making it real-time reintroduces the compound error and coordination overhead the federated architecture avoids. If the coordinator becomes too complex, the system degrades to independent agents with no rewrite.
+- **Multiple LLM providers** -- Claude-only. Adding GPT-4, Gemini, or others triples operational complexity for marginal intelligence gains.
 
-- **Multiple LLM providers** -- Claude-only. Adding GPT-4, Gemini, or others triples the operational complexity (three prompt formats, three caching strategies, three failure modes) for marginal intelligence gains.
+- **Unified real-time orchestration** -- the marketing-strategist runs weekly, not in real-time. Making it real-time reintroduces the compound error and coordination overhead the federated architecture avoids.
 
 ---
 
@@ -80,4 +184,4 @@ The core philosophy: **intelligence is the primary constraint, not cost.** Every
 
 ---
 
-## Last reviewed: 2026-02
+## Last reviewed: 2026-03
