@@ -1,6 +1,6 @@
 # Spec 029: Observatory Frontend
 
-**Status:** planned
+**Status:** partial
 **Phase:** Phase 2
 **Author:** Juan
 **Created:** 2026-03-12

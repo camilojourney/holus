@@ -244,6 +244,19 @@ schedule-status:
 dev-api:
     uv run uvicorn holus.api.app:app --reload --port 8000
 
+# Start Observatory API (port 8001) + frontend (port 3000) for local dev
+dev-observatory:
+    (cd observatory && uv run python -m observatory.api.main &) && \
+    cd observatory/frontend && pnpm dev
+
+# Start only the Observatory frontend (API must be running separately at :8001)
+dev-observatory-frontend:
+    cd observatory/frontend && pnpm dev
+
+# Build Observatory frontend for production
+build-observatory:
+    cd observatory/frontend && pnpm build
+
 # -- Health ------------------------------------------------------------------
 
 health:
