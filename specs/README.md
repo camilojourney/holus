@@ -64,6 +64,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | 028 | [Observatory API](028-observatory-api.md)                        | Backend    | Planned     |
 | 029 | [Observatory Frontend](029-observatory-frontend.md)              | Full-Stack | Not Started |
 
+## Agent Intelligence Sprint
+
+| #   | Spec                                                             | Type    | Status  |
+| --- | ---------------------------------------------------------------- | ------- | ------- |
+| 030 | [Agent Registry & Self-Improvement Wiring](030-agent-registry-self-improvement.md) | Backend | Planned |
+
 ---
 
 ## Spec Status Legend
