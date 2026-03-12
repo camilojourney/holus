@@ -1,8 +1,9 @@
 """Holus core infrastructure: configuration, event bus, kill switch, process management."""
 
 from holus.core.config import AgentConfig, HolusConfig
+from holus.core.cycle_state import CycleContext, CycleState, HealthResult, write_trajectory_entry
 from holus.core.events import EventBus, EventType, HolusEvent
-from holus.core.health import HealthCheck
+from holus.core.health import HealthCheck, run_preflight_checks
 from holus.core.kill_switch import KillSwitch, KillSwitchScope
 from holus.core.process_manager import AgentProcess, AgentStatus, ProcessManager
 from holus.core.run_lock import acquire_run_lock
@@ -11,13 +12,18 @@ __all__ = [
     "AgentConfig",
     "AgentProcess",
     "AgentStatus",
+    "CycleContext",
+    "CycleState",
     "EventBus",
     "EventType",
     "HealthCheck",
+    "HealthResult",
     "HolusConfig",
     "HolusEvent",
     "KillSwitch",
     "KillSwitchScope",
     "ProcessManager",
     "acquire_run_lock",
+    "run_preflight_checks",
+    "write_trajectory_entry",
 ]
