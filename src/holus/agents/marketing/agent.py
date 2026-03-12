@@ -277,6 +277,43 @@ class MarketingAgent(BaseAgent):
             current_phase = "improving"
             ctx.transition(CycleState.IMPROVING)
 
+            # Run judge evaluation on generated content
+            if generated and getattr(getattr(self, "config", None), "anthropic_api_key", None):
+                try:
+                    from holus.self_improvement.judge import JudgeAgent
+
+                    judge = JudgeAgent(api_key=self.config.anthropic_api_key)
+
+                    for content_item in generated:
+                        decision_data = content_item.get("decision", {})
+                        content_type = decision_data.get("content_type", "TUTORIAL")
+                        text = content_item.get("text", "")
+                        topic = decision_data.get("topic", "unknown")
+
+                        if not text:
+                            continue
+
+                        evaluation = judge.evaluate_with_routing(
+                            task=f"Create {content_type} content about {topic}",
+                            content_type=content_type,
+                            output=text,
+                        )
+
+                        content_item["judge_evaluation"] = evaluation.to_dict()
+
+                        logger.info(
+                            "Judge evaluation for %s [%s]: %s (%.2f)",
+                            topic,
+                            content_type,
+                            evaluation.verdict.value,
+                            evaluation.score,
+                        )
+                except Exception:
+                    logger.warning(
+                        "Judge evaluation failed; continuing without scores",
+                        exc_info=True,
+                    )
+
             # ------------------------------------------------------------------
             # SAVING_STATE phase → DONE
             # ------------------------------------------------------------------

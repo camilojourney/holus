@@ -22,6 +22,7 @@ import json
 import logging
 from dataclasses import dataclass
 from enum import StrEnum
+from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -254,3 +255,53 @@ class JudgeAgent:
             )
             for item in items
         ]
+
+    def evaluate_with_routing(
+        self,
+        task: str,
+        content_type: str,
+        output: str,
+        *,
+        repo_root: Path | None = None,
+    ) -> JudgeEvaluation:
+        """Evaluate with domain-specific routing based on content_type.
+
+        Uses EVALUATOR_ROUTING from registry to find the right evaluator
+        and its rubric dimensions. Falls back to generic evaluate() for
+        unknown content types or if registry is unavailable.
+        """
+        try:
+            from holus.agents.registry import AgentRegistry
+
+            root = repo_root or Path(__file__).parents[2]
+            registry = AgentRegistry(
+                yaml_path=root / "agents" / "AGENTS.yaml"
+            )
+        except (FileNotFoundError, Exception):
+            logger.warning("Could not load agent registry; falling back to generic evaluation")
+            return self.evaluate(task=task, task_type=content_type.lower(), output=output)
+
+        evaluator_ids = registry.get_evaluator_for(content_type)
+        primary_evaluator_id = evaluator_ids[0] if evaluator_ids else "written-content-judge"
+
+        try:
+            evaluator_info = registry.get_agent(primary_evaluator_id)
+            rubric_dimensions = evaluator_info.rubric
+        except KeyError:
+            rubric_dimensions = []
+
+        if not rubric_dimensions:
+            return self.evaluate(task=task, task_type=content_type.lower(), output=output)
+
+        # Build domain-specific rubric string from evaluator dimensions
+        rubric_text = f"For {content_type} content, evaluate these specific dimensions:\n"
+        for dim in rubric_dimensions:
+            rubric_text += f"- {dim}: Score 0.0-1.0\n"
+        rubric_text += "\nReturn scores for EACH of these dimensions in dimension_scores."
+
+        return self.evaluate(
+            task=task,
+            task_type=content_type.lower(),
+            output=output,
+            custom_rubric=rubric_text,
+        )

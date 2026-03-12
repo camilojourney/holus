@@ -86,8 +86,22 @@ class BaseAgent(abc.ABC):
 
     @property
     def system_prompt(self) -> str:
-        """Return the agent's system prompt.  Override in subclasses."""
+        """Return the agent's system prompt. Checks PromptLoader first, falls back to default."""
+        try:
+            loaded = self.prompt_loader.get_prompt(self.agent_name)
+            if loaded:
+                return loaded
+        except Exception:
+            pass
         return f"You are the {self.agent_name} agent for Holus."
+
+    def _evaluate_self(self, final_state: dict[str, Any]) -> dict[str, Any] | None:
+        """Post-execution self-evaluation hook. Override in subclasses.
+
+        Returns evaluation dict or None if not implemented.
+        Called in run() after graph execution.
+        """
+        return None
 
     @property
     def tools(self) -> list[dict[str, Any]]:
@@ -154,6 +168,17 @@ class BaseAgent(abc.ABC):
             )
         return self._memory
 
+    # -- Prompt loading (lazy) ----------------------------------------------
+
+    @property
+    def prompt_loader(self):
+        """Lazy-loaded PromptLoader instance."""
+        if not hasattr(self, "_prompt_loader") or self._prompt_loader is None:
+            from holus.core.prompt_loader import PromptLoader
+
+            self._prompt_loader = PromptLoader()
+        return self._prompt_loader
+
     # -- Observability (Langfuse) -------------------------------------------
 
     @property
@@ -196,7 +221,34 @@ class BaseAgent(abc.ABC):
         if thread_id:
             config["configurable"] = {"thread_id": thread_id}
 
+        # Langfuse tracing (optional — does not block execution)
+        trace = None
+        try:
+            if self._langfuse is not None or (
+                self.config.langfuse_public_key and self.config.langfuse_secret_key
+            ):
+                trace = self.langfuse.trace(
+                    name=f"{self.agent_name}/run",
+                    metadata={"agent_name": self.agent_name, "model_tier": self.model_tier},
+                    tags=[self.agent_name, self.model_tier],
+                )
+        except Exception:
+            logger.debug("Langfuse tracing unavailable; continuing without trace")
+
         final_state = await app.ainvoke(initial, config=config)
+
+        # Post-execution self-evaluation hook
+        self_eval = self._evaluate_self(final_state)
+        if self_eval is not None:
+            final_state["_self_evaluation"] = self_eval
+
+        # Flush Langfuse if trace was created
+        if trace is not None:
+            try:
+                self.langfuse.flush()
+            except Exception:
+                logger.debug("Langfuse flush failed; non-critical")
+
         return final_state
 
     # -- Cleanup -------------------------------------------------------------

@@ -8,7 +8,7 @@ and learns from results to improve strategy over time.
 Not a trading system. Not a content publisher. Not a video generator.
 Those are silos. Holus uses them as tools.
 
-**Last updated:** 2026-02-28
+**Last updated:** 2026-03-12
 **Update cadence:** Only on major structural changes.
 
 ---
@@ -43,6 +43,50 @@ Holus reads silo data to make decisions, but the source of truth stays in the si
 
 ---
 
+## Agent Intelligence & Self-Improvement
+
+```
+ ┌──────────────────────────────────────────────────────────────────────┐
+ │                    SELF-IMPROVEMENT LOOP                            │
+ │                                                                     │
+ │  agents/AGENTS.yaml ─── AgentRegistry ─── PromptLoader (3 layers)  │
+ │       │                      │                    │                 │
+ │       │            get_evaluator_for()    Layer 1: config/prompts/  │
+ │       ▼                      │           Layer 2: agents/*.md       │
+ │  32 agent prompts            ▼           Layer 3: Python fallback   │
+ │  (.md + YAML frontmatter)  JudgeAgent                               │
+ │                     evaluate_with_routing()                         │
+ │                              │                                      │
+ │                    ┌─────────┼──────────┐                           │
+ │                    ▼         ▼          ▼                           │
+ │            written-content  visual   brand-safety                   │
+ │            -judge          -judge    -judge                         │
+ │            (7 domain-expert evaluators)                              │
+ │                    │                                                │
+ │                    ▼                                                │
+ │            trajectory.jsonl ──→ WeeklyLearningLoop                  │
+ │                                        │                           │
+ │                              ┌─────────┼──────────┐                │
+ │                              ▼         ▼          ▼               │
+ │                         MEMORY.md  lessons.json  knowledge/        │
+ │                                                                     │
+ │  Observatory (localhost:8000 API + localhost:3000 dashboard)         │
+ │    reads trajectory, AGENTS.yaml, eval_history, content-queue       │
+ └──────────────────────────────────────────────────────────────────────┘
+```
+
+**Three-layer prompt resolution:** When an agent loads its system prompt, PromptLoader
+checks (1) optimizer-promoted variant in `config/prompts/`, (2) canonical `.md` file in
+`agents/`, (3) hardcoded Python constant. First hit wins. This enables A/B testing and
+prompt optimization without changing code.
+
+**Evaluator routing:** The judge dispatches evaluation to domain-specific evaluators
+based on content type. A LinkedIn text post goes to `written-content-judge` +
+`brand-safety-judge`. A carousel goes to `visual-content-judge` + `brand-safety-judge`.
+Each evaluator has its own rubric dimensions (not generic correctness/completeness).
+
+---
+
 ## The Agent Loop (ReAct)
 
 Holus runs as an episodic agent — triggered weekly by cron or manually via Telegram.
@@ -65,7 +109,8 @@ ACT
   → call social-media-mcp: schedule_post(video_url, platforms=["linkedin","tiktok"])
 
 EVALUATE
-  → log what was decided and why → .self-improvement/memory/trajectory.jsonl
+  → run JudgeAgent on each generated piece (domain-specific evaluator routing)
+  → log what was decided, why, and judge scores → trajectory.jsonl
   → write weekly report → .self-improvement/reports/marketing/YYYY-MM-DD.md
 
 NEXT CYCLE
@@ -177,6 +222,9 @@ products:
 | Product definitions | `config/products.yaml` | Single source for what Holus promotes |
 | Content performance patterns | `.self-improvement/MEMORY.md` | Learned by Holus over time |
 | Posting queue + accounts | social-media-automatization | Never centralized in Holus |
+| Agent definitions | `agents/AGENTS.yaml` + `agents/*.md` | Single registry for all 32 agents |
+| Judge evaluations | `trajectory.jsonl` metadata | Per-piece quality scores from domain evaluators |
+| Observatory data | FastAPI reads from all above files | No new DB — reads JSONL/YAML/MD directly |
 
 ---
 
