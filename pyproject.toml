@@ -16,7 +16,7 @@ authors = [
 dependencies = [
     # LLM / Agent orchestration
     "anthropic>=0.40.0",
-    "langgraph>=0.3.0",
+    "langgraph>=1.0.10",
     "langchain-anthropic>=0.3.0",
     "langgraph-checkpoint-postgres>=2.0.0",
     # Memory
@@ -36,6 +36,10 @@ dependencies = [
     "langfuse>=2.50.0",
     # Browser automation (E2E tests)
     "playwright>=1.58.0",
+    # Observatory API
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "sse-starlette>=2.1.0",
 ]
 
 [project.optional-dependencies]
