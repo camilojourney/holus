@@ -1,14 +1,16 @@
-import yaml
 from pathlib import Path
-from typing import Any, List
+from typing import Any, cast
+
+import yaml
+
 
 class CapabilityRegistry:
     """Registry of current Holus capabilities.
-    
+
     Loads from config/capabilities.yaml and provides methods to check if
     a capability (platform, content type, silo, specialist, reviewer) is supported.
     """
-    
+
     def __init__(self, config_path: Path = Path("config/capabilities.yaml")):
         self.config_path = config_path
         self._capabilities: dict[str, Any] = {}
@@ -23,11 +25,11 @@ class CapabilityRegistry:
                 "content_types": [],
                 "silos": [],
                 "specialists": [],
-                "reviewers": []
+                "reviewers": [],
             }
             return
 
-        with open(self.config_path, "r", encoding="utf-8") as f:
+        with open(self.config_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
             if isinstance(data, dict):
                 self._capabilities = data
@@ -42,21 +44,21 @@ class CapabilityRegistry:
         return item.lower() in [i.lower() for i in items if isinstance(i, str)]
 
     @property
-    def platforms(self) -> List[str]:
-        return self._capabilities.get("platforms", [])
+    def platforms(self) -> list[str]:
+        return cast("list[str]", self._capabilities.get("platforms", []))
 
     @property
-    def content_types(self) -> List[str]:
-        return self._capabilities.get("content_types", [])
+    def content_types(self) -> list[str]:
+        return cast("list[str]", self._capabilities.get("content_types", []))
 
     @property
-    def silos(self) -> List[str]:
-        return self._capabilities.get("silos", [])
+    def silos(self) -> list[str]:
+        return cast("list[str]", self._capabilities.get("silos", []))
 
     @property
-    def specialists(self) -> List[str]:
-        return self._capabilities.get("specialists", [])
+    def specialists(self) -> list[str]:
+        return cast("list[str]", self._capabilities.get("specialists", []))
 
     @property
-    def reviewers(self) -> List[str]:
-        return self._capabilities.get("reviewers", [])
+    def reviewers(self) -> list[str]:
+        return cast("list[str]", self._capabilities.get("reviewers", []))

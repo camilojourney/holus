@@ -1,6 +1,5 @@
-import pytest
-from pathlib import Path
 from holus.core.capability_registry import CapabilityRegistry
+
 
 def test_capability_registry_load(tmp_path):
     config_file = tmp_path / "capabilities.yaml"
@@ -25,6 +24,7 @@ reviewers:
     assert registry.is_supported("silos", "pilaster")
     assert registry.is_supported("specialists", "text")
     assert registry.is_supported("reviewers", "quality_score")
+
 
 def test_capability_registry_no_file(tmp_path):
     config_file = tmp_path / "non_existent.yaml"

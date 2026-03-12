@@ -45,11 +45,15 @@ from holus.agents.marketing.prompts import (
 )
 from holus.agents.marketing.quality_score import score_content
 from holus.agents.marketing.repurpose import repurpose_content
+from holus.core.capability_gap import CapabilityGap, CapabilityTier
+from holus.core.capability_registry import CapabilityRegistry
 from holus.core.cycle_state import CycleState
 from holus.core.health import HealthResult, run_preflight_checks
 from holus.integrations.claude_api.client import CachedPrompt
 from holus.integrations.social_media import SocialMediaClient
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
+from holus.self_improvement.build_loop import BuildLoop
+from holus.self_improvement.config_builder import ConfigBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +93,12 @@ class MarketingState(TypedDict):
 
 
 class MarketingAgent(BaseAgent):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.capability_registry = CapabilityRegistry()
+        self.config_builder = ConfigBuilder()
+        self.build_loop = BuildLoop()
+
     """Primary marketing strategist agent."""
 
     agent_name = "marketing-agent"
@@ -567,12 +577,7 @@ class MarketingAgent(BaseAgent):
         return insights
 
     async def reason(self, state: MarketingState) -> dict[str, Any]:
-        """Reason phase: produce validated ContentDecision objects.
-
-        Uses authority-building framing — decides ONE LinkedIn-first post that
-        maps to a content pillar, targets consulting prospects, and uses
-        Camilo's builder-philosopher voice.
-        """
+        """Reason phase: produce validated ContentDecision objects and capability gaps."""
         self._set_cycle_state(state, CycleState.REASONING)
         self.check_kill_switch()
 
@@ -583,25 +588,35 @@ class MarketingAgent(BaseAgent):
         brand = state.get("brand_identity", {})
 
         decisions: list[ContentDecision] = []
+        gaps: list[CapabilityGap] = []
         reasoning = ""
+
+        # Tier 1 Self-Improvement: Read current capabilities to inform REASON
+        current_capabilities = yaml.dump(
+            {
+                "platforms": self.capability_registry.platforms,
+                "content_types": self.capability_registry.content_types,
+                "silos": self.capability_registry.silos,
+                "specialists": self.capability_registry.specialists,
+                "reviewers": self.capability_registry.reviewers,
+            }
+        )
 
         if self.config.anthropic_api_key:
             strategy_prompt = OPUS_STRATEGY_PROMPT.format(
+                current_capabilities=current_capabilities,
                 brand_identity=format_brand_identity(brand),
                 content_pillars=format_content_pillars(brand),
                 platform_knowledge=knowledge.get("platforms", "No platform knowledge available."),
                 audience_knowledge=knowledge.get(
-                    "audience-profiles",
-                    "No audience profiles available.",
+                    "audience-profiles", "No audience profiles available."
                 ),
                 niche_research=self._format_niche_research(state.get("niche_research", {})),
                 content_formats=knowledge.get(
-                    "content-formats",
-                    "No content format guidance available.",
+                    "content-formats", "No content format guidance available."
                 ),
                 viral_frameworks=knowledge.get(
-                    "viral-frameworks",
-                    "No viral frameworks documented yet.",
+                    "viral-frameworks", "No viral frameworks documented yet."
                 ),
                 memory=memory_context or "No memory context available.",
                 analytics=(
@@ -619,10 +634,10 @@ class MarketingAgent(BaseAgent):
                         {
                             "role": "user",
                             "content": (
-                                "Return ONE content decision as a JSON object. "
+                                "Return ONE content decision and optional capability_gaps as a JSON object. "
                                 "Include product, platform, content_type, content_pillar, "
                                 "topic, hook, framework, reasoning, priority, "
-                                "estimated_engagement, and repurpose_notes."
+                                "estimated_engagement, repurpose_notes, and capability_gaps."
                             ),
                         }
                     ],
@@ -633,6 +648,7 @@ class MarketingAgent(BaseAgent):
                 )
                 reasoning = self._extract_response_text(response)
                 decisions = self._parse_content_decisions(reasoning)
+                gaps = self._parse_capability_gaps(reasoning)
             except Exception:
                 logger.exception("Reason stage failed with Claude; using fallback decisions")
 
@@ -647,6 +663,7 @@ class MarketingAgent(BaseAgent):
 
         return {
             "content_decisions": [decision.model_dump(mode="json") for decision in decisions],
+            "capability_gaps": [gap.model_dump(mode="json") for gap in gaps],
             "strategy_reasoning": reasoning,
         }
 
@@ -813,7 +830,7 @@ class MarketingAgent(BaseAgent):
         }
 
     async def evaluate(self, state: MarketingState) -> dict[str, Any]:
-        """Evaluate phase: append cycle entries to trajectory.jsonl."""
+        """Evaluate phase: append cycle entries to trajectory.jsonl and trigger self-improvement."""
         self._set_cycle_state(state, CycleState.SAVING_STATE)
         self.check_kill_switch()
 
@@ -825,13 +842,8 @@ class MarketingAgent(BaseAgent):
 
         for content in state.get("generated_content", []):
             self.check_kill_switch()
-
             decision_data = content.get("decision", {})
-            task_summary = (
-                f"{decision_data.get('content_type', 'content')} about "
-                f"{decision_data.get('topic', 'unknown topic')} for "
-                f"{decision_data.get('platform', 'unknown platform')}"
-            )
+            task_summary = f"{decision_data.get('content_type', 'content')} about {decision_data.get('topic', 'unknown topic')} for {decision_data.get('platform', 'unknown platform')}"
 
             trajectory.append(
                 TrajectoryEntry(
@@ -878,6 +890,20 @@ class MarketingAgent(BaseAgent):
                 )
             )
             logged_entries += 1
+
+        # Self-Improvement: Process capability gaps
+        for gap_data in state.get("capability_gaps", []):
+            try:
+                gap = CapabilityGap(**gap_data)
+                if gap.tier == CapabilityTier.TIER_1_CONFIG:
+                    self.config_builder.build_from_gap(gap)
+                else:
+                    self.build_loop.file_request(gap)
+            except Exception as e:
+                logger.error(f"Failed to process capability gap: {e}")
+
+        # Dispatch pending builds (Tier 2)
+        self.build_loop.run_pending_builds(self.kill_switch)
 
         evaluation = {
             "logged": True,
@@ -1049,6 +1075,23 @@ class MarketingAgent(BaseAgent):
         }
         path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
         return path
+
+    def _parse_capability_gaps(self, response_text: str) -> list[CapabilityGap]:
+        payload = self._decode_json_payload(response_text)
+        if payload is None or not isinstance(payload, dict):
+            return []
+
+        gaps_raw = payload.get("capability_gaps", [])
+        if not isinstance(gaps_raw, list):
+            return []
+
+        gaps: list[CapabilityGap] = []
+        for item in gaps_raw:
+            try:
+                gaps.append(CapabilityGap(**item))
+            except (ValidationError, TypeError):
+                logger.warning("Skipping invalid capability gap: %s", item)
+        return gaps
 
     def _parse_content_decisions(self, response_text: str) -> list[ContentDecision]:
         payload = self._decode_json_payload(response_text)
