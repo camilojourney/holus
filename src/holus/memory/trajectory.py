@@ -123,6 +123,12 @@ class TrajectoryLogger:
             "Trajectory logged: %s/%s -> %s", entry.agent_id, entry.task_type, entry.status
         )
 
+    def append_raw(self, payload: dict[str, Any]) -> None:
+        """Append an arbitrary JSON payload as a trajectory line."""
+        with open(self.path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(payload) + "\n")
+        logger.debug("Trajectory logged raw payload with keys=%s", sorted(payload.keys()))
+
     def read_all(self) -> list[TrajectoryEntry]:
         """Read all trajectory entries."""
         if not self.path.exists():

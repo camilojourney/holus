@@ -45,6 +45,8 @@ from holus.agents.marketing.prompts import (
 )
 from holus.agents.marketing.quality_score import score_content
 from holus.agents.marketing.repurpose import repurpose_content
+from holus.core.cycle_state import CycleState
+from holus.core.health import HealthResult, run_preflight_checks
 from holus.integrations.claude_api.client import CachedPrompt
 from holus.integrations.social_media import SocialMediaClient
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
@@ -57,6 +59,11 @@ class MarketingState(TypedDict):
 
     cycle_id: str
     started_at: str
+    current_state: str
+    terminal_state: str | None
+    health: dict[str, Any]
+    available_silos: list[str]
+    warnings: list[str]
 
     # Observe
     analytics: dict[str, Any]
@@ -77,6 +84,7 @@ class MarketingState(TypedDict):
 
     # Evaluate
     evaluation: dict[str, Any]
+    capability_gaps: list[dict[str, Any]]
     error: str | None
 
 
@@ -149,6 +157,11 @@ class MarketingAgent(BaseAgent):
         return {
             "cycle_id": uuid4().hex,
             "started_at": datetime.now(UTC).isoformat(),
+            "current_state": CycleState.STARTING.value,
+            "terminal_state": None,
+            "health": {},
+            "available_silos": [],
+            "warnings": [],
             "analytics": {},
             "product_updates": {},
             "knowledge": {},
@@ -161,11 +174,72 @@ class MarketingAgent(BaseAgent):
             "generated_content": [],
             "post_results": [],
             "evaluation": {},
+            "capability_gaps": [],
             "error": None,
         }
 
+    async def run(
+        self,
+        state: dict[str, Any] | None = None,
+        *,
+        thread_id: str | None = None,
+        checkpointer=None,
+    ) -> dict[str, Any]:
+        """Run one resilient marketing cycle and always write a cycle trace."""
+        initial = state or self.default_state()
+        final_state = initial
+        self._set_cycle_state(initial, CycleState.STARTING)
+        health_result: HealthResult | None = None
+        started_monotonic = time.monotonic()
+
+        try:
+            self.check_kill_switch()
+            self._set_cycle_state(initial, CycleState.HEALTH_CHECK)
+            health_result = run_preflight_checks(
+                config=self.config,
+                agent_name=self.agent_name,
+                kill_switch=self.kill_switch,
+                trajectory_path=self._TRAJECTORY_PATH,
+                check_run_lock=False,
+            )
+            initial["health"] = health_result.to_dict()
+            initial["available_silos"] = list(health_result.available_silos)
+            initial["warnings"] = list(health_result.warnings)
+
+            if not health_result.blocking_ok:
+                initial["error"] = health_result.blocking_reason
+                initial["terminal_state"] = CycleState.FAILED.value
+                return initial
+
+            app = self.compile(checkpointer=checkpointer)
+            self._set_cycle_state(initial, CycleState.LOADING_STATE)
+
+            config_payload: dict[str, Any] = {}
+            if thread_id:
+                config_payload["configurable"] = {"thread_id": thread_id}
+
+            final_state = await app.ainvoke(initial, config=config_payload)
+            final_state.setdefault("health", health_result.to_dict())
+            final_state.setdefault("available_silos", list(health_result.available_silos))
+            final_state.setdefault("warnings", list(health_result.warnings))
+            self._set_cycle_state(final_state, CycleState.DONE)
+            final_state["terminal_state"] = CycleState.DONE.value
+            return final_state
+        except Exception as exc:
+            final_state["error"] = str(exc)
+            final_state["terminal_state"] = CycleState.FAILED.value
+            raise
+        finally:
+            self._write_cycle_trajectory(
+                final_state,
+                health_result=health_result,
+                started_monotonic=started_monotonic,
+                thread_id=thread_id,
+            )
+
     async def observe(self, state: MarketingState) -> dict[str, Any]:
         """Observe phase: load config, knowledge, memory, brand, analytics, and niche research."""
+        self._set_cycle_state(state, CycleState.OBSERVING)
         self.check_kill_switch()
 
         products = self._read_yaml(self._PRODUCTS_PATH)
@@ -492,6 +566,7 @@ class MarketingAgent(BaseAgent):
         maps to a content pillar, targets consulting prospects, and uses
         Camilo's builder-philosopher voice.
         """
+        self._set_cycle_state(state, CycleState.REASONING)
         self.check_kill_switch()
 
         products = state.get("product_updates", {})
@@ -594,6 +669,7 @@ class MarketingAgent(BaseAgent):
 
     async def act(self, state: MarketingState) -> dict[str, Any]:
         """Act phase: generate text per platform and queue for human review."""
+        self._set_cycle_state(state, CycleState.CREATING)
         self.check_kill_switch()
 
         generated_content: list[dict[str, Any]] = []
@@ -634,6 +710,7 @@ class MarketingAgent(BaseAgent):
                 )
 
                 # Quality gate — score before queuing
+                self._set_cycle_state(state, CycleState.QUALITY_CHECK)
                 brand_anti_phrases = brand.get("anti_patterns", {}).get("language", [])
                 quality = score_content(piece, brand_anti_patterns=brand_anti_phrases)
 
@@ -656,6 +733,7 @@ class MarketingAgent(BaseAgent):
                     continue
 
                 queue_path = self._write_queue_item(piece, queue_dir)
+                self._set_cycle_state(state, CycleState.CREATING)
                 generated_content.append(piece.model_dump(mode="json"))
                 post_results.append(
                     {
@@ -680,6 +758,7 @@ class MarketingAgent(BaseAgent):
                         agent_id=self.agent_name,
                     )
                     for rp in repurposed:
+                        self._set_cycle_state(state, CycleState.QUALITY_CHECK)
                         rp_quality = score_content(rp, brand_anti_patterns=brand_anti_phrases)
                         if not rp_quality.passed:
                             logger.warning(
@@ -690,6 +769,7 @@ class MarketingAgent(BaseAgent):
                             )
                             continue
                         rp_queue_path = self._write_queue_item(rp, queue_dir)
+                        self._set_cycle_state(state, CycleState.CREATING)
                         generated_content.append(rp.model_dump(mode="json"))
                         post_results.append(
                             {
@@ -727,6 +807,7 @@ class MarketingAgent(BaseAgent):
 
     async def evaluate(self, state: MarketingState) -> dict[str, Any]:
         """Evaluate phase: append cycle entries to trajectory.jsonl."""
+        self._set_cycle_state(state, CycleState.SAVING_STATE)
         self.check_kill_switch()
 
         trajectory = TrajectoryLogger(self._TRAJECTORY_PATH)
@@ -801,6 +882,97 @@ class MarketingAgent(BaseAgent):
         }
 
         return {"evaluation": evaluation}
+
+    def _set_cycle_state(self, state: dict[str, Any], cycle_state: CycleState) -> None:
+        state["current_state"] = cycle_state.value
+
+    def _write_cycle_trajectory(
+        self,
+        state: dict[str, Any],
+        *,
+        health_result: HealthResult | None,
+        started_monotonic: float,
+        thread_id: str | None,
+    ) -> None:
+        """Append one cycle-level trajectory record regardless of outcome."""
+        trajectory = TrajectoryLogger(self._TRAJECTORY_PATH)
+        current_state = str(state.get("current_state") or CycleState.STARTING.value)
+        cycle_status = self._cycle_status(state, current_state=current_state)
+
+        health_payload = self._health_payload(state, health_result)
+        post_results = state.get("post_results", [])
+        quality_scores = [
+            float(result["quality_score"])
+            for result in post_results
+            if isinstance(result.get("quality_score"), int | float)
+        ]
+        content_failed = sum(
+            1
+            for result in post_results
+            if result.get("status") in {"failed", "auto_rejected", "discarded"}
+        )
+        content_posted = sum(
+            1 for result in post_results if result.get("status") in {"posted", "published"}
+        )
+
+        payload = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "agent_id": self.agent_name,
+            "task_type": "cycle",
+            "task_summary": "marketing cycle",
+            "status": cycle_status,
+            "cycle_id": state.get("cycle_id"),
+            "phase": CycleState.DONE.value if cycle_status == "success" else current_state,
+            "health": health_payload,
+            "content_created": len(state.get("generated_content", [])),
+            "content_posted": content_posted,
+            "content_failed": content_failed,
+            "quality_scores": quality_scores,
+            "capability_gaps": state.get("capability_gaps", []),
+            "duration_seconds": round(time.monotonic() - started_monotonic, 3),
+            "error": state.get("error"),
+            "thread_id": thread_id,
+            "warnings": state.get("warnings", []),
+            "terminal_state": state.get("terminal_state"),
+        }
+        trajectory.append_raw(payload)
+
+    def _health_payload(
+        self,
+        state: dict[str, Any],
+        health_result: HealthResult | None,
+    ) -> dict[str, Any]:
+        if health_result is not None:
+            if health_result.blocking_ok:
+                return {
+                    "status": "ok",
+                    "silos_available": health_result.available_silos,
+                    "warnings": health_result.warnings,
+                }
+            return {
+                "status": "failed",
+                "reason": health_result.blocking_reason,
+                "silos_available": health_result.available_silos,
+                "warnings": health_result.warnings,
+            }
+
+        health = state.get("health")
+        if isinstance(health, dict):
+            return health
+        return {"status": "unknown"}
+
+    def _cycle_status(self, state: dict[str, Any], *, current_state: str) -> str:
+        if state.get("error"):
+            return "failure"
+        if current_state == CycleState.HEALTH_CHECK.value:
+            health = state.get("health")
+            if isinstance(health, dict) and not health.get("blocking_ok", True):
+                return "failure"
+        if current_state == CycleState.DONE.value:
+            return "success"
+        if state.get("generated_content") or state.get("post_results"):
+            return "partial"
+        return "success"
 
     def _read_yaml(self, path: Path) -> dict[str, Any]:
         if not path.exists():

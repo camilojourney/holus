@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from holus.core.health import HealthCheck
+from holus.core.health import HealthCheck, run_preflight_checks
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -116,3 +116,47 @@ def test_overall_unhealthy_when_check_unhealthy() -> None:
     ):
         result = hc.run()
         assert result["overall"] == "unhealthy"
+
+
+def test_run_preflight_checks_allows_non_blocking_silo_failures(tmp_path: Path) -> None:
+    """Pilaster/Genpeli failures warn but do not block the cycle."""
+    kill_switch = MagicMock()
+    kill_switch.is_active.return_value = False
+
+    result = run_preflight_checks(
+        config=MagicMock(),
+        kill_switch=kill_switch,
+        trajectory_path=tmp_path / "trajectory.jsonl",
+        llm_probe=lambda _config: None,
+        social_media_probe=lambda _config: None,
+        pilaster_probe=lambda: (_ for _ in ()).throw(RuntimeError("pilaster down")),
+        genpeli_probe=lambda: None,
+        check_run_lock=False,
+    )
+
+    assert result.blocking_ok is True
+    assert result.available_silos == ["social-media", "genpeli"]
+    assert len(result.warnings) == 1
+    assert "Pilaster MCP unavailable" in result.warnings[0]
+
+
+def test_run_preflight_checks_fails_fast_on_blocking_check(tmp_path: Path) -> None:
+    """Blocking failures stop before later checks run."""
+    kill_switch = MagicMock()
+    kill_switch.is_active.return_value = False
+    pilaster_probe = MagicMock()
+
+    result = run_preflight_checks(
+        config=MagicMock(),
+        kill_switch=kill_switch,
+        trajectory_path=tmp_path / "trajectory.jsonl",
+        llm_probe=lambda _config: None,
+        social_media_probe=lambda _config: (_ for _ in ()).throw(RuntimeError("timeout")),
+        pilaster_probe=pilaster_probe,
+        genpeli_probe=lambda: None,
+        check_run_lock=False,
+    )
+
+    assert result.blocking_ok is False
+    assert result.blocking_reason == "Social media MCP unreachable: timeout"
+    pilaster_probe.assert_not_called()
