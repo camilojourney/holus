@@ -1,0 +1,39 @@
+platforms:
+  - linkedin
+  - twitter
+  - tiktok
+  - instagram
+  - facebook
+  - threads
+  - youtube
+
+content_types:
+  - tutorial
+  - demo
+  - tips
+  - thread
+  - case_study
+  - carousel
+  - video_reel
+  - announcement
+  - educational
+  - builder_story
+  - framework
+  - contrarian
+  - results_proof
+
+silos:
+  - pilaster
+  - genpeli
+  - social-media
+  - invoz
+
+specialists:
+  - text
+  - carousel
+  - diagram
+  - pdf
+  - video_brief
+
+reviewers:
+  - quality_score
