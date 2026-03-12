@@ -255,7 +255,7 @@ class TestResilientLoopException:
             agent = object.__new__(MarketingAgent)
             agent._TRAJECTORY_PATH = trajectory_path  # type: ignore[attr-defined]
 
-            # ainvoke raises — failure is in graph_execution phase
+            # ainvoke raises — failure is in creating phase
             fake_app = MagicMock()
             fake_app.ainvoke = AsyncMock(side_effect=RuntimeError("graph blew up"))
             agent.compile = MagicMock(return_value=fake_app)  # type: ignore[attr-defined]
@@ -268,7 +268,7 @@ class TestResilientLoopException:
         last = summaries[-1]
         error_msg = last.get("error") or ""
         # Error must encode which phase failed
-        assert "graph_execution" in error_msg, (
+        assert "creating" in error_msg, (
             f"Expected phase name in error message, got: {error_msg!r}"
         )
         assert "graph blew up" in error_msg

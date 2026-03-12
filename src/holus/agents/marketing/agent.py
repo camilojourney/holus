@@ -81,6 +81,7 @@ class MarketingState(TypedDict):
     # Evaluate
     evaluation: dict[str, Any]
     error: str | None
+    capability_gaps: list[str]
 
 
 class MarketingAgent(BaseAgent):
@@ -165,6 +166,7 @@ class MarketingAgent(BaseAgent):
             "post_results": [],
             "evaluation": {},
             "error": None,
+            "capability_gaps": [],
         }
 
     async def run(  # type: ignore[override]
@@ -242,11 +244,12 @@ class MarketingAgent(BaseAgent):
             # ------------------------------------------------------------------
             # CREATING phase
             # ------------------------------------------------------------------
-            current_phase = "graph_execution"
+            current_phase = "creating"
             ctx.transition(CycleState.CREATING)
 
             # Run the full LangGraph workflow (observe → reason → act → evaluate)
             final_state = await app.ainvoke(initial, config=run_config)
+            ctx.capability_gaps.extend(final_state.get("capability_gaps", []))
 
             # ------------------------------------------------------------------
             # QUALITY_CHECK phase — already performed inside act(), record result
@@ -313,6 +316,7 @@ class MarketingAgent(BaseAgent):
                         "Judge evaluation failed; continuing without scores",
                         exc_info=True,
                     )
+                    ctx.capability_gaps.append("judge_evaluation_unavailable")
 
             # ------------------------------------------------------------------
             # SAVING_STATE phase → DONE
@@ -350,42 +354,59 @@ class MarketingAgent(BaseAgent):
                     ctx.cycle_id,
                     str(ctx.trajectory_path),
                 )
+                try:
+                    self.kill_switch.activate(
+                        scope=self.agent_name,
+                        reason="3 consecutive cycle failures",
+                        activated_by="circuit_breaker",
+                    )
+                except Exception:
+                    logger.warning(
+                        "Failed to activate kill switch after consecutive failures",
+                        exc_info=True,
+                    )
 
         return final_state
 
     def _save_partial_state(self, state: dict[str, Any], cycle_id: str) -> None:
         """Save partial state to a recovery file when a cycle fails mid-execution.
 
-        Persists the content generated so far so it is not lost on failure.
-        The recovery file can be inspected manually or consumed by a future
-        self-improvement cycle.
-
-        Args:
-            state: The LangGraph final state dict at the point of failure.
-            cycle_id: The cycle's unique identifier (ISO 8601 UTC string).
+        Uses atomic write (temp file + rename) to prevent corrupted recovery files.
+        Falls back to logging the state if disk writes fail entirely.
         """
+        recovery_data = {
+            "cycle_id": cycle_id,
+            "saved_at": datetime.now(UTC).isoformat(),
+            "generated_content": state.get("generated_content", []),
+            "content_decisions": state.get("content_decisions", []),
+            "strategy_reasoning": state.get("strategy_reasoning", ""),
+        }
+
         try:
             recovery_dir = Path("data/recovery")
             recovery_dir.mkdir(parents=True, exist_ok=True)
-            # Sanitize cycle_id for use as a filename (colons are invalid on some FSes)
             safe_id = cycle_id.replace(":", "-").replace("+", "p")
             recovery_file = recovery_dir / f"{safe_id}.json"
-            with recovery_file.open("w", encoding="utf-8") as fh:
-                json.dump(
-                    {
-                        "cycle_id": cycle_id,
-                        "saved_at": datetime.now(UTC).isoformat(),
-                        "generated_content": state.get("generated_content", []),
-                        "content_decisions": state.get("content_decisions", []),
-                        "strategy_reasoning": state.get("strategy_reasoning", ""),
-                    },
-                    fh,
-                    ensure_ascii=False,
-                    indent=2,
-                )
+            tmp_file = recovery_dir / f".{safe_id}.tmp"
+
+            # Atomic write: write to temp file, then rename
+            with tmp_file.open("w", encoding="utf-8") as fh:
+                json.dump(recovery_data, fh, ensure_ascii=False, indent=2)
+            tmp_file.rename(recovery_file)
             logger.info("Partial state saved for recovery: %s", recovery_file)
         except OSError as exc:
-            logger.warning("Failed to save partial state: %s", exc)
+            logger.warning("Failed to save partial state to file: %s", exc)
+            # Fallback: log the data so it's not silently lost
+            import sys
+
+            try:
+                print(
+                    json.dumps(recovery_data, ensure_ascii=False),
+                    file=sys.stderr,
+                )
+                logger.info("Partial state written to stderr as fallback")
+            except Exception:
+                logger.error("Failed to save partial state entirely")
 
     async def observe(self, state: MarketingState) -> dict[str, Any]:
         """Observe phase: load config, knowledge, memory, brand, analytics, and niche research."""
@@ -398,10 +419,12 @@ class MarketingAgent(BaseAgent):
 
         # Analytics from social-media API (graceful degradation)
         analytics: dict[str, Any] = {}
+        observe_gaps: list[str] = []
         try:
             analytics = await self._fetch_analytics()
         except Exception:
             logger.warning("Analytics fetch failed; continuing without it", exc_info=True)
+            observe_gaps.append("analytics_unavailable")
 
         # Niche research (graceful degradation)
         niche_research: dict[str, Any] = {}
@@ -409,6 +432,7 @@ class MarketingAgent(BaseAgent):
             niche_research = await self._niche_research()
         except Exception:
             logger.warning("Niche research failed; continuing without it", exc_info=True)
+            observe_gaps.append("niche_research_unavailable")
 
         return {
             "product_updates": products,
@@ -418,6 +442,7 @@ class MarketingAgent(BaseAgent):
             "queue_size_before": len(self._queue_files()),
             "brand_identity": brand_identity,
             "niche_research": niche_research,
+            "capability_gaps": observe_gaps,
         }
 
     def _load_brand_identity(self) -> dict[str, Any]:
@@ -929,6 +954,14 @@ class MarketingAgent(BaseAgent):
                         "Repurposing failed for decision %d: %s",
                         index,
                         repurpose_exc,
+                    )
+                    post_results.append(
+                        {
+                            "status": "failed",
+                            "error": f"Repurposing failed: {repurpose_exc}",
+                            "decision": decision.model_dump(mode="json"),
+                            "phase": "repurposing",
+                        }
                     )
 
             except Exception as exc:
