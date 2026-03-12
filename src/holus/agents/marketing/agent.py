@@ -45,6 +45,9 @@ from holus.agents.marketing.prompts import (
 )
 from holus.agents.marketing.quality_score import score_content
 from holus.agents.marketing.repurpose import repurpose_content
+from holus.core.cycle_state import CycleContext, CycleState, write_trajectory_entry
+from holus.core.health import run_preflight_checks
+from holus.core.watchdog import consecutive_failure_check
 from holus.integrations.claude_api.client import CachedPrompt
 from holus.integrations.social_media import SocialMediaClient
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
@@ -163,6 +166,142 @@ class MarketingAgent(BaseAgent):
             "evaluation": {},
             "error": None,
         }
+
+    async def run(  # type: ignore[override]
+        self,
+        state: dict[str, Any] | None = None,
+        *,
+        thread_id: str | None = None,
+        checkpointer=None,
+    ) -> dict[str, Any]:
+        """Run one marketing cycle wrapped in the CycleState machine.
+
+        Every phase transition is logged to trajectory.jsonl.  If a blocking
+        preflight check fails, the cycle is aborted before any work starts.
+        A trajectory entry is always written — even on hard failures — so the
+        watchdog and self-improvement system have complete data.
+
+        After the trajectory entry is written, ``consecutive_failure_check``
+        is called.  If the last 3 cycles all failed the kill switch is set to
+        BUILD_PAUSED and an alert is logged.
+        """
+        ctx = CycleContext.new(trajectory_path=self._TRAJECTORY_PATH)
+        final_state: dict[str, Any] = {}
+
+        try:
+            # ------------------------------------------------------------------
+            # HEALTH_CHECK phase
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.HEALTH_CHECK)
+            health = run_preflight_checks(
+                skip_run_lock_check=True,  # run-lock already held by caller
+            )
+            ctx.health_result = health
+
+            if not health.blocking_ok:
+                ctx.transition(CycleState.FAILED)
+                ctx.error = f"Preflight blocked: {'; '.join(health.warnings)}"
+                logger.warning(
+                    "Marketing cycle blocked by preflight: %s",
+                    "; ".join(health.warnings),
+                )
+                return {}
+
+            if health.warnings:
+                logger.warning(
+                    "Marketing cycle starting with preflight warnings: %s",
+                    "; ".join(health.warnings),
+                )
+
+            # ------------------------------------------------------------------
+            # LOADING_STATE phase — compile graph and prepare initial state
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.LOADING_STATE)
+            app = self.compile(checkpointer=checkpointer)
+            initial = state or self.default_state()
+
+            run_config: dict[str, Any] = {}
+            if thread_id:
+                run_config["configurable"] = {"thread_id": thread_id}
+
+            # ------------------------------------------------------------------
+            # OBSERVING phase
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.OBSERVING)
+
+            # ------------------------------------------------------------------
+            # REASONING phase
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.REASONING)
+
+            # ------------------------------------------------------------------
+            # CREATING phase
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.CREATING)
+
+            # Run the full LangGraph workflow (observe → reason → act → evaluate)
+            final_state = await app.ainvoke(initial, config=run_config)
+
+            # ------------------------------------------------------------------
+            # QUALITY_CHECK phase — already performed inside act(), record result
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.QUALITY_CHECK)
+            post_results: list[dict[str, Any]] = final_state.get("post_results", [])
+            generated: list[dict[str, Any]] = final_state.get("generated_content", [])
+
+            ctx.content_created = len(generated)
+            ctx.content_posted = sum(
+                1 for r in post_results if r.get("status") == "pending_review"
+            )
+            ctx.content_failed = sum(
+                1 for r in post_results
+                if r.get("status") in ("failed", "auto_rejected")
+            )
+
+            # ------------------------------------------------------------------
+            # POSTING phase
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.POSTING)
+
+            # ------------------------------------------------------------------
+            # IMPROVING phase
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.IMPROVING)
+
+            # ------------------------------------------------------------------
+            # SAVING_STATE phase → DONE
+            # ------------------------------------------------------------------
+            ctx.transition(CycleState.SAVING_STATE)
+            ctx.transition(CycleState.DONE)
+
+        except Exception as exc:
+            ctx.transition(CycleState.FAILED)
+            ctx.error = str(exc)
+            logger.exception(
+                "Marketing cycle failed with unhandled exception [cycle_id=%s]: %s",
+                ctx.cycle_id,
+                exc,
+            )
+
+        finally:
+            # ------------------------------------------------------------------
+            # Trajectory entry — always written (DONE or FAILED)
+            # ------------------------------------------------------------------
+            ctx.finish()
+            write_trajectory_entry(ctx)
+
+            # ------------------------------------------------------------------
+            # Consecutive-failure guard — 3 failures → BUILD_PAUSED alert
+            # ------------------------------------------------------------------
+            if consecutive_failure_check(ctx.trajectory_path, threshold=3):
+                logger.error(
+                    "BUILD_PAUSED: 3 consecutive marketing cycle failures — "
+                    "operator review required [cycle_id=%s, trajectory=%s]",
+                    ctx.cycle_id,
+                    str(ctx.trajectory_path),
+                )
+
+        return final_state
 
     async def observe(self, state: MarketingState) -> dict[str, Any]:
         """Observe phase: load config, knowledge, memory, brand, analytics, and niche research."""

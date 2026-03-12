@@ -51,6 +51,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | --- | ---------------------------------------------------------------- | ------- | ----------- |
 | 017 | [Authority Engine Agent Update](017-authority-engine-agent-update.md) | Backend | Implemented |
 
+## Resilient Infrastructure
+
+| #   | Spec                                                             | Type    | Status      |
+| --- | ---------------------------------------------------------------- | ------- | ----------- |
+| 027 | [Resilient Agent Loop](027-resilient-agent-loop.md)              | Backend | Implemented |
+
 ---
 
 ## Spec Status Legend

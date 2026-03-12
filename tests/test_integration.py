@@ -83,6 +83,7 @@ def _make_fake_memory(tmp_path: Path) -> None:
 def _make_mock_redis() -> MagicMock:
     redis = MagicMock()
     redis.get.return_value = None  # kill switch not set
+    redis.exists.return_value = 0  # kill switch key does not exist
     redis.publish.return_value = 1
     redis.xadd.return_value = "1234567890-0"
     redis.xrange.return_value = []
@@ -91,6 +92,17 @@ def _make_mock_redis() -> MagicMock:
     redis.delete.return_value = 1
     redis.pubsub.return_value = MagicMock()
     return redis
+
+
+def _make_passing_health():
+    """Return a HealthResult that passes all blocking checks."""
+    from holus.core.cycle_state import HealthResult
+
+    return HealthResult(
+        blocking_ok=True,
+        available_silos=["social_media", "pilaster", "genpeli"],
+        warnings=[],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -157,6 +169,10 @@ class TestMarketingAgentCycle:
         with (
             patch("holus.agents.base.redis.Redis.from_url", return_value=mock_redis),
             patch("holus.agents.base.EventBus") as mock_event_bus_cls,
+            patch(
+                "holus.agents.marketing.agent.run_preflight_checks",
+                return_value=_make_passing_health(),
+            ),
         ):
             mock_event_bus_cls.return_value = MagicMock()
 
@@ -735,6 +751,10 @@ class TestAuthorityEngineE2E:
         with (
             patch("holus.agents.base.redis.Redis.from_url", return_value=mock_redis),
             patch("holus.agents.base.EventBus") as mock_eb,
+            patch(
+                "holus.agents.marketing.agent.run_preflight_checks",
+                return_value=_make_passing_health(),
+            ),
         ):
             mock_eb.return_value = MagicMock()
             config = _make_holus_config(tmp_path)
@@ -784,6 +804,10 @@ class TestAuthorityEngineE2E:
         with (
             patch("holus.agents.base.redis.Redis.from_url", return_value=mock_redis),
             patch("holus.agents.base.EventBus") as mock_eb,
+            patch(
+                "holus.agents.marketing.agent.run_preflight_checks",
+                return_value=_make_passing_health(),
+            ),
         ):
             mock_eb.return_value = MagicMock()
             config = HolusConfig(
@@ -870,7 +894,15 @@ class TestAuthorityEngineE2E:
         traj_lines = [line for line in traj_path.read_text().strip().split("\n") if line]
         assert len(traj_lines) >= 5, f"Expected 5+ trajectory entries, got {len(traj_lines)}"
 
-        first_entry = json.loads(traj_lines[0])
+        # Find the first agent-level entry (from TrajectoryLogger inside evaluate()).
+        # CycleContext transition events also appear in the same file; skip those.
+        agent_entries = [
+            json.loads(ln)
+            for ln in traj_lines
+            if "agent_id" in json.loads(ln)
+        ]
+        assert agent_entries, "Expected at least one agent-level trajectory entry"
+        first_entry = agent_entries[0]
         assert first_entry["agent_id"] == "marketing-agent"
         assert first_entry["task_type"] == "content_creation"
         assert first_entry["status"] == "success"

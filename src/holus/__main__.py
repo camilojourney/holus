@@ -114,16 +114,68 @@ def _show_status() -> None:
 
 
 def _run_health_check() -> None:
-    """Run health check and output JSON."""
-    from holus.core.health import HealthCheck
+    """Run health check and show kill switch state, trajectory, and watchdog status."""
+    from pathlib import Path
 
+    from holus.core.health import HealthCheck, run_preflight_checks
+    from holus.core.watchdog import check_watchdog
+
+    trajectory_path = Path(".self-improvement/memory/trajectory.jsonl")
+
+    # -- Basic health check ---------------------------------------------------
     health = HealthCheck()
     results = health.run()
+
+    # -- Preflight (cycle-gating) checks --------------------------------------
+    preflight = run_preflight_checks(skip_run_lock_check=True)
+    results["preflight"] = {
+        "blocking_ok": preflight.blocking_ok,
+        "available_silos": preflight.available_silos,
+        "warnings": preflight.warnings,
+    }
+
+    # -- Watchdog status ------------------------------------------------------
+    watchdog = check_watchdog(trajectory_path, max_silence_hours=2.0)
+    results["watchdog"] = {
+        "alert": watchdog.alert,
+        "silence_hours": (
+            watchdog.silence_hours
+            if watchdog.silence_hours != float("inf")
+            else "infinity"
+        ),
+        "last_success_at": (
+            watchdog.last_success_at.isoformat()
+            if watchdog.last_success_at is not None
+            else None
+        ),
+        "last_error": watchdog.last_error,
+    }
+
+    # -- Last trajectory entry ------------------------------------------------
+    last_entry: dict[str, object] | None = None
+    if trajectory_path.exists():
+        try:
+            lines = [
+                ln.strip()
+                for ln in trajectory_path.read_text(encoding="utf-8").splitlines()
+                if ln.strip()
+            ]
+            for line in reversed(lines):
+                try:
+                    entry = json.loads(line)
+                    if "phase" in entry:
+                        last_entry = entry
+                        break
+                except json.JSONDecodeError:
+                    continue
+        except OSError:
+            pass
+    results["last_trajectory_entry"] = last_entry
 
     print(json.dumps(results, indent=2))
 
     overall = results.get("overall", "unknown")
-    if overall == "unhealthy":
+    if overall == "unhealthy" or not preflight.blocking_ok:
         sys.exit(1)
 
 
