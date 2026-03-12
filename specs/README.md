@@ -19,7 +19,7 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | 004 | Coding Agent Integration                                         | Backend | Not Started |
 | 005 | Pilaster Agent                                                   | Backend | Not Started |
 | 006 | Coordinator Agent                                                | Backend | Not Started |
-| 007 | Self-Improvement Loop                                            | Backend | Not Started |
+| 007 | [Self-Improvement Loop](007-self-improvement-loop.md)            | Backend | Not Started |
 
 ## Full-Stack
 
@@ -44,6 +44,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | 014 | [Genpeli Integration](014-genpeli-integration.md)                | Backend | Partial     |
 | 015 | [Pilaster Integration](015-pilaster-integration.md)              | Backend | Partial     |
 | 016 | [Social Media Integration V2](016-social-media-integration-v2.md) | Backend | Partial     |
+
+## Resilient Loop (Priority — do first)
+
+| #   | Spec                                                             | Type    | Status      |
+| --- | ---------------------------------------------------------------- | ------- | ----------- |
+| 027 | [Resilient Agent Loop](027-resilient-agent-loop.md)              | Backend | Not Started |
 
 ## Authority Engine Sprint
 
