@@ -1,0 +1,331 @@
+# Holus Agent Registry — single source of truth
+# Every agent MUST be listed here.
+# Total: 32 agents (1 manager + 22 specialists + 7 evaluators + 2 ops)
+
+agents:
+  # MANAGERS (1)
+  marketing-strategist:
+    role: "Primary marketing brain — ReAct loop: observe → reason → act → evaluate"
+    type: manager
+    model_tier: strategic
+    status: active
+    version: "2.0.0"
+    prompt: "managers/marketing-strategist.md"
+    evaluates_with: [written-content-judge, brand-safety-judge]
+
+  # SPECIALISTS — Written Authority (5) — 50% of output
+  hook-architect:
+    role: "First 2 lines of every post — 80% of engagement decided here"
+    type: specialist
+    category: written-authority
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/written-authority/hook-architect.md"
+    evaluated_by: written-content-judge
+
+  storyteller:
+    role: "Narrative arc, builder journey, turning points, emotional beats"
+    type: specialist
+    category: written-authority
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/written-authority/storyteller.md"
+    evaluated_by: written-content-judge
+
+  technical-translator:
+    role: "Complex AI/ML concepts → accessible for CTOs/VPs"
+    type: specialist
+    category: written-authority
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/written-authority/technical-translator.md"
+    evaluated_by: written-content-judge
+
+  voice-guardian:
+    role: "Builder-philosopher archetype enforcement, anti-pattern detection"
+    type: specialist
+    category: written-authority
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/written-authority/voice-guardian.md"
+    evaluated_by: brand-safety-judge
+    gate: true
+
+  cta-strategist:
+    role: "Closing lines, question endings, forward-looking statements"
+    type: specialist
+    category: written-authority
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/written-authority/cta-strategist.md"
+    evaluated_by: engagement-judge
+
+  # SPECIALISTS — Visual Content (4) — 25% of output
+  carousel-architect:
+    role: "Slide structure, info hierarchy, 7-12 slide flow"
+    type: specialist
+    category: visual
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/visual/carousel-architect.md"
+    evaluated_by: visual-content-judge
+
+  data-visualizer:
+    role: "Metrics → charts, architecture diagrams, comparisons"
+    type: specialist
+    category: visual
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/visual/data-visualizer.md"
+    evaluated_by: visual-content-judge
+
+  before-after-designer:
+    role: "Transformation storytelling through image pairs"
+    type: specialist
+    category: visual
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/visual/before-after-designer.md"
+    evaluated_by: visual-content-judge
+
+  brand-designer:
+    role: "Visual identity consistency across platforms"
+    type: specialist
+    category: visual
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/visual/brand-designer.md"
+    evaluated_by: visual-content-judge
+    gate: true
+
+  # SPECIALISTS — Video Content (3) — 15% of output
+  script-writer:
+    role: "30-90s scripts optimized for retention curves"
+    type: specialist
+    category: video
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/video/script-writer.md"
+    evaluated_by: video-content-judge
+
+  brief-composer:
+    role: "Production briefs for genpeli pipeline"
+    type: specialist
+    category: video
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/video/brief-composer.md"
+    evaluated_by: video-content-judge
+
+  caption-specialist:
+    role: "Word-by-word caption timing, muted viewing optimization"
+    type: specialist
+    category: video
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/video/caption-specialist.md"
+    evaluated_by: video-content-judge
+
+  # SPECIALISTS — Growth (3) — Frequency-capped
+  lead-magnet-designer:
+    role: "Free resources that drive DMs/comments"
+    type: specialist
+    category: growth
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/growth/lead-magnet-designer.md"
+    evaluated_by: engagement-judge
+
+  comment-trigger-expert:
+    role: "Questions that spark genuine debate"
+    type: specialist
+    category: growth
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/growth/comment-trigger-expert.md"
+    evaluated_by: engagement-judge
+
+  community-builder:
+    role: "Reply strategies, conversation nurturing"
+    type: specialist
+    category: growth
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/growth/community-builder.md"
+    evaluated_by: engagement-judge
+
+  # SPECIALISTS — Research (4) — Feeds all
+  niche-researcher:
+    role: "Trending topics, competitor movements"
+    type: specialist
+    category: research
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/research/niche-researcher.md"
+    evaluated_by: seo-judge
+
+  seo-strategist:
+    role: "Keyword research, search intent mapping"
+    type: specialist
+    category: research
+    model_tier: operational
+    status: planned
+    version: "0.1.0"
+    prompt: "specialists/research/seo-strategist.md"
+    evaluated_by: seo-judge
+
+  audience-analyst:
+    role: "Segment analysis, persona refinement"
+    type: specialist
+    category: research
+    model_tier: operational
+    status: planned
+    version: "0.1.0"
+    prompt: "specialists/research/audience-analyst.md"
+    evaluated_by: seo-judge
+
+  competitive-intel:
+    role: "Competitor content analysis, gap exploitation"
+    type: specialist
+    category: research
+    model_tier: operational
+    status: planned
+    version: "0.1.0"
+    prompt: "specialists/research/competitive-intel.md"
+    evaluated_by: seo-judge
+
+  # SPECIALISTS — Repurposing (3) — Every piece × 4 platforms
+  platform-adapter:
+    role: "LinkedIn → Twitter/Threads/Instagram native voice"
+    type: specialist
+    category: repurposing
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/repurposing/platform-adapter.md"
+    evaluated_by: platform-fit-judge
+
+  bilingual-localizer:
+    role: "English → Spanish for Facebook audience"
+    type: specialist
+    category: repurposing
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/repurposing/bilingual-localizer.md"
+    evaluated_by: platform-fit-judge
+
+  format-converter:
+    role: "Text → carousel, text → video brief, text → thread"
+    type: specialist
+    category: repurposing
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/repurposing/format-converter.md"
+    evaluated_by: [visual-content-judge, platform-fit-judge]
+
+  # EVALUATORS (7) — Domain-Expert Judges
+  written-content-judge:
+    role: "Expert evaluation of text content"
+    type: evaluator
+    category: written-authority
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "evaluators/written-content-judge.md"
+    rubric: [hook_strength, narrative_arc, voice_fidelity, authority_signal, readability_score]
+
+  visual-content-judge:
+    role: "Expert evaluation of visual content"
+    type: evaluator
+    category: visual
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "evaluators/visual-content-judge.md"
+    rubric: [visual_hierarchy, brand_alignment, info_clarity, scroll_stop_power, slide_pacing]
+
+  video-content-judge:
+    role: "Expert evaluation of video content"
+    type: evaluator
+    category: video
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "evaluators/video-content-judge.md"
+    rubric: [hook_timing, pacing_score, retention_prediction, caption_quality, cta_strength]
+
+  engagement-judge:
+    role: "Expert evaluation of growth content"
+    type: evaluator
+    category: growth
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "evaluators/engagement-judge.md"
+    rubric: [conversion_potential, authenticity_score, brand_safety, audience_match, frequency_compliance]
+
+  seo-judge:
+    role: "Expert evaluation of research/SEO"
+    type: evaluator
+    category: research
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "evaluators/seo-judge.md"
+    rubric: [keyword_relevance, search_intent_match, topical_authority, competitive_gap_fill, uniqueness]
+
+  platform-fit-judge:
+    role: "Expert evaluation of repurposed content"
+    type: evaluator
+    category: repurposing
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "evaluators/platform-fit-judge.md"
+    rubric: [algorithm_signal_strength, format_compliance, native_feel, timing_appropriateness]
+
+  brand-safety-judge:
+    role: "Cross-cutting gate — voice deviation, anti-patterns, reputation risk"
+    type: evaluator
+    category: all
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "evaluators/brand-safety-judge.md"
+    rubric: [voice_deviation_score, anti_pattern_count, reputation_risk, forbidden_content_check]
+    gate: true
+
+  # OPS (2) — System Maintenance
+  security-sentinel:
+    role: "Security audit — secrets, kill switch, silo boundaries"
+    type: ops
+    model_tier: operational
+    status: planned
+    version: "0.1.0"
+    prompt: "ops/security-sentinel.md"
+
+  knowledge-keeper:
+    role: "Knowledge freshness checking, stale file detection"
+    type: ops
+    model_tier: operational
+    status: planned
+    version: "0.1.0"
+    prompt: "ops/knowledge-keeper.md"

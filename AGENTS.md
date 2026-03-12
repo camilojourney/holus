@@ -12,9 +12,7 @@
 |roadmap:       {docs/roadmap.md}
 |vision:        {docs/vision.md}
 |config:        {config/base.yaml, config/guardrails.yaml, config/products.yaml}
-|agent-defs:    {.claude/agents/manager.md, .claude/agents/content-orchestrator.md,
-|               .claude/agents/code-improver.md, .claude/agents/judge-agent.md,
-|               .claude/agents/security-sentinel.md}
+|agent-defs:    {agents/AGENTS.yaml}
 |rules:         {.claude/rules/structure.md, .claude/rules/code-style.md,
 |               .claude/rules/testing.md, .claude/rules/security.md}
 ```
@@ -40,6 +38,20 @@ and learning from what works to improve over time.
 - Not a publisher (social-media-automatization does the actual posting)
 - Not a video generator (genpeli does that)
 - Not an image generator (pilaster does that)
+
+---
+
+## Agent Registry
+
+The single source of truth for all agents is [`agents/AGENTS.yaml`](agents/AGENTS.yaml).
+
+Agent prompt files live in `agents/` as `.md` files with YAML frontmatter, organized by role:
+- `agents/managers/` — Strategy and coordination
+- `agents/specialists/` — Content production by category (written-authority, visual, video, growth, research, repurposing)
+- `agents/evaluators/` — Domain-expert quality judges
+- `agents/ops/` — System maintenance
+
+Each agent file follows the KERNEL template: Role, Scope, Steps, Negatives, Output Contract, Contrastive Examples.
 
 ---
 
