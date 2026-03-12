@@ -17,9 +17,13 @@ from __future__ import annotations
 
 import fcntl
 import os
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 import httpx
 import structlog
@@ -315,3 +319,44 @@ def run_preflight_checks(
         available_silos=available_silos,
         warnings=warnings,
     )
+
+
+# ---------------------------------------------------------------------------
+# Run lock context manager
+# ---------------------------------------------------------------------------
+
+
+@contextmanager
+def acquire_run_lock(lock_path: Path | None = None) -> Generator[object, None, None]:
+    """Context manager for the marketing cycle run lock.
+
+    Acquires an exclusive file lock on entry, releases on exit.
+    Uses OS-level ``flock`` which auto-releases if the process crashes — no
+    stale locks.
+
+    Args:
+        lock_path: Override the default lock file path.
+            Defaults to ``/tmp/holus/holus-marketing.lock``.
+
+    Yields:
+        The open file descriptor (rarely needed by callers).
+
+    Raises:
+        BlockingIOError: If another cycle is already running and holds the lock.
+
+    Example::
+
+        from holus.core.health import acquire_run_lock
+
+        with acquire_run_lock():
+            await agent.run()
+    """
+    _lock_path = lock_path or Path("/tmp/holus/holus-marketing.lock")
+    _lock_path.parent.mkdir(parents=True, exist_ok=True)
+    fd = open(_lock_path, "w")  # noqa: SIM115
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        yield fd
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        fd.close()

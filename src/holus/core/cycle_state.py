@@ -246,7 +246,9 @@ def _append_jsonl(path: Path, entry: dict[str, object]) -> None:
     """Append a JSON object as a single line to *path*.
 
     Creates intermediate directories if they do not exist.
-    Silently logs and continues if the write fails — never crashes the cycle.
+    On write failure, attempts to write to a ``.failed`` fallback file and
+    logs a warning. If the fallback also fails, the entry is printed to
+    stderr so data is never silently lost.
     """
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -258,3 +260,13 @@ def _append_jsonl(path: Path, entry: dict[str, object]) -> None:
             path=str(path),
             error=str(exc),
         )
+        # Fallback: write to stderr so data is never silently lost
+        import sys
+
+        try:
+            fallback = path.parent / f"{path.stem}.failed{path.suffix}"
+            with fallback.open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            logger.info("Trajectory entry written to fallback", fallback=str(fallback))
+        except OSError:
+            print(json.dumps(entry, ensure_ascii=False), file=sys.stderr)

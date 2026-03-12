@@ -187,11 +187,13 @@ class MarketingAgent(BaseAgent):
         """
         ctx = CycleContext.new(trajectory_path=self._TRAJECTORY_PATH)
         final_state: dict[str, Any] = {}
+        current_phase = "initializing"
 
         try:
             # ------------------------------------------------------------------
             # HEALTH_CHECK phase
             # ------------------------------------------------------------------
+            current_phase = "health_check"
             ctx.transition(CycleState.HEALTH_CHECK)
             health = run_preflight_checks(
                 skip_run_lock_check=True,  # run-lock already held by caller
@@ -216,6 +218,7 @@ class MarketingAgent(BaseAgent):
             # ------------------------------------------------------------------
             # LOADING_STATE phase — compile graph and prepare initial state
             # ------------------------------------------------------------------
+            current_phase = "loading_state"
             ctx.transition(CycleState.LOADING_STATE)
             app = self.compile(checkpointer=checkpointer)
             initial = state or self.default_state()
@@ -227,16 +230,19 @@ class MarketingAgent(BaseAgent):
             # ------------------------------------------------------------------
             # OBSERVING phase
             # ------------------------------------------------------------------
+            current_phase = "observing"
             ctx.transition(CycleState.OBSERVING)
 
             # ------------------------------------------------------------------
             # REASONING phase
             # ------------------------------------------------------------------
+            current_phase = "reasoning"
             ctx.transition(CycleState.REASONING)
 
             # ------------------------------------------------------------------
             # CREATING phase
             # ------------------------------------------------------------------
+            current_phase = "graph_execution"
             ctx.transition(CycleState.CREATING)
 
             # Run the full LangGraph workflow (observe → reason → act → evaluate)
@@ -245,6 +251,7 @@ class MarketingAgent(BaseAgent):
             # ------------------------------------------------------------------
             # QUALITY_CHECK phase — already performed inside act(), record result
             # ------------------------------------------------------------------
+            current_phase = "quality_check"
             ctx.transition(CycleState.QUALITY_CHECK)
             post_results: list[dict[str, Any]] = final_state.get("post_results", [])
             generated: list[dict[str, Any]] = final_state.get("generated_content", [])
@@ -261,27 +268,33 @@ class MarketingAgent(BaseAgent):
             # ------------------------------------------------------------------
             # POSTING phase
             # ------------------------------------------------------------------
+            current_phase = "posting"
             ctx.transition(CycleState.POSTING)
 
             # ------------------------------------------------------------------
             # IMPROVING phase
             # ------------------------------------------------------------------
+            current_phase = "improving"
             ctx.transition(CycleState.IMPROVING)
 
             # ------------------------------------------------------------------
             # SAVING_STATE phase → DONE
             # ------------------------------------------------------------------
+            current_phase = "saving_state"
             ctx.transition(CycleState.SAVING_STATE)
             ctx.transition(CycleState.DONE)
 
         except Exception as exc:
             ctx.transition(CycleState.FAILED)
-            ctx.error = str(exc)
+            ctx.error = f"Failed during {current_phase}: {exc}"
             logger.exception(
-                "Marketing cycle failed with unhandled exception [cycle_id=%s]: %s",
+                "Marketing cycle failed with unhandled exception [cycle_id=%s, phase=%s]: %s",
                 ctx.cycle_id,
+                current_phase,
                 exc,
             )
+            if final_state:
+                self._save_partial_state(final_state, ctx.cycle_id)
 
         finally:
             # ------------------------------------------------------------------
@@ -302,6 +315,40 @@ class MarketingAgent(BaseAgent):
                 )
 
         return final_state
+
+    def _save_partial_state(self, state: dict[str, Any], cycle_id: str) -> None:
+        """Save partial state to a recovery file when a cycle fails mid-execution.
+
+        Persists the content generated so far so it is not lost on failure.
+        The recovery file can be inspected manually or consumed by a future
+        self-improvement cycle.
+
+        Args:
+            state: The LangGraph final state dict at the point of failure.
+            cycle_id: The cycle's unique identifier (ISO 8601 UTC string).
+        """
+        try:
+            recovery_dir = Path("data/recovery")
+            recovery_dir.mkdir(parents=True, exist_ok=True)
+            # Sanitize cycle_id for use as a filename (colons are invalid on some FSes)
+            safe_id = cycle_id.replace(":", "-").replace("+", "p")
+            recovery_file = recovery_dir / f"{safe_id}.json"
+            with recovery_file.open("w", encoding="utf-8") as fh:
+                json.dump(
+                    {
+                        "cycle_id": cycle_id,
+                        "saved_at": datetime.now(UTC).isoformat(),
+                        "generated_content": state.get("generated_content", []),
+                        "content_decisions": state.get("content_decisions", []),
+                        "strategy_reasoning": state.get("strategy_reasoning", ""),
+                    },
+                    fh,
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            logger.info("Partial state saved for recovery: %s", recovery_file)
+        except OSError as exc:
+            logger.warning("Failed to save partial state: %s", exc)
 
     async def observe(self, state: MarketingState) -> dict[str, Any]:
         """Observe phase: load config, knowledge, memory, brand, analytics, and niche research."""
