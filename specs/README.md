@@ -57,6 +57,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | --- | ---------------------------------------------------------------- | ------- | ----------- |
 | 027 | [Resilient Agent Loop](027-resilient-agent-loop.md)              | Backend | Implemented |
 
+## Observatory
+
+| #   | Spec                                                             | Type       | Status      |
+| --- | ---------------------------------------------------------------- | ---------- | ----------- |
+| 028 | [Observatory API](028-observatory-api.md)                        | Backend    | Planned     |
+
 ---
 
 ## Spec Status Legend
