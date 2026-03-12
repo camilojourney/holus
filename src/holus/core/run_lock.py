@@ -24,6 +24,27 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
 
+def is_run_lock_available(
+    agent_name: str,
+    lock_dir: Path = Path("/tmp/holus"),
+) -> bool:
+    """Return ``True`` when no other process currently holds the agent lock."""
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    lock_file = lock_dir / f"{agent_name}.lock"
+
+    fd = open(lock_file, "w")  # noqa: SIM115
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        fd.close()
+        return False
+    else:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        fd.close()
+        lock_file.unlink(missing_ok=True)
+        return True
+
+
 @contextmanager
 def acquire_run_lock(
     agent_name: str,

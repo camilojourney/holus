@@ -44,6 +44,12 @@ class KillSwitchScope(StrEnum):
     COORDINATOR = "coordinator"
 
 
+class KillSwitchMode(StrEnum):
+    ACTIVE = "active"
+    BUILD_PAUSED = "build_paused"
+    ALL_PAUSED = "all_paused"
+
+
 class KillSwitchState(BaseModel):
     """Persisted state for an active kill switch."""
 
@@ -51,6 +57,7 @@ class KillSwitchState(BaseModel):
     reason: str = ""
     activated_by: str = "manual"  # "manual" | "circuit_breaker" | "coordinator"
     scope: str = "global"
+    mode: KillSwitchMode = KillSwitchMode.ALL_PAUSED
 
 
 class KillSwitchActive(Exception):  # noqa: N818
@@ -98,6 +105,7 @@ class KillSwitch:
         scope: str = "global",
         reason: str = "",
         activated_by: str = "manual",
+        mode: KillSwitchMode = KillSwitchMode.ALL_PAUSED,
     ) -> None:
         """Activate a kill switch.
 
@@ -113,6 +121,7 @@ class KillSwitch:
             reason=reason,
             activated_by=activated_by,
             scope=scope,
+            mode=mode,
         )
         self._redis.set(key, state.model_dump_json())
         logger.warning("Kill switch ACTIVATED: scope=%s reason=%s", scope, reason)
@@ -137,22 +146,29 @@ class KillSwitch:
         """
         try:
             # Global
-            if self._redis.exists(self.GLOBAL_KEY):
+            if self._scope_blocks(self.GLOBAL_KEY):
                 return True
 
             # Domain
             for domain, agents in DOMAIN_AGENTS.items():
                 if agent_name in agents:
                     domain_key = f"{self.DOMAIN_PREFIX}{domain}"
-                    if self._redis.exists(domain_key):
+                    if self._scope_blocks(domain_key):
                         return True
 
             # Agent-specific
             agent_key = f"{self.AGENT_PREFIX}{agent_name}"
-            return bool(self._redis.exists(agent_key))
+            return self._scope_blocks(agent_key)
         except Exception:
             logger.warning("Redis unavailable for kill switch check; assuming not active")
             return False
+
+    def builds_paused(self, scope: str = "global") -> bool:
+        """Return ``True`` when builds should stop for the given scope."""
+        state = self.get_state(scope)
+        if state is None:
+            return False
+        return state.mode in {KillSwitchMode.BUILD_PAUSED, KillSwitchMode.ALL_PAUSED}
 
     def get_state(self, scope: str) -> KillSwitchState | None:
         """Return the ``KillSwitchState`` for *scope*, or ``None``."""
@@ -224,6 +240,17 @@ class KillSwitch:
         if scope in DOMAIN_AGENTS:
             return f"{self.DOMAIN_PREFIX}{scope}"
         return f"{self.AGENT_PREFIX}{scope}"
+
+    def _scope_blocks(self, key: str) -> bool:
+        raw = self._redis.get(key)
+        if raw is None:
+            return False
+        try:
+            state = KillSwitchState.model_validate_json(raw)
+        except Exception:
+            logger.warning("Malformed kill switch state at %s", key)
+            return True
+        return state.mode == KillSwitchMode.ALL_PAUSED
 
 
 # ---------------------------------------------------------------------------
