@@ -238,6 +238,12 @@ schedule-status:
     @tail -5 logs/builder.stdout.log 2>/dev/null || echo "No builder logs"
     @tail -5 logs/health.log 2>/dev/null || echo "No health logs"
 
+# -- Observatory API ---------------------------------------------------------
+
+# Start the Observatory API server (reads agent/trajectory/content files, serves at :8000)
+dev-api:
+    uv run uvicorn holus.api.app:app --reload --port 8000
+
 # -- Health ------------------------------------------------------------------
 
 health:
@@ -255,6 +261,33 @@ improve:
 
 audit:
     claude --agent .claude/agents/security-sentinel.md
+
+# -- Agent Registry ----------------------------------------------------------
+
+# List all agents with their status (from AGENTS.yaml)
+agents:
+    uv run python -c "
+from holus.agents.registry import AgentRegistry
+reg = AgentRegistry()
+all_agents = reg.list_agents()
+print(f'{'ID':<35} {'TYPE':<12} {'STATUS':<10} {'MODEL':<16} VERSION')
+print('-' * 90)
+for a in sorted(all_agents, key=lambda x: (x.type, x.agent_id)):
+    print(f'{a.agent_id:<35} {a.type:<12} {a.status:<10} {a.model_tier:<16} {a.version}')
+print()
+print(f'Total: {len(all_agents)} agents')
+active = sum(1 for a in all_agents if a.status == 'active')
+planned = sum(1 for a in all_agents if a.status == 'planned')
+print(f'  active: {active}  planned: {planned}')
+"
+
+# Run domain-expert judge on recent trajectory entries (last 7 days)
+evaluate:
+    uv run python -m holus.cli evaluate --days 7
+
+# Show per-agent cost breakdown from trajectory.jsonl
+costs:
+    uv run python -m holus.cli costs --group-by agent
 
 # -- Logs --------------------------------------------------------------------
 
