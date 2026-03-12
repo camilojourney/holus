@@ -16,6 +16,7 @@ Instagram is excluded from text-only routing because it requires media.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from .models import (
     MEDIA_REQUIRED_PLATFORMS,
@@ -140,7 +141,7 @@ class ContentRouter:
     async def route(
         self,
         idea: ContentIdea,
-        analytics: dict,
+        analytics: dict[str, Any],
     ) -> list[FormatType]:
         """Determine which formats to produce for the given idea.
 

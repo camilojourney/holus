@@ -1,0 +1,11 @@
+Done. Committed `f2732a7`.
+
+**What was built:**
+
+- **`reviewers.py`** — 4 reviewer functions + `run_all_reviewers`:
+  - `review_brand`: deterministic anti-pattern check (deducts 1pt per hit) + optional LLM voice match (averages scores)
+  - `review_facts`: LLM cross-references claims vs `products.yaml`; defaults to 8.0 if no client
+  - `review_compliance`: fully deterministic, word-boundary regex against `guardrails.yaml` `blocked_topics`, -5pt per critical hit
+  - `score_engagement`: deterministic signals — hook length (+1.5), question ending (+1.0), specificity/numbers (+1.0), hashtag norms, content length — baseline 5.0
+
+- **`test_reviewers.py`** — 36 tests covering all reviewers, edge cases (empty content, missing config, no client), and `run_all_reviewers`

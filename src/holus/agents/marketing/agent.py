@@ -15,7 +15,7 @@ import re
 import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, ClassVar, TypedDict
+from typing import Any, ClassVar, TypedDict, cast
 from uuid import uuid4
 
 import yaml
@@ -178,12 +178,16 @@ class MarketingAgent(BaseAgent):
             "error": None,
         }
 
+    def compile(self, checkpointer: Any = None) -> Any:
+        """Typed wrapper around the base LangGraph compiler."""
+        return super().compile(checkpointer=checkpointer)
+
     async def run(
         self,
         state: dict[str, Any] | None = None,
         *,
         thread_id: str | None = None,
-        checkpointer=None,
+        checkpointer: Any = None,
     ) -> dict[str, Any]:
         """Run one resilient marketing cycle and always write a cycle trace."""
         initial = state or self.default_state()
@@ -218,7 +222,10 @@ class MarketingAgent(BaseAgent):
             if thread_id:
                 config_payload["configurable"] = {"thread_id": thread_id}
 
-            final_state = await app.ainvoke(initial, config=config_payload)
+            final_state = cast(
+                "dict[str, Any]",
+                await app.ainvoke(initial, config=config_payload),
+            )
             final_state.setdefault("health", health_result.to_dict())
             final_state.setdefault("available_silos", list(health_result.available_silos))
             final_state.setdefault("warnings", list(health_result.warnings))
@@ -883,12 +890,16 @@ class MarketingAgent(BaseAgent):
 
         return {"evaluation": evaluation}
 
-    def _set_cycle_state(self, state: dict[str, Any], cycle_state: CycleState) -> None:
+    def _set_cycle_state(
+        self,
+        state: MarketingState | dict[str, Any],
+        cycle_state: CycleState,
+    ) -> None:
         state["current_state"] = cycle_state.value
 
     def _write_cycle_trajectory(
         self,
-        state: dict[str, Any],
+        state: MarketingState | dict[str, Any],
         *,
         health_result: HealthResult | None,
         started_monotonic: float,
@@ -939,7 +950,7 @@ class MarketingAgent(BaseAgent):
 
     def _health_payload(
         self,
-        state: dict[str, Any],
+        state: MarketingState | dict[str, Any],
         health_result: HealthResult | None,
     ) -> dict[str, Any]:
         if health_result is not None:
@@ -961,7 +972,12 @@ class MarketingAgent(BaseAgent):
             return health
         return {"status": "unknown"}
 
-    def _cycle_status(self, state: dict[str, Any], *, current_state: str) -> str:
+    def _cycle_status(
+        self,
+        state: MarketingState | dict[str, Any],
+        *,
+        current_state: str,
+    ) -> str:
         if state.get("error"):
             return "failure"
         if current_state == CycleState.HEALTH_CHECK.value:

@@ -1,0 +1,50 @@
+YOLO mode is enabled. All tool calls will be automatically approved.
+Loaded cached credentials.
+YOLO mode is enabled. All tool calls will be automatically approved.
+Server 'github-hub' supports tool updates. Listening for changes...
+Here is the structured quality report based on the review of the reviewer specialist pool and content loop implementation.
+
+### 🔴 ISSUES (Must Fix)
+
+1. **Category Tags vs. Content Formats Mix-up in YAMLs**
+   * **Location:** `config/reviewers/builtin/*.yaml` & `review_router.py`
+   * **Problem:** `ReviewRouter` maps content types to required skill categories (e.g., `"brand_tone"`, `"hook_quality"`). However, the YAML configs define `category_tags` using content formats (`text_post`, `carousel`, etc.) instead of their actual specialist category.
+   * **Impact:** `self.pool.get_by_category("brand_tone")` will always return an empty list. The router will fail to find the correct reviewers and will likely fall back to padding with random specialists.
+
+2. **Hardcoded Mock Stubs in Production Code**
+   * **Location:** `run_routed_reviewers` in `content_loop.py`
+   * **Problem:** The function completely skips LLM execution and appends a hardcoded stub `ReviewResult` with a perfect `7.5` score and `passed=True` for every selected reviewer. 
+   * **Impact:** This code will not actually evaluate content at runtime. Even though it's running in shadow mode alongside the legacy `run_all_reviewers`, it records fake data into `ContentFeatures`.
+
+3. **Aggregator Ignores Individual Reviewer Vetoes**
+   * **Location:** `ReviewAggregator.aggregate()` in `review_aggregator.py`
+   * **Problem:** The aggregator determines the final pass/fail boolean strictly by averaging the numeric scores (`score_100 >= threshold_value`). It entirely ignores the `passed=False` boolean from individual `ReviewResult` objects.
+   * **Impact:** If a specialist (e.g., Compliance or Fact Checker) gives a `passed=False` but a score of `4.0`, and three other reviewers give `10.0`, the average is `8.5`. The content will pass despite a critical failure from a specialized reviewer.
+
+4. **`ContentFeatures` Missing Critical Analytical Data**
+   * **Location:** `_build_content_features()` in `content_loop.py`
+   * **Problem:** The instantiation of `ContentFeatures` omits vital granular attributes like `hook_type`, `cta_type`, `topic_category`, `tone`, `word_count`, `has_image`, and `posting_hour`. 
+   * **Impact:** All of these fields default to `None` or `0`. Since Spec 025 is meant to enable data-driven learning, failing to capture these attributes at the loop level renders the granular analytics useless.
+
+### 🟡 WARNINGS (Should Fix)
+
+1. **Inconsistent Prompts & Missing Schema Definitions**
+   * **Location:** `config/reviewers/builtin/*.yaml`
+   * **Problem:** The `prompt_template` instructions vary wildly. For instance, `hook-quality-001` asks for "1-2 concrete improvement suggestions", while `brand-tone-001` only asks for "2-3 notes". Furthermore, none of the prompts inject a JSON schema.
+   * **Impact:** `ReviewResult` strictly expects `issues` and `suggestions` lists. Without a strict JSON schema or consistent prompt instructions, the LLM outputs will likely fail Pydantic validation.
+
+2. **Router Padding Logic Creates Irrelevant Reviews**
+   * **Location:** `select_reviewers()` in `review_router.py`
+   * **Problem:** If the router cannot find enough category-matched reviewers, it blindly pads the selection from the remaining pool just to reach `n=4`. 
+   * **Impact:** A "LinkedIn Platform Native" specialist could be forced to review an "Instagram Video Brief", leading to confusing feedback and skewed scores.
+
+3. **Flawed Issue Elevation Logic**
+   * **Location:** `check_elevation()` in `review_aggregator.py`
+   * **Problem:** The logic relies on exact string matching (`issue.description.strip().lower()`) to find issues flagged by 2+ reviewers.
+   * **Impact:** LLMs almost never generate the exact same string for an issue (e.g., "Tone is too casual" vs "Casual tone used"). This exact-match elevation will almost never trigger in practice; it should rely on semantic matching or LLM synthesis instead.
+
+### 🔵 OBSERVATIONS (Nice to Know)
+
+1. **Equal Weighting in Aggregation:** `ReviewAggregator` currently averages all scores equally. In a multi-agent setup, you may eventually want to weigh certain specialists heavier (e.g., a critical Brand Tone reviewer vs. a minor Typography reviewer).
+2. **Score Scale Mismatch:** The `EvalGate` operates on a 0-100 scale, and `AdaptiveThreshold` compares against a 0-100 scale. However, `ContentFeatures.reviewer_avg_score` saves the router's average on a 0-10 scale. This inconsistency might cause confusion in downstream analytics. 
+3. **Empty Review Handling:** `ReviewAggregator` handles the 0-reviewers edge case gracefully by defaulting `passed=False` and `overall_score=0.0`.

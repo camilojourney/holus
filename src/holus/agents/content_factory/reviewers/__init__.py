@@ -1,17 +1,9 @@
-"""Reviewer agents for the Content Factory v2 (Spec 024).
+"""Reviewer package namespace for Content Factory v2.
 
-Each reviewer evaluates a content piece from a different lens and returns a
-:class:`~holus.agents.content_factory.models.ReviewResult`.
-
-Reviewers run in parallel (they are independent) and their scores are
-aggregated by the eval gate.
+The concrete reviewer implementations are not yet checked into this worktree.
+The package still exposes the canonical symbol names via ``__all__`` so the
+namespace remains stable while the implementation files land.
 """
-
-from .base import BaseReviewer
-from .brand import BrandReviewer
-from .compliance import ComplianceReviewer
-from .engagement import EngagementReviewer
-from .fact import FactReviewer
 
 __all__ = [
     "BaseReviewer",

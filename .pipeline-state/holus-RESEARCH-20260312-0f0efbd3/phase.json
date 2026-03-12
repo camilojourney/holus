@@ -1,0 +1,10 @@
+{
+  "correlation_id": "holus-RESEARCH-20260312-0f0efbd3",
+  "repo": "holus",
+  "phase": "RESEARCH",
+  "started_at": "2026-03-12T10:00:00Z",
+  "current_subphase": "GATHER",
+  "phases_completed": [],
+  "status": "IN_PROGRESS",
+  "workers": []
+}

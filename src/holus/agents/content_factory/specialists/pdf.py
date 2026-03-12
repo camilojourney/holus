@@ -188,14 +188,14 @@ def _parse_pdf_response(text: str, topic: str) -> str:
     # Fallback: parse markdown headings
     lines = text.splitlines()
     title = lines[0].lstrip("#").strip() if lines else topic
-    sections: list[dict[str, Any]] = []
+    fallback_sections: list[dict[str, Any]] = []
     current_heading = ""
     current_body: list[str] = []
 
     for line in lines[1:]:
         if line.startswith("#"):
             if current_heading:
-                sections.append(
+                fallback_sections.append(
                     {
                         "heading": current_heading,
                         "body_markdown": "\n".join(current_body).strip(),
@@ -208,7 +208,7 @@ def _parse_pdf_response(text: str, topic: str) -> str:
             current_body.append(line)
 
     if current_heading:
-        sections.append(
+        fallback_sections.append(
             {
                 "heading": current_heading,
                 "body_markdown": "\n".join(current_body).strip(),
@@ -216,18 +216,22 @@ def _parse_pdf_response(text: str, topic: str) -> str:
             }
         )
 
-    while len(sections) < _MIN_SECTIONS:
-        sections.append(
-            {"heading": f"Section {len(sections) + 1}", "body_markdown": "", "callout": None}
+    while len(fallback_sections) < _MIN_SECTIONS:
+        fallback_sections.append(
+            {
+                "heading": f"Section {len(fallback_sections) + 1}",
+                "body_markdown": "",
+                "callout": None,
+            }
         )
 
     return json.dumps(
         {
             "title": title[:200],
             "subtitle": "",
-            "sections": sections[:_MAX_SECTIONS],
+            "sections": fallback_sections[:_MAX_SECTIONS],
             "key_takeaway": text[:200].replace("\n", " "),
-            "estimated_pages": max(1, min(len(sections), 20)),
+            "estimated_pages": max(1, min(len(fallback_sections), 20)),
         }
     )
 

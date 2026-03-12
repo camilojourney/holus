@@ -171,7 +171,7 @@ class BaseAgent(abc.ABC):
 
     # -- Graph compilation ---------------------------------------------------
 
-    def compile(self, checkpointer=None):
+    def compile(self, checkpointer: Any = None) -> Any:
         """Compile the LangGraph ``StateGraph`` with optional checkpointing."""
         graph = self.build_graph()
         return graph.compile(checkpointer=checkpointer)
@@ -181,7 +181,7 @@ class BaseAgent(abc.ABC):
         state: dict[str, Any] | None = None,
         *,
         thread_id: str | None = None,
-        checkpointer=None,
+        checkpointer: Any = None,
     ) -> dict[str, Any]:
         """Build, compile, and execute the agent graph.
 

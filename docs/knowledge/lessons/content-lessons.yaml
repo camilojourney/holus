@@ -1,0 +1,61 @@
+# Content Lessons — Holus
+# Version: 1.0.0
+# Format documented in README.md
+#
+# Each lesson entry:
+#   date:         YYYY-MM-DD
+#   what_we_tried: what experiment or change was made
+#   what_happened: measured outcome (specific numbers preferred)
+#   what_changed:  what was updated as a result
+#   applied_to:    list of { type: prompt|platform|routing|strategy, file: path }
+#
+# Reading order: scan by platform + pillar match, newest first.
+# Lessons override general platform assumptions — trust measured results.
+
+lessons: []
+
+# ─── EXAMPLE ENTRY (commented out — copy this structure for new lessons) ───
+#
+# - date: 2026-03-08
+#   what_we_tried: >
+#     Posted a carousel (PDF, 7 slides) on LinkedIn about AI cost optimization.
+#     Used carousel specialist v1.0 + linkedin writer.
+#   what_happened: >
+#     Reach: 3,800 (baseline for text posts: 1,200). Save rate: 8.2%.
+#     Comments: 4 (lower than text posts which average 12).
+#     Confirmed carousel pattern: high saves, low comments.
+#   what_changed: >
+#     Added a question to the final carousel slide to prompt comments.
+#     Updated carousel specialist to include an optional discussion prompt
+#     on the last slide when target platform is LinkedIn.
+#   applied_to:
+#     - prompt: config/prompts/specialists/carousel.yaml
+#     - platform: knowledge/platforms/linkedin.md
+
+# ─── Lesson: how_i_live — video workout post (2026-03-09) ─────────────────────
+- id: lesson-2026-03-09-how-i-live-run
+  pillar: how_i_live
+  date: 2026-03-09
+  input_raw: |
+    7.70 mile run, 1:17:02, 9'59" pace. First time back at that distance in a while.
+    Winter took the best of me. New York in February hits different. Sun came back, so did I.
+    After the run went straight to the gym for abs. New York feels right when it's not winter.
+    Hopefully figure out where to spend cold months one day.
+  what_worked:
+    - Specific distance (7.70 miles) makes it real — not generic "long run"
+    - Honest about winter taking a toll — not performative comeback story
+    - Layering run + gym session shows how body wanted to keep going
+    - "Sun came back and so did I" — simple, resonant
+    - Ending on open life question (where to live in winter) fits journey pillar
+  what_failed:
+    - First draft added Apple Watch framing — Camilo never mentioned the watch brand
+    - First draft focused on watch metrics as accountability tool — missed the real story (seasonal comeback)
+    - Generic "accountability system" framing — turned a personal story into a framework
+  lessons:
+    - NEVER add brand names (Apple Watch, Nike, etc.) unless Camilo explicitly names them
+    - The watch data is context, not the story — the story is the run, the season, the comeback
+    - how_i_live content = describe what happened, not what it means
+    - Seasonal + location context (New York winter) adds depth — include it when mentioned
+    - Stack activities (run → gym) shows real life rhythm — preserve it
+  specialist_update_needed: false  # prompt is correct, execution was wrong
+  writer_update_needed: false

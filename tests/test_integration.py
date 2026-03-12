@@ -30,6 +30,7 @@ from holus.agents.marketing.content_queue import (
     reject,
 )
 from holus.core.config import HolusConfig
+from holus.core.health import HealthResult
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -43,6 +44,15 @@ def _make_holus_config(tmp_path: Path) -> HolusConfig:
         REDIS_URL="redis://localhost:6379",
         config_dir=tmp_path / "config",
         data_dir=tmp_path / "data",
+    )
+
+
+def _healthy_preflight() -> HealthResult:
+    """Return a passing preflight result for isolated integration tests."""
+    return HealthResult(
+        blocking_ok=True,
+        available_silos=["social-media"],
+        warnings=[],
     )
 
 
@@ -157,6 +167,10 @@ class TestMarketingAgentCycle:
         with (
             patch("holus.agents.base.redis.Redis.from_url", return_value=mock_redis),
             patch("holus.agents.base.EventBus") as mock_event_bus_cls,
+            patch(
+                "holus.agents.marketing.agent.run_preflight_checks",
+                return_value=_healthy_preflight(),
+            ),
         ):
             mock_event_bus_cls.return_value = MagicMock()
 
@@ -735,6 +749,10 @@ class TestAuthorityEngineE2E:
         with (
             patch("holus.agents.base.redis.Redis.from_url", return_value=mock_redis),
             patch("holus.agents.base.EventBus") as mock_eb,
+            patch(
+                "holus.agents.marketing.agent.run_preflight_checks",
+                return_value=_healthy_preflight(),
+            ),
         ):
             mock_eb.return_value = MagicMock()
             config = _make_holus_config(tmp_path)
@@ -784,6 +802,10 @@ class TestAuthorityEngineE2E:
         with (
             patch("holus.agents.base.redis.Redis.from_url", return_value=mock_redis),
             patch("holus.agents.base.EventBus") as mock_eb,
+            patch(
+                "holus.agents.marketing.agent.run_preflight_checks",
+                return_value=_healthy_preflight(),
+            ),
         ):
             mock_eb.return_value = MagicMock()
             config = HolusConfig(
@@ -891,6 +913,10 @@ class TestAuthorityEngineE2E:
         with (
             patch("holus.agents.base.redis.Redis.from_url", return_value=mock_redis),
             patch("holus.agents.base.EventBus") as mock_eb,
+            patch(
+                "holus.agents.marketing.agent.run_preflight_checks",
+                return_value=_healthy_preflight(),
+            ),
         ):
             mock_eb.return_value = MagicMock()
             config = _make_holus_config(tmp_path)

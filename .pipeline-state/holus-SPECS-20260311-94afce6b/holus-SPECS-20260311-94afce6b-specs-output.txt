@@ -1,0 +1,24 @@
+## Specs Phase Complete
+
+**Spec 024: Content Factory v2** — committed as `5a81681`.
+
+### What the spec covers (7 subsystems):
+
+1. **Content Router** — takes raw idea + optional format hint → decides format (carousel/PDF/diagram/video_brief/text) + specialist + target platforms
+2. **5 Specialist Creators** — each produces validated Pydantic output (CarouselOutput with 4-10 slides, PDFOutput with sections, DiagramOutput with Mermaid code, VideoBriefOutput for genpeli, TextOutput)
+3. **5 Platform Framers** — adapt specialist output per platform constraints (char limits, format compatibility matrix)
+4. **4 Reviewer Agents** — brand (voice/anti-patterns), fact (products.yaml reality), compliance (guardrails.yaml blocked topics), engagement (learned patterns)
+5. **Eval Gate** — aggregates scores, 7.0 pass threshold, max 2 revision cycles, compliance critical = immediate fail
+6. **MCP Integration Layer** — Pilaster/Genpeli/Social-Media clients with circuit breaker (3 failures → open → 60s cooldown)
+7. **Internal Eval System** — append-only `data/eval-history.jsonl` with per-agent/format/platform trend queries
+
+### Key design decisions:
+- All new functionality lives within existing `act` stage — no new LangGraph nodes
+- Feature-flagged via `HOLUS_CONTENT_FACTORY_V2` for safe rollout
+- 10 acceptance criteria with Given/When/Then format
+- Each subsystem independently rollback-able
+
+### Pipeline state:
+- `phase.json` → COMPLETED
+- Handoff payload written with all artifact paths and dependency list
+- Next phase: **CODE**

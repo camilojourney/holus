@@ -2,56 +2,78 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
+from holus.core.kill_switch import KillSwitch, KillSwitchMode
+
+
+def _redis_with_store() -> MagicMock:
+    store: dict[str, str] = {}
+    redis = MagicMock()
+    redis.set.side_effect = lambda key, value: store.__setitem__(key, value) or True
+    redis.get.side_effect = lambda key: store.get(key)
+    redis.delete.side_effect = lambda key: 1 if store.pop(key, None) is not None else 0
+    redis.scan_iter.side_effect = lambda match=None: list(store.keys())
+    return redis
+
 
 class TestKillSwitch:
     """Test kill switch activation, deactivation, and scope checking."""
 
-    def test_activate_agent_scope(self, mock_redis):
-        """Activating kill switch for a specific agent sets the correct Redis key."""
-        from holus.core.kill_switch import KillSwitch
+    def test_activate_agent_scope(self) -> None:
+        """Activating a kill switch stores the expected payload."""
+        redis = _redis_with_store()
 
-        ks = KillSwitch(redis_client=mock_redis)
+        ks = KillSwitch(redis_client=redis)
         ks.activate(scope="marketing-agent", reason="Manual stop")
 
-        mock_redis.set.assert_called_once()
-        call_args = mock_redis.set.call_args
-        assert "marketing-agent" in str(call_args)
+        assert redis.set.called
+        saved_key = redis.set.call_args.args[0]
+        assert saved_key == "holus:kill:agent:marketing-agent"
 
-    def test_deactivate_agent_scope(self, mock_redis):
-        """Deactivating kill switch deletes the correct Redis key."""
-        from holus.core.kill_switch import KillSwitch
+    def test_deactivate_agent_scope(self) -> None:
+        """Deactivating a kill switch removes the key."""
+        redis = _redis_with_store()
+        ks = KillSwitch(redis_client=redis)
+        ks.activate(scope="marketing-agent", reason="Manual stop")
 
-        ks = KillSwitch(redis_client=mock_redis)
         ks.deactivate(scope="marketing-agent")
 
-        mock_redis.delete.assert_called_once()
+        assert redis.delete.called
+        assert redis.get("holus:kill:agent:marketing-agent") is None
 
-    def test_is_active_returns_false_when_not_set(self, mock_redis):
+    def test_is_active_returns_false_when_not_set(self) -> None:
         """Kill switch should return False when no keys are set."""
-        mock_redis.exists.return_value = 0  # 0 = key not found in Redis
+        ks = KillSwitch(redis_client=_redis_with_store())
 
-        from holus.core.kill_switch import KillSwitch
-
-        ks = KillSwitch(redis_client=mock_redis)
         assert not ks.is_active(agent_name="marketing-agent")
 
-    def test_is_active_returns_true_for_global(self, mock_redis):
-        """Global kill switch should block all agents."""
-        # exists() returns 1 (truthy) for the global key
-        mock_redis.exists.return_value = 1
+    def test_is_active_returns_true_for_global_pause(self) -> None:
+        """Global all-paused kill switch should block the marketing agent."""
+        redis = _redis_with_store()
+        ks = KillSwitch(redis_client=redis)
+        ks.activate(scope="global", reason="Emergency", mode=KillSwitchMode.ALL_PAUSED)
 
-        from holus.core.kill_switch import KillSwitch
-
-        ks = KillSwitch(redis_client=mock_redis)
         assert ks.is_active(agent_name="marketing-agent")
 
-    def test_status_returns_dict(self, mock_redis):
+    def test_build_paused_does_not_block_content_cycle(self) -> None:
+        """BUILD_PAUSED should stop builds without halting content agents."""
+        redis = _redis_with_store()
+        ks = KillSwitch(redis_client=redis)
+        ks.activate(
+            scope="global", reason="Pause self-improvement", mode=KillSwitchMode.BUILD_PAUSED
+        )
+
+        assert not ks.is_active(agent_name="marketing-agent")
+        assert ks.builds_paused("global") is True
+
+    def test_status_returns_dict(self) -> None:
         """Status should return a dict of active kill switches."""
-        mock_redis.scan_iter.return_value = []
+        redis = _redis_with_store()
+        ks = KillSwitch(redis_client=redis)
+        ks.activate(scope="marketing-agent", reason="Manual stop")
 
-        from holus.core.kill_switch import KillSwitch
-
-        ks = KillSwitch(redis_client=mock_redis)
         status = ks.status()
 
         assert isinstance(status, dict)
+        assert "holus:kill:agent:marketing-agent" in status

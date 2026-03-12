@@ -61,10 +61,11 @@ class BasePlatformFramer(abc.ABC):
     def _extract_raw(self, piece: ContentPiece) -> dict[str, Any]:
         """Parse raw_content JSON from a piece; return empty dict on error."""
         try:
-            return json.loads(piece.raw_content)
+            payload = json.loads(piece.raw_content)
         except (json.JSONDecodeError, TypeError):
             logger.warning("Could not parse raw_content for piece %s", piece.piece_id)
             return {}
+        return payload if isinstance(payload, dict) else {}
 
     def _make_adaptation(
         self,
@@ -75,12 +76,15 @@ class BasePlatformFramer(abc.ABC):
         language: str = "en",
     ) -> PlatformAdaptation:
         """Build a :class:`PlatformAdaptation` for this framer's platform."""
+        resolved_metadata = metadata.copy() if metadata else {}
+        if scheduling_suggestion:
+            resolved_metadata["scheduling_suggestion"] = scheduling_suggestion
+        if language:
+            resolved_metadata["language"] = language
         return PlatformAdaptation(
             platform=self.platform,
             adapted_content=adapted_content,
             media_urls=media_urls or [],
-            metadata=metadata or {},
+            metadata=resolved_metadata,
             char_count=len(adapted_content),
-            scheduling_suggestion=scheduling_suggestion,
-            language=language,
         )

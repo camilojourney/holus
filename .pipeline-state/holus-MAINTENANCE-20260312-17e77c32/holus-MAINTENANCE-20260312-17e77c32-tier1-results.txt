@@ -1,0 +1,27 @@
+TIER 1 RESULTS — holus
+Date: 2026-03-12
+
+Dependencies: FLAGGED
+  1 vulnerability found:
+  - langgraph 1.0.9 — CVE-2026-28277 — fix: upgrade to 1.0.10
+
+Lint: FLAGGED (46 errors)
+  - 10 auto-fixable with --fix
+  - 9 more with --unsafe-fixes
+  - 27 manual fixes needed
+
+Tests: FAIL (1479 passed, 54 failed, 1 hanging)
+  Hanging: tests/test_integration.py (blocks — needs external services or has infinite wait)
+  Failing categories:
+    - tests/unit/agents/test_content_generation.py (4 failures — content generation mocks)
+    - tests/unit/agents/test_prompts.py (4 failures — prompt template changes)
+    - tests/unit/test_preflight.py (2 failures — preflight proxy mode change broke existing tests)
+    - ~44 others in unit tests
+
+Docker: PARTIAL
+  - holus-postgres: UP (healthy)
+  - holus-redis: UP (healthy)  
+  - holus-temporal: UP (healthy)
+  - holus-temporal-ui: UP
+  - holus-langfuse: UP (unhealthy — port 3001 conflict with Invoz dev server)
+  - holus-litellm: UP (stale — removed from compose but container still running)

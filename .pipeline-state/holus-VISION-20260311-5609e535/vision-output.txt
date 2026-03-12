@@ -1,0 +1,30 @@
+Vision phase complete. Here's what changed:
+
+**Key updates to `docs/vision.md`:**
+
+1. **Added "What Holus IS and IS NOT" section** — the most important change. Kills the identity confusion between "federated AI orchestrator" (from memory) and what the codebase actually says. Holus does one thing: marketing. Trading is explicitly flagged as a critical bug if referenced.
+
+2. **Removed Temporal reference** — the vision mentioned "Temporal for durability" but the actual architecture uses episodic agents triggered by launchd/cron. No Temporal anywhere in the codebase.
+
+3. **Anchored success metrics** — "Month 3" → "By June 2026". Absolute dates survive context loss.
+
+4. **Added silo architecture as differentiator** — the MCP-only boundary is genuinely unique and was missing from "What Makes This Different."
+
+5. **Expanded Not In Scope** — added real-time content and paid ads management (things people will inevitably ask about).
+
+6. **Sharpened Kill Question Q10** — added second failure mode (content quality never reaches autonomous bar) alongside the complexity tax.
+
+7. **Added Open Questions** — three real decisions still pending.
+
+---
+
+**HandoffPayload:**
+```json
+{
+  "phase": "VISION",
+  "doctrine_path": "~Projects/core/doctrines/0. VISION/manager.md",
+  "input_payload": {"repo_path": "holus", "task": "Update the vision so we can be clear of the product"},
+  "correlation_id": "holus-VISION-20260311-5609e535",
+  "status": "COMPLETED"
+}
+```

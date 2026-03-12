@@ -19,7 +19,6 @@ from typing import Any
 from urllib.parse import urljoin
 
 import httpx
-
 import structlog
 
 from holus.core.config import HolusConfig

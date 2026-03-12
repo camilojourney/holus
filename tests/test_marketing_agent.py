@@ -19,6 +19,7 @@ import yaml
 from holus.agents.marketing.agent import MarketingAgent
 from holus.agents.marketing.models import ContentDecision, ContentType, Platform
 from holus.core.config import AgentConfig, HolusConfig
+from holus.core.health import HealthResult
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -936,6 +937,108 @@ async def test_evaluate_tracks_queue_size_change(marketing_agent, temp_config_fi
 
     assert result["evaluation"]["queue_size_before"] == 1
     assert result["evaluation"]["queue_size_after"] == 2
+
+
+@pytest.mark.asyncio
+async def test_run_writes_cycle_summary_on_success(marketing_agent, temp_config_files):
+    """The resilient run path appends a cycle record on success."""
+    final_state = marketing_agent.default_state()
+    final_state.update(
+        {
+            "generated_content": [{"piece_id": "piece-001"}],
+            "post_results": [
+                {"piece_id": "piece-001", "status": "pending_review", "quality_score": 8}
+            ],
+            "evaluation": {"logged": True},
+        }
+    )
+
+    app = MagicMock()
+    app.ainvoke = AsyncMock(return_value=final_state)
+
+    with (
+        patch.object(marketing_agent, "compile", return_value=app),
+        patch(
+            "holus.agents.marketing.agent.run_preflight_checks",
+            return_value=HealthResult(
+                blocking_ok=True,
+                available_silos=["social-media"],
+                warnings=[],
+            ),
+        ),
+    ):
+        result = await marketing_agent.run()
+
+    assert result["terminal_state"] == "done"
+    trajectory_path = temp_config_files["trajectory_path"]
+    entries = [json.loads(line) for line in trajectory_path.read_text().strip().split("\n") if line]
+
+    cycle_entry = entries[-1]
+    assert cycle_entry["task_type"] == "cycle"
+    assert cycle_entry["status"] == "success"
+    assert cycle_entry["phase"] == "done"
+    assert cycle_entry["health"]["status"] == "ok"
+    assert cycle_entry["content_created"] == 1
+
+
+@pytest.mark.asyncio
+async def test_run_writes_cycle_summary_when_preflight_fails(marketing_agent, temp_config_files):
+    """Health-gated cycle skips still leave a trajectory trace."""
+    with (
+        patch.object(marketing_agent, "compile") as compile_mock,
+        patch(
+            "holus.agents.marketing.agent.run_preflight_checks",
+            return_value=HealthResult(
+                blocking_ok=False,
+                available_silos=[],
+                warnings=[],
+                blocking_reason="Social media MCP unreachable: timeout",
+            ),
+        ),
+    ):
+        result = await marketing_agent.run()
+
+    compile_mock.assert_not_called()
+    assert result["error"] == "Social media MCP unreachable: timeout"
+    trajectory_path = temp_config_files["trajectory_path"]
+    entries = [json.loads(line) for line in trajectory_path.read_text().strip().split("\n") if line]
+
+    cycle_entry = entries[-1]
+    assert cycle_entry["task_type"] == "cycle"
+    assert cycle_entry["status"] == "failure"
+    assert cycle_entry["phase"] == "health_check"
+    assert cycle_entry["health"]["status"] == "failed"
+    assert cycle_entry["error"] == "Social media MCP unreachable: timeout"
+
+
+@pytest.mark.asyncio
+async def test_run_writes_cycle_summary_when_graph_raises(marketing_agent, temp_config_files):
+    """Exceptions still produce a cycle-level trajectory record from finally."""
+    app = MagicMock()
+    app.ainvoke = AsyncMock(side_effect=RuntimeError("boom"))
+
+    with (
+        patch.object(marketing_agent, "compile", return_value=app),
+        patch(
+            "holus.agents.marketing.agent.run_preflight_checks",
+            return_value=HealthResult(
+                blocking_ok=True,
+                available_silos=["social-media"],
+                warnings=[],
+            ),
+        ),
+        pytest.raises(RuntimeError, match="boom"),
+    ):
+        await marketing_agent.run()
+
+    trajectory_path = temp_config_files["trajectory_path"]
+    entries = [json.loads(line) for line in trajectory_path.read_text().strip().split("\n") if line]
+
+    cycle_entry = entries[-1]
+    assert cycle_entry["task_type"] == "cycle"
+    assert cycle_entry["status"] == "failure"
+    assert cycle_entry["error"] == "boom"
+    assert cycle_entry["terminal_state"] == "failed"
 
 
 # ---------------------------------------------------------------------------
