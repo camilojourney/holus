@@ -128,3 +128,58 @@ class KPIMetrics(BaseModel):
     cost_per_approved_asset: float | None = None
     active_agents_24h: int
     content_published_7d: int
+
+
+# --- Results / Growth models ---
+
+
+class PlatformStats(BaseModel):
+    followers: int
+    followers_30d_ago: int
+    posts_30d: int
+    impressions_30d: int
+    engagement_rate: float
+    top_content_type: str
+    profile_url: str | None = None
+
+
+class DailyGrowth(BaseModel):
+    date: str
+    total_followers: int
+    posts: int
+    impressions: int
+
+
+class TopPost(BaseModel):
+    id: str
+    title: str
+    platform: str
+    published_at: datetime
+    impressions: int
+    likes: int
+    comments: int
+    shares: int
+    engagement_rate: float
+    content_type: str
+    product: str
+
+
+class PillarStats(BaseModel):
+    count: int
+    avg_engagement_rate: float
+    total_impressions: int
+
+
+class ProductStats(BaseModel):
+    count: int
+    total_impressions: int
+    avg_engagement_rate: float
+
+
+class GrowthResponse(BaseModel):
+    snapshot_date: str
+    platforms: dict[str, PlatformStats]
+    daily_growth: list[DailyGrowth]
+    top_posts: list[TopPost]
+    content_by_pillar: dict[str, PillarStats]
+    content_by_product: dict[str, ProductStats]

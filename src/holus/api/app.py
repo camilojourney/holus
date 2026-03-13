@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from holus.api.routes import agents, content, evaluations, health, knowledge, trajectory
+from holus.api.routes import agents, content, evaluations, health, knowledge, results, trajectory
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -69,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(evaluations.router, prefix=prefix)
     app.include_router(knowledge.router, prefix=prefix)
     app.include_router(health.router, prefix=prefix)
+    app.include_router(results.router, prefix=prefix)
 
     return app
 

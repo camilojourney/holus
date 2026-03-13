@@ -10,6 +10,7 @@ import {
   Target,
   BookOpen,
   Activity,
+  TrendingUp,
   Menu,
   X,
   Sun,
@@ -23,6 +24,7 @@ const nav = [
   { href: '/evaluations', label: 'Evaluations', Icon: Target },
   { href: '/knowledge', label: 'Knowledge', Icon: BookOpen },
   { href: '/health', label: 'Health', Icon: Activity },
+  { href: '/results', label: 'Results', Icon: TrendingUp },
 ];
 
 export default function Sidebar() {

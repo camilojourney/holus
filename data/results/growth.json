@@ -1,0 +1,201 @@
+{
+  "snapshot_date": "2026-03-12",
+  "platforms": {
+    "linkedin": {
+      "followers": 2847,
+      "followers_30d_ago": 2310,
+      "posts_30d": 18,
+      "impressions_30d": 142600,
+      "engagement_rate": 0.058,
+      "top_content_type": "tutorial",
+      "profile_url": "https://linkedin.com/in/camilomartinez"
+    },
+    "instagram": {
+      "followers": 1523,
+      "followers_30d_ago": 1180,
+      "posts_30d": 24,
+      "impressions_30d": 89400,
+      "engagement_rate": 0.042,
+      "top_content_type": "before_after",
+      "profile_url": "https://instagram.com/camilomartinez.ai"
+    },
+    "twitter": {
+      "followers": 891,
+      "followers_30d_ago": 640,
+      "posts_30d": 31,
+      "impressions_30d": 67200,
+      "engagement_rate": 0.031,
+      "top_content_type": "technical_post",
+      "profile_url": "https://twitter.com/camilomartinez"
+    },
+    "tiktok": {
+      "followers": 3210,
+      "followers_30d_ago": 2450,
+      "posts_30d": 12,
+      "impressions_30d": 284000,
+      "engagement_rate": 0.072,
+      "top_content_type": "tutorial",
+      "profile_url": "https://tiktok.com/@camilomartinez.ai"
+    },
+    "threads": {
+      "followers": 412,
+      "followers_30d_ago": 285,
+      "posts_30d": 15,
+      "impressions_30d": 23100,
+      "engagement_rate": 0.038,
+      "top_content_type": "authority",
+      "profile_url": "https://threads.net/@camilomartinez.ai"
+    }
+  },
+  "daily_growth": [
+    {"date": "2026-02-10", "total_followers": 6450, "posts": 3, "impressions": 18200},
+    {"date": "2026-02-11", "total_followers": 6480, "posts": 2, "impressions": 15800},
+    {"date": "2026-02-12", "total_followers": 6520, "posts": 4, "impressions": 22100},
+    {"date": "2026-02-13", "total_followers": 6555, "posts": 3, "impressions": 19400},
+    {"date": "2026-02-14", "total_followers": 6610, "posts": 5, "impressions": 31200},
+    {"date": "2026-02-15", "total_followers": 6680, "posts": 4, "impressions": 26800},
+    {"date": "2026-02-16", "total_followers": 6730, "posts": 2, "impressions": 14500},
+    {"date": "2026-02-17", "total_followers": 6790, "posts": 3, "impressions": 20300},
+    {"date": "2026-02-18", "total_followers": 6840, "posts": 4, "impressions": 24600},
+    {"date": "2026-02-19", "total_followers": 6900, "posts": 3, "impressions": 21900},
+    {"date": "2026-02-20", "total_followers": 6970, "posts": 5, "impressions": 34100},
+    {"date": "2026-02-21", "total_followers": 7060, "posts": 4, "impressions": 28700},
+    {"date": "2026-02-22", "total_followers": 7130, "posts": 3, "impressions": 19800},
+    {"date": "2026-02-23", "total_followers": 7200, "posts": 2, "impressions": 16200},
+    {"date": "2026-02-24", "total_followers": 7290, "posts": 4, "impressions": 27400},
+    {"date": "2026-02-25", "total_followers": 7380, "posts": 3, "impressions": 22800},
+    {"date": "2026-02-26", "total_followers": 7460, "posts": 5, "impressions": 35600},
+    {"date": "2026-02-27", "total_followers": 7550, "posts": 4, "impressions": 29100},
+    {"date": "2026-02-28", "total_followers": 7640, "posts": 3, "impressions": 20400},
+    {"date": "2026-03-01", "total_followers": 7740, "posts": 4, "impressions": 26300},
+    {"date": "2026-03-02", "total_followers": 7830, "posts": 5, "impressions": 33800},
+    {"date": "2026-03-03", "total_followers": 7940, "posts": 3, "impressions": 21600},
+    {"date": "2026-03-04", "total_followers": 8050, "posts": 4, "impressions": 28900},
+    {"date": "2026-03-05", "total_followers": 8160, "posts": 5, "impressions": 36200},
+    {"date": "2026-03-06", "total_followers": 8280, "posts": 4, "impressions": 30100},
+    {"date": "2026-03-07", "total_followers": 8400, "posts": 3, "impressions": 22400},
+    {"date": "2026-03-08", "total_followers": 8510, "posts": 5, "impressions": 34700},
+    {"date": "2026-03-09", "total_followers": 8630, "posts": 4, "impressions": 29300},
+    {"date": "2026-03-10", "total_followers": 8740, "posts": 3, "impressions": 21800},
+    {"date": "2026-03-11", "total_followers": 8810, "posts": 4, "impressions": 27600},
+    {"date": "2026-03-12", "total_followers": 8883, "posts": 3, "impressions": 24500}
+  ],
+  "top_posts": [
+    {
+      "id": "post-001",
+      "title": "How I Built a 32-Agent AI Marketing System",
+      "platform": "linkedin",
+      "published_at": "2026-03-08T14:00:00Z",
+      "impressions": 12400,
+      "likes": 342,
+      "comments": 67,
+      "shares": 89,
+      "engagement_rate": 0.094,
+      "content_type": "authority",
+      "product": "holus"
+    },
+    {
+      "id": "post-002",
+      "title": "ComfyUI Workflow Diff — Before vs After",
+      "platform": "tiktok",
+      "published_at": "2026-03-05T18:30:00Z",
+      "impressions": 48200,
+      "likes": 2810,
+      "comments": 156,
+      "shares": 430,
+      "engagement_rate": 0.071,
+      "content_type": "tutorial",
+      "product": "pilaster"
+    },
+    {
+      "id": "post-003",
+      "title": "AI Video Editing Pipeline — 5 min Raw to Polished",
+      "platform": "tiktok",
+      "published_at": "2026-03-01T16:00:00Z",
+      "impressions": 36800,
+      "likes": 1950,
+      "comments": 98,
+      "shares": 312,
+      "engagement_rate": 0.064,
+      "content_type": "demo",
+      "product": "genpeli"
+    },
+    {
+      "id": "post-004",
+      "title": "Why Every AI Engineer Needs an Agent Observatory",
+      "platform": "linkedin",
+      "published_at": "2026-03-10T10:00:00Z",
+      "impressions": 8900,
+      "likes": 278,
+      "comments": 45,
+      "shares": 62,
+      "engagement_rate": 0.082,
+      "content_type": "authority",
+      "product": "holus"
+    },
+    {
+      "id": "post-005",
+      "title": "Character Consistency in AI Art — LoRA Memory System",
+      "platform": "instagram",
+      "published_at": "2026-03-03T12:00:00Z",
+      "impressions": 15600,
+      "likes": 890,
+      "comments": 72,
+      "shares": 145,
+      "engagement_rate": 0.071,
+      "content_type": "tutorial",
+      "product": "pilaster"
+    },
+    {
+      "id": "post-006",
+      "title": "Audio ML API — Speaker Diarization in 3 Lines of Python",
+      "platform": "twitter",
+      "published_at": "2026-03-07T09:00:00Z",
+      "impressions": 6200,
+      "likes": 180,
+      "comments": 23,
+      "shares": 56,
+      "engagement_rate": 0.042,
+      "content_type": "technical_post",
+      "product": "invoz"
+    },
+    {
+      "id": "post-007",
+      "title": "From 0 to 8K Followers with AI Content — My Strategy",
+      "platform": "linkedin",
+      "published_at": "2026-02-28T11:00:00Z",
+      "impressions": 11200,
+      "likes": 410,
+      "comments": 89,
+      "shares": 76,
+      "engagement_rate": 0.103,
+      "content_type": "authority",
+      "product": "holus"
+    },
+    {
+      "id": "post-008",
+      "title": "Real-time Caption Burning — Word by Word Sync",
+      "platform": "instagram",
+      "published_at": "2026-03-06T15:00:00Z",
+      "impressions": 13400,
+      "likes": 760,
+      "comments": 54,
+      "shares": 128,
+      "engagement_rate": 0.070,
+      "content_type": "before_after",
+      "product": "genpeli"
+    }
+  ],
+  "content_by_pillar": {
+    "authority": {"count": 22, "avg_engagement_rate": 0.081, "total_impressions": 98400},
+    "tutorial": {"count": 28, "avg_engagement_rate": 0.067, "total_impressions": 186200},
+    "entertainment": {"count": 15, "avg_engagement_rate": 0.054, "total_impressions": 72300},
+    "conversion": {"count": 8, "avg_engagement_rate": 0.039, "total_impressions": 31200}
+  },
+  "content_by_product": {
+    "pilaster": {"count": 31, "total_impressions": 168400, "avg_engagement_rate": 0.063},
+    "genpeli": {"count": 22, "total_impressions": 124600, "avg_engagement_rate": 0.059},
+    "invoz": {"count": 12, "total_impressions": 48200, "avg_engagement_rate": 0.041},
+    "holus": {"count": 8, "total_impressions": 47100, "avg_engagement_rate": 0.089}
+  }
+}

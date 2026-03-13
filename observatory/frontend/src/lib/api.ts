@@ -81,3 +81,8 @@ export async function fetchCosts(): Promise<CostBreakdown[]> {
 export function trajectoryStreamUrl(): string {
   return `${API_BASE}/api/v1/trajectory/stream`;
 }
+
+// Results / Growth
+export async function fetchResults(): Promise<import('./types').GrowthData> {
+  return apiFetch<import('./types').GrowthData>('/api/v1/results');
+}
