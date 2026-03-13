@@ -33,7 +33,7 @@ const products = [
   {
     name: 'Genpeli',
     tagline: 'AI video editing pipeline',
-    url: '#',
+    url: 'https://frontend-six-rho-96.vercel.app',
     color: 'text-pink-600 dark:text-pink-400',
   },
 ];
