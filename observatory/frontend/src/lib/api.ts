@@ -1,5 +1,5 @@
 // Typed fetch wrappers for Observatory API (spec 028)
-// All calls go to NEXT_PUBLIC_OBSERVATORY_URL (default: http://localhost:8001)
+// Falls back to demo data when the API is unreachable (e.g. on Vercel deployment)
 
 import type {
   Agent,
@@ -10,10 +10,22 @@ import type {
   ContentItem,
   KnowledgeFile,
   CostBreakdown,
+  GrowthData,
 } from './types';
+import {
+  demoAgents,
+  demoHealth,
+  demoMetrics,
+  demoEvaluations,
+  demoContent,
+  demoKnowledge,
+  demoGrowthData,
+} from './demo-data';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
+
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || !process.env.NEXT_PUBLIC_OBSERVATORY_URL;
 
 async function apiFetch<T>(
   path: string,
@@ -30,24 +42,51 @@ async function apiFetch<T>(
   return res.json() as Promise<T>;
 }
 
-// Health — no cache (always fresh)
+async function withFallback<T>(fetcher: () => Promise<T>, fallback: T): Promise<T> {
+  if (DEMO_MODE) return fallback;
+  try {
+    return await fetcher();
+  } catch {
+    return fallback;
+  }
+}
+
+// Health
 export async function fetchHealth(): Promise<HealthStatus> {
-  return apiFetch<HealthStatus>('/api/v1/health', { revalidate: 0 });
+  return withFallback(
+    () => apiFetch<HealthStatus>('/api/v1/health', { revalidate: 0 }),
+    demoHealth,
+  );
 }
 
 // Agents list
 export async function fetchAgents(): Promise<Agent[]> {
-  return apiFetch<Agent[]>('/api/v1/agents');
+  return withFallback(
+    () => apiFetch<Agent[]>('/api/v1/agents'),
+    demoAgents,
+  );
 }
 
 // Agent detail
 export async function fetchAgent(id: string): Promise<AgentDetail> {
-  return apiFetch<AgentDetail>(`/api/v1/agents/${id}`);
+  const agent = demoAgents.find((a) => a.id === id);
+  const fallback: AgentDetail = {
+    ...(agent ?? demoAgents[0]),
+    cycles: [],
+    recent_scores: [7.2, 8.1, 6.9, 7.8, 8.4],
+  };
+  return withFallback(
+    () => apiFetch<AgentDetail>(`/api/v1/agents/${id}`),
+    fallback,
+  );
 }
 
 // KPI metrics (dashboard)
 export async function fetchMetrics(): Promise<KPIMetrics> {
-  return apiFetch<KPIMetrics>('/api/v1/metrics');
+  return withFallback(
+    () => apiFetch<KPIMetrics>('/api/v1/metrics'),
+    demoMetrics,
+  );
 }
 
 // Evaluations
@@ -59,22 +98,44 @@ export async function fetchEvaluations(params?: {
   if (params?.agent_id) qs.set('agent_id', params.agent_id);
   if (params?.days) qs.set('days', String(params.days));
   const query = qs.toString() ? `?${qs.toString()}` : '';
-  return apiFetch<EvaluationRecord[]>(`/api/v1/evaluations${query}`);
+  let fallback = demoEvaluations;
+  if (params?.agent_id) {
+    fallback = fallback.filter((e) => e.agent_id === params.agent_id);
+  }
+  return withFallback(
+    () => apiFetch<EvaluationRecord[]>(`/api/v1/evaluations${query}`),
+    fallback,
+  );
 }
 
 // Content pipeline
 export async function fetchContent(): Promise<ContentItem[]> {
-  return apiFetch<ContentItem[]>('/api/v1/content');
+  return withFallback(
+    () => apiFetch<ContentItem[]>('/api/v1/content'),
+    demoContent,
+  );
 }
 
 // Knowledge files
 export async function fetchKnowledge(): Promise<KnowledgeFile[]> {
-  return apiFetch<KnowledgeFile[]>('/api/v1/knowledge');
+  return withFallback(
+    () => apiFetch<KnowledgeFile[]>('/api/v1/knowledge'),
+    demoKnowledge,
+  );
 }
 
 // Cost breakdown
 export async function fetchCosts(): Promise<CostBreakdown[]> {
-  return apiFetch<CostBreakdown[]>('/api/v1/costs');
+  return withFallback(
+    () => apiFetch<CostBreakdown[]>('/api/v1/costs'),
+    [
+      { agent_id: 'marketing-strategist', agent_name: 'Marketing Strategist', cost_usd: 1.42, percentage: 37.2 },
+      { agent_id: 'blog-writer', agent_name: 'Blog Writer', cost_usd: 0.89, percentage: 23.3 },
+      { agent_id: 'judge-agent', agent_name: 'Judge Agent', cost_usd: 0.64, percentage: 16.8 },
+      { agent_id: 'seo-researcher', agent_name: 'SEO Researcher', cost_usd: 0.52, percentage: 13.6 },
+      { agent_id: 'hook-architect', agent_name: 'Hook Architect', cost_usd: 0.35, percentage: 9.1 },
+    ],
+  );
 }
 
 // SSE stream URL (used directly by EventSource)
@@ -83,6 +144,14 @@ export function trajectoryStreamUrl(): string {
 }
 
 // Results / Growth
-export async function fetchResults(): Promise<import('./types').GrowthData> {
-  return apiFetch<import('./types').GrowthData>('/api/v1/results');
+export async function fetchResults(): Promise<GrowthData> {
+  return withFallback(
+    () => apiFetch<GrowthData>('/api/v1/results'),
+    demoGrowthData,
+  );
+}
+
+// Is demo mode active?
+export function isDemoMode(): boolean {
+  return DEMO_MODE;
 }

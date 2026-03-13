@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import {
+  Info,
+  BarChart3,
+  UserPlus,
   LayoutDashboard,
   Users,
   FileText,
@@ -18,9 +21,12 @@ import {
 } from 'lucide-react';
 
 const nav = [
+  { href: '/about', label: 'About', Icon: Info },
   { href: '/', label: 'Dashboard', Icon: LayoutDashboard },
   { href: '/agents', label: 'Agents', Icon: Users },
   { href: '/content', label: 'Content', Icon: FileText },
+  { href: '/engagement', label: 'Engagement', Icon: BarChart3 },
+  { href: '/followers', label: 'Followers', Icon: UserPlus },
   { href: '/evaluations', label: 'Evaluations', Icon: Target },
   { href: '/knowledge', label: 'Knowledge', Icon: BookOpen },
   { href: '/health', label: 'Health', Icon: Activity },
