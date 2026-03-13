@@ -47,7 +47,7 @@ export default function QualityHeatmap({ evaluations, agents, days = 30 }: Props
           {dateRange.map((d) => (
             <div
               key={d}
-              className="w-5 text-center"
+              className="w-7 text-center"
               title={d}
               role="columnheader"
             >
