@@ -24,13 +24,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen`}
       >
         <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 min-w-0 overflow-auto">
+          <main className="flex-1 min-w-0 overflow-auto pt-14 md:pt-0">
             {children}
           </main>
         </div>

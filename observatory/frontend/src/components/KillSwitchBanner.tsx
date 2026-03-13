@@ -11,6 +11,8 @@ export default function KillSwitchBanner({ health, compact = false }: Props) {
   if (health.kill_switch_active) {
     return (
       <div
+        role="alert"
+        aria-live="assertive"
         className={`w-full bg-red-600 text-white ${compact ? 'px-4 py-2 text-sm' : 'px-6 py-4 text-base'} flex items-center gap-3`}
       >
         <span className="font-bold uppercase tracking-wide">

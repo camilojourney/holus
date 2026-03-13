@@ -1,0 +1,90 @@
+# UX State — Holus Observatory
+
+**Last updated:** 2026-03-12
+**Overall status:** SCAFFOLDED — 8 pages, 10 components, data fetching wired, SSE connected. Needs polish, testing, and visual refinement.
+
+---
+
+## Current Surfaces
+
+| Surface | State | Tech | Location |
+|---------|-------|------|----------|
+| Dashboard (`/`) | Functional | Next.js 16 RSC + Tremor | `observatory/frontend/src/app/page.tsx` |
+| Agents grid (`/agents`) | Functional | Next.js RSC | `src/app/agents/page.tsx` |
+| Agent detail (`/agents/[id]`) | Functional | Next.js RSC + Recharts | `src/app/agents/[id]/page.tsx` |
+| Content pipeline (`/content`) | Functional | Next.js RSC | `src/app/content/page.tsx` |
+| Evaluations (`/evaluations`) | Functional | Next.js RSC + CSS Grid | `src/app/evaluations/page.tsx` |
+| Knowledge (`/knowledge`) | Functional | Next.js RSC | `src/app/knowledge/page.tsx` |
+| Health (`/health`) | Functional | Next.js RSC | `src/app/health/page.tsx` |
+| Observatory API | Implemented | FastAPI + SSE | `src/holus/api/` (12 endpoints) |
+
+---
+
+## Component Inventory
+
+| Component | State | Issues |
+|-----------|-------|--------|
+| `Sidebar` | Working | Unicode icons (▦ ◈ ◰ ◎ ◻ ◉) — no proper icon library. No mobile hamburger menu. Fixed 224px width, not collapsible. |
+| `KPICard` | Working | Custom implementation, not using Tremor's `Card` component. No sparkline or trend indicator. |
+| `AgentCard` | Working | Shows agent status, model, role. Links to detail page. |
+| `TrajectoryTimeline` | Working (SSE) | Client component with EventSource hook. Caps at 100 events. No reconnection indicator visible to user. |
+| `QualityHeatmap` | Working | CSS grid, 32 agents × 30 days. Color scale red/yellow/green. Tooltip on hover. |
+| `ContentKanban` | Working | Three-column DRAFT/REVIEW/PUBLISHED. Pillar badges. |
+| `FreshnessIndicator` | Working | Colored dot with tooltip. Green <7d, yellow 7-30d, red >30d. |
+| `KillSwitchBanner` | Working | Full-width red/green banner. Compact mode for dashboard header. |
+| `ErrorBanner` | Working | Generic error message display. |
+| `SystemHealthGrid` | Working | Service status cards with color-coded states. |
+
+---
+
+## Known UX Issues
+
+| Severity | Surface | Issue |
+|----------|---------|-------|
+| P0 | Sidebar | No mobile responsive layout — sidebar is fixed 224px, no hamburger menu. Pages unusable on 375px. |
+| P0 | All pages | No loading states — server components show nothing while fetching, then pop in. No skeleton screens. |
+| P1 | Dashboard | KPI cards are custom divs, not using Tremor's pre-built `Card`/`Metric` components. Missing trend arrows and sparklines. |
+| P1 | Dashboard | No cost breakdown pie chart (spec calls for Tremor DonutChart). |
+| P1 | Dashboard | No trajectory sparkline chart (spec calls for 7-day Tremor AreaChart). |
+| P1 | Agent detail | Performance chart may not use Tremor's LineChart. Capability breakdown bar chart not confirmed. |
+| P1 | Sidebar | Unicode character icons instead of proper icon library (Lucide, Heroicons). Looks unprofessional for portfolio demo. |
+| P1 | All pages | Dark mode depends on system preference — no manual toggle visible in UI. |
+| P2 | Content | Calendar view (next 14 days) not confirmed implemented. Spec calls for it. |
+| P2 | Content | Platform distribution donut chart and pillar balance bar chart not confirmed. |
+| P2 | Evaluations | Per-evaluator score distributions (violin/box plot) not confirmed. |
+| P2 | TrajectoryTimeline | No visible connection status indicator (Connected/Disconnected/Retrying). |
+| P2 | General | No favicon or Open Graph meta tags for when links are shared. |
+| P3 | General | No empty state designs for "no data" scenarios beyond basic text fallbacks. |
+| P3 | Sidebar | Footer says "Read-only · Internal" — fine but could show API connection status. |
+
+---
+
+## What's Working Well
+
+- **Data flow is solid**: RSC fetches via `lib/api.ts` with typed responses and `Promise.allSettled` for graceful degradation.
+- **SSE is wired**: TrajectoryTimeline connects to the Observatory API's SSE endpoint and renders real-time events.
+- **Error handling**: Pages degrade gracefully when API is unreachable (ErrorBanner, null checks).
+- **Dark mode foundation**: Tailwind `dark:` classes applied throughout. Color scheme is consistent.
+- **Layout structure**: Sidebar + main content area pattern is clean.
+
+---
+
+## Pending UX Work (from spec 029 acceptance criteria)
+
+- [ ] Responsive layout at 375px viewport (currently broken — sidebar blocks content)
+- [ ] Skeleton loading states for all server-fetched pages
+- [ ] Tremor KPI cards with sparklines replacing custom KPICard
+- [ ] Cost breakdown DonutChart on dashboard
+- [ ] Trajectory sparkline AreaChart (7-day) on dashboard
+- [ ] Agent detail LineChart for quality scores over 30 runs
+- [ ] Content calendar view (14-day)
+- [ ] Dark mode toggle (not just system preference)
+- [ ] `pnpm build` completes without TypeScript errors
+- [ ] `just dev-observatory` starts both API and frontend
+- [ ] Proper icon library replacing Unicode characters
+
+---
+
+## Last Audit
+
+No formal UX audit has been run. No axe-core accessibility scan. No Lighthouse performance test. No screenshot baseline captured.
