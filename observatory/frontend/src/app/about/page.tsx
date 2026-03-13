@@ -170,7 +170,7 @@ export default function AboutPage() {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+              className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 transition-colors"
             >
               <h3 className={`font-semibold ${color}`}>{name}</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{tagline}</p>
@@ -217,7 +217,7 @@ export default function AboutPage() {
             <Link
               key={href}
               href={href}
-              className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+              className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 transition-colors"
             >
               <h3 className="font-medium text-sm text-gray-900 dark:text-white">{label}</h3>
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{desc}</p>
@@ -238,13 +238,13 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <a href="https://camilomartinez.co" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <a href="https://camilomartinez.co" target="_blank" rel="noopener noreferrer" aria-label="Personal website" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <Globe size={18} />
             </a>
-            <a href="https://linkedin.com/in/camilomartinez-ai" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <a href="https://linkedin.com/in/camilomartinez-ai" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <Linkedin size={18} />
             </a>
-            <a href="https://github.com/camilojourney" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <a href="https://github.com/camilojourney" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <Github size={18} />
             </a>
           </div>

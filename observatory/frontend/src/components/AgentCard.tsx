@@ -17,7 +17,7 @@ interface Props {
 export default function AgentCard({ agent }: Props) {
   return (
     <Link href={`/agents/${agent.id}`}>
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-pointer">
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-gray-950">
         <div className="flex items-start justify-between mb-3">
           <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
             {agent.name}

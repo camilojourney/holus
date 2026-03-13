@@ -15,7 +15,7 @@ const colorMap = {
 
 export default function KPICard({ title, value, subtitle, color = 'default' }: Props) {
   return (
-    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950 hover:shadow-sm transition-shadow">
       <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
         {title}
       </p>

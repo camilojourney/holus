@@ -6,21 +6,22 @@ import { generateEngagementData, type EngagementDataPoint } from '@/lib/demo-dat
 const PLATFORMS = ['all', 'linkedin', 'instagram', 'twitter', 'threads', 'tiktok'] as const;
 type Platform = typeof PLATFORMS[number];
 
-const platformColors: Record<string, string> = {
-  linkedin: '#2563eb',
-  instagram: '#ec4899',
-  twitter: '#0ea5e9',
-  threads: '#6b7280',
-  tiktok: '#111827',
+const platformColors: Record<string, { light: string; dark: string }> = {
+  linkedin: { light: '#2563eb', dark: '#60a5fa' },
+  instagram: { light: '#ec4899', dark: '#f472b6' },
+  twitter: { light: '#0ea5e9', dark: '#38bdf8' },
+  threads: { light: '#6b7280', dark: '#9ca3af' },
+  tiktok: { light: '#111827', dark: '#e5e7eb' },
 };
 
-const platformDarkColors: Record<string, string> = {
-  linkedin: '#60a5fa',
-  instagram: '#f472b6',
-  twitter: '#38bdf8',
-  threads: '#9ca3af',
-  tiktok: '#e5e7eb',
-};
+function getPlatformColor(platform: string): string {
+  const colors = platformColors[platform];
+  if (!colors) return '#6366f1';
+  if (typeof window !== 'undefined' && document.documentElement.classList.contains('dark')) {
+    return colors.dark;
+  }
+  return colors.light;
+}
 
 const platformBadgeClass: Record<string, string> = {
   linkedin: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400',
@@ -120,7 +121,7 @@ export default function EngagementPage() {
     return d[metric];
   });
 
-  const chartColor = platform === 'all' ? '#6366f1' : platformColors[platform] ?? '#6366f1';
+  const chartColor = platform === 'all' ? '#6366f1' : getPlatformColor(platform);
 
   return (
     <div className="px-6 py-6 space-y-6">
@@ -133,12 +134,14 @@ export default function EngagementPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <div className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1">
+        <div role="radiogroup" aria-label="Filter by platform" className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1">
           {PLATFORMS.map((p) => (
             <button
               key={p}
+              role="radio"
+              aria-checked={platform === p}
               onClick={() => setPlatform(p)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
+              className={`px-3 py-2 rounded-md text-xs font-medium capitalize transition-colors ${
                 platform === p
                   ? 'bg-indigo-600 text-white'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
@@ -148,12 +151,14 @@ export default function EngagementPage() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1">
+        <div role="radiogroup" aria-label="Filter by metric" className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1">
           {(['impressions', 'likes', 'comments', 'shares', 'engagement_rate'] as const).map((m) => (
             <button
               key={m}
+              role="radio"
+              aria-checked={metric === m}
               onClick={() => setMetric(m)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
+              className={`px-3 py-2 rounded-md text-xs font-medium capitalize transition-colors ${
                 metric === m
                   ? 'bg-indigo-600 text-white'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
@@ -190,7 +195,7 @@ export default function EngagementPage() {
           </h2>
         </div>
         <MiniChart data={chartValues} color={chartColor} />
-        <div className="flex justify-between mt-2 text-[10px] text-gray-400 dark:text-gray-600">
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
           <span>{dailyAgg[0]?.date.slice(5)}</span>
           <span>{dailyAgg[dailyAgg.length - 1]?.date.slice(5)}</span>
         </div>
@@ -225,7 +230,7 @@ export default function EngagementPage() {
                   return (
                     <tr key={name} className="border-b border-gray-50 dark:border-gray-900 last:border-0">
                       <td className="px-5 py-3">
-                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded capitalize ${platformBadgeClass[name] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded capitalize ${platformBadgeClass[name] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
                           {name}
                         </span>
                       </td>

@@ -41,14 +41,15 @@ export default function QualityHeatmap({ evaluations, agents, days = 30 }: Props
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-max">
+      <div className="min-w-max" role="grid" aria-label="Agent quality scores heatmap">
         {/* Header row: dates */}
-        <div className="flex items-center gap-1 mb-2 pl-32">
+        <div className="flex items-center gap-1 mb-2 pl-32" role="row">
           {dateRange.map((d) => (
             <div
               key={d}
               className="w-5 text-center"
               title={d}
+              role="columnheader"
             >
               <span className="text-xs text-gray-400 dark:text-gray-600 rotate-90 inline-block">
                 {d.slice(5)}
@@ -58,8 +59,8 @@ export default function QualityHeatmap({ evaluations, agents, days = 30 }: Props
         </div>
         {/* Rows: agents */}
         {agents.map((agentId) => (
-          <div key={agentId} className="flex items-center gap-1 mb-1">
-            <div className="w-32 shrink-0 text-xs text-gray-600 dark:text-gray-400 truncate pr-2 text-right">
+          <div key={agentId} className="flex items-center gap-1 mb-1" role="row">
+            <div className="w-32 shrink-0 text-xs text-gray-600 dark:text-gray-400 truncate pr-2 text-right" role="rowheader">
               {agentId}
             </div>
             {dateRange.map((d) => {
@@ -67,7 +68,9 @@ export default function QualityHeatmap({ evaluations, agents, days = 30 }: Props
               return (
                 <div
                   key={d}
-                  className={`w-5 h-5 rounded-sm ${scoreColor(score)}`}
+                  role="gridcell"
+                  aria-label={score !== undefined ? `${agentId} ${d}: score ${score}` : `${agentId} ${d}: no data`}
+                  className={`w-7 h-7 rounded-sm cursor-pointer ${scoreColor(score)}`}
                   title={score !== undefined ? `${agentId} ${d}: ${score}` : `${agentId} ${d}: no data`}
                 />
               );

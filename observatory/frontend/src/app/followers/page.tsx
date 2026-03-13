@@ -132,12 +132,14 @@ export default function FollowersPage() {
       </div>
 
       {/* Platform filter */}
-      <div className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1 w-fit">
+      <div role="radiogroup" aria-label="Filter by platform" className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1 w-fit">
         {PLATFORMS.map((p) => (
           <button
             key={p}
+            role="radio"
+            aria-checked={platform === p}
             onClick={() => setPlatform(p)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
+            className={`px-3 py-2 rounded-md text-xs font-medium capitalize transition-colors ${
               platform === p
                 ? 'bg-indigo-600 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
@@ -189,7 +191,7 @@ export default function FollowersPage() {
           </div>
         </div>
         <GrowthLine data={dailyFollowers.map((d) => d.followers)} color={chartColor} />
-        <div className="flex justify-between mt-2 text-[10px] text-gray-400 dark:text-gray-600">
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
           <span>{dailyFollowers[0]?.date.slice(5)}</span>
           <span>{dailyFollowers[dailyFollowers.length - 1]?.date.slice(5)}</span>
         </div>
@@ -197,9 +199,21 @@ export default function FollowersPage() {
 
       {/* Daily net change bar chart */}
       <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-          Daily Net Change
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Daily Net Change
+          </h2>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-green-500 opacity-70" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Gained</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-red-500 opacity-70" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Lost</span>
+            </div>
+          </div>
+        </div>
         <div className="flex items-end gap-[2px] h-20">
           {dailyFollowers.map((d) => {
             const maxAbs = Math.max(...dailyFollowers.map((dd) => Math.abs(dd.net_change))) || 1;
@@ -208,10 +222,9 @@ export default function FollowersPage() {
             return (
               <div
                 key={d.date}
-                className="flex-1 rounded-sm"
+                className={`flex-1 rounded-sm ${isPositive ? 'bg-green-500' : 'bg-red-500'}`}
                 style={{
                   height: `${height}px`,
-                  backgroundColor: isPositive ? '#22c55e' : '#ef4444',
                   opacity: 0.7,
                   alignSelf: 'flex-end',
                 }}
@@ -220,7 +233,7 @@ export default function FollowersPage() {
             );
           })}
         </div>
-        <div className="flex justify-between mt-2 text-[10px] text-gray-400 dark:text-gray-600">
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
           <span>{dailyFollowers[0]?.date.slice(5)}</span>
           <span>{dailyFollowers[dailyFollowers.length - 1]?.date.slice(5)}</span>
         </div>
@@ -251,7 +264,7 @@ export default function FollowersPage() {
                 .map((s) => (
                   <tr key={s.platform} className="border-b border-gray-50 dark:border-gray-900 last:border-0">
                     <td className="px-5 py-3">
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded capitalize ${platformBadgeClass[s.platform] ?? ''}`}>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded capitalize ${platformBadgeClass[s.platform] ?? ''}`}>
                         {s.platform}
                       </span>
                     </td>
