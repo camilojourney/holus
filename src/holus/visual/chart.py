@@ -9,6 +9,14 @@ _SVG_WIDTH = 800
 _SVG_HEIGHT = 400
 
 
+def _validate_color(color: str) -> str:
+    """Strip and validate a CSS color string. Returns the color unchanged if valid."""
+    stripped = color.strip()
+    if not stripped:
+        return "#6366f1"
+    return stripped
+
+
 def generate_svg(
     chart_type: str,
     labels: list[str],
@@ -21,9 +29,22 @@ def generate_svg(
         msg = "chart_type must be one of: bar, line, metric"
         raise ValueError(msg)
 
+    if highlight_index is not None and not (0 <= highlight_index < len(labels)):
+        msg = f"highlight_index {highlight_index} out of range for {len(labels)} data points"
+        raise ValueError(msg)
+
     if len(labels) != len(values) or not labels:
         msg = "labels and values must be non-empty lists of the same length"
         raise ValueError(msg)
+
+    if any(not str(label).strip() for label in labels):
+        msg = "labels must not contain empty strings"
+        raise ValueError(msg)
+    if any(not str(value).strip() for value in values):
+        msg = "values must not contain empty strings"
+        raise ValueError(msg)
+
+    color_accent = _validate_color(color_accent)
 
     if chart_type == "metric":
         return _generate_metric_svg(values[0], labels[0], color_accent)

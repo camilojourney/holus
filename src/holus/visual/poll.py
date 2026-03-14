@@ -13,17 +13,30 @@ _BARS_TOP = 186
 _BARS_BOTTOM = 452
 
 
+def _validate_color(color: str) -> str:
+    stripped = color.strip()
+    return stripped if stripped else "#6366f1"
+
+
 def generate_poll_svg(
     question: str,
     options: list[str],
     color_accent: str = "#6366f1",
 ) -> str:
     """Generate an SVG poll graphic (800x500 viewBox)."""
+    if not question or not question.strip():
+        msg = "question must be a non-empty string"
+        raise ValueError(msg)
+
     if not 2 <= len(options) <= 4:
         msg = "options must contain between 2 and 4 items"
         raise ValueError(msg)
 
-    safe_color = escape(color_accent)
+    if any(not str(option).strip() for option in options):
+        msg = "poll options must not contain empty strings"
+        raise ValueError(msg)
+
+    safe_color = escape(_validate_color(color_accent))
     safe_options = [escape(option) for option in options]
     question_lines = _wrap_text(question, max_chars=26)
     question_y = 88 - ((len(question_lines) - 1) * 20)

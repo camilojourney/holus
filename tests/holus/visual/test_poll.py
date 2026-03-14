@@ -41,6 +41,42 @@ def test_poll_svg_too_many_options_raises() -> None:
         generate_poll_svg("Q?", ["A", "B", "C", "D", "E"])
 
 
+def test_empty_question_raises() -> None:
+    with pytest.raises(ValueError):
+        generate_poll_svg("", ["A", "B"])
+
+
+def test_whitespace_question_raises() -> None:
+    with pytest.raises(ValueError):
+        generate_poll_svg("   ", ["A", "B"])
+
+
+def test_empty_option_raises() -> None:
+    with pytest.raises(ValueError):
+        generate_poll_svg("Q?", ["A", ""])
+
+
+def test_unicode_question_ok() -> None:
+    svg = generate_poll_svg("¿Cuál es tu herramienta favorita?", ["Claude", "GPT"])
+
+    assert svg.startswith("<svg")
+
+
+def test_long_question_wraps() -> None:
+    svg = generate_poll_svg(
+        "This is a very long question that should wrap across multiple lines",
+        ["A", "B"],
+    )
+
+    assert svg.startswith("<svg")
+
+
+def test_empty_color_uses_default() -> None:
+    svg = generate_poll_svg("Q?", ["A", "B"], color_accent="")
+
+    assert svg.startswith("<svg")
+
+
 def test_poll_to_spec_returns_render_spec() -> None:
     spec = poll_to_spec({"question": "Q?", "options": ["A", "B"]})
 
