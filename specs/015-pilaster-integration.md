@@ -102,7 +102,55 @@ MCP server configuration for Holus (in `.claude/settings.json`):
 }
 ```
 
-### SPEC-002: Marketing Agent Integration
+### SPEC-002: Structured Prompt Recipe Format
+
+When calling Pilaster's `generate_image` tool, agents MUST send a structured recipe —
+never a flat prompt string. The recipe decomposes image intent into the same dimensions
+that ComfyUI nodes control, making it work identically across all backends (DALL-E, Imagen,
+Fal, Gemini, ComfyUI).
+
+**Recipe fields:**
+
+| Field | Maps to (ComfyUI) | Purpose | Example |
+|-------|-------------------|---------|---------|
+| `subject` | CLIPTextEncode (positive) | What's in the image | "a monitoring dashboard with agent status grid" |
+| `style` | Checkpoint + LoRA | Visual aesthetic | "dark UI, glassmorphism, cyan/purple accents" |
+| `composition` | ControlNet / IPAdapter | Layout and framing | "screenshot-style, centered, 16:9" |
+| `lighting` | KSampler (cfg_scale) | Mood and atmosphere | "dark background, glowing elements" |
+| `quality` | KSampler (steps) | Detail and rendering | "clean vector rendering, sharp edges" |
+| `negative` | CLIPTextEncode (negative) | What to avoid | "no photos, no watermarks, no blur" |
+| `dimensions` | EmptyLatentImage | Width × height | `{ "width": 1792, "height": 1024 }` |
+
+**Example MCP call from Holus:**
+
+```python
+result = await self.call_mcp(
+    "pilaster",
+    "generate_image",
+    backend="dalle3",  # or "imagen3", "fal", "comfyui"
+    recipe={
+        "subject": "a multi-agent orchestration system with Redis event bus",
+        "style": "dark technical diagram, neon connection lines, minimal",
+        "composition": "wide landscape, system architecture layout",
+        "lighting": "dark background, glowing nodes and edges",
+        "quality": "clean vector style, professional, portfolio-grade",
+        "negative": "no stock photos, no people, no 3D renders",
+    },
+    dimensions={"width": 1792, "height": 1024},
+)
+```
+
+Pilaster assembles the recipe into a single prompt for prompt-based backends (DALL-E,
+Imagen, Fal, Gemini) or maps fields to nodes for ComfyUI. The agent never needs to
+know which backend is handling the request.
+
+**Why structured > flat prompts:**
+- **Iterate one dimension** without rewriting everything (change style, keep subject)
+- **Memory engine** tracks failures at the field level ("this style failed 3 times")
+- **Cross-backend** — same recipe, swap backend, compare results
+- **Agent-friendly** — maps directly to content strategy decisions
+
+### SPEC-003: Marketing Agent Integration
 
 | Field | Value |
 |-------|-------|

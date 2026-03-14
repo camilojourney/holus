@@ -168,12 +168,21 @@ Users never see nodes. They pick a character, a template, and generate.
 
 **What Holus calls:**
 ```python
-pilaster.generate(character: str, template: str, prompt: str) → ImageResult
+pilaster.generate_image(backend: str, recipe: StructuredRecipe) → ImageResult
 pilaster.get_characters() → List[Character]
 pilaster.get_templates(style: str) → List[Template]
 pilaster.query_experiments(query: str, outcome: str) → List[Experiment]
 pilaster.get_successful_prompts(style: str) → List[Prompt]
 ```
+
+**Structured prompt recipes:** Holus never sends flat prompt strings to Pilaster.
+Instead, it sends a structured recipe that decomposes image intent into independent
+dimensions: `subject`, `style`, `composition`, `lighting`, `quality`, `negative`.
+This maps to ComfyUI nodes but works identically across all prompt-based backends
+(DALL-E 3, Imagen 3, Fal.ai, Gemini). Pilaster assembles the recipe into whatever
+format the backend needs. See [Spec 015](specs/015-pilaster-integration.md) for the
+full recipe format and examples.
+
 **Data stays in:** pilaster's Supabase + Cloudflare R2.
 **Backends are swappable.** The memory, characters, and templates are the product.
 
