@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from holus.visual.chart import generate_svg
 from holus.visual.models import CarouselSpec, OutputFormat, RenderSpec, SlideSpec
 
 
@@ -53,22 +54,21 @@ def data_viz_to_spec(
     # Flatten data_points into template-friendly parallel lists
     labels = [str(dp.get("label", "")) for dp in data_points]
     values = [str(dp.get("value", 0)) for dp in data_points]
+    highlight_index = visualizer_output.get("highlight_index")
+    color = str(visualizer_output.get("color_scheme") or "#6366f1")
+    svg_str = generate_svg(
+        chart_type=str(visualizer_output["chart_type"]),
+        labels=labels,
+        values=values,
+        highlight_index=int(highlight_index) if highlight_index is not None else None,
+        color_accent=color,
+    )
 
     variables: dict[str, str | int | float | bool | list[str]] = {
-        "chart_type": str(visualizer_output["chart_type"]),
         "title": str(visualizer_output["title"]),
-        "labels": labels,
-        "values": values,
+        "svg_content": svg_str,
         "source_label": str(visualizer_output.get("source_label", "")),
     }
-
-    highlight_index = visualizer_output.get("highlight_index")
-    if highlight_index is not None:
-        variables["highlight_index"] = int(highlight_index)
-
-    color_scheme = visualizer_output.get("color_scheme")
-    if color_scheme is not None:
-        variables["color_scheme"] = str(color_scheme)
 
     return RenderSpec(
         template="single_image/data_viz",

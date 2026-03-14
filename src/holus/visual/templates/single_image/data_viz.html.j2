@@ -1,0 +1,87 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+<style>
+  body {
+    margin: 0;
+    font-family: "Inter", var(--brand-font-primary), sans-serif;
+    background:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--brand-color-primary) 22%, transparent), transparent 34%),
+      linear-gradient(180deg, #020617 0%, #0f172a 100%);
+  }
+
+  .data-viz-shell {
+    width: var(--brand-image-width);
+    height: var(--brand-image-height);
+    padding: var(--brand-spacing-margin);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background:
+      linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .data-viz-shell::before {
+    content: "";
+    position: absolute;
+    inset: 24px;
+    border-radius: 36px;
+    border: 1px solid color-mix(in srgb, var(--brand-color-primary) 28%, #1e293b);
+    pointer-events: none;
+  }
+
+  .data-viz-title {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    max-width: 820px;
+    font-size: 72px;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: #f8fafc;
+  }
+
+  .data-viz-stage {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0;
+  }
+
+  .data-viz-stage svg {
+    width: 100%;
+    max-width: 880px;
+    height: auto;
+    filter: drop-shadow(0 24px 60px rgba(15, 23, 42, 0.45));
+  }
+
+  .data-viz-source {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="data-viz-shell">
+  <h1 class="data-viz-title">{{ title }}</h1>
+
+  <div class="data-viz-stage">
+    {{ svg_content | safe }}
+  </div>
+
+  {% if source_label %}
+  <p class="data-viz-source">{{ source_label }}</p>
+  {% endif %}
+</div>
+{% endblock %}
