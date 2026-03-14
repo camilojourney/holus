@@ -100,10 +100,16 @@ class HolusConfig(BaseSettings):
     config_dir: Path = Field(default=Path("config"))
     data_dir: Path = Field(default=Path("data"))
 
-    # ---- Model identifiers -------------------------------------------------
-    opus_model: str = "claude-opus-4-20250514"
-    sonnet_model: str = "claude-sonnet-4-5-20250514"
-    haiku_model: str = "claude-haiku-3-5-20241022"
+    # ---- Model identifiers (defaults match config/models.yaml) -------------
+    opus_model: str = "claude-opus-4-6"
+    sonnet_model: str = "claude-sonnet-4-6"
+    haiku_model: str = "claude-haiku-4-5-20251001"
+
+    # ---- Proxy configuration ------------------------------------------------
+    anthropic_base_url: str = Field(
+        default="http://localhost:8080",
+        alias="ANTHROPIC_BASE_URL",
+    )
 
     # ---- Sub-configs (populated by load) -----------------------------------
     agents: dict[str, AgentConfig] = Field(default_factory=dict)
@@ -126,6 +132,23 @@ class HolusConfig(BaseSettings):
         """
         config_dir = Path("config")
         merged: dict[str, Any] = {}
+
+        # -- Layer 0: models registry ----------------------------------------
+        models_path = config_dir / "models.yaml"
+        if models_path.exists():
+            with open(models_path) as fh:
+                models_data = yaml.safe_load(fh)
+            if models_data:
+                tiers = models_data.get("tiers", {})
+                if "strategic" in tiers:
+                    merged["opus_model"] = tiers["strategic"]["model"]
+                if "operational" in tiers:
+                    merged["sonnet_model"] = tiers["operational"]["model"]
+                if "classification" in tiers:
+                    merged["haiku_model"] = tiers["classification"]["model"]
+                proxy = models_data.get("proxy", {})
+                if "anthropic_base_url" in proxy:
+                    merged["anthropic_base_url"] = proxy["anthropic_base_url"]
 
         # -- Layer 1: base defaults -----------------------------------------
         base_path = config_dir / "base.yaml"

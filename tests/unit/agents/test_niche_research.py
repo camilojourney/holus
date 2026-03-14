@@ -118,6 +118,7 @@ def _make_agent(
 
     mock_config = MagicMock()
     mock_config.anthropic_api_key = api_key
+    mock_config.anthropic_base_url = ""
     mock_config.redis_url = "redis://localhost:6379"
     mock_config.mem0_api_url = "http://localhost:8080"
     mock_config.langfuse_host = "http://localhost:3001"

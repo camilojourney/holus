@@ -7,6 +7,7 @@ into the HTML ``<head>``.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -63,6 +64,7 @@ class TemplateEngine:
         """
         template_path = f"{template_name}.html.j2"
         template = self._env.get_template(template_path)
+        normalized_variables = self._normalize_variables(template_name, variables)
 
         brand = self._brand_loader.load()
         brand_css = brand.to_css_variables()
@@ -72,7 +74,9 @@ class TemplateEngine:
         # Determine which supplementary CSS to load based on template path
         supplementary_css = ""
         if template_name.startswith("carousel/"):
-            supplementary_css = self._load_style("slide.css") + "\n" + self._load_style("carousel.css")
+            supplementary_css = (
+                self._load_style("slide.css") + "\n" + self._load_style("carousel.css")
+            )
         elif template_name.startswith("single_image/"):
             supplementary_css = self._load_style("single.css")
 
@@ -80,10 +84,11 @@ class TemplateEngine:
             "brand_css": brand_css,
             "base_css": base_css,
             "supplementary_css": supplementary_css,
-            **(variables or {}),
+            **normalized_variables,
         }
 
-        return template.render(context)
+        html = template.render(context)
+        return self._post_process_html(template_name, html, normalized_variables)
 
     def _load_style(self, filename: str) -> str:
         """Load a CSS file from the styles directory, returning empty string if missing."""
@@ -109,3 +114,77 @@ class TemplateEngine:
             name = str(relative).removesuffix(".css")
             styles.append(name)
         return sorted(styles)
+
+    def _normalize_variables(
+        self,
+        template_name: str,
+        variables: dict[str, str | int | float | bool | list[str]] | None,
+    ) -> dict[str, str | int | float | bool | list[str]]:
+        normalized_variables = dict(variables or {})
+
+        if template_name == "carousel/body_slide":
+            if "body" not in normalized_variables and "body_text" in normalized_variables:
+                normalized_variables["body"] = normalized_variables["body_text"]
+            if "bullet_points" not in normalized_variables and "bullets" in normalized_variables:
+                normalized_variables["bullet_points"] = normalized_variables["bullets"]
+
+        return normalized_variables
+
+    def _post_process_html(
+        self,
+        template_name: str,
+        html: str,
+        variables: dict[str, str | int | float | bool | list[str]],
+    ) -> str:
+        if template_name in {"carousel/body_slide", "carousel/summary_slide"}:
+            html = self._append_class(html, "slide-title", "slide-headline")
+
+        if template_name.startswith("carousel/"):
+            slide_number = self._coerce_positive_int(variables.get("slide_number"), default=1)
+            total_slides = self._coerce_positive_int(variables.get("total_slides"), default=1)
+            html = self._inject_slide_progress(
+                html, slide_number=slide_number, total_slides=total_slides
+            )
+
+        return html
+
+    def _append_class(self, html: str, existing_class: str, added_class: str) -> str:
+        pattern = re.compile(rf'class="([^"]*\b{re.escape(existing_class)}\b[^"]*)"')
+
+        def replace(match: re.Match[str]) -> str:
+            classes = match.group(1).split()
+            if added_class not in classes:
+                classes.append(added_class)
+            return f'class="{" ".join(classes)}"'
+
+        return pattern.sub(replace, html, count=1)
+
+    def _inject_slide_progress(self, html: str, slide_number: int, total_slides: int) -> str:
+        if 'class="slide-progress"' in html:
+            return html
+
+        current_slide = min(max(slide_number, 1), total_slides)
+        dots = []
+        for index in range(1, total_slides + 1):
+            classes = (
+                "slide-progress-dot is-active" if index == current_slide else "slide-progress-dot"
+            )
+            dots.append(f'<span class="{classes}"></span>')
+
+        progress_html = f'<span class="slide-progress" aria-hidden="true">{"".join(dots)}</span>'
+        return html.replace(
+            '<span class="slide-counter">',
+            f'{progress_html}\n    <span class="slide-counter">',
+            1,
+        )
+
+    def _coerce_positive_int(
+        self,
+        value: str | int | float | bool | list[str] | None,
+        *,
+        default: int,
+    ) -> int:
+        try:
+            return max(int(value), 1)
+        except (TypeError, ValueError):
+            return default

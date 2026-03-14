@@ -54,13 +54,37 @@ def main() -> None:
     kill_parser.add_argument("--scope", required=True, help="Kill switch scope")
     kill_parser.add_argument("--reason", required=True, help="Reason for kill")
 
+    # -- idea -----------------------------------------------------------------
+    idea_parser = subparsers.add_parser(
+        "idea",
+        help="Generate content from a raw idea (multi-format, scheduled)",
+    )
+    idea_parser.add_argument(
+        "raw_idea",
+        nargs="?",
+        default=None,
+        help="The raw idea to turn into content (quote it)",
+    )
+    idea_parser.add_argument(
+        "--idea",
+        dest="idea_flag",
+        default=None,
+        help="Alternative: --idea 'your idea here'",
+    )
+
     # -- unkill ---------------------------------------------------------------
     unkill_parser = subparsers.add_parser("unkill", help="Deactivate kill switch")
     unkill_parser.add_argument("--scope", required=True, help="Kill switch scope")
 
     args = parser.parse_args()
 
-    if args.command == "run":
+    if args.command == "idea":
+        raw = args.raw_idea or args.idea_flag
+        if not raw:
+            idea_parser.print_help()
+            sys.exit(1)
+        _run_idea(raw)
+    elif args.command == "run":
         _run_agent(args.agent, once=args.once)
     elif args.command == "status":
         _show_status()
@@ -76,6 +100,13 @@ def main() -> None:
 
 
 # -- Commands -----------------------------------------------------------------
+
+
+def _run_idea(raw_idea: str) -> None:
+    """Run the idea-injection pipeline: Opus plans formats, Sonnet generates each."""
+    from holus.agents.marketing.idea_runner import run_from_idea
+
+    run_from_idea(raw_idea)
 
 
 def _run_agent(agent_name: str, *, once: bool = False) -> None:

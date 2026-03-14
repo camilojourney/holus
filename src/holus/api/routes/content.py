@@ -1,19 +1,25 @@
-"""Content pipeline routes — GET /api/v1/content."""
+"""Content pipeline routes — GET/PATCH /api/v1/content."""
 
 from __future__ import annotations
 
+import contextlib
+import json
 import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import yaml
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
 from holus.api.models import (
+    AgentTraceStep,
     CalendarDay,
     ContentCalendarResponse,
+    ContentDetail,
     ContentItem,
+    ContentPatchRequest,
+    ContentQuality,
     ContentResponse,
     ContentStatusCounts,
 )
@@ -26,81 +32,128 @@ REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
 CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
 
 
-def _load_content_items() -> list[ContentItem]:
-    """Read all YAML files in data/content-queue/ and return ContentItems."""
+def _load_raw_files() -> list[tuple[Path, dict]]:
+    """Load all YAML and JSON files from data/content-queue/."""
     if not CONTENT_QUEUE_DIR.exists():
         return []
 
-    items: list[ContentItem] = []
-    for yaml_file in sorted(CONTENT_QUEUE_DIR.glob("*.yaml")):
+    results: list[tuple[Path, dict]] = []
+    for path in sorted(CONTENT_QUEUE_DIR.iterdir()):
+        if path.suffix not in (".yaml", ".yml", ".json"):
+            continue
         try:
-            data: Any = yaml.safe_load(yaml_file.read_text(encoding="utf-8"))
-            if not isinstance(data, dict):
-                continue
-
-            # Handle list-of-items format
-            raw_items = data.get("items", [data])
-            if not isinstance(raw_items, list):
-                raw_items = [data]
-
-            for raw in raw_items:
-                if not isinstance(raw, dict):
-                    continue
-                item = _parse_content_item(raw, yaml_file.stem)
-                if item:
-                    items.append(item)
+            text = path.read_text(encoding="utf-8")
+            data = json.loads(text) if path.suffix == ".json" else yaml.safe_load(text)
+            if isinstance(data, dict):
+                results.append((path, data))
         except Exception as exc:
-            logger.warning("Failed to parse content file %s: %s", yaml_file.name, exc)
+            logger.warning("Failed to parse %s: %s", path.name, exc)
 
-    return items
+    return results
 
 
-def _parse_content_item(raw: dict[str, Any], default_id: str) -> ContentItem | None:
-    """Parse a raw dict into a ContentItem."""
-    try:
-        created_at = None
-        raw_created = raw.get("created_at")
-        if raw_created and isinstance(raw_created, str):
-            created_at = datetime.fromisoformat(raw_created.replace("Z", "+00:00"))
-            if created_at.tzinfo is None:
-                created_at = created_at.replace(tzinfo=UTC)
-
-        scheduled_for = None
-        raw_scheduled = raw.get("scheduled_for") or raw.get("scheduled_at")
-        if raw_scheduled and isinstance(raw_scheduled, str):
-            scheduled_for = datetime.fromisoformat(raw_scheduled.replace("Z", "+00:00"))
-            if scheduled_for.tzinfo is None:
-                scheduled_for = scheduled_for.replace(tzinfo=UTC)
-
-        return ContentItem(
-            id=str(raw.get("id", default_id)),
-            title=raw.get("title"),
-            content_type=str(raw.get("content_type", "unknown")),
-            status=str(raw.get("status", "draft")),
-            created_at=created_at,
-            scheduled_for=scheduled_for,
-            agent_id=raw.get("agent_id"),
-        )
-    except Exception as exc:
-        logger.warning("Failed to parse content item: %s", exc)
+def _parse_dt(value: Any) -> datetime | None:
+    if not value or not isinstance(value, str):
         return None
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=UTC)
+        return dt
+    except (ValueError, TypeError):
+        return None
+
+
+def _parse_quality(raw: dict) -> ContentQuality | None:
+    q = raw.get("quality")
+    if not q or not isinstance(q, dict):
+        return None
+    return ContentQuality(
+        hook_score=str(q.get("hook_score", "")) or None,
+        voice_check=q.get("voice_check"),
+        quality_score=q.get("quality_score"),
+        violations=q.get("violations", []),
+    )
+
+
+def _parse_agent_trace(raw: dict) -> list[AgentTraceStep]:
+    trace = raw.get("agent_trace", [])
+    if not isinstance(trace, list):
+        return []
+    steps = []
+    for step in trace:
+        if not isinstance(step, dict):
+            continue
+        steps.append(AgentTraceStep(
+            agent_id=step.get("agent_id", "unknown"),
+            model=step.get("model"),
+            role=step.get("role"),
+            at=_parse_dt(step.get("at")),
+            quality_score=str(step.get("quality_score", "")) or None,
+            verdict=step.get("verdict"),
+        ))
+    return steps
+
+
+def _raw_to_item(raw: dict, file_stem: str) -> ContentItem:
+    piece_id = str(raw.get("piece_id", raw.get("id", file_stem)))
+    title = raw.get("topic") or raw.get("title") or raw.get("headline")
+    status = str(raw.get("status", "draft"))
+    # Normalize legacy status values
+    if status == "review":
+        status = "pending_review"
+
+    return ContentItem(
+        id=piece_id,
+        title=title,
+        content_type=str(raw.get("content_type", "text_post")),
+        platform=raw.get("platform"),
+        content_pillar=raw.get("content_pillar"),
+        status=status,
+        created_at=_parse_dt(raw.get("generated_at") or raw.get("created_at")),
+        scheduled_for=_parse_dt(raw.get("scheduled_at") or raw.get("scheduled_for")),
+        agent_id=raw.get("agent_id"),
+        idea_source=raw.get("idea_source"),
+        quality=_parse_quality(raw),
+    )
+
+
+def _raw_to_detail(raw: dict, file_stem: str) -> ContentDetail:
+    item = _raw_to_item(raw, file_stem)
+    return ContentDetail(
+        **item.model_dump(),
+        text=raw.get("text"),
+        hashtags=raw.get("hashtags", []),
+        char_count=raw.get("char_count"),
+        agent_trace=_parse_agent_trace(raw),
+    )
 
 
 @router.get("", response_model=ContentResponse)
 async def list_content() -> ContentResponse:
     """Return all content items with status counts."""
-    items = _load_content_items()
+    files = _load_raw_files()
+    items: list[ContentItem] = []
+    for path, raw in files:
+        try:
+            # Handle list-of-items YAML format (legacy)
+            raw_items = raw.get("items", [raw]) if not raw.get("piece_id") and not raw.get("id") else [raw]
+            for r in raw_items:
+                if isinstance(r, dict):
+                    items.append(_raw_to_item(r, path.stem))
+        except Exception as exc:
+            logger.warning("Skip %s: %s", path.name, exc)
 
     counts = ContentStatusCounts()
     for item in items:
-        status = item.status.lower()
-        if status == "draft":
+        s = item.status.lower()
+        if s in ("draft",):
             counts.draft += 1
-        elif status == "review":
+        elif s in ("pending_review", "review"):
             counts.review += 1
-        elif status == "published":
+        elif s in ("published", "approved"):
             counts.published += 1
-        elif status == "rejected":
+        elif s == "rejected":
             counts.rejected += 1
 
     return ContentResponse(items=items, counts=counts)
@@ -111,10 +164,13 @@ async def get_content_calendar(
     days: int = Query(default=14, ge=1, le=90),
 ) -> ContentCalendarResponse:
     """Return content items grouped by scheduled date."""
-    items = _load_content_items()
-    now = datetime.now(UTC)
+    files = _load_raw_files()
+    items: list[ContentItem] = []
+    for path, raw in files:
+        with contextlib.suppress(Exception):
+            items.append(_raw_to_item(raw, path.stem))
 
-    # Build date range
+    now = datetime.now(UTC)
     date_range: dict[str, list[ContentItem]] = {}
     for i in range(days):
         d = (now + timedelta(days=i)).date().isoformat()
@@ -132,3 +188,86 @@ async def get_content_calendar(
         for d, day_items in sorted(date_range.items())
     ]
     return ContentCalendarResponse(calendar=calendar)
+
+
+@router.get("/{piece_id}", response_model=ContentDetail)
+async def get_content_detail(piece_id: str) -> ContentDetail:
+    """Return full content piece with text, agent trace, and quality breakdown."""
+    files = _load_raw_files()
+    for path, raw in files:
+        raw_id = str(raw.get("piece_id", raw.get("id", path.stem)))
+        if raw_id == piece_id or path.stem == piece_id:
+            return _raw_to_detail(raw, path.stem)
+    raise HTTPException(status_code=404, detail=f"Content piece {piece_id!r} not found")
+
+
+@router.patch("/{piece_id}", response_model=ContentDetail)
+async def update_content_status(piece_id: str, body: ContentPatchRequest) -> ContentDetail:
+    """Approve, reject, or reschedule a content piece.
+
+    Updates the YAML/JSON file directly. If status is 'approved' and the
+    social-media API is reachable, triggers posting via the silo.
+    """
+    files = _load_raw_files()
+    target_path: Path | None = None
+    raw: dict = {}
+
+    for path, data in files:
+        raw_id = str(data.get("piece_id", data.get("id", path.stem)))
+        if raw_id == piece_id or path.stem == piece_id:
+            target_path = path
+            raw = dict(data)
+            break
+
+    if target_path is None:
+        raise HTTPException(status_code=404, detail=f"Content piece {piece_id!r} not found")
+
+    # Apply updates
+    if body.status is not None:
+        raw["status"] = body.status
+    if body.scheduled_at is not None:
+        raw["scheduled_at"] = body.scheduled_at
+
+    # Write back
+    try:
+        if target_path.suffix == ".json":
+            target_path.write_text(json.dumps(raw, indent=2), encoding="utf-8")
+        else:
+            target_path.write_text(yaml.dump(raw, default_flow_style=False), encoding="utf-8")
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to write file: {exc}") from exc
+
+    # If approved, attempt to post via social-media-automatization
+    if body.status == "approved":
+        _attempt_post(raw)
+
+    return _raw_to_detail(raw, target_path.stem)
+
+
+def _attempt_post(raw: dict) -> None:
+    """Fire-and-forget: try to post via social-media-automatization API."""
+    try:
+        import os
+
+        import requests
+
+        api_base = os.environ.get("SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000")
+        api_key = os.environ.get("POSTING_API_KEY", "")
+        text = raw.get("text", "")
+        platform = raw.get("platform", "linkedin")
+        if not text or not api_key:
+            logger.info("Post skipped: missing text or POSTING_API_KEY not set")
+            return
+
+        resp = requests.post(
+            f"{api_base}/api/v1/publish",
+            json={"content": text, "platforms": [platform]},
+            headers={"X-API-Key": api_key, "Content-Type": "application/json"},
+            timeout=10,
+        )
+        if resp.ok:
+            logger.info("Posted piece %s to %s", raw.get("piece_id", "?"), platform)
+        else:
+            logger.warning("Post attempt returned %s: %s", resp.status_code, resp.text[:200])
+    except Exception as exc:
+        logger.warning("Post attempt failed (non-fatal): %s", exc)

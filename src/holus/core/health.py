@@ -208,29 +208,45 @@ def run_preflight_checks(
     # ------------------------------------------------------------------
     # 2. LLM reachable (blocking)
     # ------------------------------------------------------------------
-    if not _anthropic_key:
-        logger.error("Preflight: ANTHROPIC_API_KEY not set — blocking cycle")
-        return HealthResult(
-            blocking_ok=False,
-            available_silos=[],
-            warnings=["ANTHROPIC_API_KEY is not set"],
-        )
-    try:
-        with httpx.Client(timeout=5.0) as client:
-            resp = client.get(
-                "https://api.anthropic.com",
-                headers={"x-api-key": _anthropic_key},
+    _anthropic_base = os.environ.get("ANTHROPIC_BASE_URL", "")
+    if _anthropic_base:
+        # Proxy mode: check proxy health endpoint instead of direct API
+        try:
+            with httpx.Client(timeout=5.0) as client:
+                resp = client.get(f"{_anthropic_base}/health")
+                if resp.status_code >= 500:
+                    raise RuntimeError(f"LLM proxy returned {resp.status_code}")
+        except Exception as exc:
+            logger.error("Preflight: LLM proxy not reachable — blocking cycle", error=str(exc))
+            return HealthResult(
+                blocking_ok=False,
+                available_silos=[],
+                warnings=[f"LLM proxy not reachable: {exc}"],
             )
-            # Any HTTP response (even 404) means the API is reachable
-            if resp.status_code >= 500:
-                raise RuntimeError(f"Anthropic API returned {resp.status_code}")
-    except Exception as exc:
-        logger.error("Preflight: LLM not reachable — blocking cycle", error=str(exc))
-        return HealthResult(
-            blocking_ok=False,
-            available_silos=[],
-            warnings=[f"Anthropic API not reachable: {exc}"],
-        )
+    else:
+        # Direct API mode: check Anthropic API with key
+        if not _anthropic_key:
+            logger.error("Preflight: ANTHROPIC_API_KEY not set — blocking cycle")
+            return HealthResult(
+                blocking_ok=False,
+                available_silos=[],
+                warnings=["ANTHROPIC_API_KEY is not set"],
+            )
+        try:
+            with httpx.Client(timeout=5.0) as client:
+                resp = client.get(
+                    "https://api.anthropic.com",
+                    headers={"x-api-key": _anthropic_key},
+                )
+                if resp.status_code >= 500:
+                    raise RuntimeError(f"Anthropic API returned {resp.status_code}")
+        except Exception as exc:
+            logger.error("Preflight: LLM not reachable — blocking cycle", error=str(exc))
+            return HealthResult(
+                blocking_ok=False,
+                available_silos=[],
+                warnings=[f"Anthropic API not reachable: {exc}"],
+            )
 
     # ------------------------------------------------------------------
     # 3. Social Media MCP (blocking)

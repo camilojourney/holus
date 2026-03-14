@@ -9,17 +9,23 @@ Accumulated knowledge from agent operations. Updated by the manager agent after 
 
 ## What Holus Does
 
-Holus is an **AI authority-building engine** for Camilo's consulting pipeline.
-It builds Camilo's reputation as the go-to AI transition consultant by creating
-content that demonstrates builder expertise, targets consulting prospects,
-and drives inbound leads.
+Holus is an **AI content engine** for Juan's personal brand.
 
-**Primary goal:** Position Camilo for NYC AI consulting launch (2-month horizon).
-**Primary platform:** LinkedIn (everything else is repurposed from LinkedIn).
+**Updated 2026-03-14:**
+
+**Primary goal:** Establish Juan as a thought leader in AI engineering and bilingual tech.
+NOT to promote apps. Apps (Pilaster, genpeli, invoz) are proof points — evidence of
+expertise. They're chapters in the story, not the pitch.
+
+**Juan's niche:** Bilingual AI engineer for the 600M Spanish/English market Silicon Valley ignores.
+Technical depth + market empathy (lived bilingual experience) + shipping real systems.
+Almost no one in AI/tech combines all three. That's the moat.
+
+**Primary platform:** LinkedIn (thought leader goal — B2B, senior engineers, tech leads, CTOs).
 **Products are proof points**, not the primary pitch:
-- Pilaster = "I built an AI image platform with memory"
-- genpeli = "I automated my video editing pipeline"
-- invoz = "I built an audio ML API"
+- Pilaster = "I built an AI image platform with memory — here's what I learned"
+- genpeli = "I automated my video editing pipeline — here's the architecture"
+- invoz = "I built an audio ML API for non-native speakers — here's the real problem"
 
 **Silos Holus uses:**
 - genpeli → video creation (MCP)
@@ -33,21 +39,20 @@ and drives inbound leads.
 
 ## Target Audience
 
-| Audience | Role | Where | Priority |
-|----------|------|-------|----------|
-| Consulting prospects | CTOs, VPs Eng, founders (50-500 employees) | LinkedIn | PRIMARY |
-| Pilaster users | ComfyUI artists, AI image creators | TikTok, LinkedIn | Secondary |
-| genpeli users | Content creators, video editors | LinkedIn, Instagram | Secondary |
-| invoz users | Developers | LinkedIn, Twitter | Secondary |
+| Audience | Platform | Content | Priority |
+|----------|----------|---------|----------|
+| Senior AI engineers, tech leads, CTOs | LinkedIn | AI Engineering + Building in Public | PRIMARY |
+| Bilingual tech community (EN/ES) | Instagram, Threads | Bilingual AI content | Secondary |
+| AI dev community | X/Twitter | Quick takes, AI commentary | Secondary |
 
 ---
 
-## Content Pillars (Authority Framework)
+## Content Pillars
 
-1. **Builder stories** — "I built X, here's what I learned"
-2. **AI implementation frameworks** — "How to actually deploy AI in your company"
-3. **Industry analysis** — "What's working in AI right now and what's hype"
-4. **Results/proof** — Real numbers, real architectures, real outcomes
+1. **Building in Public** — Real shipping: code, decisions, failures, wins. LinkedIn primary.
+2. **AI Engineering** — How the tech actually works: models, pipelines, agent architectures. LinkedIn + X.
+3. **Bilingual AI** — AI for the 600M Spanish/English market. Instagram + Threads primary.
+4. **Systems Thinking** — 5 Wealth, IVY LEE, mental models for engineers. LinkedIn.
 5. **Contrarian takes** — "Everyone's doing X wrong. Here's why."
 
 ---

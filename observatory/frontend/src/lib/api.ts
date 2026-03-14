@@ -8,6 +8,9 @@ import type {
   KPIMetrics,
   EvaluationRecord,
   ContentItem,
+  ContentDetail,
+  ContentResponse,
+  PatchContentRequest,
   KnowledgeFile,
   CostBreakdown,
   GrowthData,
@@ -111,9 +114,35 @@ export async function fetchEvaluations(params?: {
 // Content pipeline
 export async function fetchContent(): Promise<ContentItem[]> {
   return withFallback(
-    () => apiFetch<ContentItem[]>('/api/v1/content'),
+    async () => {
+      const resp = await apiFetch<ContentResponse>('/api/v1/content');
+      return resp.items;
+    },
     demoContent,
   );
+}
+
+// Content detail (full text + agent trace)
+export async function fetchContentDetail(id: string): Promise<ContentDetail> {
+  return apiFetch<ContentDetail>(`/api/v1/content/${id}`, { revalidate: 0 });
+}
+
+// Approve / reject / reschedule a content piece (client-side, no cache)
+export async function patchContent(
+  id: string,
+  body: PatchContentRequest,
+): Promise<ContentDetail> {
+  const base = process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
+  const res = await fetch(`${base}/api/v1/content/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => res.statusText);
+    throw new Error(`PATCH /content/${id} → ${res.status}: ${msg}`);
+  }
+  return res.json() as Promise<ContentDetail>;
 }
 
 // Knowledge files

@@ -1,48 +1,54 @@
 # Holus — Brand Identity
-# The foundational "who is Camilo" file. Loaded into every marketing agent cycle.
+# The foundational "who is Juan" file. Loaded into every marketing agent cycle.
 # This file defines the identity, positioning, and voice that ALL content must reflect.
-# Last updated: 2026-03-01
-# Status: SCAFFOLD — sections marked TODO need Camilo's input before launch.
+# Last updated: 2026-03-14
 
 # ─── STORY ───────────────────────────────────────────────────────────────────
 
 story:
+  name: "Juan"
   origin: >
-    Colombian AI engineer who moved to NYC and built 3 production AI products
-    while studying at one of the most competitive universities in the city.
-    Not a consultant who reads slides — a builder who ships.
+    Bilingual AI engineer — Colombian, English/Spanish — who builds AI products
+    for the 600M Spanish/English market Silicon Valley keeps building past.
+    Not a consultant who reads slides. A builder who ships real systems.
+  market_insight: >
+    Silicon Valley builds for English-first audiences by default.
+    The Spanish/English bilingual market is 600M people — underserved, underrepresented,
+    and increasingly online. Juan builds at the intersection: technical depth (AI engineering)
+    + market empathy (lived bilingual experience) + business lens (shipping real products).
+    Almost no one in the AI/tech space combines all three. That's the moat.
   journey:
     - "Built Pilaster — an AI image generation platform with memory (character registry, backend-agnostic generation, experiment tracking)"
-    - "Built genpeli — automated video editing pipeline (silence removal, caption burning, audio normalization)"
-    - "Built invoz — Whisper-powered audio ML API (transcription, diarization, silence detection)"
+    - "Built genpeli — automated video editing pipeline for bilingual content creators (silence removal, caption burning, audio normalization)"
+    - "Built invoz — Whisper-powered audio ML API built for non-native English speakers (transcription, diarization, silence detection)"
     - "Built holus — AI marketing orchestrator that runs the content engine autonomously"
   turning_point: >
-    Realized that building AI products is only half the equation.
-    Companies need someone who's done it to guide their transformation.
-    The shift from "I build AI tools" to "I help companies build with AI."
-  # TODO: Camilo input needed — what specific moment triggered the consulting pivot?
-  # Was it a conversation, a client request, a realization? The real story matters.
+    Realized the hardest problem isn't building AI — it's building AI for the right market.
+    The bilingual world is not a niche. It's a majority that hasn't been properly served.
 
 # ─── POSITIONING ─────────────────────────────────────────────────────────────
 
 positioning:
-  one_liner: "I build AI systems that actually work in production. I help companies do the same."
-  category: "AI implementation consultant / technical founder"
+  one_liner: "Juan builds AI products for the bilingual world — the Spanish/English market Silicon Valley keeps building past."
+  brand_statement: "Juan builds AI products for the bilingual world — the Spanish/English market Silicon Valley keeps building past."
+  linkedin_goal: "Establish as a thought leader in AI engineering and bilingual tech. Apps are proof points, not the pitch."
+  category: "AI engineer + technical founder building for the bilingual market"
   differentiation:
-    - "Builder, not advisor — I ship code, not slide decks"
-    - "Multi-product track record — 3 production AI systems, not just POCs"
-    - "Full-stack AI — from ML models to deployment to monitoring"
-    - "Practitioner perspective — I know what breaks at 3am"
+    - "Bilingual market insider — not a translator of US tech content, a builder for the 600M"
+    - "Technical depth — ships real systems (ML, agents, pipelines), not POCs"
+    - "Market empathy — lived bilingual experience is the product insight, not just the audience"
+    - "Practitioner perspective — knows what breaks at 3am because it happened"
   what_i_am:
     - "A builder who shows the work"
-    - "A technical founder with production experience"
-    - "Someone who helps companies skip the expensive mistakes"
+    - "A bilingual AI engineer targeting an underserved 600M-person market"
+    - "A technical founder with production experience across ML, agents, and data pipelines"
   what_i_am_not:
     - "Not a guru selling a course"
+    - "Not a translator of US AI content into Spanish (surface-level)"
+    - "Not purely technical (ignores the market/business dimension)"
+    - "Not hustle-porn (systems > willpower)"
     - "Not an AI influencer chasing trends"
-    - "Not 'transform your business with AI in 30 days'"
-    - "Not a consultant who's never built anything"
-  market: "NYC initially, then remote/national"
+  market: "Spanish/English bilingual market — globally distributed, concentrated in US/LatAm"
 
 # ─── THE OFFER ───────────────────────────────────────────────────────────────
 
@@ -236,55 +242,102 @@ competitor_accounts:
 # The 5 themes all content should fall into.
 
 content_pillars:
-  - id: "builder_stories"
-    name: "Builder Stories"
-    description: "I built X, here's what I learned"
+  - id: "building_in_public"
+    name: "Building in Public"
+    description: "Real shipping — code, decisions, failures, wins. No filter."
+    platform_primary: "linkedin"
     frequency: "2x/week"
-    products: ["pilaster", "genpeli", "invoz"]
-    goal: "Demonstrate expertise through real experience"
+    products: ["pilaster", "genpeli", "invoz", "holus"]
+    goal: "Demonstrate expertise through showing real work, not claiming it"
+    example_topics:
+      - "How I designed the agent trace system in Holus"
+      - "Why I scrapped the original Pilaster architecture"
+      - "The moment I realized the quality gate was rejecting everything"
 
-  - id: "ai_frameworks"
-    name: "AI Implementation Frameworks"
-    description: "How to actually deploy AI in your company"
+  - id: "bilingual_ai"
+    name: "Bilingual AI"
+    description: "AI tools, content, and products for the Spanish/English world. The 600M market."
+    platform_primary: "instagram"
+    platform_secondary: "threads"
     frequency: "1x/week"
-    products: []  # Product-agnostic, consulting-focused
-    goal: "Provide actionable value to consulting prospects"
+    products: ["invoz", "genpeli"]
+    goal: "Own the bilingual AI engineering category — no one else is here"
+    example_topics:
+      - "Why building for bilingual users forces better product decisions"
+      - "The Whisper accuracy gap between English and Spanish"
+      - "What Silicon Valley keeps getting wrong about the Spanish-speaking market"
 
-  - id: "industry_analysis"
-    name: "Industry Analysis"
-    description: "What's working in AI right now and what's hype"
+  - id: "ai_engineering"
+    name: "AI Engineering"
+    description: "How the tech actually works — models, pipelines, agent architectures, systems."
+    platform_primary: "linkedin"
+    platform_secondary: "x"
+    frequency: "2x/week"
+    products: []
+    goal: "Establish as a serious AI engineer who builds, not just talks"
+    example_topics:
+      - "MCP vs Skills — two paradigms for extending AI agents"
+      - "Why eval gates fail in production (and how to fix them)"
+      - "The 3-layer prompt system that makes agents improvable"
+
+  - id: "systems_thinking"
+    name: "Systems Thinking"
+    description: "5 Wealth, IVY LEE, mental models for engineers and builders."
+    platform_primary: "linkedin"
     frequency: "1x/week"
     products: []
-    goal: "Position as someone who sees the full landscape"
+    goal: "Connect technical expertise to broader life/career frameworks"
+    example_topics:
+      - "How the IVY LEE method changed how I ship"
+      - "The 5 Wealth framework for engineers (it's not just money)"
+      - "Ship → Measure → Delete: the discipline of cutting"
 
-  - id: "results_proof"
-    name: "Results & Proof"
-    description: "Real numbers, real architectures, real outcomes"
-    frequency: "0.5x/week"
-    products: ["pilaster", "genpeli", "invoz"]
-    goal: "Back up authority with evidence"
+# ─── PERSONAL FRAMEWORKS ─────────────────────────────────────────────────────
+# These are Juan's frameworks to reference in content.
 
-  - id: "contrarian_takes"
-    name: "Contrarian Takes"
-    description: "Everyone's doing X wrong. Here's why."
-    frequency: "0.5x/week"
-    products: []
-    goal: "Stand out, spark discussion, demonstrate independent thinking"
+frameworks:
+  - name: "5 Wealth"
+    description: "Physical, Mental, Social, Time, Financial wealth. Useful for systems/life design content."
+    content_angle: "Engineering your life like a system — five metrics, not one"
+  - name: "IVY LEE Method"
+    description: "Daily 6-task prioritization. Great 'engineering for life' content angle."
+    content_angle: "A 100-year-old productivity method that beats every AI todo app"
+  - name: "Ship → Measure → Delete"
+    description: "90% of features should be cut. Shipping fast is the discipline."
+    content_angle: "The most important engineering skill isn't building — it's deleting"
 
 # ─── PLATFORM STRATEGY ───────────────────────────────────────────────────────
 
 platform_strategy:
   primary: "linkedin"
+  linkedin_goal: "Thought leader in AI engineering and bilingual tech. B2B, job market, tech community."
   cadence:
     linkedin: "5x/week"
-    twitter: "3x/week (repurposed)"
-    instagram: "2x/week (repurposed)"
-    threads: "2x/week (repurposed)"
-    facebook: "1x/week (bilingual ES)"
+    twitter: "3x/week (repurposed — quick takes, AI commentary)"
+    instagram: "2x/week (bilingual side, human story, behind the scenes)"
+    threads: "2x/week (conversational, first-person, authenticity)"
+    facebook: "1x/week (bilingual ES if applicable)"
+  platform_intelligence:
+    linkedin:
+      content: ["ai_engineering", "building_in_public", "systems_thinking"]
+      avoid: "anything that sounds like app promotion without insight"
+      format: "text posts (primary), carousels (secondary)"
+    twitter:
+      content: ["ai_engineering", "building_in_public"]
+      avoid: "anything requiring >280 chars of setup"
+      format: "threads or single takes"
+    instagram:
+      content: ["bilingual_ai", "building_in_public (visual)"]
+      avoid: "pure technical posts with no human angle"
+      format: "reels (from genpeli), carousel, caption"
+    threads:
+      content: ["bilingual_ai", "building_in_public"]
+      avoid: "corporate tone, heavy technical jargon"
+      format: "conversational text"
   flow: >
-    LinkedIn post (primary, optimized for algorithm)
-    → Twitter (condensed, more direct)
-    → Instagram (visual version or condensed caption)
+    LinkedIn post (primary, optimized for algorithm, thought leader)
+    → Twitter (condensed, more direct, technical audience)
+    → Instagram (visual or bilingual, human-side)
     → Threads (conversational version)
     → Facebook (bilingual ES if applicable)
 

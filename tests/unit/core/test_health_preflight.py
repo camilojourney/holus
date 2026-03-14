@@ -84,11 +84,16 @@ class TestPreflightKillSwitch:
 
 class TestPreflightLLM:
     def test_missing_api_key_returns_blocking_false(self, tmp_path: Path) -> None:
-        result = run_preflight_checks(
-            anthropic_api_key="",
-            trajectory_path=tmp_path / "traj.jsonl",
-            skip_run_lock_check=True,
-        )
+        with patch.dict("os.environ", {}, clear=False):
+            # Ensure no proxy base URL is set, so the direct API key check runs
+            import os
+
+            os.environ.pop("ANTHROPIC_BASE_URL", None)
+            result = run_preflight_checks(
+                anthropic_api_key="",
+                trajectory_path=tmp_path / "traj.jsonl",
+                skip_run_lock_check=True,
+            )
         assert result.blocking_ok is False
 
     def test_anthropic_api_unreachable_returns_blocking_false(self, tmp_path: Path) -> None:

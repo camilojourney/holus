@@ -5,6 +5,7 @@ export type ModelTier = 'opus' | 'sonnet' | 'haiku' | 'unknown';
 export type EvalVerdict = 'pass' | 'review' | 'fail';
 export type ContentState = 'DRAFT' | 'REVIEW' | 'PUBLISHED';
 export type FreshnessStatus = 'fresh' | 'aging' | 'stale';
+export type ContentStatus = 'draft' | 'pending_review' | 'approved' | 'scheduled' | 'published' | 'rejected';
 
 export interface Agent {
   id: string;
@@ -73,15 +74,58 @@ export interface EvaluationRecord {
   notes?: string;
 }
 
+export interface AgentTraceStep {
+  agent_id: string;
+  model?: string;
+  role?: string;
+  at?: string;
+  quality_score?: string;
+  verdict?: string;
+}
+
+export interface ContentQuality {
+  hook_score?: string;
+  voice_check?: string;
+  quality_score?: number;
+  violations?: string[];
+}
+
 export interface ContentItem {
   id: string;
-  title: string;
-  platform: string;
-  pillar: 'authority' | 'entertainment' | 'education' | 'conversion';
-  state: ContentState;
-  created_at: string;
+  title?: string;
+  content_type: string;
+  platform?: string;
+  content_pillar?: string;
+  status: string; // 'draft' | 'pending_review' | 'approved' | 'scheduled' | 'published' | 'rejected'
+  created_at?: string;
+  scheduled_for?: string;
+  agent_id?: string;
+  idea_source?: string;
+  quality?: ContentQuality;
+}
+
+export interface ContentDetail extends ContentItem {
+  text?: string;
+  hashtags?: string[];
+  char_count?: number;
+  agent_trace?: AgentTraceStep[];
+}
+
+export interface ContentStatusCounts {
+  draft: number;
+  review: number;
+  published: number;
+  rejected: number;
+}
+
+export interface ContentResponse {
+  items: ContentItem[];
+  counts: ContentStatusCounts;
+}
+
+export interface PatchContentRequest {
+  status?: string;
   scheduled_at?: string;
-  published_at?: string;
 }
 
 export interface KnowledgeFile {

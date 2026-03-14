@@ -56,7 +56,15 @@ class BaseAgent(abc.ABC):
         self.agent_config = agent_config or self.config.get_agent_config(self.agent_name)
 
         # -- Infrastructure clients ------------------------------------------
-        self.claude = HolusClaudeClient(api_key=self.config.anthropic_api_key or None)
+        self.claude = HolusClaudeClient(
+            api_key=self.config.anthropic_api_key or None,
+            base_url=self.config.anthropic_base_url or None,
+            model_map={
+                "strategic": self.config.opus_model,
+                "operational": self.config.sonnet_model,
+                "classification": self.config.haiku_model,
+            },
+        )
 
         self._redis = redis.Redis.from_url(self.config.redis_url, decode_responses=True)
         self.event_bus = EventBus(redis_url=self.config.redis_url)

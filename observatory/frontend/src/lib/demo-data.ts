@@ -228,14 +228,14 @@ export const demoEvaluations: EvaluationRecord[] = Array.from({ length: 30 }, (_
 // --- Content Pipeline ---
 
 export const demoContent: ContentItem[] = [
-  { id: 'c1', title: 'How I Built a 32-Agent AI Marketing System', platform: 'linkedin', pillar: 'authority', state: 'PUBLISHED', created_at: '2026-03-10', published_at: '2026-03-11' },
-  { id: 'c2', title: 'ComfyUI Workflow Diffs: Before vs After', platform: 'linkedin', pillar: 'education', state: 'PUBLISHED', created_at: '2026-03-09', published_at: '2026-03-10' },
-  { id: 'c3', title: 'Pilaster Memory Engine Deep Dive', platform: 'twitter', pillar: 'education', state: 'REVIEW', created_at: '2026-03-12', scheduled_at: '2026-03-14' },
-  { id: 'c4', title: 'Speech Coaching with 11 Acoustic Dimensions', platform: 'linkedin', pillar: 'authority', state: 'DRAFT', created_at: '2026-03-13' },
-  { id: 'c5', title: 'AI Video Editing: Raw to Polished in 60s', platform: 'instagram', pillar: 'entertainment', state: 'PUBLISHED', created_at: '2026-03-07', published_at: '2026-03-08' },
-  { id: 'c6', title: 'Why Your AI Generations Need Version Control', platform: 'linkedin', pillar: 'conversion', state: 'PUBLISHED', created_at: '2026-03-06', published_at: '2026-03-07' },
-  { id: 'c7', title: 'Building a Multi-Agent CEO Assistant', platform: 'twitter', pillar: 'authority', state: 'PUBLISHED', created_at: '2026-03-05', published_at: '2026-03-06' },
-  { id: 'c8', title: 'Real-Time Fitness Analytics with WHOOP + AI', platform: 'threads', pillar: 'education', state: 'DRAFT', created_at: '2026-03-13' },
+  { id: 'c1', title: 'How I Built a 32-Agent AI Marketing System', platform: 'linkedin', content_type: 'text_post', content_pillar: 'ai_engineering', status: 'published', created_at: '2026-03-10T10:00:00Z', quality: { hook_score: '9', voice_check: 'PASS', quality_score: 88 } },
+  { id: 'c2', title: 'ComfyUI Workflow Diffs: Before vs After', platform: 'linkedin', content_type: 'carousel_outline', content_pillar: 'building_in_public', status: 'published', created_at: '2026-03-09T10:00:00Z', quality: { hook_score: '8', voice_check: 'PASS', quality_score: 82 } },
+  { id: 'c3', title: 'Pilaster Memory Engine Deep Dive', platform: 'twitter_x', content_type: 'thread', content_pillar: 'ai_engineering', status: 'pending_review', created_at: '2026-03-12T10:00:00Z', scheduled_for: '2026-03-15T14:00:00Z', quality: { hook_score: '7', voice_check: 'PASS', quality_score: 74 } },
+  { id: 'c4', title: 'Speech Coaching with 11 Acoustic Dimensions', platform: 'linkedin', content_type: 'text_post', content_pillar: 'ai_engineering', status: 'draft', created_at: '2026-03-13T10:00:00Z', quality: { hook_score: '6', voice_check: 'FAIL', quality_score: 61 } },
+  { id: 'c5', title: 'AI Video Editing: Raw to Polished in 60s', platform: 'instagram', content_type: 'instagram_caption', content_pillar: 'bilingual_ai', status: 'published', created_at: '2026-03-07T10:00:00Z', quality: { hook_score: '8', voice_check: 'PASS', quality_score: 79 } },
+  { id: 'c6', title: 'MCP vs Skills: Two Paradigms for Extending AI Agents', platform: 'linkedin', content_type: 'text_post', content_pillar: 'systems_thinking', status: 'approved', created_at: '2026-03-13T15:00:00Z', scheduled_for: '2026-03-16T09:00:00Z', quality: { hook_score: '9', voice_check: 'PASS', quality_score: 91 } },
+  { id: 'c7', title: 'Building for the Bilingual Market Silicon Valley Ignores', platform: 'twitter_x', content_type: 'thread', content_pillar: 'bilingual_ai', status: 'pending_review', created_at: '2026-03-13T12:00:00Z', quality: { hook_score: '8', voice_check: 'PASS', quality_score: 83 } },
+  { id: 'c8', title: 'Why Every AI Stack Needs a Kill Switch', platform: 'linkedin', content_type: 'text_post', content_pillar: 'ai_engineering', status: 'rejected', created_at: '2026-03-11T10:00:00Z', quality: { hook_score: '5', voice_check: 'FAIL', quality_score: 48 } },
 ];
 
 // --- Knowledge Files ---

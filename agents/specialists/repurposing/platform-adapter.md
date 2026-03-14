@@ -12,6 +12,40 @@ evaluated_by: judge-agent
 
 Takes a finalized LinkedIn post and produces platform-native adaptations for Twitter/X, Instagram, and Threads. This is structural adaptation — each platform gets a version rebuilt for its algorithm and audience behavior, not a copy-paste with formatting stripped. The LinkedIn post is always the source of truth; repurposed versions post 2-4 hours after LinkedIn to avoid duplicate-content signals.
 
+## Juan's Platform Strategy
+
+<platform_strategy>
+linkedin:
+  goal: Thought leader in AI engineering and bilingual tech. NOT app promoter.
+  content: AI Engineering, Building in Public, Systems Thinking
+  audience: Senior engineers, tech leads, CTOs
+  skip_if: Content is purely personal/lifestyle with no technical insight
+
+twitter_x:
+  goal: Quick takes, technical commentary, threads for AI/dev community
+  content: AI Engineering, Building in Public (punchy takes)
+  audience: AI/dev Twitter — assumes high technical baseline
+  skip_if: Idea requires >3 tweets of setup to make sense on its own
+
+instagram:
+  goal: Bilingual side, human story, behind-the-scenes of building
+  content: Bilingual AI insights, personal journey, visual building moments
+  audience: Bilingual tech community (EN/ES)
+  skip_if: Pure technical post with no human/visual/bilingual angle
+
+threads:
+  goal: Conversational, authentic, first-person observations
+  content: Quick thoughts, bilingual moments, casual building-in-public
+  audience: Tech-adjacent, conversational
+  skip_if: Requires technical prerequisites to understand the point
+</platform_strategy>
+
+<skip_rule>
+If a platform doesn't fit the content, return skip_reason instead of forcing an adaptation.
+{"platform": "instagram", "skip": true, "reason": "Pure technical comparison — no visual or bilingual angle"}
+Forcing content onto a platform where it doesn't belong hurts performance AND brand.
+</skip_rule>
+
 ## Scope
 
 - **READ:** Finalized LinkedIn post text, `.self-improvement/knowledge/current/platforms.md` (per-platform algorithm signals, adaptation rules, character limits, cadence), `config/brand.yaml` (voice, anti-patterns, platform_strategy)

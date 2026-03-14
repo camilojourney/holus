@@ -48,14 +48,47 @@ class TrajectoryPage(BaseModel):
     has_more: bool
 
 
+class AgentTraceStep(BaseModel):
+    agent_id: str
+    model: str | None = None
+    role: str | None = None
+    at: datetime | None = None
+    quality_score: str | None = None
+    verdict: str | None = None
+
+
+class ContentQuality(BaseModel):
+    hook_score: str | None = None
+    voice_check: str | None = None
+    quality_score: int | None = None
+    violations: list[str] = []
+
+
 class ContentItem(BaseModel):
     id: str
     title: str | None = None
     content_type: str
-    status: str  # "draft" | "review" | "published" | "rejected"
+    platform: str | None = None
+    content_pillar: str | None = None
+    status: str  # "draft" | "pending_review" | "approved" | "scheduled" | "published" | "rejected"
     created_at: datetime | None = None
     scheduled_for: datetime | None = None
     agent_id: str | None = None
+    idea_source: str | None = None
+    quality: ContentQuality | None = None
+
+
+class ContentDetail(ContentItem):
+    """Full content piece including text and agent trace."""
+    text: str | None = None
+    hashtags: list[str] = []
+    char_count: int | None = None
+    agent_trace: list[AgentTraceStep] = []
+
+
+class ContentPatchRequest(BaseModel):
+    status: str | None = None  # "approved" | "rejected" | "scheduled"
+    scheduled_at: str | None = None  # ISO8601
 
 
 class ContentStatusCounts(BaseModel):

@@ -144,7 +144,7 @@ class SocialMediaClient:
             payload["bilingual"] = True
             payload["source_language"] = request.source_language
 
-        response = await self.client.post("/api/publish", json=payload)
+        response = await self.client.post("/api/v1/publish", json=payload)
         response.raise_for_status()
         data = response.json()
 
@@ -165,7 +165,7 @@ class SocialMediaClient:
 
         Calls GET /health.
         """
-        response = await self.client.get("/health")
+        response = await self.client.get("/api/v1/health")
         response.raise_for_status()
         data: dict[str, Any] = response.json()
         return data
@@ -184,7 +184,7 @@ class SocialMediaClient:
         params: dict[str, Any] = {"days": days}
         if platform:
             params["platform"] = platform
-        response = await self.client.get("/api/analytics", params=params)
+        response = await self.client.get("/api/v1/analytics", params=params)
         response.raise_for_status()
         data: dict[str, Any] = response.json()
         return data
@@ -202,7 +202,7 @@ class SocialMediaClient:
         Returns posts sorted by the given metric.
         """
         params: dict[str, Any] = {"limit": limit, "days": days, "metric": metric}
-        response = await self.client.get("/api/analytics/top-posts", params=params)
+        response = await self.client.get("/api/v1/analytics/top-posts", params=params)
         response.raise_for_status()
         data: dict[str, Any] = response.json()
         return data

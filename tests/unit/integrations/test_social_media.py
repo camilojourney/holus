@@ -169,7 +169,7 @@ class TestPublish:
 
             mock_httpx_client.post.assert_called_once()
             call_args = mock_httpx_client.post.call_args
-            assert call_args[0][0] == "/api/publish"
+            assert call_args[0][0] == "/api/v1/publish"
             payload = call_args[1]["json"]
             assert payload["content"] == "Test content"
             assert payload["platforms"] == ["linkedin"]
@@ -338,7 +338,7 @@ class TestGetAnalytics:
 
             assert result["total_posts"] == 15
             assert "platforms" in result
-            mock_httpx_client.get.assert_called_once_with("/api/analytics", params={"days": 7})
+            mock_httpx_client.get.assert_called_once_with("/api/v1/analytics", params={"days": 7})
 
     @pytest.mark.asyncio
     async def test_get_analytics_with_platform_filter(self, client, mock_httpx_client):
@@ -356,7 +356,7 @@ class TestGetAnalytics:
 
             assert result["total_posts"] == 8
             mock_httpx_client.get.assert_called_once_with(
-                "/api/analytics", params={"days": 14, "platform": "linkedin"}
+                "/api/v1/analytics", params={"days": 14, "platform": "linkedin"}
             )
 
     @pytest.mark.asyncio
@@ -394,7 +394,7 @@ class TestGetTopPosts:
 
             assert len(result["posts"]) == 2
             mock_httpx_client.get.assert_called_once_with(
-                "/api/analytics/top-posts",
+                "/api/v1/analytics/top-posts",
                 params={"limit": 10, "days": 30, "metric": "recent"},
             )
 
@@ -410,6 +410,6 @@ class TestGetTopPosts:
             await client.get_top_posts(limit=5, days=7, metric="success_rate")
 
             mock_httpx_client.get.assert_called_once_with(
-                "/api/analytics/top-posts",
+                "/api/v1/analytics/top-posts",
                 params={"limit": 5, "days": 7, "metric": "success_rate"},
             )

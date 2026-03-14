@@ -23,6 +23,9 @@ class QueuedContent(BaseModel):
     generated_at: datetime = Field(default_factory=datetime.now)
     status: str = "pending_review"  # pending_review | approved | rejected | published
     rejection_reason: str = ""
+    rendered_image_path: str | None = None
+    rendered_pdf_path: str | None = None
+    media_type: str | None = None  # image, pdf, carousel, video, etc.
 
 
 QUEUE_DIR = Path("data/content-queue")

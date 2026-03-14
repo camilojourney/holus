@@ -153,7 +153,7 @@ class JudgeAgent:
     def __init__(
         self,
         api_key: str | None = None,
-        model: str = "claude-haiku-3-5-20241022",
+        model: str = "claude-haiku-4-5-20251001",
     ) -> None:
         import anthropic
 

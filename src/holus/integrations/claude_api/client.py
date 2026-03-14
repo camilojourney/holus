@@ -34,16 +34,16 @@ logger = logging.getLogger(__name__)
 ModelTier = Literal["strategic", "operational", "classification"]
 
 MODEL_MAP: dict[ModelTier, str] = {
-    "strategic": "claude-opus-4-20250514",
-    "operational": "claude-sonnet-4-5-20250514",
-    "classification": "claude-haiku-3-5-20241022",
+    "strategic": "claude-opus-4-6",
+    "operational": "claude-sonnet-4-6",
+    "classification": "claude-haiku-4-5-20251001",
 }
 
 # (input_regular, cache_write, cache_read, output)
 PRICING: dict[str, tuple[float, float, float, float]] = {
-    "claude-opus-4-20250514": (15.0, 3.75, 1.50, 75.0),
-    "claude-sonnet-4-5-20250514": (3.0, 0.75, 0.30, 15.0),
-    "claude-haiku-3-5-20241022": (0.25, 0.03, 0.03, 1.25),
+    "claude-opus-4-6": (15.0, 3.75, 1.50, 75.0),
+    "claude-sonnet-4-6": (3.0, 0.75, 0.30, 15.0),
+    "claude-haiku-4-5-20251001": (0.80, 0.08, 0.08, 4.0),
 }
 
 
@@ -114,8 +114,22 @@ class CachedPrompt:
 class HolusClaudeClient:
     """Central Claude API client for all Holus agents."""
 
-    def __init__(self, api_key: str | None = None) -> None:
-        self.client = anthropic.Anthropic(api_key=api_key)
+    def __init__(
+        self,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        model_map: dict[ModelTier, str] | None = None,
+    ) -> None:
+        kwargs: dict[str, Any] = {}
+        if api_key:
+            kwargs["api_key"] = api_key
+        if base_url:
+            kwargs["base_url"] = base_url
+        self.client = anthropic.Anthropic(**kwargs)
+        if model_map:
+            self._model_map = model_map
+        else:
+            self._model_map = dict(MODEL_MAP)
         self._cost_log: list[dict[str, Any]] = []
 
     # -- Synchronous call ----------------------------------------------------
@@ -145,7 +159,7 @@ class HolusClaudeClient:
             thinking_budget: Maximum tokens for the thinking block.
             agent_id: For cost tracking and Langfuse attribution.
         """
-        model = MODEL_MAP[tier]
+        model = self._model_map[tier]
 
         kwargs: dict[str, Any] = {
             "model": model,
@@ -184,7 +198,7 @@ class HolusClaudeClient:
         agent_id: str = "unknown",
     ) -> Generator[Any, None, None]:
         """Streaming version for real-time output."""
-        model = MODEL_MAP[tier]
+        model = self._model_map[tier]
 
         tools = cached_prompt.build_tools_with_cache()
         tools_arg = tools if tools else anthropic.NOT_GIVEN
@@ -216,7 +230,7 @@ class HolusClaudeClient:
           - ``messages`` (list of message dicts)
           - optional ``max_tokens``
         """
-        model = MODEL_MAP[tier]
+        model = self._model_map[tier]
         batch_items: list[dict[str, Any]] = []
 
         for req in requests:

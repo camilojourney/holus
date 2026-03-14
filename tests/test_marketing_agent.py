@@ -157,8 +157,10 @@ def mock_config(temp_config_files):
     """Mock HolusConfig with test paths."""
     config = MagicMock(spec=HolusConfig)
     config.anthropic_api_key = "sk-ant-test-key"
+    config.anthropic_base_url = ""
     config.opus_model = "claude-opus-4-6"
     config.sonnet_model = "claude-sonnet-4-6"
+    config.haiku_model = "claude-haiku-4-5-20251001"
     config.redis_url = "redis://localhost:6379"
     config.mem0_api_url = "http://localhost:8000"
     config.langfuse_public_key = None

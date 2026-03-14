@@ -279,20 +279,7 @@ audit:
 
 # List all agents with their status (from AGENTS.yaml)
 agents:
-    uv run python -c "
-from holus.agents.registry import AgentRegistry
-reg = AgentRegistry()
-all_agents = reg.list_agents()
-print(f'{'ID':<35} {'TYPE':<12} {'STATUS':<10} {'MODEL':<16} VERSION')
-print('-' * 90)
-for a in sorted(all_agents, key=lambda x: (x.type, x.agent_id)):
-    print(f'{a.agent_id:<35} {a.type:<12} {a.status:<10} {a.model_tier:<16} {a.version}')
-print()
-print(f'Total: {len(all_agents)} agents')
-active = sum(1 for a in all_agents if a.status == 'active')
-planned = sum(1 for a in all_agents if a.status == 'planned')
-print(f'  active: {active}  planned: {planned}')
-"
+    uv run python scripts/list_agents.py
 
 # Run domain-expert judge on recent trajectory entries (last 7 days)
 evaluate:
