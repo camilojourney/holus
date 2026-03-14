@@ -3,6 +3,7 @@
  */
 
 .single-container {
+  box-sizing: border-box;
   width: var(--brand-image-width);
   height: var(--brand-image-height);
   display: flex;
@@ -12,6 +13,17 @@
   background-color: var(--brand-color-background);
   overflow: hidden;
   position: relative;
+}
+
+.single-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--brand-color-primary), var(--brand-color-accent));
+  pointer-events: none;
 }
 
 .single-content {
@@ -53,10 +65,10 @@
 }
 
 .single-stat-value {
-  font-size: 72px;
+  font-size: clamp(48px, 6.5vw, 80px);
   font-weight: var(--brand-weight-headline);
   color: var(--brand-color-primary);
-  line-height: 1.0;
+  line-height: 1;
 }
 
 .single-stat-label {
@@ -67,9 +79,11 @@
 
 /* Quote block */
 .single-quote {
-  border-left: 4px solid var(--brand-color-primary);
-  padding-left: var(--brand-spacing-padding);
+  background-color: var(--brand-color-surface);
+  border-radius: var(--brand-border-radius);
+  padding: var(--brand-spacing-padding);
   margin: var(--brand-spacing-padding) 0;
+  font-style: normal;
 }
 
 .single-quote p {
