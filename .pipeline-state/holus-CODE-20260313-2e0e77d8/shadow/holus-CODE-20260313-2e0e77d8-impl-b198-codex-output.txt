@@ -1,0 +1,269 @@
+2026-03-14T03:17:11.027362Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/init (symlink): No such file or directory (os error 2)
+2026-03-14T03:17:11.027467Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/social-poster (symlink): No such file or directory (os error 2)
+2026-03-14T03:17:11.027609Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/update-app-dev (symlink): No such file or directory (os error 2)
+2026-03-14T03:17:11.027686Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/ship (symlink): No such file or directory (os error 2)
+2026-03-14T03:17:11.027693Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/ux-crew (symlink): No such file or directory (os error 2)
+OpenAI Codex v0.114.0 (research preview)
+--------
+workdir: /Users/mini/.openclaw/workspace/github/holus
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: high
+reasoning summaries: none
+session id: 019cea59-0f02-7f92-b0d0-84b64195f7bf
+--------
+user
+Add a list_available_styles() method to the TemplateEngine class in src/holus/visual/templates.py. Read the file first. The method should scan self._styles_dir for .css files and return a sorted list of names without the .css extension. Example: ['base', 'carousel', 'single', 'slide'].
+mcp startup: no servers
+codex
+I’m reading the template engine implementation first, then I’ll add the method in place and verify the behavior against the existing class structure.
+exec
+/bin/zsh -lc "sed -n '1,240p' src/holus/visual/templates.py" in /Users/mini/.openclaw/workspace/github/holus succeeded in 0ms:
+"""Jinja2 template engine with brand CSS injection.
+
+Loads templates from the ``templates/`` directory within this package,
+renders them with variables, and injects brand CSS custom properties
+into the HTML ``<head>``.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+from holus.visual.brand import BrandVisualIdentityLoader
+
+# Template directory lives alongside this module
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_STYLES_DIR = Path(__file__).parent / "styles"
+
+
+codex
+I’ve confirmed the class structure. Next I’m adding `list_available_styles()` next to the existing listing helper so it uses the same directory conventions and returns deterministic output.
+file update
+M /Users/mini/.openclaw/workspace/github/holus/src/holus/visual/templates.py
+@@ -102 +102,10 @@
+         return sorted(templates)
++
++    def list_available_styles(self) -> list[str]:
++        """List all available style names (without .css extension)."""
++        styles: list[str] = []
++        for path in self._styles_dir.rglob("*.css"):
++            relative = path.relative_to(self._styles_dir)
++            name = str(relative).removesuffix(".css")
++            styles.append(name)
++        return sorted(styles)
+apply_patch(auto_approved=true) exited 0 in 22ms:
+Success. Updated the following files:
+M /Users/mini/.openclaw/workspace/github/holus/src/holus/visual/templates.py
+file update:
+diff --git a/src/holus/visual/templates.py b/src/holus/visual/templates.py
+index ea74dabc366714ab7e8aa65dfaf4cdea9f689ac1..c1f78d525b5510bc77b820bbf6a04d585ae401ea
+--- a/src/holus/visual/templates.py
++++ b/src/holus/visual/templates.py
+@@ -100,3 +100,12 @@
+             name = str(relative).removesuffix(".html.j2")
+             templates.append(name)
+         return sorted(templates)
++
++    def list_available_styles(self) -> list[str]:
++        """List all available style names (without .css extension)."""
++        styles: list[str] = []
++        for path in self._styles_dir.rglob("*.css"):
++            relative = path.relative_to(self._styles_dir)
++            name = str(relative).removesuffix(".css")
++            styles.append(name)
++        return sorted(styles)
+
+file update:
+diff --git a/src/holus/visual/templates.py b/src/holus/visual/templates.py
+index ea74dabc366714ab7e8aa65dfaf4cdea9f689ac1..c1f78d525b5510bc77b820bbf6a04d585ae401ea
+--- a/src/holus/visual/templates.py
++++ b/src/holus/visual/templates.py
+@@ -100,3 +100,12 @@
+             name = str(relative).removesuffix(".html.j2")
+             templates.append(name)
+         return sorted(templates)
++
++    def list_available_styles(self) -> list[str]:
++        """List all available style names (without .css extension)."""
++        styles: list[str] = []
++        for path in self._styles_dir.rglob("*.css"):
++            relative = path.relative_to(self._styles_dir)
++            name = str(relative).removesuffix(".css")
++            styles.append(name)
++        return sorted(styles)
+
+codex
+The method is in place. I’m doing a quick check against the actual `styles/` directory contents to make sure the returned names match the expected shape.
+exec
+/bin/zsh -lc "find src/holus/visual/styles -type f -name '*.css' | sort" in /Users/mini/.openclaw/workspace/github/holus succeeded in 0ms:
+src/holus/visual/styles/base.css
+src/holus/visual/styles/carousel.css
+src/holus/visual/styles/single.css
+src/holus/visual/styles/slide.css
+exec
+/bin/zsh -lc "python - <<'PY'
+from holus.visual.templates import TemplateEngine
+print(TemplateEngine().list_available_styles())
+PY" in /Users/mini/.openclaw/workspace/github/holus exited 127 in 0ms:
+zsh:1: command not found: python
+file update:
+diff --git a/src/holus/visual/templates.py b/src/holus/visual/templates.py
+index ea74dabc366714ab7e8aa65dfaf4cdea9f689ac1..c1f78d525b5510bc77b820bbf6a04d585ae401ea
+--- a/src/holus/visual/templates.py
++++ b/src/holus/visual/templates.py
+@@ -100,3 +100,12 @@
+             name = str(relative).removesuffix(".html.j2")
+             templates.append(name)
+         return sorted(templates)
++
++    def list_available_styles(self) -> list[str]:
++        """List all available style names (without .css extension)."""
++        styles: list[str] = []
++        for path in self._styles_dir.rglob("*.css"):
++            relative = path.relative_to(self._styles_dir)
++            name = str(relative).removesuffix(".css")
++            styles.append(name)
++        return sorted(styles)
+
+codex
+The filesystem check matches the expected four style files. The runtime check failed because this environment exposes `python3`, not `python`, so I’m rerunning that one with the correct interpreter.
+exec
+/bin/zsh -lc "python3 - <<'PY'
+from holus.visual.templates import TemplateEngine
+print(TemplateEngine().list_available_styles())
+PY" in /Users/mini/.openclaw/workspace/github/holus exited 1 in 0ms:
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ModuleNotFoundError: No module named 'holus'
+file update:
+diff --git a/src/holus/visual/templates.py b/src/holus/visual/templates.py
+index ea74dabc366714ab7e8aa65dfaf4cdea9f689ac1..c1f78d525b5510bc77b820bbf6a04d585ae401ea
+--- a/src/holus/visual/templates.py
++++ b/src/holus/visual/templates.py
+@@ -100,3 +100,12 @@
+             name = str(relative).removesuffix(".html.j2")
+             templates.append(name)
+         return sorted(templates)
++
++    def list_available_styles(self) -> list[str]:
++        """List all available style names (without .css extension)."""
++        styles: list[str] = []
++        for path in self._styles_dir.rglob("*.css"):
++            relative = path.relative_to(self._styles_dir)
++            name = str(relative).removesuffix(".css")
++            styles.append(name)
++        return sorted(styles)
+
+codex
+Import resolution needs the repo’s `src/` on `PYTHONPATH`. I’m rerunning the check with that set so the method is exercised in the same package layout the project uses.
+exec
+/bin/zsh -lc "PYTHONPATH=src python3 - <<'PY'
+from holus.visual.templates import TemplateEngine
+print(TemplateEngine().list_available_styles())
+PY" in /Users/mini/.openclaw/workspace/github/holus exited 1 in 0ms:
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/__init__.py", line 11, in <module>
+    from holus.visual.brand import BrandVisualIdentityLoader
+  File "/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/brand.py", line 14, in <module>
+    from holus.agents.marketing.models import BrandVisualIdentity
+  File "/Users/mini/.openclaw/workspace/github/holus/src/holus/agents/__init__.py", line 3, in <module>
+    from holus.agents.base import BaseAgent
+  File "/Users/mini/.openclaw/workspace/github/holus/src/holus/agents/base.py", line 21, in <module>
+    import redis
+ModuleNotFoundError: No module named 'redis'
+file update:
+diff --git a/src/holus/visual/templates.py b/src/holus/visual/templates.py
+index ea74dabc366714ab7e8aa65dfaf4cdea9f689ac1..c1f78d525b5510bc77b820bbf6a04d585ae401ea
+--- a/src/holus/visual/templates.py
++++ b/src/holus/visual/templates.py
+@@ -100,3 +100,12 @@
+             name = str(relative).removesuffix(".html.j2")
+             templates.append(name)
+         return sorted(templates)
++
++    def list_available_styles(self) -> list[str]:
++        """List all available style names (without .css extension)."""
++        styles: list[str] = []
++        for path in self._styles_dir.rglob("*.css"):
++            relative = path.relative_to(self._styles_dir)
++            name = str(relative).removesuffix(".css")
++            styles.append(name)
++        return sorted(styles)
+
+codex
+The implementation is complete. I’m grabbing the exact line reference for the new method so the change summary is precise, then I’ll close this out with the verification caveat.
+exec
+/bin/zsh -lc "nl -ba src/holus/visual/templates.py | sed -n '1,220p'" in /Users/mini/.openclaw/workspace/github/holus succeeded in 0ms:
+     1	"""Jinja2 template engine with brand CSS injection.
+     2	
+     3	Loads templates from the ``templates/`` directory within this package,
+     4	renders them with variables, and injects brand CSS custom properties
+     5	into the HTML ``<head>``.
+     6	"""
+     7	
+     8	from __future__ import annotations
+     9	
+    10	from pathlib import Path
+    11	
+    12	from jinja2 import Environment, FileSystemLoader, select_autoescape
+    13	
+    14	from holus.visual.brand import BrandVisualIdentityLoader
+    15	
+    16	# Template directory lives alongside this module
+    17	_TEMPLATES_DIR = Path(__file__).parent / "templates"
+    18	_STYLES_DIR = Path(__file__).parent / "styles"
+    19	
+    20	
+file update:
+diff --git a/src/holus/visual/templates.py b/src/holus/visual/templates.py
+index ea74dabc366714ab7e8aa65dfaf4cdea9f689ac1..c1f78d525b5510bc77b820bbf6a04d585ae401ea
+--- a/src/holus/visual/templates.py
++++ b/src/holus/visual/templates.py
+@@ -100,3 +100,12 @@
+             name = str(relative).removesuffix(".html.j2")
+             templates.append(name)
+         return sorted(templates)
++
++    def list_available_styles(self) -> list[str]:
++        """List all available style names (without .css extension)."""
++        styles: list[str] = []
++        for path in self._styles_dir.rglob("*.css"):
++            relative = path.relative_to(self._styles_dir)
++            name = str(relative).removesuffix(".css")
++            styles.append(name)
++        return sorted(styles)
+
+codex
+Added `TemplateEngine.list_available_styles()` in [src/holus/visual/templates.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/templates.py#L104). It scans `self._styles_dir` for `*.css`, strips the extension, and returns a sorted list, so with the current repo contents it will yield `['base', 'carousel', 'single', 'slide']`.
+
+I verified the directory contains those four CSS files. I also attempted a runtime import check, but the local environment is missing the `redis` dependency required by the package import path, so I did not run a full in-process verification.
+file update:
+diff --git a/src/holus/visual/templates.py b/src/holus/visual/templates.py
+index ea74dabc366714ab7e8aa65dfaf4cdea9f689ac1..c1f78d525b5510bc77b820bbf6a04d585ae401ea
+--- a/src/holus/visual/templates.py
++++ b/src/holus/visual/templates.py
+@@ -100,3 +100,12 @@
+             name = str(relative).removesuffix(".html.j2")
+             templates.append(name)
+         return sorted(templates)
++
++    def list_available_styles(self) -> list[str]:
++        """List all available style names (without .css extension)."""
++        styles: list[str] = []
++        for path in self._styles_dir.rglob("*.css"):
++            relative = path.relative_to(self._styles_dir)
++            name = str(relative).removesuffix(".css")
++            styles.append(name)
++        return sorted(styles)
+
+tokens used
+43,577
+Added `TemplateEngine.list_available_styles()` in [src/holus/visual/templates.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/templates.py#L104). It scans `self._styles_dir` for `*.css`, strips the extension, and returns a sorted list, so with the current repo contents it will yield `['base', 'carousel', 'single', 'slide']`.
+
+I verified the directory contains those four CSS files. I also attempted a runtime import check, but the local environment is missing the `redis` dependency required by the package import path, so I did not run a full in-process verification.

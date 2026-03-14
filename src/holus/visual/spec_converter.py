@@ -56,20 +56,33 @@ def data_viz_to_spec(
     labels = [str(dp.get("label", "")) for dp in data_points]
     values = [str(dp.get("value", 0)) for dp in data_points]
     highlight_index = visualizer_output.get("highlight_index")
-    color = str(visualizer_output.get("color_scheme") or "#6366f1")
+    color_scheme = visualizer_output.get("color_scheme")
+    color = str(color_scheme or "#6366f1")
+
+    # generate_svg rejects empty/whitespace label strings — use a dash placeholder for SVG only
+    svg_labels = [lbl if lbl.strip() else "-" for lbl in labels]
     svg_str = generate_svg(
         chart_type=str(visualizer_output["chart_type"]),
-        labels=labels,
+        labels=svg_labels,
         values=values,
         highlight_index=int(highlight_index) if highlight_index is not None else None,
         color_accent=color,
     )
 
     variables: dict[str, str | int | float | bool | list[str]] = {
+        "chart_type": str(visualizer_output["chart_type"]),
         "title": str(visualizer_output["title"]),
+        "labels": labels,
+        "values": values,
         "svg_content": svg_str,
         "source_label": str(visualizer_output.get("source_label", "")),
     }
+
+    if highlight_index is not None:
+        variables["highlight_index"] = int(highlight_index)
+
+    if color_scheme is not None:
+        variables["color_scheme"] = str(color_scheme)
 
     return RenderSpec(
         template="single_image/data_viz",

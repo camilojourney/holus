@@ -1,0 +1,7 @@
+Added the requested validation hardening and edge-case coverage without touching the excluded files.
+
+In [chart.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/chart.py#L12), I added `_validate_color()`, normalized `color_accent` at the start of `generate_svg()`, and added explicit checks for out-of-range `highlight_index`, empty labels, and empty values at [chart.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/chart.py#L32). In [poll.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/poll.py#L16), I added the local `_validate_color()` helper plus validation for empty/whitespace questions and empty poll options at [poll.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/poll.py#L27).
+
+The new regression tests are in [test_chart.py](/Users/mini/.openclaw/workspace/github/holus/tests/holus/visual/test_chart.py#L34) and [test_poll.py](/Users/mini/.openclaw/workspace/github/holus/tests/holus/visual/test_poll.py#L44). They cover the requested invalid inputs, Unicode cases, single-point line charts, all-zero bars, long poll question wrapping, and blank-color fallback.
+
+Verification: `uv run pytest -q tests/holus/visual/test_chart.py` and `uv run pytest -q tests/holus/visual/test_poll.py` both passed. I also started `uv run pytest -q` for the full repo, but that suite appeared to hang idle and did not complete during this run.

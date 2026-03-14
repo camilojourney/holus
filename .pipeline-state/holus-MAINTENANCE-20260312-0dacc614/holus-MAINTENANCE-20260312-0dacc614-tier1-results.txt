@@ -1,0 +1,24 @@
+TIER 1 RESULTS — holus
+Date: 2026-03-12
+CID: holus-MAINTENANCE-20260312-0dacc614
+
+Dependencies: FLAGGED (1 vulnerability)
+  - langgraph 1.0.9 → CVE-2026-28277 (fix available: 1.0.10)
+
+Lint:         CLEAN (ruff check — all passed)
+
+Tests:        PASS (606 passed, 1 skipped, 0 failed)
+  - Warning: Pydantic V1 deprecation with Python 3.14
+  - Warning: coroutine 'publish_all' was never awaited in test_social_media
+
+Docker:       SKIPPED (no docker-compose.yml)
+
+TIER 2 TRIGGER: NO
+  - Only 1 dep vulnerability (version bump, not code fix)
+  - Lint clean, tests passing
+
+ACTION ITEMS:
+  1. Bump langgraph 1.0.9 → 1.0.10 (CVE fix)
+  2. Investigate Pydantic V1 deprecation warning (Python 3.14 compatibility)
+
+HEALTH POSTURE: STABLE

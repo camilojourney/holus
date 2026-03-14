@@ -1388,8 +1388,8 @@ class MarketingAgent(BaseAgent):
             ), "template-fallback"
 
         # Try specialist chain for text-heavy platforms
-        _CHAIN_PLATFORMS = {Platform.LINKEDIN, Platform.INSTAGRAM, Platform.THREADS}
-        if decision.platform in _CHAIN_PLATFORMS:
+        chain_platforms = {Platform.LINKEDIN, Platform.INSTAGRAM, Platform.THREADS}
+        if decision.platform in chain_platforms:
             try:
                 text = self._specialist_chain(decision=decision, brand=brand)
                 if text and len(text) > 50:
@@ -1616,7 +1616,7 @@ class MarketingAgent(BaseAgent):
         stripped = text.strip()
         if stripped.startswith("```"):
             lines = stripped.split("\n")
-            lines = [l for l in lines if not l.strip().startswith("```")]
+            lines = [line for line in lines if not line.strip().startswith("```")]
             return "\n".join(lines)
         return stripped
 

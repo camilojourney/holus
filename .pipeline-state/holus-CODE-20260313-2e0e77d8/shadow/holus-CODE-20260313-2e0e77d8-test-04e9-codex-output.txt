@@ -1,0 +1,565 @@
+2026-03-14T03:18:54.727988Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/init (symlink): No such file or directory (os error 2)
+2026-03-14T03:18:54.728039Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/social-poster (symlink): No such file or directory (os error 2)
+2026-03-14T03:18:54.728176Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/update-app-dev (symlink): No such file or directory (os error 2)
+2026-03-14T03:18:54.728243Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/ship (symlink): No such file or directory (os error 2)
+2026-03-14T03:18:54.728252Z ERROR codex_core::skills::loader: failed to stat skills entry /Users/mini/.codex/skills/ux-crew (symlink): No such file or directory (os error 2)
+OpenAI Codex v0.114.0 (research preview)
+--------
+workdir: /Users/mini/.openclaw/workspace/github/holus
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: high
+reasoning summaries: none
+session id: 019cea5a-a40d-7c60-b9f1-a55621b2ade5
+--------
+user
+Write tests for the list_available_styles() method just added to TemplateEngine in src/holus/visual/templates.py. Read existing tests in tests/unit/visual/test_templates.py for patterns. Add a new test class TestListAvailableStyles to the SAME file. Test: returns sorted list, excludes non-css files, handles empty dir, returns correct names without .css extension. Use tmp_path fixture to create test dirs with .css and non-.css files.
+mcp startup: no servers
+codex
+Reviewing the existing template tests and the new `TemplateEngine.list_available_styles()` implementation first so the added tests match repo patterns and target the actual behavior.
+exec
+/bin/zsh -lc "sed -n '1,240p' tests/unit/visual/test_templates.py" in /Users/mini/.openclaw/workspace/github/holusexec
+/bin/zsh -lc "sed -n '1,240p' src/holus/visual/templates.py" in /Users/mini/.openclaw/workspace/github/holus succeeded in 0ms:
+"""Jinja2 template engine with brand CSS injection.
+
+Loads templates from the ``templates/`` directory within this package,
+renders them with variables, and injects brand CSS custom properties
+into the HTML ``<head>``.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+from holus.visual.brand import BrandVisualIdentityLoader
+
+# Template directory lives alongside this module
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_STYLES_DIR = Path(__file__).parent / "styles"
+
+
+ succeeded in 0ms:
+"""Tests for the Jinja2 template engine."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from unittest.mock import MagicMock
+
+from holus.agents.marketing.models import BrandVisualIdentity
+from holus.visual.brand import BrandVisualIdentityLoader
+from holus.visual.templates import TemplateEngine
+
+
+class TestTemplateEngine:
+    """Test template loading, rendering, and brand CSS injection."""
+
+    def _make_engine(
+        self,
+        templates_dir: Path | None = None,
+        styles_dir: Path | None = None,
+    ) -> TemplateEngine:
+codex
+The implementation is simple and mirrors `list_templates()`, so I’m adding a focused `TestListAvailableStyles` class in the existing test module with `tmp_path`-backed style directories that cover sorting, filtering, empty directories, and extension stripping.
+file update
+M /Users/mini/.openclaw/workspace/github/holus/tests/unit/visual/test_templates.py
+@@ -149 +149,51 @@
+         assert "--brand-color-primary" in html  # brand CSS still present
++
++
++class TestListAvailableStyles:
++    """Test discovery of available CSS styles."""
++
++    def _make_engine(self, styles_dir: Path) -> TemplateEngine:
++        """Create a TemplateEngine with a custom styles directory."""
++        return TemplateEngine(styles_dir=styles_dir)
++
++    def test_returns_sorted_list(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "zebra.css").write_text("/* zebra */", encoding="utf-8")
++        (styles_dir / "alpha.css").write_text("/* alpha */", encoding="utf-8")
++        (styles_dir / "middle.css").write_text("/* middle */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["alpha", "middle", "zebra"]
++
++    def test_excludes_non_css_files(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "base.css").write_text("/* css */", encoding="utf-8")
++        (styles_dir / "notes.txt").write_text("ignore me", encoding="utf-8")
++        (styles_dir / "theme.css.bak").write_text("ignore me too", encoding="utf-8")
++        (styles_dir / "README").write_text("ignore me", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base"]
++
++    def test_handles_empty_dir(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == []
++
++    def test_returns_names_without_css_extension(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        nested_dir = styles_dir / "carousel"
++        nested_dir.mkdir(parents=True)
++        (styles_dir / "base.css").write_text("/* base */", encoding="utf-8")
++        (nested_dir / "accent.css").write_text("/* accent */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base", "carousel/accent"]
+apply_patch(auto_approved=true) exited 0 in 16ms:
+Success. Updated the following files:
+M /Users/mini/.openclaw/workspace/github/holus/tests/unit/visual/test_templates.py
+file update:
+diff --git a/tests/unit/visual/test_templates.py b/tests/unit/visual/test_templates.py
+index 0ba7710a4a903f0abd7dfc5337504106b6a509e9..71ae0cab482e4d2c452a3837c30ef0764c23d64e
+--- a/tests/unit/visual/test_templates.py
++++ b/tests/unit/visual/test_templates.py
+@@ -147,3 +147,53 @@
+         html = engine.render("single_image/insight", {"headline": "Test"})
+         assert "Test" in html
+         assert "--brand-color-primary" in html  # brand CSS still present
++
++
++class TestListAvailableStyles:
++    """Test discovery of available CSS styles."""
++
++    def _make_engine(self, styles_dir: Path) -> TemplateEngine:
++        """Create a TemplateEngine with a custom styles directory."""
++        return TemplateEngine(styles_dir=styles_dir)
++
++    def test_returns_sorted_list(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "zebra.css").write_text("/* zebra */", encoding="utf-8")
++        (styles_dir / "alpha.css").write_text("/* alpha */", encoding="utf-8")
++        (styles_dir / "middle.css").write_text("/* middle */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["alpha", "middle", "zebra"]
++
++    def test_excludes_non_css_files(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "base.css").write_text("/* css */", encoding="utf-8")
++        (styles_dir / "notes.txt").write_text("ignore me", encoding="utf-8")
++        (styles_dir / "theme.css.bak").write_text("ignore me too", encoding="utf-8")
++        (styles_dir / "README").write_text("ignore me", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base"]
++
++    def test_handles_empty_dir(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == []
++
++    def test_returns_names_without_css_extension(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        nested_dir = styles_dir / "carousel"
++        nested_dir.mkdir(parents=True)
++        (styles_dir / "base.css").write_text("/* base */", encoding="utf-8")
++        (nested_dir / "accent.css").write_text("/* accent */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base", "carousel/accent"]
+
+file update:
+diff --git a/tests/unit/visual/test_templates.py b/tests/unit/visual/test_templates.py
+index 0ba7710a4a903f0abd7dfc5337504106b6a509e9..71ae0cab482e4d2c452a3837c30ef0764c23d64e
+--- a/tests/unit/visual/test_templates.py
++++ b/tests/unit/visual/test_templates.py
+@@ -147,3 +147,53 @@
+         html = engine.render("single_image/insight", {"headline": "Test"})
+         assert "Test" in html
+         assert "--brand-color-primary" in html  # brand CSS still present
++
++
++class TestListAvailableStyles:
++    """Test discovery of available CSS styles."""
++
++    def _make_engine(self, styles_dir: Path) -> TemplateEngine:
++        """Create a TemplateEngine with a custom styles directory."""
++        return TemplateEngine(styles_dir=styles_dir)
++
++    def test_returns_sorted_list(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "zebra.css").write_text("/* zebra */", encoding="utf-8")
++        (styles_dir / "alpha.css").write_text("/* alpha */", encoding="utf-8")
++        (styles_dir / "middle.css").write_text("/* middle */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["alpha", "middle", "zebra"]
++
++    def test_excludes_non_css_files(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "base.css").write_text("/* css */", encoding="utf-8")
++        (styles_dir / "notes.txt").write_text("ignore me", encoding="utf-8")
++        (styles_dir / "theme.css.bak").write_text("ignore me too", encoding="utf-8")
++        (styles_dir / "README").write_text("ignore me", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base"]
++
++    def test_handles_empty_dir(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == []
++
++    def test_returns_names_without_css_extension(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        nested_dir = styles_dir / "carousel"
++        nested_dir.mkdir(parents=True)
++        (styles_dir / "base.css").write_text("/* base */", encoding="utf-8")
++        (nested_dir / "accent.css").write_text("/* accent */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base", "carousel/accent"]
+
+codex
+The new tests are in place. Running the targeted unit test file now to verify the new class and confirm it fits the existing suite.
+exec
+/bin/zsh -lc 'pytest tests/unit/visual/test_templates.py' in /Users/mini/.openclaw/workspace/github/holus exited 2 in 201ms:
+
+==================================== ERRORS ====================================
+_____________ ERROR collecting tests/unit/visual/test_templates.py _____________
+ImportError while importing test module '/Users/mini/.openclaw/workspace/github/holus/tests/unit/visual/test_templates.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit/visual/test_templates.py:8: in <module>
+    from holus.agents.marketing.models import BrandVisualIdentity
+E   ModuleNotFoundError: No module named 'holus'
+=========================== short test summary info ============================
+ERROR tests/unit/visual/test_templates.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.06s
+file update:
+diff --git a/tests/unit/visual/test_templates.py b/tests/unit/visual/test_templates.py
+index 0ba7710a4a903f0abd7dfc5337504106b6a509e9..71ae0cab482e4d2c452a3837c30ef0764c23d64e
+--- a/tests/unit/visual/test_templates.py
++++ b/tests/unit/visual/test_templates.py
+@@ -147,3 +147,53 @@
+         html = engine.render("single_image/insight", {"headline": "Test"})
+         assert "Test" in html
+         assert "--brand-color-primary" in html  # brand CSS still present
++
++
++class TestListAvailableStyles:
++    """Test discovery of available CSS styles."""
++
++    def _make_engine(self, styles_dir: Path) -> TemplateEngine:
++        """Create a TemplateEngine with a custom styles directory."""
++        return TemplateEngine(styles_dir=styles_dir)
++
++    def test_returns_sorted_list(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "zebra.css").write_text("/* zebra */", encoding="utf-8")
++        (styles_dir / "alpha.css").write_text("/* alpha */", encoding="utf-8")
++        (styles_dir / "middle.css").write_text("/* middle */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["alpha", "middle", "zebra"]
++
++    def test_excludes_non_css_files(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "base.css").write_text("/* css */", encoding="utf-8")
++        (styles_dir / "notes.txt").write_text("ignore me", encoding="utf-8")
++        (styles_dir / "theme.css.bak").write_text("ignore me too", encoding="utf-8")
++        (styles_dir / "README").write_text("ignore me", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base"]
++
++    def test_handles_empty_dir(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == []
++
++    def test_returns_names_without_css_extension(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        nested_dir = styles_dir / "carousel"
++        nested_dir.mkdir(parents=True)
++        (styles_dir / "base.css").write_text("/* base */", encoding="utf-8")
++        (nested_dir / "accent.css").write_text("/* accent */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base", "carousel/accent"]
+
+codex
+`pytest` failed at collection because the package isn’t on `PYTHONPATH` in the raw shell invocation. I’m checking the repo’s test configuration and then I’ll rerun the targeted test with the correct entrypoint/environment.
+exec
+/bin/zsh -lc "rg -n \"pythonpath|tool.pytest|pytest|just check|testpaths\" pyproject.toml justfile setup.cfg pytest.ini . -g 'pyproject.toml' -g 'justfile' -g 'setup.cfg' -g 'pytest.ini'" in /Users/mini/.openclaw/workspace/github/holus exited 2 in 0ms:
+rg: setup.cfg: No such file or directory (os error 2)
+rg: pytest.ini: No such file or directory (os error 2)
+justfile:26:    uv run pytest tests/ -x -v
+justfile:29:    uv run pytest tests/unit/ -x -v
+justfile:32:    uv run pytest tests/integration/ -x -v
+justfile:35:    uv run pytest tests/ --cov=src/holus --cov-report=term-missing --cov-report=html
+justfile:70:    find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+pyproject.toml:49:    "pytest>=8.3.0",
+pyproject.toml:50:    "pytest-asyncio>=0.24.0",
+pyproject.toml:51:    "pytest-cov>=5.0.0",
+pyproject.toml:148:[tool.pytest.ini_options]
+pyproject.toml:149:testpaths = ["tests"]
+./justfile:26:    uv run pytest tests/ -x -v
+./justfile:29:    uv run pytest tests/unit/ -x -v
+./justfile:32:    uv run pytest tests/integration/ -x -v
+./justfile:35:    uv run pytest tests/ --cov=src/holus --cov-report=term-missing --cov-report=html
+./justfile:70:    find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+./pyproject.toml:49:    "pytest>=8.3.0",
+./pyproject.toml:50:    "pytest-asyncio>=0.24.0",
+./pyproject.toml:51:    "pytest-cov>=5.0.0",
+exec
+/bin/zsh -lc 'pwd && ls' in /Users/mini/.openclaw/workspace/github/holus succeeded in 0ms:
+/Users/mini/.openclaw/workspace/github/holus
+AGENTS.md
+ARCHITECTURE.md
+CLAUDE.md
+README.md
+agents
+config
+data
+devlog
+docker-compose.yml
+docs
+e2e
+evals
+infra
+justfile
+knowledge
+logs
+observatory
+pyproject.toml
+specs
+file update:
+diff --git a/tests/unit/visual/test_templates.py b/tests/unit/visual/test_templates.py
+index 0ba7710a4a903f0abd7dfc5337504106b6a509e9..71ae0cab482e4d2c452a3837c30ef0764c23d64e
+--- a/tests/unit/visual/test_templates.py
++++ b/tests/unit/visual/test_templates.py
+@@ -147,3 +147,53 @@
+         html = engine.render("single_image/insight", {"headline": "Test"})
+         assert "Test" in html
+         assert "--brand-color-primary" in html  # brand CSS still present
++
++
++class TestListAvailableStyles:
++    """Test discovery of available CSS styles."""
++
++    def _make_engine(self, styles_dir: Path) -> TemplateEngine:
++        """Create a TemplateEngine with a custom styles directory."""
++        return TemplateEngine(styles_dir=styles_dir)
++
++    def test_returns_sorted_list(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "zebra.css").write_text("/* zebra */", encoding="utf-8")
++        (styles_dir / "alpha.css").write_text("/* alpha */", encoding="utf-8")
++        (styles_dir / "middle.css").write_text("/* middle */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["alpha", "middle", "zebra"]
++
++    def test_excludes_non_css_files(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "base.css").write_text("/* css */", encoding="utf-8")
++        (styles_dir / "notes.txt").write_text("ignore me", encoding="utf-8")
++        (styles_dir / "theme.css.bak").write_text("ignore me too", encoding="utf-8")
++        (styles_dir / "README").write_text("ignore me", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base"]
++
++    def test_handles_empty_dir(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == []
++
++    def test_returns_names_without_css_extension(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        nested_dir = styles_dir / "carousel"
++        nested_dir.mkdir(parents=True)
++        (styles_dir / "base.css").write_text("/* base */", encoding="utf-8")
++        (nested_dir / "accent.css").write_text("/* accent */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base", "carousel/accent"]
+
+codex
+The repo uses `uv run pytest`, so I’m rerunning the targeted file with that environment instead of bare `pytest`.
+exec
+/bin/zsh -lc 'uv run pytest tests/unit/visual/test_templates.py' in /Users/mini/.openclaw/workspace/github/holus succeeded in 801ms:
+..................                                                       [100%]
+18 passed in 0.30s
+file update:
+diff --git a/tests/unit/visual/test_templates.py b/tests/unit/visual/test_templates.py
+index 0ba7710a4a903f0abd7dfc5337504106b6a509e9..71ae0cab482e4d2c452a3837c30ef0764c23d64e
+--- a/tests/unit/visual/test_templates.py
++++ b/tests/unit/visual/test_templates.py
+@@ -147,3 +147,53 @@
+         html = engine.render("single_image/insight", {"headline": "Test"})
+         assert "Test" in html
+         assert "--brand-color-primary" in html  # brand CSS still present
++
++
++class TestListAvailableStyles:
++    """Test discovery of available CSS styles."""
++
++    def _make_engine(self, styles_dir: Path) -> TemplateEngine:
++        """Create a TemplateEngine with a custom styles directory."""
++        return TemplateEngine(styles_dir=styles_dir)
++
++    def test_returns_sorted_list(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "zebra.css").write_text("/* zebra */", encoding="utf-8")
++        (styles_dir / "alpha.css").write_text("/* alpha */", encoding="utf-8")
++        (styles_dir / "middle.css").write_text("/* middle */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["alpha", "middle", "zebra"]
++
++    def test_excludes_non_css_files(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "base.css").write_text("/* css */", encoding="utf-8")
++        (styles_dir / "notes.txt").write_text("ignore me", encoding="utf-8")
++        (styles_dir / "theme.css.bak").write_text("ignore me too", encoding="utf-8")
++        (styles_dir / "README").write_text("ignore me", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base"]
++
++    def test_handles_empty_dir(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == []
++
++    def test_returns_names_without_css_extension(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        nested_dir = styles_dir / "carousel"
++        nested_dir.mkdir(parents=True)
++        (styles_dir / "base.css").write_text("/* base */", encoding="utf-8")
++        (nested_dir / "accent.css").write_text("/* accent */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base", "carousel/accent"]
+
+codex
+Added `TestListAvailableStyles` to [test_templates.py](/Users/mini/.openclaw/workspace/github/holus/tests/unit/visual/test_templates.py). The new tests cover sorted output, exclusion of non-`.css` files, empty-directory behavior, and returning style names without the `.css` extension, including nested paths like `carousel/accent`.
+
+Verification: `uv run pytest tests/unit/visual/test_templates.py` passed with `18 passed in 0.30s`.
+file update:
+diff --git a/tests/unit/visual/test_templates.py b/tests/unit/visual/test_templates.py
+index 0ba7710a4a903f0abd7dfc5337504106b6a509e9..71ae0cab482e4d2c452a3837c30ef0764c23d64e
+--- a/tests/unit/visual/test_templates.py
++++ b/tests/unit/visual/test_templates.py
+@@ -147,3 +147,53 @@
+         html = engine.render("single_image/insight", {"headline": "Test"})
+         assert "Test" in html
+         assert "--brand-color-primary" in html  # brand CSS still present
++
++
++class TestListAvailableStyles:
++    """Test discovery of available CSS styles."""
++
++    def _make_engine(self, styles_dir: Path) -> TemplateEngine:
++        """Create a TemplateEngine with a custom styles directory."""
++        return TemplateEngine(styles_dir=styles_dir)
++
++    def test_returns_sorted_list(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "zebra.css").write_text("/* zebra */", encoding="utf-8")
++        (styles_dir / "alpha.css").write_text("/* alpha */", encoding="utf-8")
++        (styles_dir / "middle.css").write_text("/* middle */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["alpha", "middle", "zebra"]
++
++    def test_excludes_non_css_files(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++        (styles_dir / "base.css").write_text("/* css */", encoding="utf-8")
++        (styles_dir / "notes.txt").write_text("ignore me", encoding="utf-8")
++        (styles_dir / "theme.css.bak").write_text("ignore me too", encoding="utf-8")
++        (styles_dir / "README").write_text("ignore me", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base"]
++
++    def test_handles_empty_dir(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        styles_dir.mkdir()
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == []
++
++    def test_returns_names_without_css_extension(self, tmp_path: Path):
++        styles_dir = tmp_path / "styles"
++        nested_dir = styles_dir / "carousel"
++        nested_dir.mkdir(parents=True)
++        (styles_dir / "base.css").write_text("/* base */", encoding="utf-8")
++        (nested_dir / "accent.css").write_text("/* accent */", encoding="utf-8")
++
++        engine = self._make_engine(styles_dir)
++
++        assert engine.list_available_styles() == ["base", "carousel/accent"]
+
+tokens used
+17,352
+Added `TestListAvailableStyles` to [test_templates.py](/Users/mini/.openclaw/workspace/github/holus/tests/unit/visual/test_templates.py). The new tests cover sorted output, exclusion of non-`.css` files, empty-directory behavior, and returning style names without the `.css` extension, including nested paths like `carousel/accent`.
+
+Verification: `uv run pytest tests/unit/visual/test_templates.py` passed with `18 passed in 0.30s`.

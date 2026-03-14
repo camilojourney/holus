@@ -1,0 +1,22 @@
+{
+  "phase": "CODE",
+  "correlation_id": "holus-CODE-20260313-52a6e01a",
+  "doctrine_path": "~Projects/core/agents/managers/code-manager.md",
+  "input_payload": {
+    "repo_path": "/Users/mini/.openclaw/workspace/github/holus",
+    "task": "Add a render_visual() convenience function to src/holus/visual/__init__.py that takes a RenderSpec and optional BrandVisualIdentityLoader, renders a single image via PlaywrightEngine, and returns bytes."
+  },
+  "status": "COMPLETED",
+  "verdict": "PASS",
+  "summary": "render_visual() convenience function already exists in src/holus/visual/__init__.py (lines 26-65). It takes a RenderSpec and optional BrandVisualIdentity, instantiates PlaywrightEngine, calls render_spec(), and returns output_bytes. Already included in __all__. 143 visual tests passing, ruff clean. No code changes needed.",
+  "files_changed": 0,
+  "regression_test_added": false,
+  "issues_remaining": [],
+  "workers": {
+    "implementer": {"id": "holus-CODE-20260313-52a6e01a-impl-4a1e", "model": "already-implemented", "status": "SKIPPED"},
+    "tester": {"id": "holus-CODE-20260313-52a6e01a-test-9a31", "model": "already-tested", "status": "SKIPPED"},
+    "reviewer": {"id": "holus-CODE-20260313-52a6e01a-review-34be", "model": "claude-opus-4-6", "status": "COMPLETED"}
+  },
+  "verification_attempts": 1,
+  "review_findings": ["render_visual() already fully implemented with error handling, brand config loading, and async context manager for PlaywrightEngine"]
+}

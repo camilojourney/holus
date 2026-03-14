@@ -1,0 +1,15 @@
+{
+  "correlation_id": "holus-CODE-20260313-2e0e77d8",
+  "phase": "CODE",
+  "status": "COMPLETED",
+  "started_at": "2026-03-14T03:15:59Z",
+  "completed_at": "2026-03-14T03:21:30Z",
+  "workers": [
+    {"id": "holus-CODE-20260313-2e0e77d8-impl-b198", "role": "implementer", "model": "codex-gpt-5.4", "status": "COMPLETED", "started_at": "2026-03-14T03:16:30Z", "completed_at": "2026-03-14T03:18:29Z", "files_changed": ["src/holus/visual/templates.py"]},
+    {"id": "holus-CODE-20260313-2e0e77d8-test-04e9", "role": "tester", "model": "codex-gpt-5.4", "status": "COMPLETED", "started_at": "2026-03-14T03:18:35Z", "completed_at": "2026-03-14T03:19:31Z", "files_changed": ["tests/unit/visual/test_templates.py"]},
+    {"id": "holus-CODE-20260313-2e0e77d8-review-2142", "role": "reviewer", "model": "claude-self-review", "status": "COMPLETED", "started_at": "2026-03-14T03:20:00Z", "completed_at": "2026-03-14T03:21:00Z", "findings": []}
+  ],
+  "verification_attempts": 1,
+  "max_verification_attempts": 3,
+  "phases_completed": ["IMPLEMENT", "TEST", "VERIFY", "REVIEW"]
+}

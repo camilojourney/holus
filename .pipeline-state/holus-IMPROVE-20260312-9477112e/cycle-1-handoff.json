@@ -1,0 +1,24 @@
+{
+  "cycle": 1,
+  "model": "claude-sonnet-4-6",
+  "type": "IMPROVE",
+  "improvement": "Harden error recovery — retry with backoff, partial state persistence, phase-granular errors, run lock context manager, trajectory fallback",
+  "files_changed": [
+    "src/holus/core/retry.py",
+    "src/holus/core/cycle_state.py",
+    "src/holus/core/health.py",
+    "src/holus/core/__init__.py",
+    "src/holus/agents/marketing/agent.py",
+    "tests/unit/core/test_retry.py",
+    "tests/unit/core/test_trajectory_fallback.py",
+    "tests/unit/core/test_run_lock_health.py"
+  ],
+  "regression_test_added": true,
+  "issues_found_by_review": 5,
+  "issues_remaining": 0,
+  "improvements_applied": 5,
+  "delta_vs_previous": "positive",
+  "verdict": "CLEAN",
+  "diminishing_return": false,
+  "summary": "Added retry_with_backoff utility, trajectory write fallback to .failed file + stderr, acquire_run_lock context manager, phase-granular error messages in marketing agent run(), partial state save on failure. 606 tests passing, 3 new test files (test_retry, test_trajectory_fallback, test_run_lock_health)."
+}

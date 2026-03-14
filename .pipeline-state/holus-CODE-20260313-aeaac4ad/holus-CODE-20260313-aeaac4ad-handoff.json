@@ -1,0 +1,45 @@
+{
+  "phase": "CODE",
+  "correlation_id": "holus-CODE-20260313-aeaac4ad",
+  "doctrine_path": "~Projects/core/agents/managers/code-manager.md",
+  "input_payload": {
+    "repo_path": "/Users/mini/.openclaw/workspace/github/holus",
+    "task": "Phase 4b — Carousel PDF rendering + carousel templates + document support"
+  },
+  "status": "COMPLETED",
+  "verdict": "PASS",
+  "summary": "Implemented carousel PDF rendering pipeline: carousel.css (1080x1350 safe zones), summary_slide.html.j2 template, render_carousel_pdf() in engine.py, carousel_spec_to_slides() in spec_converter.py, render_carousel_visual() in __init__.py, carousel.css loading in templates.py. 41 new tests, all 646 unit tests passing, lint clean.",
+  "files_changed": 7,
+  "regression_test_added": true,
+  "issues_remaining": [],
+  "workers": {
+    "implementer": {
+      "id": "holus-CODE-20260313-aeaac4ad-impl-946f",
+      "model": "claude-opus-4-6",
+      "status": "COMPLETED",
+      "files": [
+        "src/holus/visual/styles/carousel.css",
+        "src/holus/visual/templates/carousel/summary_slide.html.j2",
+        "src/holus/visual/templates.py",
+        "src/holus/visual/spec_converter.py",
+        "src/holus/visual/engine.py",
+        "src/holus/visual/__init__.py"
+      ]
+    },
+    "tester": {
+      "id": "holus-CODE-20260313-aeaac4ad-test-57ad",
+      "model": "claude-opus-4-6",
+      "status": "COMPLETED",
+      "files": [
+        "tests/unit/visual/test_carousel_rendering.py"
+      ]
+    },
+    "reviewer": {
+      "id": "holus-CODE-20260313-aeaac4ad-review-e0c4",
+      "model": "claude-opus-4-6",
+      "status": "COMPLETED"
+    }
+  },
+  "verification_attempts": 1,
+  "review_findings": 0
+}

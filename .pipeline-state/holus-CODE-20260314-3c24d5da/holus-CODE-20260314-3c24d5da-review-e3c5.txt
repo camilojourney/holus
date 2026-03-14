@@ -1,0 +1,8 @@
+Here is the list of fixes applied to the CSS files:
+
+- Added `box-sizing: border-box;` to `.single-container` and `.slide-container` to ensure padding does not artificially expand the fixed width/height.
+- Changed `line-height: 1.0;` to the standard unitless `line-height: 1;` for `.single-stat-value` in `single.css`.
+- Removed redundant `border-left: none;` from `.single-quote` in `single.css`.
+- Removed the completely overwritten `padding: var(--brand-spacing-margin);` rule from `.slide-container` in `slide.css`.
+- Removed the `content: "\2022";` bullet pseudo-element from `.slide-bullets li::before` in `slide.css` to fix the visual conflict of having both a solid left border and a bullet point.
+- Removed the unnecessary `font-family: var(--brand-font-secondary);` from `.slide-counter` in `slide.css` since it's a visually hidden `sr-only` element.

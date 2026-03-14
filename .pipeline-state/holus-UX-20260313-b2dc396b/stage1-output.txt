@@ -1,0 +1,17 @@
+I will now start the frontend development server and capture screenshots of the specified routes for the UX audit.
+
+I will wait 8 seconds for the development server to initialize before taking the screenshots.
+
+I will now capture screenshots for each of the specified routes using Playwright.
+
+I will now stop the development server and list the captured screenshots with their file sizes.
+
+I will now create the summary JSON file containing the captured routes and screenshot details.
+
+I will now save the summary JSON file to the correct project temporary directory.
+
+I have successfully completed the CAPTURE stage of the UX audit. All 10 routes have been screenshotted and the summary has been saved.
+
+- **Routes Captured**: `/`, `/about`, `/agents`, `/content`, `/engagement`, `/followers`, `/evaluations`, `/health`, `/knowledge`, `/results`
+- **Screenshot Location**: `/Users/mini/.openclaw/workspace/github/holus/e2e/screenshots/audit/2026-03-13/desktop/`
+- **Summary File**: `/private/tmp/stage1-summary.json`

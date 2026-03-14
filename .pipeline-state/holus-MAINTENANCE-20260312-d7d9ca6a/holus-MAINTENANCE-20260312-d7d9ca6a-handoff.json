@@ -1,0 +1,17 @@
+{
+  "phase": "MAINTENANCE",
+  "agent_path": "/Users/mini/.openclaw/workspace/github/~Projects/core/agents/managers/maintenance-manager.md",
+  "input_payload": {"repo_path": "/Users/mini/.openclaw/workspace/github/holus", "task": "full maintenance"},
+  "correlation_id": "holus-MAINTENANCE-20260312-d7d9ca6a",
+  "status": "COMPLETED",
+  "summary": "Tier 1 maintenance on Holus. Dependencies: 1 CVE in langgraph 1.0.9 (fix: 1.0.10). Lint: clean. Tests: all passing (1 skipped). Docker: 4/5 healthy (langfuse unhealthy). Tier 2 skipped — no code fixes needed. Health posture: STABLE.",
+  "workers": {
+    "dep-audit": "FLAGGED",
+    "lint-check": "CLEAN",
+    "test-check": "PASS",
+    "docker-check": "DEGRADED",
+    "test-guardian": "SKIPPED",
+    "code-guardian": "SKIPPED",
+    "posture": "STABLE"
+  }
+}

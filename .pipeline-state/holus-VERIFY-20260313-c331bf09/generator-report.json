@@ -1,0 +1,5 @@
+{
+  "tests_generated": 35,
+  "tests_skipped": 0,
+  "notes": "Generated 7 spec files covering 35 acceptance criteria. Used a base URL of http://localhost:3000 and added a 3s delay for hydration as requested."
+}

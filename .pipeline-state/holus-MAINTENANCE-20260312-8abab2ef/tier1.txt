@@ -1,0 +1,63 @@
+DEPENDENCIES:
+error: Failed to spawn: `pip-audit`
+  Caused by: No such file or directory (os error 2)
+
+LINT:
+All checks passed!
+
+TYPES:
+src/holus/core/prompt_loader.py:64: error: Returning Any from function declared to return "Path | None"  [no-any-return]
+src/holus/api/routes/results.py:21: error: Missing type parameters for generic type "dict"  [type-arg]
+src/holus/api/routes/results.py:26: error: Returning Any from function declared to return "dict[Any, Any] | None"  [no-any-return]
+src/holus/api/routes/results.py:33: error: Missing type parameters for generic type "dict"  [type-arg]
+src/holus/api/routes/evaluations.py:102: error: Incompatible return value type (got "JSONResponse", expected "EvaluationsResponse")  [return-value]
+src/holus/api/routes/agents.py:30: error: Returning Any from function declared to return "dict[str, Any]"  [no-any-return]
+src/holus/agents/marketing/agent.py:172: error: Unused "type: ignore" comment  [unused-ignore]
+src/holus/agents/marketing/agent.py:172: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+src/holus/agents/marketing/agent.py:172: note: Error code "no-untyped-def" not covered by "type: ignore" comment
+src/holus/agents/marketing/agent.py:225: error: Call to untyped function "compile" in typed context  [no-untyped-call]
+Found 9 errors in 5 files (checked 71 source files)
+
+TESTS:
+..................................................................s..... [ 10%]
+........................................................................ [ 20%]
+........................................................................ [ 31%]
+........................................................................ [ 41%]
+........................................................................ [ 52%]
+........................................................................ [ 62%]
+.....................F.................................................. [ 73%]
+........................................................................ [ 83%]
+........................................................................ [ 94%]
+......................................                                   [100%]
+=================================== FAILURES ===================================
+_________ TestPreflightLLM.test_missing_api_key_returns_blocking_false _________
+tests/unit/core/test_health_preflight.py:92: in test_missing_api_key_returns_blocking_false
+    assert result.blocking_ok is False
+E   AssertionError: assert True is False
+E    +  where True = HealthResult(blocking_ok=True, available_silos=['social_media'], warnings=['Pilaster MCP not reachable: [Errno 61] Connection refused', 'Genpeli MCP not reachable: [Errno 61] Connection refused']).blocking_ok
+----------------------------- Captured stdout call -----------------------------
+2026-03-12 21:38:16 [warning  ] Preflight: Pilaster MCP unreachable error='[Errno 61] Connection refused'
+2026-03-12 21:38:16 [warning  ] Preflight: Genpeli MCP unreachable error='[Errno 61] Connection refused'
+2026-03-12 21:38:16 [info     ] Preflight complete             available_silos=['social_media'] warnings=['Pilaster MCP not reachable: [Errno 61] Connection refused', 'Genpeli MCP not reachable: [Errno 61] Connection refused']
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25
+  /Users/mini/.openclaw/workspace/github/holus/.venv/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+    from pydantic.v1.fields import FieldInfo as FieldInfoV1
+
+tests/unit/agents/test_repurpose.py::TestRepurposeContent::test_pieces_have_correct_structure
+  /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:2252: RuntimeWarning: coroutine 'publish_all' was never awaited
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unit/core/test_health_preflight.py::TestPreflightLLM::test_missing_api_key_returns_blocking_false
+
+DOCKER:
+NAMES               STATUS
+holus-langfuse      Up 20 hours (unhealthy)
+holus-temporal      Up 20 hours (healthy)
+holus-temporal-ui   Up 20 hours
+holus-redis         Up 20 hours (healthy)
+holus-postgres      Up 20 hours (healthy)

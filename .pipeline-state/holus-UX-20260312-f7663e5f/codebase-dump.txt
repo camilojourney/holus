@@ -1,0 +1,1638 @@
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/agents/[id]/page.tsx ===
+import { fetchAgent } from '@/lib/api';
+import { notFound } from 'next/navigation';
+import type { EvalVerdict } from '@/lib/types';
+
+export const revalidate = 30;
+
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+const verdictColors: Record<EvalVerdict, string> = {
+  pass: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  review: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+  fail: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+};
+
+export default async function AgentDetailPage({ params }: Props) {
+  const { id } = await params;
+  let agent;
+
+  try {
+    agent = await fetchAgent(id);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('404')) notFound();
+    // For other errors, show a minimal error state
+    return (
+      <div className="px-6 py-6">
+        <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-5 py-4">
+          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+            Could not load agent data
+          </p>
+          <p className="text-xs text-red-500 dark:text-red-400 mt-1">{msg}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const avgScore =
+    agent.recent_scores?.length > 0
+      ? (agent.recent_scores.reduce((a, b) => a + b, 0) / agent.recent_scores.length).toFixed(1)
+      : null;
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{agent.name}</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{agent.role}</p>
+      </div>
+
+      {/* Info card */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">Agent Info</h2>
+        <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {[
+            { label: 'Status', value: agent.status },
+            { label: 'Type', value: agent.type || '—' },
+            { label: 'Model tier', value: agent.model_tier },
+            { label: 'Model', value: agent.model || '—' },
+            { label: 'Version', value: agent.version || '—' },
+            { label: 'Avg quality', value: avgScore ? `${avgScore}/10` : '—' },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <dt className="text-xs text-gray-500 dark:text-gray-400">{label}</dt>
+              <dd className="text-sm font-medium text-gray-900 dark:text-white mt-0.5 truncate">
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {/* Quality score sparkline (simple visual) */}
+      {agent.recent_scores?.length > 0 && (
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
+            Recent Quality Scores
+          </h2>
+          <div className="flex items-end gap-1 h-16">
+            {agent.recent_scores.map((score, i) => (
+              <div
+                key={i}
+                className={`flex-1 rounded-t transition-all ${
+                  score >= 7
+                    ? 'bg-green-400 dark:bg-green-600'
+                    : score >= 4
+                    ? 'bg-yellow-400 dark:bg-yellow-600'
+                    : 'bg-red-400 dark:bg-red-600'
+                }`}
+                style={{ height: `${(score / 10) * 100}%` }}
+                title={`${score}/10`}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between text-xs text-gray-400 dark:text-gray-600 mt-1">
+            <span>older</span>
+            <span>newer</span>
+          </div>
+        </div>
+      )}
+
+      {/* Cycle history table */}
+      {agent.cycles?.length > 0 && (
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-950">
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+              Cycle History (last {agent.cycles.length})
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  {['Timestamp', 'Status', 'Score', 'Cost', 'Duration', 'Verdict'].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-900">
+                {agent.cycles.map((cycle) => (
+                  <tr key={cycle.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                    <td className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 font-mono whitespace-nowrap">
+                      {new Date(cycle.timestamp).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                          cycle.status === 'success'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                            : cycle.status === 'failed'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+                            : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                        }`}
+                      >
+                        {cycle.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                      {cycle.quality_score?.toFixed(1) ?? '—'}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                      {cycle.cost_usd !== undefined ? `$${cycle.cost_usd.toFixed(4)}` : '—'}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                      {cycle.duration_seconds !== undefined ? `${cycle.duration_seconds}s` : '—'}
+                    </td>
+                    <td className="px-4 py-2">
+                      {cycle.verdict ? (
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${verdictColors[cycle.verdict]}`}
+                        >
+                          {cycle.verdict}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {agent.cycles?.length === 0 && (
+        <p className="text-sm text-gray-400 dark:text-gray-600">No cycle history yet.</p>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/agents/page.tsx ===
+import { fetchAgents } from '@/lib/api';
+import AgentCard from '@/components/AgentCard';
+import ErrorBanner from '@/components/ErrorBanner';
+import type { Agent } from '@/lib/types';
+
+export const revalidate = 30;
+
+export default async function AgentsPage() {
+  let agents: Agent[] = [];
+  let error = false;
+
+  try {
+    agents = await fetchAgents();
+  } catch {
+    error = true;
+  }
+
+  const byStatus = agents.reduce<Record<string, typeof agents>>((acc, a) => {
+    acc[a.status] = [...(acc[a.status] ?? []), a];
+    return acc;
+  }, {});
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agents</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          All registered agents and their current status
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load agents from Observatory API" />}
+
+      {!error && agents.length === 0 && (
+        <p className="text-sm text-gray-400 dark:text-gray-600">
+          No agents found. Ensure Observatory API is running and agents/AGENTS.yaml is populated.
+        </p>
+      )}
+
+      {/* Status summary */}
+      {agents.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {Object.entries(byStatus).map(([status, list]) => (
+            <div
+              key={status}
+              className="border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"
+            >
+              <span className="font-medium text-gray-700 dark:text-gray-300">{list.length}</span>
+              <span className="ml-1.5 text-gray-500 dark:text-gray-400">{status}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Agent grid */}
+      {agents.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {agents.map((agent) => (
+            <AgentCard key={agent.id} agent={agent} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/content/page.tsx ===
+import { fetchContent } from '@/lib/api';
+import ContentKanban from '@/components/ContentKanban';
+import ErrorBanner from '@/components/ErrorBanner';
+import type { ContentItem } from '@/lib/types';
+
+export const revalidate = 30;
+
+export default async function ContentPage() {
+  let items: ContentItem[] = [];
+  let error = false;
+
+  try {
+    items = await fetchContent();
+  } catch {
+    error = true;
+  }
+
+  const pillarCounts = items.reduce<Record<string, number>>((acc, i) => {
+    acc[i.pillar] = (acc[i.pillar] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const platformCounts = items.reduce<Record<string, number>>((acc, i) => {
+    acc[i.platform] = (acc[i.platform] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Content Pipeline</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Content items by stage — read-only view
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load content data" />}
+
+      {!error && (
+        <>
+          {/* Stats row */}
+          {items.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {Object.entries(pillarCounts).map(([pillar, count]) => (
+                <div
+                  key={pillar}
+                  className="border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-white dark:bg-gray-950"
+                >
+                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{pillar}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{count}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <ContentKanban items={items} />
+
+          {/* Platform distribution */}
+          {items.length > 0 && (
+            <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+              <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
+                Platform Distribution
+              </h2>
+              <div className="space-y-2">
+                {Object.entries(platformCounts)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([platform, count]) => (
+                    <div key={platform} className="flex items-center gap-3">
+                      <span className="text-xs text-gray-600 dark:text-gray-400 w-28 capitalize">
+                        {platform}
+                      </span>
+                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                        <div
+                          className="bg-indigo-500 dark:bg-indigo-400 h-2 rounded-full"
+                          style={{ width: `${(count / items.length) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 w-6 text-right">
+                        {count}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/evaluations/page.tsx ===
+import { fetchEvaluations, fetchAgents } from '@/lib/api';
+import QualityHeatmap from '@/components/QualityHeatmap';
+import ErrorBanner from '@/components/ErrorBanner';
+import type { EvalVerdict, EvaluationRecord, Agent } from '@/lib/types';
+
+export const revalidate = 30;
+
+const verdictColors: Record<EvalVerdict, string> = {
+  pass: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  review: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+  fail: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+};
+
+export default async function EvaluationsPage() {
+  let evaluations: EvaluationRecord[] = [];
+  let agents: Agent[] = [];
+  let error = false;
+
+  try {
+    [evaluations, agents] = await Promise.all([fetchEvaluations({ days: 30 }), fetchAgents()]);
+  } catch {
+    error = true;
+  }
+
+  const agentIds = agents.map((a) => a.id);
+
+  const passCounts = { pass: 0, review: 0, fail: 0 };
+  for (const ev of evaluations) {
+    if (ev.verdict && ev.verdict in passCounts) {
+      passCounts[ev.verdict]++;
+    }
+  }
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Evaluations</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Quality scores over the last 30 days
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load evaluation data" />}
+
+      {!error && (
+        <>
+          {/* Gate health summary */}
+          <div className="grid grid-cols-3 gap-4">
+            {(['pass', 'review', 'fail'] as const).map((v) => (
+              <div
+                key={v}
+                className="border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-4 bg-white dark:bg-gray-950 text-center"
+              >
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{passCounts[v]}</p>
+                <span
+                  className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${verdictColors[v]}`}
+                >
+                  {v}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Heatmap */}
+          <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
+              Quality Heatmap — Agents × Days
+            </h2>
+            <QualityHeatmap evaluations={evaluations} agents={agentIds} />
+          </div>
+
+          {/* Evaluation table */}
+          {evaluations.length > 0 && (
+            <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-950">
+              <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                  Evaluation History ({evaluations.length} records)
+                </h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      {['Agent', 'Date', 'Score', 'Verdict', 'Evaluator'].map((h) => (
+                        <th
+                          key={h}
+                          className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50 dark:divide-gray-900">
+                    {evaluations.slice(0, 50).map((ev) => (
+                      <tr key={ev.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                        <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300 font-medium">
+                          {ev.agent_name}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 font-mono">
+                          {ev.date.slice(0, 10)}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                          {ev.score}/10
+                        </td>
+                        <td className="px-4 py-2">
+                          {ev.verdict ? (
+                            <span
+                              className={`text-xs px-1.5 py-0.5 rounded font-medium ${verdictColors[ev.verdict]}`}
+                            >
+                              {ev.verdict}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400">
+                          {ev.evaluator ?? '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {evaluations.length === 0 && (
+            <p className="text-sm text-gray-400 dark:text-gray-600 py-4">
+              No evaluation data yet.
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/globals.css ===
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/health/page.tsx ===
+import { fetchHealth } from '@/lib/api';
+import KillSwitchBanner from '@/components/KillSwitchBanner';
+import SystemHealthGrid from '@/components/SystemHealthGrid';
+import ErrorBanner from '@/components/ErrorBanner';
+
+export const revalidate = 0; // always fresh for health page
+
+export default async function HealthPage() {
+  let health = null;
+  let error = false;
+
+  try {
+    health = await fetchHealth();
+  } catch {
+    error = true;
+  }
+
+  return (
+    <div>
+      {/* Kill switch banner — full width at top */}
+      {health && <KillSwitchBanner health={health} />}
+
+      <div className="px-6 py-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">System Health</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Service status and kill switch state
+          </p>
+        </div>
+
+        {error && <ErrorBanner message="Could not reach Observatory API to fetch health data" />}
+
+        {health && (
+          <>
+            {/* Overall status */}
+            <div
+              className={`border rounded-xl px-5 py-4 flex items-center gap-4 ${
+                health.status === 'healthy'
+                  ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
+                  : health.status === 'degraded'
+                  ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950'
+                  : 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  health.status === 'healthy'
+                    ? 'bg-green-500'
+                    : health.status === 'degraded'
+                    ? 'bg-yellow-500'
+                    : 'bg-red-500'
+                }`}
+              />
+              <div>
+                <p
+                  className={`font-semibold capitalize ${
+                    health.status === 'healthy'
+                      ? 'text-green-700 dark:text-green-300'
+                      : health.status === 'degraded'
+                      ? 'text-yellow-700 dark:text-yellow-300'
+                      : 'text-red-700 dark:text-red-300'
+                  }`}
+                >
+                  System {health.status}
+                </p>
+                {health.timestamp && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Last checked: {new Date(health.timestamp).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Service grid */}
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                Services
+              </h2>
+              <SystemHealthGrid services={health.services ?? []} />
+            </div>
+          </>
+        )}
+
+        {!health && !error && (
+          <p className="text-sm text-gray-400 dark:text-gray-600">Loading health data...</p>
+        )}
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/knowledge/page.tsx ===
+import { fetchKnowledge } from '@/lib/api';
+import FreshnessIndicator from '@/components/FreshnessIndicator';
+import ErrorBanner from '@/components/ErrorBanner';
+import type { KnowledgeFile } from '@/lib/types';
+
+export const revalidate = 30;
+
+export default async function KnowledgePage() {
+  let files: KnowledgeFile[] = [];
+  let error = false;
+
+  try {
+    files = await fetchKnowledge();
+  } catch {
+    error = true;
+  }
+
+  const byFreshness = {
+    fresh: files.filter((f) => f.freshness === 'fresh').length,
+    aging: files.filter((f) => f.freshness === 'aging').length,
+    stale: files.filter((f) => f.freshness === 'stale').length,
+  };
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Knowledge</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Self-improvement memory, decisions, and lessons
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load knowledge files" />}
+
+      {!error && (
+        <>
+          {/* Freshness summary */}
+          {files.length > 0 && (
+            <div className="flex gap-4">
+              {Object.entries(byFreshness).map(([status, count]) => (
+                <div
+                  key={status}
+                  className="border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-white dark:bg-gray-950"
+                >
+                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{status}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{count}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* File browser */}
+          <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-950">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                Files ({files.length})
+              </h2>
+            </div>
+
+            {files.length === 0 ? (
+              <p className="text-sm text-gray-400 dark:text-gray-600 px-5 py-6 text-center">
+                No knowledge files indexed.
+              </p>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-gray-900">
+                {files
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      new Date(b.modified_at).getTime() - new Date(a.modified_at).getTime()
+                  )
+                  .map((file) => (
+                    <div
+                      key={file.path}
+                      className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-600 truncate">
+                          {file.path}
+                        </p>
+                      </div>
+                      <FreshnessIndicator
+                        freshness={file.freshness}
+                        modifiedAt={file.modified_at}
+                      />
+                      <span className="text-xs text-gray-400 dark:text-gray-600 whitespace-nowrap">
+                        {new Date(file.modified_at).toLocaleDateString()}
+                      </span>
+                      <span className="text-xs text-gray-400 dark:text-gray-600 whitespace-nowrap">
+                        {(file.size_bytes / 1024).toFixed(1)}KB
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/layout.tsx ===
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import Sidebar from '@/components/Sidebar';
+
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+});
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
+
+export const metadata: Metadata = {
+  title: 'Holus Observatory',
+  description: 'Real-time visibility into the Holus autonomous marketing system',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen`}
+      >
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <main className="flex-1 min-w-0 overflow-auto">
+            {children}
+          </main>
+        </div>
+      </body>
+    </html>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/page.tsx ===
+import { fetchHealth, fetchAgents, fetchMetrics } from '@/lib/api';
+import KPICard from '@/components/KPICard';
+import AgentCard from '@/components/AgentCard';
+import KillSwitchBanner from '@/components/KillSwitchBanner';
+import ErrorBanner from '@/components/ErrorBanner';
+import TrajectoryTimeline from '@/components/TrajectoryTimeline';
+
+export const revalidate = 30;
+
+async function getData() {
+  const [health, agents, metrics] = await Promise.allSettled([
+    fetchHealth(),
+    fetchAgents(),
+    fetchMetrics(),
+  ]);
+  return {
+    health: health.status === 'fulfilled' ? health.value : null,
+    agents: agents.status === 'fulfilled' ? agents.value : [],
+    metrics: metrics.status === 'fulfilled' ? metrics.value : null,
+    error: health.status === 'rejected' && agents.status === 'rejected',
+  };
+}
+
+export default async function DashboardPage() {
+  const { health, agents, metrics, error } = await getData();
+
+  return (
+    <div>
+      {health?.kill_switch_active && (
+        <KillSwitchBanner health={health} compact />
+      )}
+
+      <div className="px-6 py-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Holus autonomous marketing system — overview
+          </p>
+        </div>
+
+        {error && <ErrorBanner message="Could not reach Observatory API" />}
+
+        {health && (
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium ${
+              health.status === 'healthy'
+                ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300'
+                : health.status === 'degraded'
+                ? 'border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300'
+                : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300'
+            }`}
+          >
+            <span className="capitalize">System: {health.status}</span>
+            {health.timestamp && (
+              <span className="ml-auto text-xs opacity-60">
+                As of {new Date(health.timestamp).toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <KPICard
+            title="Cycles this week"
+            value={metrics?.cycles_this_week ?? '—'}
+            color="blue"
+          />
+          <KPICard
+            title="Success rate"
+            value={metrics ? `${(metrics.success_rate * 100).toFixed(1)}%` : '—'}
+            color={
+              metrics
+                ? metrics.success_rate >= 0.8
+                  ? 'green'
+                  : metrics.success_rate >= 0.5
+                  ? 'yellow'
+                  : 'red'
+                : 'default'
+            }
+          />
+          <KPICard
+            title="Avg quality score"
+            value={metrics?.avg_quality_score?.toFixed(1) ?? '—'}
+            subtitle="out of 10"
+            color={
+              metrics
+                ? metrics.avg_quality_score >= 7
+                  ? 'green'
+                  : metrics.avg_quality_score >= 4
+                  ? 'yellow'
+                  : 'red'
+                : 'default'
+            }
+          />
+          <KPICard
+            title="Total cost"
+            value={metrics ? `$${metrics.total_cost_usd.toFixed(2)}` : '—'}
+            subtitle="this week"
+          />
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            Agents ({agents.length})
+          </h2>
+          {agents.length === 0 ? (
+            <p className="text-sm text-gray-400 dark:text-gray-600 py-4">
+              {error ? 'Unable to load agents.' : 'No agents registered.'}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {agents.map((agent) => (
+                <AgentCard key={agent.id} agent={agent} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <TrajectoryTimeline />
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/AgentCard.tsx ===
+import type { Agent, AgentStatus } from '@/lib/types';
+import Link from 'next/link';
+
+const statusColors: Record<AgentStatus, string> = {
+  active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+  idle: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+  running: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+  error: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  disabled: 'bg-gray-100 text-gray-400 dark:bg-gray-900 dark:text-gray-600',
+  planned: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+};
+
+interface Props {
+  agent: Agent;
+}
+
+export default function AgentCard({ agent }: Props) {
+  return (
+    <Link href={`/agents/${agent.id}`}>
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-pointer">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+            {agent.name}
+          </h3>
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[agent.status]}`}
+          >
+            {agent.status}
+          </span>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{agent.role}</p>
+        <div className="flex items-center gap-2 mt-3">
+          <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+            {agent.model_tier}
+          </span>
+          {agent.type && (
+            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+              {agent.type}
+            </span>
+          )}
+        </div>
+        {agent.model && (
+          <p className="text-xs text-gray-400 dark:text-gray-600 mt-2 truncate">{agent.model}</p>
+        )}
+      </div>
+    </Link>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/ContentKanban.tsx ===
+import type { ContentItem, ContentState } from '@/lib/types';
+
+const COLUMNS: ContentState[] = ['DRAFT', 'REVIEW', 'PUBLISHED'];
+
+const pillarColors = {
+  authority: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+  entertainment: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300',
+  education: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+  conversion: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+};
+
+const columnColors: Record<ContentState, string> = {
+  DRAFT: 'text-gray-600 dark:text-gray-400',
+  REVIEW: 'text-yellow-700 dark:text-yellow-400',
+  PUBLISHED: 'text-green-700 dark:text-green-400',
+};
+
+interface Props {
+  items: ContentItem[];
+}
+
+export default function ContentKanban({ items }: Props) {
+  const grouped: Record<ContentState, ContentItem[]> = {
+    DRAFT: [],
+    REVIEW: [],
+    PUBLISHED: [],
+  };
+  for (const item of items) {
+    if (grouped[item.state]) {
+      grouped[item.state].push(item);
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {COLUMNS.map((state) => (
+        <div
+          key={state}
+          className="border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900"
+        >
+          <div className={`px-4 py-3 border-b border-gray-200 dark:border-gray-800 font-semibold text-sm ${columnColors[state]}`}>
+            {state}
+            <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-600">
+              ({grouped[state].length})
+            </span>
+          </div>
+          <div className="p-3 space-y-2 min-h-24">
+            {grouped[state].length === 0 ? (
+              <p className="text-xs text-gray-400 dark:text-gray-600 text-center py-4">
+                Empty
+              </p>
+            ) : (
+              grouped[state].map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-3"
+                >
+                  <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                    {item.title}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                        pillarColors[item.pillar] ?? 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {item.pillar}
+                    </span>
+                    <span className="text-xs text-gray-400 dark:text-gray-600">
+                      {item.platform}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/ErrorBanner.tsx ===
+interface Props {
+  message?: string;
+}
+
+export default function ErrorBanner({ message }: Props) {
+  return (
+    <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-5 py-4">
+      <p className="text-sm font-medium text-red-700 dark:text-red-300">
+        Service unavailable
+      </p>
+      {message && (
+        <p className="text-xs text-red-500 dark:text-red-400 mt-1">{message}</p>
+      )}
+      <p className="text-xs text-red-400 dark:text-red-600 mt-1">
+        Check that the Observatory API is running at{' '}
+        {process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001'}
+      </p>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/FreshnessIndicator.tsx ===
+import type { FreshnessStatus } from '@/lib/types';
+
+interface Props {
+  freshness: FreshnessStatus;
+  modifiedAt?: string;
+}
+
+const dotColor: Record<FreshnessStatus, string> = {
+  fresh: 'bg-green-500',
+  aging: 'bg-yellow-500',
+  stale: 'bg-red-500',
+};
+
+const labelColor: Record<FreshnessStatus, string> = {
+  fresh: 'text-green-600 dark:text-green-400',
+  aging: 'text-yellow-600 dark:text-yellow-400',
+  stale: 'text-red-600 dark:text-red-400',
+};
+
+export default function FreshnessIndicator({ freshness, modifiedAt }: Props) {
+  const tooltip = modifiedAt
+    ? `Last modified: ${new Date(modifiedAt).toLocaleString()}`
+    : freshness;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 text-xs font-medium ${labelColor[freshness]}`}
+      title={tooltip}
+    >
+      <span className={`w-2 h-2 rounded-full ${dotColor[freshness]}`} />
+      {freshness}
+    </span>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/KPICard.tsx ===
+interface Props {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  color?: 'default' | 'green' | 'yellow' | 'red' | 'blue';
+}
+
+const colorMap = {
+  default: 'text-gray-900 dark:text-white',
+  green: 'text-green-600 dark:text-green-400',
+  yellow: 'text-yellow-600 dark:text-yellow-400',
+  red: 'text-red-600 dark:text-red-400',
+  blue: 'text-blue-600 dark:text-blue-400',
+};
+
+export default function KPICard({ title, value, subtitle, color = 'default' }: Props) {
+  return (
+    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+        {title}
+      </p>
+      <p className={`text-2xl font-bold ${colorMap[color]}`}>{value}</p>
+      {subtitle && (
+        <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">{subtitle}</p>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/KillSwitchBanner.tsx ===
+import type { HealthStatus } from '@/lib/types';
+
+interface Props {
+  health: HealthStatus | null;
+  compact?: boolean;
+}
+
+export default function KillSwitchBanner({ health, compact = false }: Props) {
+  if (!health) return null;
+
+  if (health.kill_switch_active) {
+    return (
+      <div
+        className={`w-full bg-red-600 text-white ${compact ? 'px-4 py-2 text-sm' : 'px-6 py-4 text-base'} flex items-center gap-3`}
+      >
+        <span className="font-bold uppercase tracking-wide">
+          {compact ? 'KILL SWITCH ON' : 'KILL SWITCH ACTIVE'}
+        </span>
+        {health.kill_switch_activated_at && (
+          <span className="opacity-75 text-sm">
+            Activated: {new Date(health.kill_switch_activated_at).toLocaleString()}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  if (!compact) {
+    return (
+      <div className="w-full bg-green-600 text-white px-6 py-3 flex items-center gap-3">
+        <span className="font-medium">System running normally — Kill switch INACTIVE</span>
+      </div>
+    );
+  }
+
+  return null;
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/QualityHeatmap.tsx ===
+import type { EvaluationRecord } from '@/lib/types';
+
+interface Props {
+  evaluations: EvaluationRecord[];
+  agents: string[];
+  days?: number;
+}
+
+function scoreColor(score?: number): string {
+  if (score === undefined) return 'bg-gray-100 dark:bg-gray-800';
+  if (score >= 7) return 'bg-green-400 dark:bg-green-600';
+  if (score >= 4) return 'bg-yellow-400 dark:bg-yellow-600';
+  return 'bg-red-400 dark:bg-red-600';
+}
+
+function getLast30Days(): string[] {
+  return Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (29 - i));
+    return d.toISOString().slice(0, 10);
+  });
+}
+
+export default function QualityHeatmap({ evaluations, agents, days = 30 }: Props) {
+  const dateRange = getLast30Days().slice(-days);
+
+  // Build lookup: agent+date -> score
+  const lookup: Record<string, number> = {};
+  for (const ev of evaluations) {
+    const key = `${ev.agent_id}|${ev.date.slice(0, 10)}`;
+    lookup[key] = ev.score;
+  }
+
+  if (agents.length === 0) {
+    return (
+      <p className="text-sm text-gray-400 dark:text-gray-600 text-center py-8">
+        No agent data available
+      </p>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-max">
+        {/* Header row: dates */}
+        <div className="flex items-center gap-1 mb-2 pl-32">
+          {dateRange.map((d) => (
+            <div
+              key={d}
+              className="w-5 text-center"
+              title={d}
+            >
+              <span className="text-xs text-gray-400 dark:text-gray-600 rotate-90 inline-block">
+                {d.slice(5)}
+              </span>
+            </div>
+          ))}
+        </div>
+        {/* Rows: agents */}
+        {agents.map((agentId) => (
+          <div key={agentId} className="flex items-center gap-1 mb-1">
+            <div className="w-32 shrink-0 text-xs text-gray-600 dark:text-gray-400 truncate pr-2 text-right">
+              {agentId}
+            </div>
+            {dateRange.map((d) => {
+              const score = lookup[`${agentId}|${d}`];
+              return (
+                <div
+                  key={d}
+                  className={`w-5 h-5 rounded-sm ${scoreColor(score)}`}
+                  title={score !== undefined ? `${agentId} ${d}: ${score}` : `${agentId} ${d}: no data`}
+                />
+              );
+            })}
+          </div>
+        ))}
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-4 pl-32">
+          {[
+            { color: 'bg-green-400 dark:bg-green-600', label: '7–10 Pass' },
+            { color: 'bg-yellow-400 dark:bg-yellow-600', label: '4–7 Review' },
+            { color: 'bg-red-400 dark:bg-red-600', label: '0–4 Fail' },
+            { color: 'bg-gray-100 dark:bg-gray-800', label: 'No data' },
+          ].map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div className={`w-3 h-3 rounded-sm ${color}`} />
+              <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/Sidebar.tsx ===
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const nav = [
+  { href: '/', label: 'Dashboard', icon: '▦' },
+  { href: '/agents', label: 'Agents', icon: '◈' },
+  { href: '/content', label: 'Content', icon: '◰' },
+  { href: '/evaluations', label: 'Evaluations', icon: '◎' },
+  { href: '/knowledge', label: 'Knowledge', icon: '◻' },
+  { href: '/health', label: 'Health', icon: '◉' },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="w-56 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex flex-col">
+      <div className="px-5 py-5 border-b border-gray-200 dark:border-gray-800">
+        <span className="text-sm font-semibold tracking-widest text-gray-500 dark:text-gray-400 uppercase">
+          Holus
+        </span>
+        <div className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">
+          Observatory
+        </div>
+      </div>
+      <nav className="flex-1 px-3 py-4 space-y-1">
+        {nav.map(({ href, label, icon }) => {
+          const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                active
+                  ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <span className="text-base">{icon}</span>
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-800">
+        <p className="text-xs text-gray-400 dark:text-gray-600">Read-only · Internal</p>
+      </div>
+    </aside>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/SystemHealthGrid.tsx ===
+import type { ServiceStatus } from '@/lib/types';
+
+interface Props {
+  services: ServiceStatus[];
+}
+
+const statusColors = {
+  up: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  down: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+  degraded: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+};
+
+export default function SystemHealthGrid({ services }: Props) {
+  if (services.length === 0) {
+    return (
+      <p className="text-sm text-gray-400 dark:text-gray-600 text-center py-8">
+        No service data available
+      </p>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {services.map((svc) => (
+        <div
+          key={svc.name}
+          className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium text-gray-900 dark:text-white text-sm">{svc.name}</h3>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[svc.status]}`}
+            >
+              {svc.status}
+            </span>
+          </div>
+          {svc.latency_ms !== undefined && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Latency: {svc.latency_ms}ms
+            </p>
+          )}
+          <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">
+            Checked: {new Date(svc.last_checked).toLocaleTimeString()}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/TrajectoryTimeline.tsx ===
+'use client';
+
+import { useTrajectoryStream } from '@/lib/sse';
+
+export default function TrajectoryTimeline() {
+  const { events, connected } = useTrajectoryStream();
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+        <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Live Trajectory</h2>
+        <span
+          className={`flex items-center gap-1.5 text-xs font-medium ${
+            connected
+              ? 'text-green-600 dark:text-green-400'
+              : 'text-gray-400 dark:text-gray-600'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}
+          />
+          {connected ? 'Live' : 'Disconnected'}
+        </span>
+      </div>
+      <div className="divide-y divide-gray-50 dark:divide-gray-900 max-h-80 overflow-y-auto">
+        {events.length === 0 ? (
+          <p className="text-sm text-gray-400 dark:text-gray-600 px-5 py-6 text-center">
+            {connected ? 'Waiting for events...' : 'Connecting to event stream...'}
+          </p>
+        ) : (
+          events.map((ev) => (
+            <div key={ev.id} className="px-5 py-3 flex items-start gap-3">
+              <div className="shrink-0 mt-0.5">
+                <span className="text-xs text-gray-400 dark:text-gray-600 font-mono">
+                  {new Date(ev.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mr-2">
+                  {ev.agent_name}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded mr-2">
+                  {ev.event_type}
+                </span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{ev.description}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/lib/api.ts ===
+// Typed fetch wrappers for Observatory API (spec 028)
+// All calls go to NEXT_PUBLIC_OBSERVATORY_URL (default: http://localhost:8001)
+
+import type {
+  Agent,
+  AgentDetail,
+  HealthStatus,
+  KPIMetrics,
+  EvaluationRecord,
+  ContentItem,
+  KnowledgeFile,
+  CostBreakdown,
+} from './types';
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
+
+async function apiFetch<T>(
+  path: string,
+  options?: RequestInit & { revalidate?: number }
+): Promise<T> {
+  const { revalidate, ...fetchOptions } = options ?? {};
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...fetchOptions,
+    next: { revalidate: revalidate ?? 30 },
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status} for ${path}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+// Health — no cache (always fresh)
+export async function fetchHealth(): Promise<HealthStatus> {
+  return apiFetch<HealthStatus>('/api/v1/health', { revalidate: 0 });
+}
+
+// Agents list
+export async function fetchAgents(): Promise<Agent[]> {
+  return apiFetch<Agent[]>('/api/v1/agents');
+}
+
+// Agent detail
+export async function fetchAgent(id: string): Promise<AgentDetail> {
+  return apiFetch<AgentDetail>(`/api/v1/agents/${id}`);
+}
+
+// KPI metrics (dashboard)
+export async function fetchMetrics(): Promise<KPIMetrics> {
+  return apiFetch<KPIMetrics>('/api/v1/metrics');
+}
+
+// Evaluations
+export async function fetchEvaluations(params?: {
+  agent_id?: string;
+  days?: number;
+}): Promise<EvaluationRecord[]> {
+  const qs = new URLSearchParams();
+  if (params?.agent_id) qs.set('agent_id', params.agent_id);
+  if (params?.days) qs.set('days', String(params.days));
+  const query = qs.toString() ? `?${qs.toString()}` : '';
+  return apiFetch<EvaluationRecord[]>(`/api/v1/evaluations${query}`);
+}
+
+// Content pipeline
+export async function fetchContent(): Promise<ContentItem[]> {
+  return apiFetch<ContentItem[]>('/api/v1/content');
+}
+
+// Knowledge files
+export async function fetchKnowledge(): Promise<KnowledgeFile[]> {
+  return apiFetch<KnowledgeFile[]>('/api/v1/knowledge');
+}
+
+// Cost breakdown
+export async function fetchCosts(): Promise<CostBreakdown[]> {
+  return apiFetch<CostBreakdown[]>('/api/v1/costs');
+}
+
+// SSE stream URL (used directly by EventSource)
+export function trajectoryStreamUrl(): string {
+  return `${API_BASE}/api/v1/trajectory/stream`;
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/lib/sse.ts ===
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import type { TrajectoryEvent } from './types';
+import { trajectoryStreamUrl } from './api';
+
+const MAX_EVENTS = 100;
+const MAX_RETRY_INTERVAL_MS = 30_000;
+
+export function useTrajectoryStream(): {
+  events: TrajectoryEvent[];
+  connected: boolean;
+} {
+  const [events, setEvents] = useState<TrajectoryEvent[]>([]);
+  const [connected, setConnected] = useState(false);
+  const retryDelay = useRef(1_000);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sourceRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    function connect() {
+      if (cancelled) return;
+
+      const url = trajectoryStreamUrl();
+      console.log('[SSE] Connecting to', url);
+
+      const source = new EventSource(url);
+      sourceRef.current = source;
+
+      source.onopen = () => {
+        if (cancelled) { source.close(); return; }
+        console.log('[SSE] Connected');
+        setConnected(true);
+        retryDelay.current = 1_000; // reset backoff on success
+      };
+
+      source.onmessage = (ev) => {
+        if (cancelled) return;
+        try {
+          const event = JSON.parse(ev.data) as TrajectoryEvent;
+          setEvents((prev) => [event, ...prev].slice(0, MAX_EVENTS));
+        } catch {
+          console.warn('[SSE] Failed to parse event', ev.data);
+        }
+      };
+
+      source.onerror = () => {
+        if (cancelled) return;
+        console.warn('[SSE] Connection error, retrying in', retryDelay.current, 'ms');
+        setConnected(false);
+        source.close();
+        sourceRef.current = null;
+
+        timerRef.current = setTimeout(() => {
+          retryDelay.current = Math.min(retryDelay.current * 2, MAX_RETRY_INTERVAL_MS);
+          connect();
+        }, retryDelay.current);
+      };
+    }
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (sourceRef.current) {
+        sourceRef.current.close();
+        sourceRef.current = null;
+      }
+    };
+  }, []);
+
+  return { events, connected };
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/lib/types.ts ===
+// Shared response types — mirrors Observatory API schema (spec 028)
+
+export type AgentStatus = 'active' | 'idle' | 'running' | 'error' | 'disabled' | 'planned';
+export type ModelTier = 'opus' | 'sonnet' | 'haiku' | 'unknown';
+export type EvalVerdict = 'pass' | 'review' | 'fail';
+export type ContentState = 'DRAFT' | 'REVIEW' | 'PUBLISHED';
+export type FreshnessStatus = 'fresh' | 'aging' | 'stale';
+
+export interface Agent {
+  id: string;
+  name: string;
+  role: string;
+  type: string;
+  status: AgentStatus;
+  model: string;
+  model_tier: ModelTier;
+  version?: string;
+  description?: string;
+}
+
+export interface AgentDetail extends Agent {
+  cycles: CycleRecord[];
+  recent_scores: number[];
+}
+
+export interface CycleRecord {
+  id: string;
+  agent_id: string;
+  timestamp: string;
+  status: 'success' | 'failed' | 'skipped';
+  quality_score?: number;
+  cost_usd?: number;
+  duration_seconds?: number;
+  verdict?: EvalVerdict;
+}
+
+export interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'down';
+  kill_switch_active: boolean;
+  kill_switch_activated_at?: string;
+  services: ServiceStatus[];
+  timestamp: string;
+}
+
+export interface ServiceStatus {
+  name: string;
+  status: 'up' | 'down' | 'degraded';
+  latency_ms?: number;
+  last_checked: string;
+}
+
+export interface KPIMetrics {
+  cycles_this_week: number;
+  success_rate: number;
+  avg_quality_score: number;
+  total_cost_usd: number;
+  sparkline: DailyCount[];
+}
+
+export interface DailyCount {
+  date: string;
+  count: number;
+}
+
+export interface EvaluationRecord {
+  id: string;
+  agent_id: string;
+  agent_name: string;
+  date: string;
+  score: number;
+  verdict: EvalVerdict;
+  evaluator?: string;
+  notes?: string;
+}
+
+export interface ContentItem {
+  id: string;
+  title: string;
+  platform: string;
+  pillar: 'authority' | 'entertainment' | 'education' | 'conversion';
+  state: ContentState;
+  created_at: string;
+  scheduled_at?: string;
+  published_at?: string;
+}
+
+export interface KnowledgeFile {
+  path: string;
+  name: string;
+  modified_at: string;
+  size_bytes: number;
+  freshness: FreshnessStatus;
+}
+
+export interface TrajectoryEvent {
+  id: string;
+  timestamp: string;
+  agent_name: string;
+  event_type: string;
+  description: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CostBreakdown {
+  agent_id: string;
+  agent_name: string;
+  cost_usd: number;
+  percentage: number;
+}

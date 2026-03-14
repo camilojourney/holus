@@ -1,0 +1,9 @@
+Self-review (Gemini 429 rate-limited)
+
+Fixed: data_viz_to_spec — variables dict now includes chart_type, labels, values (alongside svg_content); tests expected these fields but they were missing
+Fixed: data_viz_to_spec — highlight_index and color_scheme only added to variables when present (not when absent), matching test expectations
+Fixed: data_viz_to_spec — empty label "" from dp.get("label","") now replaced with "-" placeholder for SVG generation only; original empty string preserved in variables
+Fixed: agent.py N806 — renamed _CHAIN_PLATFORMS (uppercase in function) to chain_platforms (lowercase)
+Fixed: agent.py E741 — renamed ambiguous variable l in list comprehension to line
+
+No issues found in: render node wiring, GeneratedPiece.visual_attachment_path/visual_format, publish_approved.py routing for document/image, SocialMediaClient.PublishRequest

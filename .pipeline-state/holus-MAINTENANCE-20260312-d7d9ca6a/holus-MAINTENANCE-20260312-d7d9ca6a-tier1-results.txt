@@ -1,0 +1,18 @@
+TIER 1 RESULTS — holus
+CID: holus-MAINTENANCE-20260312-d7d9ca6a
+Date: 2026-03-12
+
+  Dependencies: FLAGGED (1 vulnerability)
+    - langgraph 1.0.9 → CVE-2026-28277 (fix available: 1.0.10)
+
+  Lint:         CLEAN ("All checks passed!" via ruff check)
+
+  Tests:        PASS (all passing, 1 skipped)
+    - Warnings: coroutine 'test_content_loop_run_cycle' never awaited, Pydantic V1 compat
+
+  Docker:       4/5 HEALTHY
+    - holus-redis: healthy
+    - holus-postgres: healthy
+    - holus-mcp-proxy: running
+    - holus-langfuse-worker: running
+    - holus-langfuse: UNHEALTHY

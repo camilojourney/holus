@@ -1,0 +1,14 @@
+{
+  "correlation_id": "holus-CODE-20260313-3e9edad5",
+  "phase": "CODE",
+  "status": "COMPLETED",
+  "started_at": "2026-03-14T01:37:21Z",
+  "workers": [
+    {"id": "holus-CODE-20260313-3e9edad5-impl-270a", "role": "implementer", "model": "claude-opus-4-6", "status": "COMPLETED", "started_at": "2026-03-14T01:38:00Z", "completed_at": "2026-03-14T01:42:00Z", "files_changed": ["src/holus/visual/spec_converter.py"]},
+    {"id": "holus-CODE-20260313-3e9edad5-test-1912", "role": "tester", "model": "claude-opus-4-6", "status": "COMPLETED", "started_at": "2026-03-14T01:42:00Z", "completed_at": "2026-03-14T01:44:00Z", "files_changed": ["tests/unit/visual/__init__.py", "tests/unit/visual/test_spec_converter.py"]},
+    {"id": "holus-CODE-20260313-3e9edad5-review-4186", "role": "reviewer", "model": "claude-opus-4-6", "status": "COMPLETED", "started_at": "2026-03-14T01:44:00Z", "completed_at": "2026-03-14T01:45:00Z", "findings": []}
+  ],
+  "verification_attempts": 1,
+  "max_verification_attempts": 3,
+  "phases_completed": ["CODE"]
+}

@@ -1,0 +1,7 @@
+Implemented Phase 8 in the requested surface area.
+
+Added the new boundary models in [models.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/models.py#L63), the pure-Python SVG poll generator in [poll.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/poll.py#L16), the poll converter in [spec_converter.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/spec_converter.py#L83), and the package exports in [__init__.py](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/__init__.py#L13).
+
+Added the new single-image templates in [poll.html.j2](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/templates/single_image/poll.html.j2#L1) and [video_skeleton.html.j2](/Users/mini/.openclaw/workspace/github/holus/src/holus/visual/templates/single_image/video_skeleton.html.j2#L1), plus the concise playbook in [visual-pipeline.md](/Users/mini/.openclaw/workspace/github/holus/docs/playbooks/visual-pipeline.md#L1). Poll coverage is in [test_poll.py](/Users/mini/.openclaw/workspace/github/holus/tests/holus/visual/test_poll.py#L1).
+
+Verification: `uv run pytest -q tests/holus/visual/test_poll.py` passed, and `uv run pytest -q tests/holus/visual` passed. The full repo command `uv run pytest -q` started and advanced to 8% but then stalled in an unrelated long-running part of the suite, so I do not have a clean full-suite pass to report.

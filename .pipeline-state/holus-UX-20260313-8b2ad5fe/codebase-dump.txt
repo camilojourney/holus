@@ -1,0 +1,3642 @@
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/about/page.tsx ===
+import Link from 'next/link';
+import {
+  Brain,
+  Eye,
+  Zap,
+  Shield,
+  BarChart3,
+  Users,
+  ArrowRight,
+  Github,
+  Linkedin,
+  Globe,
+} from 'lucide-react';
+
+export const metadata = {
+  title: 'Holus Observatory - About',
+  description: 'Holus is a multi-agent AI marketing system that coordinates 32 specialized agents to create, evaluate, and publish content across platforms.',
+};
+
+const products = [
+  {
+    name: 'Pilaster',
+    tagline: 'AI generation platform with memory',
+    url: 'https://pilaster.ai',
+    color: 'text-indigo-600 dark:text-indigo-400',
+  },
+  {
+    name: 'Invoz',
+    tagline: 'Speech coaching with 11 acoustic dimensions',
+    url: 'https://invoz.io',
+    color: 'text-emerald-600 dark:text-emerald-400',
+  },
+  {
+    name: 'Genpeli',
+    tagline: 'AI video editing pipeline',
+    url: '#',
+    color: 'text-pink-600 dark:text-pink-400',
+  },
+];
+
+const phases = [
+  {
+    Icon: Eye,
+    title: 'Observe',
+    description: 'Reads analytics from social media platforms. What performed well? What audience segments are growing? Which content pillars convert?',
+  },
+  {
+    Icon: Brain,
+    title: 'Reason',
+    description: 'Claude Opus analyzes patterns across 30 days of data. Decides what content to create, for which product, on which platform.',
+  },
+  {
+    Icon: Zap,
+    title: 'Act',
+    description: 'Dispatches to specialized agents: hook writers, blog writers, carousel architects, SEO researchers. Each agent has domain-specific expertise.',
+  },
+  {
+    Icon: Shield,
+    title: 'Evaluate',
+    description: '7 domain-expert judges score every piece. Written content, visual content, and brand safety each have dedicated evaluators with custom rubrics.',
+  },
+];
+
+const agentCategories = [
+  { label: 'Managers', count: 2, description: 'Strategy and self-improvement orchestration' },
+  { label: 'Specialists', count: 22, description: '6 content categories: authority, visual, video, growth, research, repurposing' },
+  { label: 'Evaluators', count: 7, description: 'Domain-expert quality judges with category-specific rubrics' },
+  { label: 'Ops', count: 3, description: 'Code quality, security auditing, knowledge management' },
+];
+
+export default function AboutPage() {
+  return (
+    <div className="px-6 py-8 max-w-4xl mx-auto space-y-12">
+      {/* Hero */}
+      <div className="text-center space-y-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          Live system with 32 AI agents
+        </div>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+          Holus Observatory
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          A multi-agent AI marketing system that coordinates 32 specialized agents
+          to create, evaluate, and publish content across platforms, then learns from what works.
+        </p>
+        <div className="flex justify-center gap-3 pt-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
+          >
+            View Dashboard <ArrowRight size={16} />
+          </Link>
+          <Link
+            href="/engagement"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <BarChart3 size={16} /> Engagement Tracker
+          </Link>
+        </div>
+      </div>
+
+      {/* What is this */}
+      <section className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-6">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">What is this?</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+          This is the Observatory, the real-time monitoring dashboard for Holus.
+          Holus is a federated AI system that acts as an autonomous marketing strategist
+          for a portfolio of AI products. It does not just generate content. It observes platform analytics,
+          reasons about strategy using Claude Opus, dispatches work to specialized agents,
+          evaluates every output with domain-expert judges, and feeds results back into
+          the next cycle. The Observatory shows this entire loop in real time.
+        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mt-3">
+          The system uses a federated architecture: Holus holds the brain (strategy, decisions, learning)
+          while independent silo services handle execution (video editing, image generation, publishing).
+          Communication happens via MCP (Model Context Protocol) tool calls, not shared databases.
+        </p>
+      </section>
+
+      {/* The Agent Loop */}
+      <section>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">The Agent Loop</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {phases.map(({ Icon, title, description }) => (
+            <div key={title} className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950">
+                  <Icon size={18} className="text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Agent Architecture */}
+      <section>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">32 Agents, 4 Categories</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {agentCategories.map(({ label, count, description }) => (
+            <div key={label} className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-gray-900 dark:text-white">{label}</h3>
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  {count} agents
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+            </div>
+          ))}
+        </div>
+        <Link
+          href="/agents"
+          className="inline-flex items-center gap-1.5 mt-3 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+        >
+          <Users size={14} /> View all agents
+        </Link>
+      </section>
+
+      {/* What it promotes */}
+      <section>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Products Holus Promotes</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {products.map(({ name, tagline, url, color }) => (
+            <a
+              key={name}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+            >
+              <h3 className={`font-semibold ${color}`}>{name}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{tagline}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* Technical Stack */}
+      <section className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-6">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Technical Stack</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+          {[
+            ['Orchestration', 'Python + LangGraph'],
+            ['Strategy Model', 'Claude Opus 4.6'],
+            ['Content Models', 'Claude Sonnet 4.6'],
+            ['Research', 'Gemini 2.5 Pro'],
+            ['Event Bus', 'Redis pub/sub'],
+            ['Silo Protocol', 'MCP (Model Context Protocol)'],
+            ['Observatory', 'Next.js 16 + Tailwind'],
+            ['Observatory API', 'FastAPI'],
+            ['State', 'JSONL + YAML (no database)'],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <p className="text-gray-400 dark:text-gray-600 text-xs">{label}</p>
+              <p className="text-gray-700 dark:text-gray-300 font-medium">{value}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Explore the demo */}
+      <section>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Explore the Demo</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {[
+            { href: '/', label: 'Dashboard', desc: 'KPIs, agent status, live events' },
+            { href: '/agents', label: 'Agents', desc: 'All 32 agents and their roles' },
+            { href: '/content', label: 'Content Pipeline', desc: 'Drafts, reviews, published' },
+            { href: '/engagement', label: 'Engagement', desc: 'Likes, comments, shares by platform' },
+            { href: '/followers', label: 'Followers', desc: 'Growth trends by platform' },
+            { href: '/evaluations', label: 'Evaluations', desc: 'Quality scores over time' },
+          ].map(({ href, label, desc }) => (
+            <Link
+              key={href}
+              href={href}
+              className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+            >
+              <h3 className="font-medium text-sm text-gray-900 dark:text-white">{label}</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{desc}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Built by */}
+      <section className="border-t border-gray-200 dark:border-gray-800 pt-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
+              Built by Juan Camilo Martinez
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+              AI Engineer. MS Business Analytics, Baruch College.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <a href="https://camilomartinez.co" target="_blank" rel="noopener noreferrer" aria-label="Personal website" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <Globe size={18} />
+            </a>
+            <a href="https://linkedin.com/in/camilomartinez-ai" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <Linkedin size={18} />
+            </a>
+            <a href="https://github.com/camilojourney" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <Github size={18} />
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/agents/[id]/page.tsx ===
+import { fetchAgent } from '@/lib/api';
+import { notFound } from 'next/navigation';
+import type { EvalVerdict } from '@/lib/types';
+
+export const revalidate = 30;
+
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+const verdictColors: Record<EvalVerdict, string> = {
+  pass: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  review: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+  fail: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+};
+
+export default async function AgentDetailPage({ params }: Props) {
+  const { id } = await params;
+  let agent;
+
+  try {
+    agent = await fetchAgent(id);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('404')) notFound();
+    // For other errors, show a minimal error state
+    return (
+      <div className="px-6 py-6">
+        <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-5 py-4">
+          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+            Could not load agent data
+          </p>
+          <p className="text-xs text-red-500 dark:text-red-400 mt-1">{msg}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const avgScore =
+    agent.recent_scores?.length > 0
+      ? (agent.recent_scores.reduce((a, b) => a + b, 0) / agent.recent_scores.length).toFixed(1)
+      : null;
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{agent.name}</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{agent.role}</p>
+      </div>
+
+      {/* Info card */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">Agent Info</h2>
+        <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {[
+            { label: 'Status', value: agent.status },
+            { label: 'Type', value: agent.type || '—' },
+            { label: 'Model tier', value: agent.model_tier },
+            { label: 'Model', value: agent.model || '—' },
+            { label: 'Version', value: agent.version || '—' },
+            { label: 'Avg quality', value: avgScore ? `${avgScore}/10` : '—' },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <dt className="text-xs text-gray-500 dark:text-gray-400">{label}</dt>
+              <dd className="text-sm font-medium text-gray-900 dark:text-white mt-0.5 truncate">
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {/* Quality score sparkline (simple visual) */}
+      {agent.recent_scores?.length > 0 && (
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
+            Recent Quality Scores
+          </h2>
+          <div className="flex items-end gap-1 h-16">
+            {agent.recent_scores.map((score, i) => (
+              <div
+                key={i}
+                className={`flex-1 rounded-t transition-all ${
+                  score >= 7
+                    ? 'bg-green-400 dark:bg-green-600'
+                    : score >= 4
+                    ? 'bg-yellow-400 dark:bg-yellow-600'
+                    : 'bg-red-400 dark:bg-red-600'
+                }`}
+                style={{ height: `${(score / 10) * 100}%` }}
+                title={`${score}/10`}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between text-xs text-gray-400 dark:text-gray-600 mt-1">
+            <span>older</span>
+            <span>newer</span>
+          </div>
+        </div>
+      )}
+
+      {/* Cycle history table */}
+      {agent.cycles?.length > 0 && (
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-950">
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+              Cycle History (last {agent.cycles.length})
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  {['Timestamp', 'Status', 'Score', 'Cost', 'Duration', 'Verdict'].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-900">
+                {agent.cycles.map((cycle) => (
+                  <tr key={cycle.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                    <td className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 font-mono whitespace-nowrap">
+                      {new Date(cycle.timestamp).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                          cycle.status === 'success'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                            : cycle.status === 'failed'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+                            : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                        }`}
+                      >
+                        {cycle.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                      {cycle.quality_score?.toFixed(1) ?? '—'}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                      {cycle.cost_usd !== undefined ? `$${cycle.cost_usd.toFixed(4)}` : '—'}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                      {cycle.duration_seconds !== undefined ? `${cycle.duration_seconds}s` : '—'}
+                    </td>
+                    <td className="px-4 py-2">
+                      {cycle.verdict ? (
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${verdictColors[cycle.verdict]}`}
+                        >
+                          {cycle.verdict}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {agent.cycles?.length === 0 && (
+        <p className="text-sm text-gray-400 dark:text-gray-600">No cycle history yet.</p>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/agents/page.tsx ===
+import { fetchAgents } from '@/lib/api';
+import AgentCard from '@/components/AgentCard';
+import ErrorBanner from '@/components/ErrorBanner';
+import type { Agent } from '@/lib/types';
+
+export const revalidate = 30;
+
+export default async function AgentsPage() {
+  let agents: Agent[] = [];
+  let error = false;
+
+  try {
+    agents = await fetchAgents();
+  } catch {
+    error = true;
+  }
+
+  const byStatus = agents.reduce<Record<string, typeof agents>>((acc, a) => {
+    acc[a.status] = [...(acc[a.status] ?? []), a];
+    return acc;
+  }, {});
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agents</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          All registered agents and their current status
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load agents from Observatory API" />}
+
+      {!error && agents.length === 0 && (
+        <p className="text-sm text-gray-400 dark:text-gray-600">
+          No agents found. Ensure Observatory API is running and agents/AGENTS.yaml is populated.
+        </p>
+      )}
+
+      {/* Status summary */}
+      {agents.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {Object.entries(byStatus).map(([status, list]) => (
+            <div
+              key={status}
+              className="border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"
+            >
+              <span className="font-medium text-gray-700 dark:text-gray-300">{list.length}</span>
+              <span className="ml-1.5 text-gray-500 dark:text-gray-400">{status}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Agent grid */}
+      {agents.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {agents.map((agent) => (
+            <AgentCard key={agent.id} agent={agent} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/content/page.tsx ===
+import { fetchContent } from '@/lib/api';
+import ContentKanban from '@/components/ContentKanban';
+import ErrorBanner from '@/components/ErrorBanner';
+import type { ContentItem } from '@/lib/types';
+
+export const revalidate = 30;
+
+export default async function ContentPage() {
+  let items: ContentItem[] = [];
+  let error = false;
+
+  try {
+    items = await fetchContent();
+  } catch {
+    error = true;
+  }
+
+  const pillarCounts = items.reduce<Record<string, number>>((acc, i) => {
+    acc[i.pillar] = (acc[i.pillar] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const platformCounts = items.reduce<Record<string, number>>((acc, i) => {
+    acc[i.platform] = (acc[i.platform] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Content Pipeline</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Content items by stage — read-only view
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load content data" />}
+
+      {!error && (
+        <>
+          {/* Stats row */}
+          {items.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {Object.entries(pillarCounts).map(([pillar, count]) => (
+                <div
+                  key={pillar}
+                  className="border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-white dark:bg-gray-950"
+                >
+                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{pillar}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{count}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <ContentKanban items={items} />
+
+          {/* Platform distribution */}
+          {items.length > 0 && (
+            <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+              <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
+                Platform Distribution
+              </h2>
+              <div className="space-y-2">
+                {Object.entries(platformCounts)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([platform, count]) => (
+                    <div key={platform} className="flex items-center gap-3">
+                      <span className="text-xs text-gray-600 dark:text-gray-400 w-28 capitalize">
+                        {platform}
+                      </span>
+                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                        <div
+                          className="bg-indigo-500 dark:bg-indigo-400 h-2 rounded-full"
+                          style={{ width: `${(count / items.length) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 w-6 text-right">
+                        {count}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/engagement/page.tsx ===
+'use client';
+
+import { useState, useMemo } from 'react';
+import { generateEngagementData, type EngagementDataPoint } from '@/lib/demo-data';
+
+const PLATFORMS = ['all', 'linkedin', 'instagram', 'twitter', 'threads', 'tiktok'] as const;
+type Platform = typeof PLATFORMS[number];
+
+const platformColors: Record<string, string> = {
+  linkedin: '#2563eb',
+  instagram: '#ec4899',
+  twitter: '#0ea5e9',
+  threads: '#6b7280',
+  tiktok: '#111827',
+};
+
+const platformDarkColors: Record<string, string> = {
+  linkedin: '#60a5fa',
+  instagram: '#f472b6',
+  twitter: '#38bdf8',
+  threads: '#9ca3af',
+  tiktok: '#e5e7eb',
+};
+
+const platformBadgeClass: Record<string, string> = {
+  linkedin: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400',
+  instagram: 'bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-400',
+  twitter: 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-400',
+  threads: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  tiktok: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+};
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+function MiniChart({ data, color }: { data: number[]; color: string }) {
+  if (data.length < 2) return null;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const w = 200;
+  const h = 48;
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    return `${x},${y}`;
+  });
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-12" aria-label="Engagement sparkline">
+      <polyline points={points.join(' ')} fill="none" stroke={color} strokeWidth="2" />
+    </svg>
+  );
+}
+
+export default function EngagementPage() {
+  const [platform, setPlatform] = useState<Platform>('all');
+  const [metric, setMetric] = useState<'impressions' | 'likes' | 'comments' | 'shares' | 'engagement_rate'>('impressions');
+
+  const rawData = useMemo(() => generateEngagementData(), []);
+
+  const filtered = useMemo(() => {
+    if (platform === 'all') return rawData;
+    return rawData.filter((d) => d.platform === platform);
+  }, [rawData, platform]);
+
+  // Aggregate by date for the chart
+  const dailyAgg = useMemo(() => {
+    const byDate: Record<string, EngagementDataPoint> = {};
+    for (const d of filtered) {
+      if (!byDate[d.date]) {
+        byDate[d.date] = { ...d };
+      } else {
+        byDate[d.date].impressions += d.impressions;
+        byDate[d.date].likes += d.likes;
+        byDate[d.date].comments += d.comments;
+        byDate[d.date].shares += d.shares;
+        byDate[d.date].posts += d.posts;
+      }
+    }
+    return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
+  }, [filtered]);
+
+  // Platform-level summary
+  const platformSummary = useMemo(() => {
+    const summary: Record<string, { impressions: number; likes: number; comments: number; shares: number; posts: number; days: number }> = {};
+    for (const d of rawData) {
+      if (!summary[d.platform]) {
+        summary[d.platform] = { impressions: 0, likes: 0, comments: 0, shares: 0, posts: 0, days: 0 };
+      }
+      summary[d.platform].impressions += d.impressions;
+      summary[d.platform].likes += d.likes;
+      summary[d.platform].comments += d.comments;
+      summary[d.platform].shares += d.shares;
+      summary[d.platform].posts += d.posts;
+      summary[d.platform].days += 1;
+    }
+    return summary;
+  }, [rawData]);
+
+  const totals = useMemo(() => ({
+    impressions: dailyAgg.reduce((s, d) => s + d.impressions, 0),
+    likes: dailyAgg.reduce((s, d) => s + d.likes, 0),
+    comments: dailyAgg.reduce((s, d) => s + d.comments, 0),
+    shares: dailyAgg.reduce((s, d) => s + d.shares, 0),
+    posts: dailyAgg.reduce((s, d) => s + d.posts, 0),
+  }), [dailyAgg]);
+
+  const totalEngagement = totals.likes + totals.comments + totals.shares;
+  const avgEngRate = totals.impressions > 0 ? (totalEngagement / totals.impressions * 100).toFixed(1) : '0';
+
+  // Chart data
+  const chartValues = dailyAgg.map((d) => {
+    if (metric === 'engagement_rate') {
+      const eng = d.likes + d.comments + d.shares;
+      return d.impressions > 0 ? eng / d.impressions : 0;
+    }
+    return d[metric];
+  });
+
+  const chartColor = platform === 'all' ? '#6366f1' : platformColors[platform] ?? '#6366f1';
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Engagement Tracker</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Likes, comments, shares, and impressions across platforms (30 days)
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1">
+          {PLATFORMS.map((p) => (
+            <button
+              key={p}
+              onClick={() => setPlatform(p)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
+                platform === p
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1">
+          {(['impressions', 'likes', 'comments', 'shares', 'engagement_rate'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMetric(m)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
+                metric === m
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
+              }`}
+            >
+              {m === 'engagement_rate' ? 'Eng. Rate' : m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        {[
+          { label: 'Impressions', value: fmt(totals.impressions), color: 'blue' },
+          { label: 'Likes', value: fmt(totals.likes), color: 'pink' },
+          { label: 'Comments', value: fmt(totals.comments), color: 'yellow' },
+          { label: 'Shares', value: fmt(totals.shares), color: 'green' },
+          { label: 'Avg Eng. Rate', value: `${avgEngRate}%`, color: Number(avgEngRate) >= 5 ? 'green' : 'yellow' },
+        ].map(({ label, value }) => (
+          <div key={label} className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
+            <p className="text-xs text-gray-400 dark:text-gray-600">{label}</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 capitalize">
+            {metric === 'engagement_rate' ? 'Engagement Rate' : metric} over 30 days
+            {platform !== 'all' ? ` (${platform})` : ''}
+          </h2>
+        </div>
+        <MiniChart data={chartValues} color={chartColor} />
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
+          <span>{dailyAgg[0]?.date.slice(5)}</span>
+          <span>{dailyAgg[dailyAgg.length - 1]?.date.slice(5)}</span>
+        </div>
+      </div>
+
+      {/* Platform breakdown table */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Platform Breakdown (30d)
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-gray-400 dark:text-gray-600 border-b border-gray-100 dark:border-gray-800">
+                <th className="text-left px-5 py-3 font-medium">Platform</th>
+                <th className="text-right px-4 py-3 font-medium">Impressions</th>
+                <th className="text-right px-4 py-3 font-medium">Likes</th>
+                <th className="text-right px-4 py-3 font-medium">Comments</th>
+                <th className="text-right px-4 py-3 font-medium">Shares</th>
+                <th className="text-right px-4 py-3 font-medium">Posts</th>
+                <th className="text-right px-5 py-3 font-medium">Eng. Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(platformSummary)
+                .sort(([, a], [, b]) => b.impressions - a.impressions)
+                .map(([name, s]) => {
+                  const eng = s.likes + s.comments + s.shares;
+                  const engRate = s.impressions > 0 ? (eng / s.impressions * 100).toFixed(1) : '0';
+                  return (
+                    <tr key={name} className="border-b border-gray-50 dark:border-gray-900 last:border-0">
+                      <td className="px-5 py-3">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded capitalize ${platformBadgeClass[name] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
+                          {name}
+                        </span>
+                      </td>
+                      <td className="text-right px-4 py-3 font-medium text-gray-700 dark:text-gray-300">{fmt(s.impressions)}</td>
+                      <td className="text-right px-4 py-3 font-medium text-gray-700 dark:text-gray-300">{fmt(s.likes)}</td>
+                      <td className="text-right px-4 py-3 font-medium text-gray-700 dark:text-gray-300">{fmt(s.comments)}</td>
+                      <td className="text-right px-4 py-3 font-medium text-gray-700 dark:text-gray-300">{fmt(s.shares)}</td>
+                      <td className="text-right px-4 py-3 font-medium text-gray-700 dark:text-gray-300">{s.posts}</td>
+                      <td className="text-right px-5 py-3">
+                        <span className={`font-semibold ${Number(engRate) >= 7 ? 'text-green-600 dark:text-green-400' : Number(engRate) >= 4 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                          {engRate}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/evaluations/page.tsx ===
+import { fetchEvaluations, fetchAgents } from '@/lib/api';
+import QualityHeatmap from '@/components/QualityHeatmap';
+import ErrorBanner from '@/components/ErrorBanner';
+import type { EvalVerdict, EvaluationRecord, Agent } from '@/lib/types';
+
+export const revalidate = 30;
+
+const verdictColors: Record<EvalVerdict, string> = {
+  pass: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  review: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+  fail: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+};
+
+export default async function EvaluationsPage() {
+  let evaluations: EvaluationRecord[] = [];
+  let agents: Agent[] = [];
+  let error = false;
+
+  try {
+    [evaluations, agents] = await Promise.all([fetchEvaluations({ days: 30 }), fetchAgents()]);
+  } catch {
+    error = true;
+  }
+
+  const agentIds = agents.map((a) => a.id);
+
+  const passCounts = { pass: 0, review: 0, fail: 0 };
+  for (const ev of evaluations) {
+    if (ev.verdict && ev.verdict in passCounts) {
+      passCounts[ev.verdict]++;
+    }
+  }
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Evaluations</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Quality scores over the last 30 days
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load evaluation data" />}
+
+      {!error && (
+        <>
+          {/* Gate health summary */}
+          <div className="grid grid-cols-3 gap-4">
+            {(['pass', 'review', 'fail'] as const).map((v) => (
+              <div
+                key={v}
+                className="border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-4 bg-white dark:bg-gray-950 text-center"
+              >
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{passCounts[v]}</p>
+                <span
+                  className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${verdictColors[v]}`}
+                >
+                  {v}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Heatmap */}
+          <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
+              Quality Heatmap — Agents × Days
+            </h2>
+            <QualityHeatmap evaluations={evaluations} agents={agentIds} />
+          </div>
+
+          {/* Evaluation table */}
+          {evaluations.length > 0 && (
+            <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-950">
+              <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                  Evaluation History ({evaluations.length} records)
+                </h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      {['Agent', 'Date', 'Score', 'Verdict', 'Evaluator'].map((h) => (
+                        <th
+                          key={h}
+                          className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50 dark:divide-gray-900">
+                    {evaluations.slice(0, 50).map((ev) => (
+                      <tr key={ev.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                        <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300 font-medium">
+                          {ev.agent_name}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 font-mono">
+                          {ev.date.slice(0, 10)}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                          {ev.score}/10
+                        </td>
+                        <td className="px-4 py-2">
+                          {ev.verdict ? (
+                            <span
+                              className={`text-xs px-1.5 py-0.5 rounded font-medium ${verdictColors[ev.verdict]}`}
+                            >
+                              {ev.verdict}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400">
+                          {ev.evaluator ?? '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {evaluations.length === 0 && (
+            <p className="text-sm text-gray-400 dark:text-gray-600 py-4">
+              No evaluation data yet.
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/followers/page.tsx ===
+'use client';
+
+import { useState, useMemo } from 'react';
+import { generateFollowerData, type FollowerDataPoint } from '@/lib/demo-data';
+
+const PLATFORMS = ['all', 'linkedin', 'instagram', 'twitter', 'threads', 'tiktok'] as const;
+type Platform = typeof PLATFORMS[number];
+
+const platformColors: Record<string, string> = {
+  linkedin: '#2563eb',
+  instagram: '#ec4899',
+  twitter: '#0ea5e9',
+  threads: '#6b7280',
+  tiktok: '#111827',
+};
+
+const platformBadgeClass: Record<string, string> = {
+  linkedin: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400',
+  instagram: 'bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-400',
+  twitter: 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-400',
+  threads: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  tiktok: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+};
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+function GrowthLine({ data, color }: { data: number[]; color: string }) {
+  if (data.length < 2) return null;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const w = 800;
+  const h = 140;
+  const padding = { top: 8, right: 8, bottom: 4, left: 8 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+
+  const points = data.map((v, i) => {
+    const x = padding.left + (i / (data.length - 1)) * chartW;
+    const y = padding.top + chartH - ((v - min) / range) * chartH;
+    return { x, y };
+  });
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto" aria-label="Follower growth chart">
+      <defs>
+        <linearGradient id={`fill-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaPath} fill={`url(#fill-${color.replace('#', '')})`} />
+      <path d={linePath} fill="none" stroke={color} strokeWidth="2" />
+    </svg>
+  );
+}
+
+export default function FollowersPage() {
+  const [platform, setPlatform] = useState<Platform>('all');
+
+  const rawData = useMemo(() => generateFollowerData(), []);
+
+  const filtered = useMemo(() => {
+    if (platform === 'all') return rawData;
+    return rawData.filter((d) => d.platform === platform);
+  }, [rawData, platform]);
+
+  // Aggregate followers by date (sum all platforms for "all" view)
+  const dailyFollowers = useMemo(() => {
+    const byDate: Record<string, { followers: number; new_followers: number; unfollows: number; net_change: number }> = {};
+    for (const d of filtered) {
+      if (!byDate[d.date]) {
+        byDate[d.date] = { followers: 0, new_followers: 0, unfollows: 0, net_change: 0 };
+      }
+      byDate[d.date].followers += d.followers;
+      byDate[d.date].new_followers += d.new_followers;
+      byDate[d.date].unfollows += d.unfollows;
+      byDate[d.date].net_change += d.net_change;
+    }
+    return Object.entries(byDate)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, v]) => ({ date, ...v }));
+  }, [filtered]);
+
+  // Per-platform summary
+  const platformSummary = useMemo(() => {
+    const platforms = ['linkedin', 'instagram', 'twitter', 'threads', 'tiktok'];
+    return platforms.map((p) => {
+      const pData = rawData.filter((d) => d.platform === p);
+      const first = pData[0];
+      const last = pData[pData.length - 1];
+      const totalNew = pData.reduce((s, d) => s + d.new_followers, 0);
+      const totalUnfollows = pData.reduce((s, d) => s + d.unfollows, 0);
+      const growth = first && last && first.followers > 0
+        ? ((last.followers - first.followers) / first.followers * 100).toFixed(1)
+        : '0';
+      return {
+        platform: p,
+        current: last?.followers ?? 0,
+        start: first?.followers ?? 0,
+        new_followers: totalNew,
+        unfollows: totalUnfollows,
+        net_change: totalNew - totalUnfollows,
+        growth_pct: growth,
+      };
+    });
+  }, [rawData]);
+
+  const currentTotal = dailyFollowers.length > 0 ? dailyFollowers[dailyFollowers.length - 1].followers : 0;
+  const startTotal = dailyFollowers.length > 0 ? dailyFollowers[0].followers : 0;
+  const totalNetChange = currentTotal - startTotal;
+  const totalGrowthPct = startTotal > 0 ? ((totalNetChange / startTotal) * 100).toFixed(1) : '0';
+  const totalNewFollowers = dailyFollowers.reduce((s, d) => s + d.new_followers, 0);
+  const totalUnfollows = dailyFollowers.reduce((s, d) => s + d.unfollows, 0);
+
+  const chartColor = platform === 'all' ? '#6366f1' : platformColors[platform] ?? '#6366f1';
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Follower Tracker</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Follower growth, new follows, and unfollows across platforms (30 days)
+        </p>
+      </div>
+
+      {/* Platform filter */}
+      <div className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1 w-fit">
+        {PLATFORMS.map((p) => (
+          <button
+            key={p}
+            onClick={() => setPlatform(p)}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
+              platform === p
+                ? 'bg-indigo-600 text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
+          <p className="text-xs text-gray-400 dark:text-gray-600">Total Followers</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{fmt(currentTotal)}</p>
+        </div>
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
+          <p className="text-xs text-gray-400 dark:text-gray-600">Net Growth (30d)</p>
+          <p className={`text-xl font-bold mt-1 ${totalNetChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            {totalNetChange >= 0 ? '+' : ''}{fmt(totalNetChange)}
+          </p>
+        </div>
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
+          <p className="text-xs text-gray-400 dark:text-gray-600">Growth Rate</p>
+          <p className={`text-xl font-bold mt-1 ${Number(totalGrowthPct) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            {Number(totalGrowthPct) >= 0 ? '+' : ''}{totalGrowthPct}%
+          </p>
+        </div>
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
+          <p className="text-xs text-gray-400 dark:text-gray-600">New Followers</p>
+          <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">{fmt(totalNewFollowers)}</p>
+        </div>
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
+          <p className="text-xs text-gray-400 dark:text-gray-600">Unfollows</p>
+          <p className="text-xl font-bold text-red-500 dark:text-red-400 mt-1">{fmt(totalUnfollows)}</p>
+        </div>
+      </div>
+
+      {/* Growth chart */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Follower Growth (30d){platform !== 'all' ? ` - ${platform}` : ''}
+          </h2>
+          <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-600">
+            <span>{fmt(startTotal)}</span>
+            <span className="text-gray-300 dark:text-gray-700">&rarr;</span>
+            <span className="font-medium text-gray-700 dark:text-gray-300">{fmt(currentTotal)}</span>
+          </div>
+        </div>
+        <GrowthLine data={dailyFollowers.map((d) => d.followers)} color={chartColor} />
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
+          <span>{dailyFollowers[0]?.date.slice(5)}</span>
+          <span>{dailyFollowers[dailyFollowers.length - 1]?.date.slice(5)}</span>
+        </div>
+      </div>
+
+      {/* Daily net change bar chart */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          Daily Net Change
+        </h2>
+        <div className="flex items-end gap-[2px] h-20">
+          {dailyFollowers.map((d) => {
+            const maxAbs = Math.max(...dailyFollowers.map((dd) => Math.abs(dd.net_change))) || 1;
+            const height = Math.max(2, (Math.abs(d.net_change) / maxAbs) * 64);
+            const isPositive = d.net_change >= 0;
+            return (
+              <div
+                key={d.date}
+                className={`flex-1 rounded-sm ${isPositive ? 'bg-green-500' : 'bg-red-500'}`}
+                style={{
+                  height: `${height}px`,
+                  opacity: 0.7,
+                  alignSelf: 'flex-end',
+                }}
+                title={`${d.date}: ${d.net_change >= 0 ? '+' : ''}${d.net_change}`}
+              />
+            );
+          })}
+        </div>
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
+          <span>{dailyFollowers[0]?.date.slice(5)}</span>
+          <span>{dailyFollowers[dailyFollowers.length - 1]?.date.slice(5)}</span>
+        </div>
+      </div>
+
+      {/* Platform breakdown table */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Platform Breakdown (30d)
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-gray-400 dark:text-gray-600 border-b border-gray-100 dark:border-gray-800">
+                <th className="text-left px-5 py-3 font-medium">Platform</th>
+                <th className="text-right px-4 py-3 font-medium">Current</th>
+                <th className="text-right px-4 py-3 font-medium">New</th>
+                <th className="text-right px-4 py-3 font-medium">Unfollows</th>
+                <th className="text-right px-4 py-3 font-medium">Net</th>
+                <th className="text-right px-5 py-3 font-medium">Growth</th>
+              </tr>
+            </thead>
+            <tbody>
+              {platformSummary
+                .sort((a, b) => b.current - a.current)
+                .map((s) => (
+                  <tr key={s.platform} className="border-b border-gray-50 dark:border-gray-900 last:border-0">
+                    <td className="px-5 py-3">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded capitalize ${platformBadgeClass[s.platform] ?? ''}`}>
+                        {s.platform}
+                      </span>
+                    </td>
+                    <td className="text-right px-4 py-3 font-medium text-gray-700 dark:text-gray-300">{fmt(s.current)}</td>
+                    <td className="text-right px-4 py-3 text-blue-600 dark:text-blue-400 font-medium">+{fmt(s.new_followers)}</td>
+                    <td className="text-right px-4 py-3 text-red-500 dark:text-red-400 font-medium">-{fmt(s.unfollows)}</td>
+                    <td className="text-right px-4 py-3">
+                      <span className={`font-medium ${s.net_change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {s.net_change >= 0 ? '+' : ''}{fmt(s.net_change)}
+                      </span>
+                    </td>
+                    <td className="text-right px-5 py-3">
+                      <span className={`font-semibold ${Number(s.growth_pct) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {Number(s.growth_pct) >= 0 ? '+' : ''}{s.growth_pct}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/globals.css ===
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/health/page.tsx ===
+import { fetchHealth } from '@/lib/api';
+import KillSwitchBanner from '@/components/KillSwitchBanner';
+import SystemHealthGrid from '@/components/SystemHealthGrid';
+import ErrorBanner from '@/components/ErrorBanner';
+
+export const revalidate = 0; // always fresh for health page
+
+export default async function HealthPage() {
+  let health = null;
+  let error = false;
+
+  try {
+    health = await fetchHealth();
+  } catch {
+    error = true;
+  }
+
+  return (
+    <div>
+      {/* Kill switch banner — full width at top */}
+      {health && <KillSwitchBanner health={health} />}
+
+      <div className="px-6 py-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">System Health</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Service status and kill switch state
+          </p>
+        </div>
+
+        {error && <ErrorBanner message="Could not reach Observatory API to fetch health data" />}
+
+        {health && (
+          <>
+            {/* Overall status */}
+            <div
+              className={`border rounded-xl px-5 py-4 flex items-center gap-4 ${
+                health.status === 'healthy'
+                  ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
+                  : health.status === 'degraded'
+                  ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950'
+                  : 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  health.status === 'healthy'
+                    ? 'bg-green-500'
+                    : health.status === 'degraded'
+                    ? 'bg-yellow-500'
+                    : 'bg-red-500'
+                }`}
+              />
+              <div>
+                <p
+                  className={`font-semibold capitalize ${
+                    health.status === 'healthy'
+                      ? 'text-green-700 dark:text-green-300'
+                      : health.status === 'degraded'
+                      ? 'text-yellow-700 dark:text-yellow-300'
+                      : 'text-red-700 dark:text-red-300'
+                  }`}
+                >
+                  System {health.status}
+                </p>
+                {health.timestamp && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Last checked: {new Date(health.timestamp).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Service grid */}
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                Services
+              </h2>
+              <SystemHealthGrid services={health.services ?? []} />
+            </div>
+          </>
+        )}
+
+        {!health && !error && (
+          <p className="text-sm text-gray-400 dark:text-gray-600">Loading health data...</p>
+        )}
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/knowledge/page.tsx ===
+import { fetchKnowledge } from '@/lib/api';
+import FreshnessIndicator from '@/components/FreshnessIndicator';
+import ErrorBanner from '@/components/ErrorBanner';
+import type { KnowledgeFile } from '@/lib/types';
+
+export const revalidate = 30;
+
+export default async function KnowledgePage() {
+  let files: KnowledgeFile[] = [];
+  let error = false;
+
+  try {
+    files = await fetchKnowledge();
+  } catch {
+    error = true;
+  }
+
+  const byFreshness = {
+    fresh: files.filter((f) => f.freshness === 'fresh').length,
+    aging: files.filter((f) => f.freshness === 'aging').length,
+    stale: files.filter((f) => f.freshness === 'stale').length,
+  };
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Knowledge</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Self-improvement memory, decisions, and lessons
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load knowledge files" />}
+
+      {!error && (
+        <>
+          {/* Freshness summary */}
+          {files.length > 0 && (
+            <div className="flex gap-4">
+              {Object.entries(byFreshness).map(([status, count]) => (
+                <div
+                  key={status}
+                  className="border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-white dark:bg-gray-950"
+                >
+                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{status}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{count}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* File browser */}
+          <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-950">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                Files ({files.length})
+              </h2>
+            </div>
+
+            {files.length === 0 ? (
+              <p className="text-sm text-gray-400 dark:text-gray-600 px-5 py-6 text-center">
+                No knowledge files indexed.
+              </p>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-gray-900">
+                {files
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      new Date(b.modified_at).getTime() - new Date(a.modified_at).getTime()
+                  )
+                  .map((file) => (
+                    <div
+                      key={file.path}
+                      className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-600 truncate">
+                          {file.path}
+                        </p>
+                      </div>
+                      <FreshnessIndicator
+                        freshness={file.freshness}
+                        modifiedAt={file.modified_at}
+                      />
+                      <span className="text-xs text-gray-400 dark:text-gray-600 whitespace-nowrap">
+                        {new Date(file.modified_at).toLocaleDateString()}
+                      </span>
+                      <span className="text-xs text-gray-400 dark:text-gray-600 whitespace-nowrap">
+                        {(file.size_bytes / 1024).toFixed(1)}KB
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/layout.tsx ===
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import Sidebar from '@/components/Sidebar';
+
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+});
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
+
+export const metadata: Metadata = {
+  title: 'Holus Observatory',
+  description: 'Real-time visibility into the Holus autonomous marketing system',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen`}
+      >
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <main className="flex-1 min-w-0 overflow-auto pt-14 md:pt-0">
+            {children}
+          </main>
+        </div>
+      </body>
+    </html>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/loading.tsx ===
+export default function Loading() {
+  return (
+    <div className="px-6 py-6 space-y-6 animate-pulse">
+      {/* Page heading skeleton */}
+      <div>
+        <div className="h-7 bg-gray-200 dark:bg-gray-800 rounded w-40" />
+        <div className="h-4 bg-gray-100 dark:bg-gray-850 rounded w-72 mt-2" />
+      </div>
+
+      {/* Health banner skeleton */}
+      <div className="h-12 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+
+      {/* KPI cards skeleton */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-24 mb-3" />
+            <div className="h-7 bg-gray-200 dark:bg-gray-800 rounded w-16" />
+          </div>
+        ))}
+      </div>
+
+      {/* Agent grid skeleton */}
+      <div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-28 mb-3" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950">
+              <div className="flex justify-between mb-3">
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-28" />
+                <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-full w-14" />
+              </div>
+              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-36 mb-2" />
+              <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded w-16 mt-3" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Trajectory skeleton */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-32" />
+        </div>
+        <div className="space-y-0">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="px-5 py-3 flex gap-3">
+              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-16 mt-1" />
+              <div className="flex-1">
+                <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-48" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/page.tsx ===
+import { fetchHealth, fetchAgents, fetchMetrics } from '@/lib/api';
+import KPICard from '@/components/KPICard';
+import AgentCard from '@/components/AgentCard';
+import KillSwitchBanner from '@/components/KillSwitchBanner';
+import ErrorBanner from '@/components/ErrorBanner';
+import TrajectoryTimeline from '@/components/TrajectoryTimeline';
+
+export const revalidate = 30;
+
+async function getData() {
+  const [health, agents, metrics] = await Promise.allSettled([
+    fetchHealth(),
+    fetchAgents(),
+    fetchMetrics(),
+  ]);
+  return {
+    health: health.status === 'fulfilled' ? health.value : null,
+    agents: agents.status === 'fulfilled' ? agents.value : [],
+    metrics: metrics.status === 'fulfilled' ? metrics.value : null,
+    error: health.status === 'rejected' && agents.status === 'rejected',
+  };
+}
+
+export default async function DashboardPage() {
+  const { health, agents, metrics, error } = await getData();
+
+  return (
+    <div>
+      {health?.kill_switch_active && (
+        <KillSwitchBanner health={health} compact />
+      )}
+
+      <div className="px-6 py-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Holus autonomous marketing system — overview
+          </p>
+        </div>
+
+        {error && <ErrorBanner message="Could not reach Observatory API" />}
+
+        {health && (
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium ${
+              health.status === 'healthy'
+                ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300'
+                : health.status === 'degraded'
+                ? 'border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300'
+                : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300'
+            }`}
+          >
+            <span className="capitalize">System: {health.status}</span>
+            {health.timestamp && (
+              <span className="ml-auto text-xs opacity-60">
+                As of {new Date(health.timestamp).toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <KPICard
+            title="Cycles this week"
+            value={metrics?.cycles_this_week ?? '—'}
+            color="blue"
+          />
+          <KPICard
+            title="Success rate"
+            value={metrics ? `${(metrics.success_rate * 100).toFixed(1)}%` : '—'}
+            color={
+              metrics
+                ? metrics.success_rate >= 0.8
+                  ? 'green'
+                  : metrics.success_rate >= 0.5
+                  ? 'yellow'
+                  : 'red'
+                : 'default'
+            }
+          />
+          <KPICard
+            title="Avg quality score"
+            value={metrics?.avg_quality_score?.toFixed(1) ?? '—'}
+            subtitle="out of 10"
+            color={
+              metrics
+                ? metrics.avg_quality_score >= 7
+                  ? 'green'
+                  : metrics.avg_quality_score >= 4
+                  ? 'yellow'
+                  : 'red'
+                : 'default'
+            }
+          />
+          <KPICard
+            title="Total cost"
+            value={metrics ? `$${metrics.total_cost_usd.toFixed(2)}` : '—'}
+            subtitle="this week"
+          />
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            Agents ({agents.length})
+          </h2>
+          {agents.length === 0 ? (
+            <p className="text-sm text-gray-400 dark:text-gray-600 py-4">
+              {error ? 'Unable to load agents.' : 'No agents registered.'}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {agents.map((agent) => (
+                <AgentCard key={agent.id} agent={agent} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <TrajectoryTimeline />
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/app/results/page.tsx ===
+import { fetchResults } from '@/lib/api';
+import ErrorBanner from '@/components/ErrorBanner';
+import KPICard from '@/components/KPICard';
+import PlatformCard from '@/components/PlatformCard';
+import TopPostRow from '@/components/TopPostRow';
+import GrowthChart from '@/components/GrowthChart';
+import PillarBreakdown from '@/components/PillarBreakdown';
+import type { GrowthData } from '@/lib/types';
+
+export const revalidate = 30;
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+export default async function ResultsPage() {
+  let data: GrowthData | null = null;
+  let error = false;
+
+  try {
+    data = await fetchResults();
+  } catch {
+    error = true;
+  }
+
+  const platforms = data?.platforms ?? {};
+  const totalFollowers = Object.values(platforms).reduce((s, p) => s + p.followers, 0);
+  const totalFollowers30d = Object.values(platforms).reduce((s, p) => s + p.followers_30d_ago, 0);
+  const followerGrowth = totalFollowers30d > 0
+    ? ((totalFollowers - totalFollowers30d) / totalFollowers30d * 100).toFixed(1)
+    : '0';
+  const totalImpressions = Object.values(platforms).reduce((s, p) => s + p.impressions_30d, 0);
+  const totalPosts = Object.values(platforms).reduce((s, p) => s + p.posts_30d, 0);
+  const avgEngagement = Object.values(platforms).length > 0
+    ? (Object.values(platforms).reduce((s, p) => s + p.engagement_rate, 0) / Object.values(platforms).length * 100).toFixed(1)
+    : '0';
+
+  return (
+    <div className="px-6 py-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Results</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Growth metrics and content performance across all platforms
+        </p>
+      </div>
+
+      {error && <ErrorBanner message="Could not load results from Observatory API" />}
+
+      {/* Headline KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard
+          title="Total followers"
+          value={fmt(totalFollowers)}
+          subtitle={`+${followerGrowth}% in 30d`}
+          color="blue"
+        />
+        <KPICard
+          title="Impressions (30d)"
+          value={fmt(totalImpressions)}
+          color="default"
+        />
+        <KPICard
+          title="Posts (30d)"
+          value={totalPosts}
+          color="default"
+        />
+        <KPICard
+          title="Avg engagement"
+          value={`${avgEngagement}%`}
+          color={Number(avgEngagement) >= 5 ? 'green' : Number(avgEngagement) >= 3 ? 'yellow' : 'red'}
+        />
+      </div>
+
+      {/* Growth chart */}
+      {data && data.daily_growth.length > 0 && (
+        <GrowthChart data={data.daily_growth} />
+      )}
+
+      {/* Platform breakdown */}
+      {Object.keys(platforms).length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            Platforms
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {Object.entries(platforms).map(([name, stats]) => (
+              <PlatformCard key={name} name={name} stats={stats} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Content by pillar + product */}
+      {data && Object.keys(data.content_by_pillar).length > 0 && (
+        <PillarBreakdown
+          byPillar={data.content_by_pillar}
+          byProduct={data.content_by_product}
+        />
+      )}
+
+      {/* Top performing posts */}
+      {data && data.top_posts.length > 0 && (
+        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950">
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Top Posts
+            </h2>
+          </div>
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            {data.top_posts.map((post) => (
+              <TopPostRow key={post.id} post={post} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!error && !data && (
+        <p className="text-sm text-gray-400 dark:text-gray-600 py-4">
+          No results data available. Ensure data/results/growth.json exists.
+        </p>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/AgentCard.tsx ===
+import type { Agent, AgentStatus } from '@/lib/types';
+import Link from 'next/link';
+
+const statusColors: Record<AgentStatus, string> = {
+  active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+  idle: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+  running: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+  error: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  disabled: 'bg-gray-100 text-gray-400 dark:bg-gray-900 dark:text-gray-600',
+  planned: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+};
+
+interface Props {
+  agent: Agent;
+}
+
+export default function AgentCard({ agent }: Props) {
+  return (
+    <Link href={`/agents/${agent.id}`}>
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-gray-950">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+            {agent.name}
+          </h3>
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[agent.status]}`}
+          >
+            {agent.status}
+          </span>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{agent.role}</p>
+        <div className="flex items-center gap-2 mt-3">
+          <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+            {agent.model_tier}
+          </span>
+          {agent.type && (
+            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+              {agent.type}
+            </span>
+          )}
+        </div>
+        {agent.model && (
+          <p className="text-xs text-gray-400 dark:text-gray-600 mt-2 truncate">{agent.model}</p>
+        )}
+      </div>
+    </Link>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/ContentKanban.tsx ===
+import type { ContentItem, ContentState } from '@/lib/types';
+
+const COLUMNS: ContentState[] = ['DRAFT', 'REVIEW', 'PUBLISHED'];
+
+const pillarColors = {
+  authority: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+  entertainment: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300',
+  education: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+  conversion: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+};
+
+const columnColors: Record<ContentState, string> = {
+  DRAFT: 'text-gray-600 dark:text-gray-400',
+  REVIEW: 'text-yellow-700 dark:text-yellow-400',
+  PUBLISHED: 'text-green-700 dark:text-green-400',
+};
+
+interface Props {
+  items: ContentItem[];
+}
+
+export default function ContentKanban({ items }: Props) {
+  const grouped: Record<ContentState, ContentItem[]> = {
+    DRAFT: [],
+    REVIEW: [],
+    PUBLISHED: [],
+  };
+  for (const item of items) {
+    if (grouped[item.state]) {
+      grouped[item.state].push(item);
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {COLUMNS.map((state) => (
+        <div
+          key={state}
+          className="border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900"
+        >
+          <div className={`px-4 py-3 border-b border-gray-200 dark:border-gray-800 font-semibold text-sm ${columnColors[state]}`}>
+            {state}
+            <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-600">
+              ({grouped[state].length})
+            </span>
+          </div>
+          <div className="p-3 space-y-2 min-h-24">
+            {grouped[state].length === 0 ? (
+              <p className="text-xs text-gray-400 dark:text-gray-600 text-center py-4">
+                Empty
+              </p>
+            ) : (
+              grouped[state].map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-3"
+                >
+                  <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                    {item.title}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                        pillarColors[item.pillar] ?? 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {item.pillar}
+                    </span>
+                    <span className="text-xs text-gray-400 dark:text-gray-600">
+                      {item.platform}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/ErrorBanner.tsx ===
+interface Props {
+  message?: string;
+}
+
+export default function ErrorBanner({ message }: Props) {
+  return (
+    <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-5 py-4">
+      <p className="text-sm font-medium text-red-700 dark:text-red-300">
+        Service unavailable
+      </p>
+      {message && (
+        <p className="text-xs text-red-500 dark:text-red-400 mt-1">{message}</p>
+      )}
+      <p className="text-xs text-red-400 dark:text-red-600 mt-1">
+        Check that the Observatory API is running at{' '}
+        {process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001'}
+      </p>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/FreshnessIndicator.tsx ===
+import type { FreshnessStatus } from '@/lib/types';
+
+interface Props {
+  freshness: FreshnessStatus;
+  modifiedAt?: string;
+}
+
+const dotColor: Record<FreshnessStatus, string> = {
+  fresh: 'bg-green-500',
+  aging: 'bg-yellow-500',
+  stale: 'bg-red-500',
+};
+
+const labelColor: Record<FreshnessStatus, string> = {
+  fresh: 'text-green-600 dark:text-green-400',
+  aging: 'text-yellow-600 dark:text-yellow-400',
+  stale: 'text-red-600 dark:text-red-400',
+};
+
+export default function FreshnessIndicator({ freshness, modifiedAt }: Props) {
+  const tooltip = modifiedAt
+    ? `Last modified: ${new Date(modifiedAt).toLocaleString()}`
+    : freshness;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 text-xs font-medium ${labelColor[freshness]}`}
+      title={tooltip}
+    >
+      <span className={`w-2 h-2 rounded-full ${dotColor[freshness]}`} />
+      {freshness}
+    </span>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/GrowthChart.tsx ===
+'use client';
+
+import type { DailyGrowth } from '@/lib/types';
+
+interface Props {
+  data: DailyGrowth[];
+}
+
+export default function GrowthChart({ data }: Props) {
+  if (data.length < 2) return null;
+
+  const followers = data.map((d) => d.total_followers);
+  const min = Math.min(...followers);
+  const max = Math.max(...followers);
+  const range = max - min || 1;
+
+  const width = 800;
+  const height = 160;
+  const padding = { top: 10, right: 10, bottom: 24, left: 10 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const points = data.map((d, i) => {
+    const x = padding.left + (i / (data.length - 1)) * chartW;
+    const y = padding.top + chartH - ((d.total_followers - min) / range) * chartH;
+    return { x, y, ...d };
+  });
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
+
+  // Show ~6 evenly spaced date labels
+  const labelStep = Math.max(1, Math.floor(data.length / 6));
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          Follower Growth (30d)
+        </h2>
+        <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-600">
+          <span>{min.toLocaleString()}</span>
+          <span className="text-gray-300 dark:text-gray-700">→</span>
+          <span className="font-medium text-gray-700 dark:text-gray-300">{max.toLocaleString()}</span>
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" aria-label="Follower growth chart">
+        <defs>
+          <linearGradient id="growthFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgb(99 102 241)" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="rgb(99 102 241)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill="url(#growthFill)" />
+        <path d={linePath} fill="none" stroke="rgb(99 102 241)" strokeWidth="2" />
+        {points.map((p, i) =>
+          i % labelStep === 0 || i === points.length - 1 ? (
+            <text
+              key={p.date}
+              x={p.x}
+              y={height - 4}
+              textAnchor="middle"
+              className="fill-gray-400 dark:fill-gray-600"
+              fontSize="10"
+            >
+              {p.date.slice(5)}
+            </text>
+          ) : null
+        )}
+      </svg>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/KPICard.tsx ===
+interface Props {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  color?: 'default' | 'green' | 'yellow' | 'red' | 'blue';
+}
+
+const colorMap = {
+  default: 'text-gray-900 dark:text-white',
+  green: 'text-green-600 dark:text-green-400',
+  yellow: 'text-yellow-600 dark:text-yellow-400',
+  red: 'text-red-600 dark:text-red-400',
+  blue: 'text-blue-600 dark:text-blue-400',
+};
+
+export default function KPICard({ title, value, subtitle, color = 'default' }: Props) {
+  return (
+    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950 hover:shadow-sm transition-shadow">
+      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+        {title}
+      </p>
+      <p className={`text-2xl font-bold ${colorMap[color]}`}>{value}</p>
+      {subtitle && (
+        <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">{subtitle}</p>
+      )}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/KillSwitchBanner.tsx ===
+import type { HealthStatus } from '@/lib/types';
+
+interface Props {
+  health: HealthStatus | null;
+  compact?: boolean;
+}
+
+export default function KillSwitchBanner({ health, compact = false }: Props) {
+  if (!health) return null;
+
+  if (health.kill_switch_active) {
+    return (
+      <div
+        role="alert"
+        aria-live="assertive"
+        className={`w-full bg-red-600 text-white ${compact ? 'px-4 py-2 text-sm' : 'px-6 py-4 text-base'} flex items-center gap-3`}
+      >
+        <span className="font-bold uppercase tracking-wide">
+          {compact ? 'KILL SWITCH ON' : 'KILL SWITCH ACTIVE'}
+        </span>
+        {health.kill_switch_activated_at && (
+          <span className="opacity-75 text-sm">
+            Activated: {new Date(health.kill_switch_activated_at).toLocaleString()}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  if (!compact) {
+    return (
+      <div className="w-full bg-green-600 text-white px-6 py-3 flex items-center gap-3">
+        <span className="font-medium">System running normally — Kill switch INACTIVE</span>
+      </div>
+    );
+  }
+
+  return null;
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/PillarBreakdown.tsx ===
+import type { PillarStats, ProductStats } from '@/lib/types';
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+const pillarColors: Record<string, string> = {
+  authority: 'bg-indigo-500',
+  tutorial: 'bg-blue-500',
+  entertainment: 'bg-amber-500',
+  conversion: 'bg-green-500',
+};
+
+const productColors: Record<string, string> = {
+  pilaster: 'bg-purple-500',
+  genpeli: 'bg-rose-500',
+  invoz: 'bg-cyan-500',
+  holus: 'bg-indigo-500',
+};
+
+interface Props {
+  byPillar: Record<string, PillarStats>;
+  byProduct: Record<string, ProductStats>;
+}
+
+export default function PillarBreakdown({ byPillar, byProduct }: Props) {
+  const totalPillarImpr = Object.values(byPillar).reduce((s, p) => s + p.total_impressions, 0) || 1;
+  const totalProductImpr = Object.values(byProduct).reduce((s, p) => s + p.total_impressions, 0) || 1;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* By Pillar */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Content by Pillar
+        </h2>
+        <div className="space-y-3">
+          {Object.entries(byPillar)
+            .sort((a, b) => b[1].total_impressions - a[1].total_impressions)
+            .map(([name, stats]) => {
+              const pct = (stats.total_impressions / totalPillarImpr * 100).toFixed(0);
+              return (
+                <div key={name}>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="capitalize text-gray-700 dark:text-gray-300 font-medium">{name}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-600">
+                      {stats.count} posts · {fmt(stats.total_impressions)} impr · {(stats.avg_engagement_rate * 100).toFixed(1)}% eng
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${pillarColors[name] ?? 'bg-gray-500'}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+
+      {/* By Product */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Content by Product
+        </h2>
+        <div className="space-y-3">
+          {Object.entries(byProduct)
+            .sort((a, b) => b[1].total_impressions - a[1].total_impressions)
+            .map(([name, stats]) => {
+              const pct = (stats.total_impressions / totalProductImpr * 100).toFixed(0);
+              return (
+                <div key={name}>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="capitalize text-gray-700 dark:text-gray-300 font-medium">{name}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-600">
+                      {stats.count} posts · {fmt(stats.total_impressions)} impr · {(stats.avg_engagement_rate * 100).toFixed(1)}% eng
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${productColors[name] ?? 'bg-gray-500'}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/PlatformCard.tsx ===
+import type { PlatformStats } from '@/lib/types';
+
+const platformColors: Record<string, string> = {
+  linkedin: 'text-blue-600 dark:text-blue-400',
+  instagram: 'text-pink-600 dark:text-pink-400',
+  twitter: 'text-sky-500 dark:text-sky-400',
+  tiktok: 'text-gray-900 dark:text-white',
+  threads: 'text-gray-700 dark:text-gray-300',
+};
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+interface Props {
+  name: string;
+  stats: PlatformStats;
+}
+
+export default function PlatformCard({ name, stats }: Props) {
+  const growth = stats.followers_30d_ago > 0
+    ? ((stats.followers - stats.followers_30d_ago) / stats.followers_30d_ago * 100).toFixed(1)
+    : '0';
+  const isPositive = Number(growth) > 0;
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950">
+      <div className="flex items-center justify-between mb-3">
+        <span className={`text-sm font-semibold capitalize ${platformColors[name] ?? 'text-gray-700 dark:text-gray-300'}`}>
+          {name}
+        </span>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+          isPositive
+            ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400'
+            : 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400'
+        }`}>
+          {isPositive ? '+' : ''}{growth}%
+        </span>
+      </div>
+      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+        {fmt(stats.followers)}
+      </p>
+      <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">followers</p>
+      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <span className="text-gray-400 dark:text-gray-600">Posts</span>
+          <p className="font-medium text-gray-700 dark:text-gray-300">{stats.posts_30d}</p>
+        </div>
+        <div>
+          <span className="text-gray-400 dark:text-gray-600">Impr.</span>
+          <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(stats.impressions_30d)}</p>
+        </div>
+        <div>
+          <span className="text-gray-400 dark:text-gray-600">Eng. rate</span>
+          <p className="font-medium text-gray-700 dark:text-gray-300">{(stats.engagement_rate * 100).toFixed(1)}%</p>
+        </div>
+        <div>
+          <span className="text-gray-400 dark:text-gray-600">Top type</span>
+          <p className="font-medium text-gray-700 dark:text-gray-300 truncate">{stats.top_content_type}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/QualityHeatmap.tsx ===
+import type { EvaluationRecord } from '@/lib/types';
+
+interface Props {
+  evaluations: EvaluationRecord[];
+  agents: string[];
+  days?: number;
+}
+
+function scoreColor(score?: number): string {
+  if (score === undefined) return 'bg-gray-100 dark:bg-gray-800';
+  if (score >= 7) return 'bg-green-400 dark:bg-green-600';
+  if (score >= 4) return 'bg-yellow-400 dark:bg-yellow-600';
+  return 'bg-red-400 dark:bg-red-600';
+}
+
+function getLast30Days(): string[] {
+  return Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (29 - i));
+    return d.toISOString().slice(0, 10);
+  });
+}
+
+export default function QualityHeatmap({ evaluations, agents, days = 30 }: Props) {
+  const dateRange = getLast30Days().slice(-days);
+
+  // Build lookup: agent+date -> score
+  const lookup: Record<string, number> = {};
+  for (const ev of evaluations) {
+    const key = `${ev.agent_id}|${ev.date.slice(0, 10)}`;
+    lookup[key] = ev.score;
+  }
+
+  if (agents.length === 0) {
+    return (
+      <p className="text-sm text-gray-400 dark:text-gray-600 text-center py-8">
+        No agent data available
+      </p>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-max">
+        {/* Header row: dates */}
+        <div className="flex items-center gap-1 mb-2 pl-32">
+          {dateRange.map((d) => (
+            <div
+              key={d}
+              className="w-5 text-center"
+              title={d}
+            >
+              <span className="text-xs text-gray-400 dark:text-gray-600 rotate-90 inline-block">
+                {d.slice(5)}
+              </span>
+            </div>
+          ))}
+        </div>
+        {/* Rows: agents */}
+        {agents.map((agentId) => (
+          <div key={agentId} className="flex items-center gap-1 mb-1">
+            <div className="w-32 shrink-0 text-xs text-gray-600 dark:text-gray-400 truncate pr-2 text-right">
+              {agentId}
+            </div>
+            {dateRange.map((d) => {
+              const score = lookup[`${agentId}|${d}`];
+              return (
+                <div
+                  key={d}
+                  className={`w-7 h-7 rounded-sm cursor-pointer ${scoreColor(score)}`}
+                  title={score !== undefined ? `${agentId} ${d}: ${score}` : `${agentId} ${d}: no data`}
+                />
+              );
+            })}
+          </div>
+        ))}
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-4 pl-32">
+          {[
+            { color: 'bg-green-400 dark:bg-green-600', label: '7–10 Pass' },
+            { color: 'bg-yellow-400 dark:bg-yellow-600', label: '4–7 Review' },
+            { color: 'bg-red-400 dark:bg-red-600', label: '0–4 Fail' },
+            { color: 'bg-gray-100 dark:bg-gray-800', label: 'No data' },
+          ].map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div className={`w-3 h-3 rounded-sm ${color}`} />
+              <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/Sidebar.tsx ===
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import {
+  Info,
+  BarChart3,
+  UserPlus,
+  LayoutDashboard,
+  Users,
+  FileText,
+  Target,
+  BookOpen,
+  Activity,
+  TrendingUp,
+  Menu,
+  X,
+  Sun,
+  Moon,
+} from 'lucide-react';
+
+const nav = [
+  { href: '/about', label: 'About', Icon: Info },
+  { href: '/', label: 'Dashboard', Icon: LayoutDashboard },
+  { href: '/agents', label: 'Agents', Icon: Users },
+  { href: '/content', label: 'Content', Icon: FileText },
+  { href: '/engagement', label: 'Engagement', Icon: BarChart3 },
+  { href: '/followers', label: 'Followers', Icon: UserPlus },
+  { href: '/evaluations', label: 'Evaluations', Icon: Target },
+  { href: '/knowledge', label: 'Knowledge', Icon: BookOpen },
+  { href: '/health', label: 'Health', Icon: Activity },
+  { href: '/results', label: 'Results', Icon: TrendingUp },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [dark, setDark] = useState(true);
+
+  function toggleTheme() {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle('dark', next);
+  }
+
+  const sidebarContent = (
+    <>
+      <div className="px-5 py-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+        <div>
+          <span className="text-sm font-semibold tracking-widest text-gray-500 dark:text-gray-400 uppercase">
+            Holus
+          </span>
+          <div className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">
+            Observatory
+          </div>
+        </div>
+        <button
+          onClick={() => setOpen(false)}
+          className="md:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+          aria-label="Close navigation"
+        >
+          <X size={20} />
+        </button>
+      </div>
+      <nav aria-label="Main navigation" className="flex-1 px-3 py-4 space-y-1">
+        {nav.map(({ href, label, Icon }) => {
+          const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? 'page' : undefined}
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                active
+                  ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <Icon size={18} aria-hidden="true" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+        <p className="text-xs text-gray-400 dark:text-gray-600">Read-only</p>
+        <button
+          onClick={toggleTheme}
+          className="p-1.5 rounded-lg text-gray-400 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+          aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {dark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed top-4 left-4 z-40 md:hidden p-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-sm"
+        aria-label="Open navigation"
+      >
+        <Menu size={20} className="text-gray-700 dark:text-gray-300" />
+      </button>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile slide-over sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-56 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col transform transition-transform md:hidden ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-56 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex-col">
+        {sidebarContent}
+      </aside>
+    </>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/SystemHealthGrid.tsx ===
+import type { ServiceStatus } from '@/lib/types';
+
+interface Props {
+  services: ServiceStatus[];
+}
+
+const statusColors = {
+  up: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  down: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+  degraded: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+};
+
+export default function SystemHealthGrid({ services }: Props) {
+  if (services.length === 0) {
+    return (
+      <p className="text-sm text-gray-400 dark:text-gray-600 text-center py-8">
+        No service data available
+      </p>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {services.map((svc) => (
+        <div
+          key={svc.name}
+          className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium text-gray-900 dark:text-white text-sm">{svc.name}</h3>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[svc.status]}`}
+            >
+              {svc.status}
+            </span>
+          </div>
+          {svc.latency_ms !== undefined && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Latency: {svc.latency_ms}ms
+            </p>
+          )}
+          <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">
+            Checked: {new Date(svc.last_checked).toLocaleTimeString()}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/TopPostRow.tsx ===
+import type { TopPost } from '@/lib/types';
+
+const platformBadge: Record<string, string> = {
+  linkedin: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400',
+  instagram: 'bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-400',
+  twitter: 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-400',
+  tiktok: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+  threads: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+};
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+interface Props {
+  post: TopPost;
+}
+
+export default function TopPostRow({ post }: Props) {
+  const date = new Date(post.published_at);
+  const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+
+  return (
+    <div className="px-5 py-3.5 flex items-center gap-4">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+          {post.title}
+        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <span className={`text-xs font-medium px-1.5 py-0.5 rounded capitalize ${platformBadge[post.platform] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
+            {post.platform}
+          </span>
+          <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 capitalize">
+            {post.product}
+          </span>
+          <span className="text-xs text-gray-400 dark:text-gray-600">{dateStr}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 shrink-0">
+        <div className="text-right">
+          <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(post.impressions)}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-600">views</p>
+        </div>
+        <div className="text-right">
+          <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(post.likes)}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-600">likes</p>
+        </div>
+        <div className="text-right">
+          <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(post.shares)}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-600">shares</p>
+        </div>
+        <div className="text-right w-12">
+          <p className={`font-semibold ${post.engagement_rate >= 0.07 ? 'text-green-600 dark:text-green-400' : post.engagement_rate >= 0.04 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-400'}`}>
+            {(post.engagement_rate * 100).toFixed(1)}%
+          </p>
+          <p className="text-xs text-gray-400 dark:text-gray-600">eng.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/components/TrajectoryTimeline.tsx ===
+'use client';
+
+import { useTrajectoryStream } from '@/lib/sse';
+
+export default function TrajectoryTimeline() {
+  const { events, connected } = useTrajectoryStream();
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+        <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Live Trajectory</h2>
+        <span
+          className={`flex items-center gap-1.5 text-xs font-medium ${
+            connected
+              ? 'text-green-600 dark:text-green-400'
+              : 'text-gray-400 dark:text-gray-600'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}
+          />
+          {connected ? 'Live' : 'Disconnected'}
+        </span>
+      </div>
+      <div className="divide-y divide-gray-50 dark:divide-gray-900 max-h-80 overflow-y-auto">
+        {events.length === 0 ? (
+          <p className="text-sm text-gray-400 dark:text-gray-600 px-5 py-6 text-center">
+            {connected ? 'Waiting for events...' : 'Connecting to event stream...'}
+          </p>
+        ) : (
+          events.map((ev) => (
+            <div key={ev.id} className="px-5 py-3 flex items-start gap-3">
+              <div className="shrink-0 mt-0.5">
+                <span className="text-xs text-gray-400 dark:text-gray-600 font-mono">
+                  {new Date(ev.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mr-2">
+                  {ev.agent_name}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded mr-2">
+                  {ev.event_type}
+                </span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{ev.description}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/lib/api.ts ===
+// Typed fetch wrappers for Observatory API (spec 028)
+// Falls back to demo data when the API is unreachable (e.g. on Vercel deployment)
+
+import type {
+  Agent,
+  AgentDetail,
+  HealthStatus,
+  KPIMetrics,
+  EvaluationRecord,
+  ContentItem,
+  KnowledgeFile,
+  CostBreakdown,
+  GrowthData,
+} from './types';
+import {
+  demoAgents,
+  demoHealth,
+  demoMetrics,
+  demoEvaluations,
+  demoContent,
+  demoKnowledge,
+  demoGrowthData,
+} from './demo-data';
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
+
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || !process.env.NEXT_PUBLIC_OBSERVATORY_URL;
+
+async function apiFetch<T>(
+  path: string,
+  options?: RequestInit & { revalidate?: number }
+): Promise<T> {
+  const { revalidate, ...fetchOptions } = options ?? {};
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...fetchOptions,
+    next: { revalidate: revalidate ?? 30 },
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status} for ${path}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+async function withFallback<T>(fetcher: () => Promise<T>, fallback: T): Promise<T> {
+  if (DEMO_MODE) return fallback;
+  try {
+    return await fetcher();
+  } catch {
+    return fallback;
+  }
+}
+
+// Health
+export async function fetchHealth(): Promise<HealthStatus> {
+  return withFallback(
+    () => apiFetch<HealthStatus>('/api/v1/health', { revalidate: 0 }),
+    demoHealth,
+  );
+}
+
+// Agents list
+export async function fetchAgents(): Promise<Agent[]> {
+  return withFallback(
+    () => apiFetch<Agent[]>('/api/v1/agents'),
+    demoAgents,
+  );
+}
+
+// Agent detail
+export async function fetchAgent(id: string): Promise<AgentDetail> {
+  const agent = demoAgents.find((a) => a.id === id);
+  const fallback: AgentDetail = {
+    ...(agent ?? demoAgents[0]),
+    cycles: [],
+    recent_scores: [7.2, 8.1, 6.9, 7.8, 8.4],
+  };
+  return withFallback(
+    () => apiFetch<AgentDetail>(`/api/v1/agents/${id}`),
+    fallback,
+  );
+}
+
+// KPI metrics (dashboard)
+export async function fetchMetrics(): Promise<KPIMetrics> {
+  return withFallback(
+    () => apiFetch<KPIMetrics>('/api/v1/metrics'),
+    demoMetrics,
+  );
+}
+
+// Evaluations
+export async function fetchEvaluations(params?: {
+  agent_id?: string;
+  days?: number;
+}): Promise<EvaluationRecord[]> {
+  const qs = new URLSearchParams();
+  if (params?.agent_id) qs.set('agent_id', params.agent_id);
+  if (params?.days) qs.set('days', String(params.days));
+  const query = qs.toString() ? `?${qs.toString()}` : '';
+  let fallback = demoEvaluations;
+  if (params?.agent_id) {
+    fallback = fallback.filter((e) => e.agent_id === params.agent_id);
+  }
+  return withFallback(
+    () => apiFetch<EvaluationRecord[]>(`/api/v1/evaluations${query}`),
+    fallback,
+  );
+}
+
+// Content pipeline
+export async function fetchContent(): Promise<ContentItem[]> {
+  return withFallback(
+    () => apiFetch<ContentItem[]>('/api/v1/content'),
+    demoContent,
+  );
+}
+
+// Knowledge files
+export async function fetchKnowledge(): Promise<KnowledgeFile[]> {
+  return withFallback(
+    () => apiFetch<KnowledgeFile[]>('/api/v1/knowledge'),
+    demoKnowledge,
+  );
+}
+
+// Cost breakdown
+export async function fetchCosts(): Promise<CostBreakdown[]> {
+  return withFallback(
+    () => apiFetch<CostBreakdown[]>('/api/v1/costs'),
+    [
+      { agent_id: 'marketing-strategist', agent_name: 'Marketing Strategist', cost_usd: 1.42, percentage: 37.2 },
+      { agent_id: 'blog-writer', agent_name: 'Blog Writer', cost_usd: 0.89, percentage: 23.3 },
+      { agent_id: 'judge-agent', agent_name: 'Judge Agent', cost_usd: 0.64, percentage: 16.8 },
+      { agent_id: 'seo-researcher', agent_name: 'SEO Researcher', cost_usd: 0.52, percentage: 13.6 },
+      { agent_id: 'hook-architect', agent_name: 'Hook Architect', cost_usd: 0.35, percentage: 9.1 },
+    ],
+  );
+}
+
+// SSE stream URL (used directly by EventSource)
+export function trajectoryStreamUrl(): string {
+  return `${API_BASE}/api/v1/trajectory/stream`;
+}
+
+// Results / Growth
+export async function fetchResults(): Promise<GrowthData> {
+  return withFallback(
+    () => apiFetch<GrowthData>('/api/v1/results'),
+    demoGrowthData,
+  );
+}
+
+// Is demo mode active?
+export function isDemoMode(): boolean {
+  return DEMO_MODE;
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/lib/demo-data.ts ===
+// Demo data for recruiter-facing deployment (no backend API needed)
+// Provides realistic mock data so Observatory looks alive on Vercel
+
+import type {
+  Agent,
+  HealthStatus,
+  KPIMetrics,
+  EvaluationRecord,
+  ContentItem,
+  KnowledgeFile,
+  TrajectoryEvent,
+  GrowthData,
+} from './types';
+
+// --- Agents ---
+
+export const demoAgents: Agent[] = [
+  {
+    id: 'marketing-strategist',
+    name: 'Marketing Strategist',
+    role: 'Strategy & decisions',
+    type: 'manager',
+    status: 'active',
+    model: 'claude-opus-4-6',
+    model_tier: 'opus',
+    description: 'Primary agent. Observes analytics, decides content strategy, calls silo tools.',
+  },
+  {
+    id: 'hook-architect',
+    name: 'Hook Architect',
+    role: 'Opening hooks',
+    type: 'specialist',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Writes attention-grabbing hooks for posts and videos.',
+  },
+  {
+    id: 'seo-researcher',
+    name: 'SEO Researcher',
+    role: 'Keyword research',
+    type: 'specialist',
+    status: 'idle',
+    model: 'gemini-2.5-pro',
+    model_tier: 'unknown',
+    description: 'Researches keywords, competitor content, and search trends.',
+  },
+  {
+    id: 'blog-writer',
+    name: 'Blog Writer',
+    role: 'Long-form content',
+    type: 'specialist',
+    status: 'running',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Writes technical blog posts and tutorials.',
+  },
+  {
+    id: 'carousel-architect',
+    name: 'Carousel Architect',
+    role: 'Visual carousels',
+    type: 'specialist',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Designs LinkedIn/Instagram carousel slide sequences.',
+  },
+  {
+    id: 'narrative-specialist',
+    name: 'Narrative Specialist',
+    role: 'Storytelling',
+    type: 'specialist',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Crafts narrative arcs for case studies and founder stories.',
+  },
+  {
+    id: 'tutorial-specialist',
+    name: 'Tutorial Specialist',
+    role: 'Technical tutorials',
+    type: 'specialist',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Creates step-by-step technical tutorials for products.',
+  },
+  {
+    id: 'proof-agent',
+    name: 'Proof Agent',
+    role: 'Social proof',
+    type: 'specialist',
+    status: 'idle',
+    model: 'claude-haiku-4-5',
+    model_tier: 'haiku',
+    description: 'Finds and formats testimonials, metrics, and case study evidence.',
+  },
+  {
+    id: 'written-content-judge',
+    name: 'Written Content Judge',
+    role: 'Quality evaluation',
+    type: 'evaluator',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Evaluates text content using domain-specific rubrics.',
+  },
+  {
+    id: 'visual-content-judge',
+    name: 'Visual Content Judge',
+    role: 'Visual evaluation',
+    type: 'evaluator',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Evaluates carousels, images, and visual layouts.',
+  },
+  {
+    id: 'brand-safety-judge',
+    name: 'Brand Safety Judge',
+    role: 'Safety review',
+    type: 'evaluator',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Checks content against brand guidelines and safety rules.',
+  },
+  {
+    id: 'judge-agent',
+    name: 'Judge Agent',
+    role: 'Evaluation routing',
+    type: 'evaluator',
+    status: 'active',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Routes content to domain-specific evaluators based on content type.',
+  },
+  {
+    id: 'code-improver',
+    name: 'Code Improver',
+    role: 'Code quality',
+    type: 'ops',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Improves code quality, test coverage, and documentation.',
+  },
+  {
+    id: 'security-sentinel',
+    name: 'Security Sentinel',
+    role: 'Security audit',
+    type: 'ops',
+    status: 'idle',
+    model: 'claude-sonnet-4-6',
+    model_tier: 'sonnet',
+    description: 'Scans for credentials, vulnerabilities, and policy violations.',
+  },
+  {
+    id: 'knowledge-keeper',
+    name: 'Knowledge Keeper',
+    role: 'Learning loop',
+    type: 'ops',
+    status: 'idle',
+    model: 'claude-haiku-4-5',
+    model_tier: 'haiku',
+    description: 'Maintains system memory, lessons, and knowledge files.',
+  },
+  {
+    id: 'manager',
+    name: 'Manager',
+    role: 'Self-improvement',
+    type: 'manager',
+    status: 'active',
+    model: 'claude-opus-4-6',
+    model_tier: 'opus',
+    description: 'Orchestrates self-improvement cycles and coordinates workers.',
+  },
+];
+
+// --- Health ---
+
+export const demoHealth: HealthStatus = {
+  status: 'healthy',
+  kill_switch_active: false,
+  services: [
+    { name: 'Observatory API', status: 'up', latency_ms: 12, last_checked: new Date().toISOString() },
+    { name: 'Social Media MCP', status: 'up', latency_ms: 45, last_checked: new Date().toISOString() },
+    { name: 'Pilaster MCP', status: 'up', latency_ms: 38, last_checked: new Date().toISOString() },
+    { name: 'Genpeli MCP', status: 'up', latency_ms: 52, last_checked: new Date().toISOString() },
+    { name: 'Redis Event Bus', status: 'up', latency_ms: 3, last_checked: new Date().toISOString() },
+  ],
+  timestamp: new Date().toISOString(),
+};
+
+// --- KPI Metrics ---
+
+export const demoMetrics: KPIMetrics = {
+  cycles_this_week: 14,
+  success_rate: 0.857,
+  avg_quality_score: 7.4,
+  total_cost_usd: 3.82,
+  sparkline: Array.from({ length: 7 }, (_, i) => ({
+    date: new Date(Date.now() - (6 - i) * 86400000).toISOString().slice(0, 10),
+    count: Math.floor(Math.random() * 3) + 1,
+  })),
+};
+
+// --- Evaluations ---
+
+const evalAgents = ['hook-architect', 'blog-writer', 'carousel-architect', 'narrative-specialist', 'tutorial-specialist'];
+const evalNames = ['Hook Architect', 'Blog Writer', 'Carousel Architect', 'Narrative Specialist', 'Tutorial Specialist'];
+
+export const demoEvaluations: EvaluationRecord[] = Array.from({ length: 30 }, (_, i) => {
+  const agentIdx = i % evalAgents.length;
+  const score = 5 + Math.random() * 4.5;
+  return {
+    id: `eval-${i}`,
+    agent_id: evalAgents[agentIdx],
+    agent_name: evalNames[agentIdx],
+    date: new Date(Date.now() - i * 86400000 * 0.5).toISOString().slice(0, 10),
+    score: Math.round(score * 10) / 10,
+    verdict: score >= 7.5 ? 'pass' : score >= 5 ? 'review' : 'fail',
+    evaluator: 'written-content-judge',
+    notes: score >= 7.5 ? 'Strong hook, clear CTA' : score >= 5 ? 'Needs tighter intro' : 'Off-brand tone',
+  };
+});
+
+// --- Content Pipeline ---
+
+export const demoContent: ContentItem[] = [
+  { id: 'c1', title: 'How I Built a 32-Agent AI Marketing System', platform: 'linkedin', pillar: 'authority', state: 'PUBLISHED', created_at: '2026-03-10', published_at: '2026-03-11' },
+  { id: 'c2', title: 'ComfyUI Workflow Diffs: Before vs After', platform: 'linkedin', pillar: 'education', state: 'PUBLISHED', created_at: '2026-03-09', published_at: '2026-03-10' },
+  { id: 'c3', title: 'Pilaster Memory Engine Deep Dive', platform: 'twitter', pillar: 'education', state: 'REVIEW', created_at: '2026-03-12', scheduled_at: '2026-03-14' },
+  { id: 'c4', title: 'Speech Coaching with 11 Acoustic Dimensions', platform: 'linkedin', pillar: 'authority', state: 'DRAFT', created_at: '2026-03-13' },
+  { id: 'c5', title: 'AI Video Editing: Raw to Polished in 60s', platform: 'instagram', pillar: 'entertainment', state: 'PUBLISHED', created_at: '2026-03-07', published_at: '2026-03-08' },
+  { id: 'c6', title: 'Why Your AI Generations Need Version Control', platform: 'linkedin', pillar: 'conversion', state: 'PUBLISHED', created_at: '2026-03-06', published_at: '2026-03-07' },
+  { id: 'c7', title: 'Building a Multi-Agent CEO Assistant', platform: 'twitter', pillar: 'authority', state: 'PUBLISHED', created_at: '2026-03-05', published_at: '2026-03-06' },
+  { id: 'c8', title: 'Real-Time Fitness Analytics with WHOOP + AI', platform: 'threads', pillar: 'education', state: 'DRAFT', created_at: '2026-03-13' },
+];
+
+// --- Knowledge Files ---
+
+export const demoKnowledge: KnowledgeFile[] = [
+  { path: '.self-improvement/MEMORY.md', name: 'System Memory', modified_at: '2026-03-13T10:00:00Z', size_bytes: 4200, freshness: 'fresh' },
+  { path: '.self-improvement/memory/lessons.json', name: 'Lessons Learned', modified_at: '2026-03-12T18:30:00Z', size_bytes: 8100, freshness: 'fresh' },
+  { path: '.self-improvement/memory/trajectory.jsonl', name: 'Decision Trajectory', modified_at: '2026-03-13T09:15:00Z', size_bytes: 32000, freshness: 'fresh' },
+  { path: 'config/products.yaml', name: 'Product Definitions', modified_at: '2026-03-10T14:00:00Z', size_bytes: 1200, freshness: 'fresh' },
+  { path: 'agents/AGENTS.yaml', name: 'Agent Registry', modified_at: '2026-03-12T20:00:00Z', size_bytes: 6800, freshness: 'fresh' },
+  { path: 'config/guardrails.yaml', name: 'Guardrails (safety-critical)', modified_at: '2026-03-01T10:00:00Z', size_bytes: 950, freshness: 'aging' },
+];
+
+// --- Trajectory Events ---
+
+export const demoTrajectoryEvents: TrajectoryEvent[] = [
+  { id: 't1', timestamp: '2026-03-13T10:30:00Z', agent_name: 'Marketing Strategist', event_type: 'DECISION', description: 'Chose LinkedIn tutorial on Pilaster workflow diffs. Tutorials outperform promo posts 4:1 based on last 30d data.' },
+  { id: 't2', timestamp: '2026-03-13T10:25:00Z', agent_name: 'Blog Writer', event_type: 'CONTENT_GENERATED', description: 'Generated 1200-word technical blog post on multi-agent orchestration patterns.' },
+  { id: 't3', timestamp: '2026-03-13T10:20:00Z', agent_name: 'Judge Agent', event_type: 'EVALUATION', description: 'Routed blog post to written-content-judge. Score: 8.2/10. Verdict: PASS.' },
+  { id: 't4', timestamp: '2026-03-13T09:15:00Z', agent_name: 'SEO Researcher', event_type: 'RESEARCH', description: 'Identified "ComfyUI workflow management" as high-intent keyword (1.2K monthly, low competition).' },
+  { id: 't5', timestamp: '2026-03-12T18:00:00Z', agent_name: 'Marketing Strategist', event_type: 'CYCLE_COMPLETE', description: 'Weekly cycle 12 complete. 3 posts published, avg engagement 6.2%, +47 followers across platforms.' },
+  { id: 't6', timestamp: '2026-03-12T14:00:00Z', agent_name: 'Hook Architect', event_type: 'CONTENT_GENERATED', description: 'Generated 5 hook variants for Pilaster tutorial post. Top hook: "Your AI generations have no memory. Here is how to fix that."' },
+  { id: 't7', timestamp: '2026-03-11T16:30:00Z', agent_name: 'Knowledge Keeper', event_type: 'LEARNING', description: 'Updated MEMORY.md: carousels on LinkedIn get 3x more saves than text posts.' },
+  { id: 't8', timestamp: '2026-03-11T10:00:00Z', agent_name: 'Security Sentinel', event_type: 'AUDIT', description: 'Weekly security scan complete. No credentials in code, all MCP calls use env vars.' },
+];
+
+// --- Growth / Results ---
+
+function generateDailyGrowth(): GrowthData['daily_growth'] {
+  const days: GrowthData['daily_growth'] = [];
+  let totalFollowers = 2847;
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    totalFollowers += Math.floor(Math.random() * 18) + 2;
+    days.push({
+      date,
+      total_followers: totalFollowers,
+      posts: Math.random() > 0.5 ? 1 : 0,
+      impressions: Math.floor(Math.random() * 3000) + 500,
+    });
+  }
+  return days;
+}
+
+export const demoGrowthData: GrowthData = {
+  snapshot_date: new Date().toISOString().slice(0, 10),
+  platforms: {
+    linkedin: {
+      followers: 1842,
+      followers_30d_ago: 1654,
+      posts_30d: 12,
+      impressions_30d: 28400,
+      engagement_rate: 0.062,
+      top_content_type: 'tutorial',
+      profile_url: 'https://linkedin.com/in/camilomartinez-ai',
+    },
+    instagram: {
+      followers: 743,
+      followers_30d_ago: 680,
+      posts_30d: 8,
+      impressions_30d: 15200,
+      engagement_rate: 0.048,
+      top_content_type: 'carousel',
+      profile_url: 'https://instagram.com/camilojourney',
+    },
+    twitter: {
+      followers: 521,
+      followers_30d_ago: 478,
+      posts_30d: 15,
+      impressions_30d: 12800,
+      engagement_rate: 0.035,
+      top_content_type: 'thread',
+      profile_url: 'https://x.com/camilojourney',
+    },
+    threads: {
+      followers: 234,
+      followers_30d_ago: 189,
+      posts_30d: 6,
+      impressions_30d: 4200,
+      engagement_rate: 0.071,
+      top_content_type: 'short_post',
+    },
+    tiktok: {
+      followers: 156,
+      followers_30d_ago: 112,
+      posts_30d: 4,
+      impressions_30d: 8900,
+      engagement_rate: 0.082,
+      top_content_type: 'video',
+    },
+  },
+  daily_growth: generateDailyGrowth(),
+  top_posts: [
+    {
+      id: 'tp1',
+      title: 'How I Built a 32-Agent AI Marketing System',
+      platform: 'linkedin',
+      published_at: '2026-03-11T14:00:00Z',
+      impressions: 4820,
+      likes: 187,
+      comments: 34,
+      shares: 28,
+      engagement_rate: 0.092,
+      content_type: 'authority_post',
+      product: 'holus',
+    },
+    {
+      id: 'tp2',
+      title: 'ComfyUI Workflow Diffs: Stop Repeating Failed Experiments',
+      platform: 'linkedin',
+      published_at: '2026-03-10T10:00:00Z',
+      impressions: 3640,
+      likes: 142,
+      comments: 21,
+      shares: 19,
+      engagement_rate: 0.078,
+      content_type: 'tutorial',
+      product: 'pilaster',
+    },
+    {
+      id: 'tp3',
+      title: 'AI Video Editing: Raw Footage to Polished Reel in 60 Seconds',
+      platform: 'instagram',
+      published_at: '2026-03-08T16:00:00Z',
+      impressions: 6200,
+      likes: 312,
+      comments: 47,
+      shares: 89,
+      engagement_rate: 0.105,
+      content_type: 'video',
+      product: 'genpeli',
+    },
+    {
+      id: 'tp4',
+      title: 'Thread: 11 Dimensions of Speech Quality Your English Teacher Never Told You About',
+      platform: 'twitter',
+      published_at: '2026-03-06T12:00:00Z',
+      impressions: 2180,
+      likes: 78,
+      comments: 15,
+      shares: 32,
+      engagement_rate: 0.057,
+      content_type: 'thread',
+      product: 'invoz',
+    },
+    {
+      id: 'tp5',
+      title: 'Your AI Generations Have No Memory. Here Is How to Fix That.',
+      platform: 'linkedin',
+      published_at: '2026-03-07T09:00:00Z',
+      impressions: 3100,
+      likes: 156,
+      comments: 28,
+      shares: 22,
+      engagement_rate: 0.066,
+      content_type: 'conversion',
+      product: 'pilaster',
+    },
+    {
+      id: 'tp6',
+      title: 'Behind the Scenes: How 7 AI Evaluators Judge Content Quality',
+      platform: 'threads',
+      published_at: '2026-03-09T11:00:00Z',
+      impressions: 1450,
+      likes: 89,
+      comments: 12,
+      shares: 8,
+      engagement_rate: 0.075,
+      content_type: 'behind_the_scenes',
+      product: 'holus',
+    },
+  ],
+  content_by_pillar: {
+    authority: { count: 8, avg_engagement_rate: 0.074, total_impressions: 18200 },
+    education: { count: 10, avg_engagement_rate: 0.058, total_impressions: 22400 },
+    entertainment: { count: 5, avg_engagement_rate: 0.089, total_impressions: 14100 },
+    conversion: { count: 4, avg_engagement_rate: 0.051, total_impressions: 8800 },
+  },
+  content_by_product: {
+    pilaster: { count: 12, total_impressions: 28000, avg_engagement_rate: 0.065 },
+    genpeli: { count: 6, total_impressions: 16200, avg_engagement_rate: 0.078 },
+    invoz: { count: 5, total_impressions: 9400, avg_engagement_rate: 0.048 },
+    holus: { count: 4, total_impressions: 10900, avg_engagement_rate: 0.071 },
+  },
+};
+
+// --- Engagement data (extended for dedicated tracker page) ---
+
+export interface EngagementDataPoint {
+  date: string;
+  platform: string;
+  impressions: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  engagement_rate: number;
+  posts: number;
+}
+
+export function generateEngagementData(): EngagementDataPoint[] {
+  const platforms = ['linkedin', 'instagram', 'twitter', 'threads', 'tiktok'];
+  const baselines: Record<string, { impressions: number; likes: number; comments: number; shares: number }> = {
+    linkedin: { impressions: 900, likes: 35, comments: 6, shares: 5 },
+    instagram: { impressions: 500, likes: 25, comments: 4, shares: 8 },
+    twitter: { impressions: 400, likes: 12, comments: 3, shares: 6 },
+    threads: { impressions: 140, likes: 10, comments: 2, shares: 1 },
+    tiktok: { impressions: 300, likes: 18, comments: 3, shares: 5 },
+  };
+
+  const data: EngagementDataPoint[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    for (const platform of platforms) {
+      const b = baselines[platform];
+      const variance = () => 0.5 + Math.random();
+      const impressions = Math.floor(b.impressions * variance());
+      const likes = Math.floor(b.likes * variance());
+      const comments = Math.floor(b.comments * variance());
+      const shares = Math.floor(b.shares * variance());
+      const totalEngagement = likes + comments + shares;
+      data.push({
+        date,
+        platform,
+        impressions,
+        likes,
+        comments,
+        shares,
+        engagement_rate: impressions > 0 ? totalEngagement / impressions : 0,
+        posts: Math.random() > 0.6 ? 1 : 0,
+      });
+    }
+  }
+  return data;
+}
+
+// --- Follower data (extended for dedicated tracker page) ---
+
+export interface FollowerDataPoint {
+  date: string;
+  platform: string;
+  followers: number;
+  new_followers: number;
+  unfollows: number;
+  net_change: number;
+}
+
+export function generateFollowerData(): FollowerDataPoint[] {
+  const platforms = ['linkedin', 'instagram', 'twitter', 'threads', 'tiktok'];
+  const startFollowers: Record<string, number> = {
+    linkedin: 1654,
+    instagram: 680,
+    twitter: 478,
+    threads: 189,
+    tiktok: 112,
+  };
+
+  const data: FollowerDataPoint[] = [];
+  const current = { ...startFollowers };
+
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    for (const platform of platforms) {
+      const newFollowers = Math.floor(Math.random() * 12) + 1;
+      const unfollows = Math.floor(Math.random() * 4);
+      const netChange = newFollowers - unfollows;
+      current[platform] += netChange;
+      data.push({
+        date,
+        platform,
+        followers: current[platform],
+        new_followers: newFollowers,
+        unfollows,
+        net_change: netChange,
+      });
+    }
+  }
+  return data;
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/lib/sse.ts ===
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import type { TrajectoryEvent } from './types';
+import { trajectoryStreamUrl } from './api';
+
+const MAX_EVENTS = 100;
+const MAX_RETRY_INTERVAL_MS = 30_000;
+
+export function useTrajectoryStream(): {
+  events: TrajectoryEvent[];
+  connected: boolean;
+} {
+  const [events, setEvents] = useState<TrajectoryEvent[]>([]);
+  const [connected, setConnected] = useState(false);
+  const retryDelay = useRef(1_000);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sourceRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    function connect() {
+      if (cancelled) return;
+
+      const url = trajectoryStreamUrl();
+      console.log('[SSE] Connecting to', url);
+
+      const source = new EventSource(url);
+      sourceRef.current = source;
+
+      source.onopen = () => {
+        if (cancelled) { source.close(); return; }
+        console.log('[SSE] Connected');
+        setConnected(true);
+        retryDelay.current = 1_000; // reset backoff on success
+      };
+
+      source.onmessage = (ev) => {
+        if (cancelled) return;
+        try {
+          const event = JSON.parse(ev.data) as TrajectoryEvent;
+          setEvents((prev) => [event, ...prev].slice(0, MAX_EVENTS));
+        } catch {
+          console.warn('[SSE] Failed to parse event', ev.data);
+        }
+      };
+
+      source.onerror = () => {
+        if (cancelled) return;
+        console.warn('[SSE] Connection error, retrying in', retryDelay.current, 'ms');
+        setConnected(false);
+        source.close();
+        sourceRef.current = null;
+
+        timerRef.current = setTimeout(() => {
+          retryDelay.current = Math.min(retryDelay.current * 2, MAX_RETRY_INTERVAL_MS);
+          connect();
+        }, retryDelay.current);
+      };
+    }
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (sourceRef.current) {
+        sourceRef.current.close();
+        sourceRef.current = null;
+      }
+    };
+  }, []);
+
+  return { events, connected };
+}
+=== FILE: /Users/mini/.openclaw/workspace/github/holus/observatory/frontend/src/lib/types.ts ===
+// Shared response types — mirrors Observatory API schema (spec 028)
+
+export type AgentStatus = 'active' | 'idle' | 'running' | 'error' | 'disabled' | 'planned';
+export type ModelTier = 'opus' | 'sonnet' | 'haiku' | 'unknown';
+export type EvalVerdict = 'pass' | 'review' | 'fail';
+export type ContentState = 'DRAFT' | 'REVIEW' | 'PUBLISHED';
+export type FreshnessStatus = 'fresh' | 'aging' | 'stale';
+
+export interface Agent {
+  id: string;
+  name: string;
+  role: string;
+  type: string;
+  status: AgentStatus;
+  model: string;
+  model_tier: ModelTier;
+  version?: string;
+  description?: string;
+}
+
+export interface AgentDetail extends Agent {
+  cycles: CycleRecord[];
+  recent_scores: number[];
+}
+
+export interface CycleRecord {
+  id: string;
+  agent_id: string;
+  timestamp: string;
+  status: 'success' | 'failed' | 'skipped';
+  quality_score?: number;
+  cost_usd?: number;
+  duration_seconds?: number;
+  verdict?: EvalVerdict;
+}
+
+export interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'down';
+  kill_switch_active: boolean;
+  kill_switch_activated_at?: string;
+  services: ServiceStatus[];
+  timestamp: string;
+}
+
+export interface ServiceStatus {
+  name: string;
+  status: 'up' | 'down' | 'degraded';
+  latency_ms?: number;
+  last_checked: string;
+}
+
+export interface KPIMetrics {
+  cycles_this_week: number;
+  success_rate: number;
+  avg_quality_score: number;
+  total_cost_usd: number;
+  sparkline: DailyCount[];
+}
+
+export interface DailyCount {
+  date: string;
+  count: number;
+}
+
+export interface EvaluationRecord {
+  id: string;
+  agent_id: string;
+  agent_name: string;
+  date: string;
+  score: number;
+  verdict: EvalVerdict;
+  evaluator?: string;
+  notes?: string;
+}
+
+export interface ContentItem {
+  id: string;
+  title: string;
+  platform: string;
+  pillar: 'authority' | 'entertainment' | 'education' | 'conversion';
+  state: ContentState;
+  created_at: string;
+  scheduled_at?: string;
+  published_at?: string;
+}
+
+export interface KnowledgeFile {
+  path: string;
+  name: string;
+  modified_at: string;
+  size_bytes: number;
+  freshness: FreshnessStatus;
+}
+
+export interface TrajectoryEvent {
+  id: string;
+  timestamp: string;
+  agent_name: string;
+  event_type: string;
+  description: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CostBreakdown {
+  agent_id: string;
+  agent_name: string;
+  cost_usd: number;
+  percentage: number;
+}
+
+// --- Results / Growth types ---
+
+export interface PlatformStats {
+  followers: number;
+  followers_30d_ago: number;
+  posts_30d: number;
+  impressions_30d: number;
+  engagement_rate: number;
+  top_content_type: string;
+  profile_url?: string;
+}
+
+export interface DailyGrowth {
+  date: string;
+  total_followers: number;
+  posts: number;
+  impressions: number;
+}
+
+export interface TopPost {
+  id: string;
+  title: string;
+  platform: string;
+  published_at: string;
+  impressions: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  engagement_rate: number;
+  content_type: string;
+  product: string;
+}
+
+export interface PillarStats {
+  count: number;
+  avg_engagement_rate: number;
+  total_impressions: number;
+}
+
+export interface ProductStats {
+  count: number;
+  total_impressions: number;
+  avg_engagement_rate: number;
+}
+
+export interface GrowthData {
+  snapshot_date: string;
+  platforms: Record<string, PlatformStats>;
+  daily_growth: DailyGrowth[];
+  top_posts: TopPost[];
+  content_by_pillar: Record<string, PillarStats>;
+  content_by_product: Record<string, ProductStats>;
+}

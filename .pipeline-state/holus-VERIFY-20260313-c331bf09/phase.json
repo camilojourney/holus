@@ -1,0 +1,8 @@
+{
+  "correlation_id": "holus-VERIFY-20260313-c331bf09",
+  "phase": "VERIFY",
+  "status": "STARTED",
+  "criteria_file": "observatory/frontend/docs/acceptance-criteria.md",
+  "started_at": "2026-03-13T22:00:42Z",
+  "healing_passes": 0
+}

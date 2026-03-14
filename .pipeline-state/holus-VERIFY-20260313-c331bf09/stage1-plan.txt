@@ -1,0 +1,3 @@
+The acceptance criteria from `/Users/mini/.openclaw/workspace/github/holus/observatory/frontend/docs/acceptance-criteria.md` have been parsed into 35 test scenarios and written to `/Users/mini/.openclaw/workspace/github/holus/.pipeline-state/holus-VERIFY-20260313-c331bf09/scenarios.json`.
+
+All criteria were clear and have been marked as `READY`. No clarifications are needed.

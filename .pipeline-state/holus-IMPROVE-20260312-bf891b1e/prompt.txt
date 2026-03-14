@@ -1,0 +1,83 @@
+You are implementing the self-improvement wiring for Holus. This is ADDITIVE code — you are connecting existing systems, not creating new ones.
+
+## Context
+
+The following already exist and work:
+- src/holus/agents/base.py — BaseAgent with run(), system_prompt, langfuse, check_kill_switch()
+- src/holus/agents/registry.py — AgentRegistry with get_evaluator_for(content_type), get_agent_prompt(agent_id), EVALUATOR_ROUTING dict
+- src/holus/core/prompt_loader.py — PromptLoader with 3-layer resolution
+- src/holus/self_improvement/judge.py — JudgeAgent with evaluate(task, task_type, output) returning JudgeEvaluation
+- src/holus/observability/langfuse_client.py — trace_llm_call(), trace_tool_call(), record_judge_score() functions
+- src/holus/agents/marketing/agent.py — MarketingAgent with ReAct loop, run() with CycleState machine, IMPROVING phase (currently pass-through)
+- agents/AGENTS.yaml — 32 agent registry with evaluator mappings
+- agents/evaluators/*.md — 7 domain-expert evaluator prompts with rubric dimensions in YAML frontmatter
+
+685 tests currently pass. DO NOT break any.
+
+## What to implement (3 files to modify)
+
+### 1. src/holus/agents/base.py — Add 3 things
+
+A. PromptLoader property (lazy-loaded):
+
+    @property
+    def prompt_loader(self):
+        if not hasattr(self, "_prompt_loader") or self._prompt_loader is None:
+            from holus.core.prompt_loader import PromptLoader
+            self._prompt_loader = PromptLoader()
+        return self._prompt_loader
+
+B. Override system_prompt to check PromptLoader first:
+Change the existing system_prompt property to try self.prompt_loader.get_prompt(self.agent_name) first. If it returns empty string, fall back to the existing default. This means agents with .md files in agents/ will automatically use them.
+
+C. Add _evaluate_self() hook (optional override):
+
+    def _evaluate_self(self, final_state: dict) -> dict | None:
+        """Post-execution self-evaluation hook. Override in subclasses.
+        Returns evaluation dict or None if not implemented.
+        """
+        return None
+
+D. Wrap run() with Langfuse tracing:
+In the existing run() method, before app.ainvoke(): create a Langfuse trace (wrap in try/except so missing Langfuse does not break anything). After app.ainvoke(): call _evaluate_self() and store result.
+
+IMPORTANT: The marketing agent OVERRIDES run() completely, so changes to BaseAgent.run() only affect agents that do NOT override run(). Still add the tracing for completeness.
+
+### 2. src/holus/self_improvement/judge.py — Add evaluator dispatch
+
+Add from pathlib import Path to imports.
+
+Add a new method evaluate_with_routing() that:
+- Takes content_type as an additional parameter
+- Uses AgentRegistry.get_evaluator_for(content_type) to find the right evaluator(s)
+- Gets the evaluator info from registry to read its rubric list
+- Builds a domain-specific rubric string from those dimensions
+- Calls the existing evaluate() with custom_rubric parameter
+- Falls back to existing evaluate() for unknown content types or if registry fails
+
+Keep the existing evaluate() method unchanged for backward compatibility.
+
+### 3. src/holus/agents/marketing/agent.py — Wire judge in IMPROVING phase
+
+In the run() method, the IMPROVING phase (around line 277) is currently just:
+    current_phase = "improving"
+    ctx.transition(CycleState.IMPROVING)
+
+Add judge evaluation here. For each generated content item:
+- Create a JudgeAgent
+- Call evaluate_with_routing with the content type and generated text
+- Store evaluation in content item metadata as judge_evaluation
+- Log the verdict and score
+- Wrap everything in try/except so judge failure does not break the cycle
+
+## Verification
+
+After all changes:
+1. Run: cd /Users/mini/.openclaw/workspace/github/holus && uv run pytest -q --timeout=30 --tb=short
+   ALL tests must pass
+2. Run: uv run ruff check src/holus/agents/base.py src/holus/self_improvement/judge.py src/holus/agents/marketing/agent.py
+   Must be clean
+3. If any tests fail, fix them. Repeat until green.
+4. Commit with message: feat: wire self-improvement loop — judge dispatcher, PromptLoader in BaseAgent, Langfuse tracing
+
+Do NOT move any files, create new test files, change existing test expectations, or break backward compatibility.

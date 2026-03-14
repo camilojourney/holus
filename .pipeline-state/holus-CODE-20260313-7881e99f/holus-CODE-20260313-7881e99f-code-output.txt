@@ -1,0 +1,1 @@
+STALL DETECTED: claude -p produced 0 bytes. Falling back to Agent tool implementation.
