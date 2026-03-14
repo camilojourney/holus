@@ -1,0 +1,116 @@
+/* Single image styles — 1080x1080 viewport (1:1 square).
+ * Used for standalone branded graphics: key insights, quotes, stats.
+ */
+
+.single-container {
+  width: var(--brand-image-width);
+  height: var(--brand-image-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--brand-spacing-margin);
+  background-color: var(--brand-color-background);
+  overflow: hidden;
+  position: relative;
+}
+
+.single-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.single-label {
+  display: inline-block;
+  font-size: var(--brand-size-caption);
+  font-weight: var(--brand-weight-headline);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--brand-color-primary);
+  margin-bottom: var(--brand-spacing-gap);
+}
+
+.single-headline {
+  font-size: var(--brand-size-headline);
+  color: var(--brand-color-text);
+  margin-bottom: var(--brand-spacing-gap);
+}
+
+.single-body {
+  font-size: var(--brand-size-body);
+  color: var(--brand-color-muted);
+  line-height: 1.6;
+  margin-bottom: var(--brand-spacing-padding);
+}
+
+/* Stat callout — large number with label */
+.single-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: var(--brand-spacing-padding) 0;
+}
+
+.single-stat-value {
+  font-size: 72px;
+  font-weight: var(--brand-weight-headline);
+  color: var(--brand-color-primary);
+  line-height: 1.0;
+}
+
+.single-stat-label {
+  font-size: var(--brand-size-body);
+  color: var(--brand-color-muted);
+  margin-top: calc(var(--brand-spacing-gap) / 2);
+}
+
+/* Quote block */
+.single-quote {
+  border-left: 4px solid var(--brand-color-primary);
+  padding-left: var(--brand-spacing-padding);
+  margin: var(--brand-spacing-padding) 0;
+}
+
+.single-quote p {
+  font-size: var(--brand-size-subheadline);
+  font-style: italic;
+  color: var(--brand-color-text);
+  line-height: 1.4;
+}
+
+.single-quote cite {
+  font-style: normal;
+  font-size: var(--brand-size-body);
+  color: var(--brand-color-muted);
+  display: block;
+  margin-top: var(--brand-spacing-gap);
+}
+
+/* Source attribution */
+.single-source {
+  font-size: var(--brand-size-caption);
+  color: var(--brand-color-muted);
+  font-style: italic;
+}
+
+/* Footer bar */
+.single-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--brand-spacing-gap);
+  border-top: 1px solid var(--brand-color-surface);
+}
+
+.single-author {
+  font-weight: var(--brand-weight-headline);
+  font-size: var(--brand-size-caption);
+  color: var(--brand-color-text);
+}
+
+.single-handle {
+  font-family: var(--brand-font-secondary);
+  font-size: var(--brand-size-caption);
+  color: var(--brand-color-primary);
+}

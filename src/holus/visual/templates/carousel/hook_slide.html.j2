@@ -1,0 +1,24 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-hook">
+  <div class="slide-content">
+    {% if label %}
+    <span class="slide-label">{{ label }}</span>
+    {% endif %}
+
+    <h1 class="slide-headline">{{ headline | default("Hook") }}</h1>
+
+    {% if subheadline %}
+    <p class="slide-subheadline">{{ subheadline }}</p>
+    {% endif %}
+  </div>
+
+  <div class="slide-footer">
+    {% if author_name %}
+    <span class="slide-author">{{ author_name }}</span>
+    {% endif %}
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    {{ brand_css }}
+  </style>
+  <style>
+    {{ base_css }}
+  </style>
+  {% if supplementary_css %}
+  <style>
+    {{ supplementary_css }}
+  </style>
+  {% endif %}
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% block body %}{% endblock %}
+</body>
+</html>

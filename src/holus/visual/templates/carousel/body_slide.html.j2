@@ -1,0 +1,33 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-body">
+  <div class="slide-content">
+    {% if title %}
+    <h2 class="slide-title">{{ title }}</h2>
+    {% endif %}
+
+    {% if body %}
+    <p class="slide-body-text">{{ body }}</p>
+    {% endif %}
+
+    {% if bullet_points %}
+    <ul class="slide-bullets">
+      {% for point in bullet_points %}
+      <li>{{ point }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if highlight %}
+    <div class="slide-highlight">
+      <p>{{ highlight }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="slide-footer">
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}

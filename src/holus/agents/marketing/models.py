@@ -151,6 +151,150 @@ class BrandIdentity(BaseModel):
     competitor_accounts: dict[str, Any] = Field(default_factory=dict)
     content_pillars: list[ContentPillar] = Field(default_factory=list)
     platform_strategy: dict[str, Any] = Field(default_factory=dict)
+    visual_identity: BrandVisualIdentity = Field(default_factory=lambda: BrandVisualIdentity())
+
+
+# ---------------------------------------------------------------------------
+# Brand Visual Identity models (loaded from config/brand-visual.yaml)
+# ---------------------------------------------------------------------------
+
+
+class ColorPalette(BaseModel):
+    """Brand color palette. All values are hex color strings."""
+
+    primary: str = Field(
+        default="#E85D04", pattern=r"^#[0-9A-Fa-f]{6}$", description="Primary brand color"
+    )
+    text: str = Field(
+        default="#1A1A2E", pattern=r"^#[0-9A-Fa-f]{6}$", description="Primary text color"
+    )
+    background: str = Field(
+        default="#FFFFFF", pattern=r"^#[0-9A-Fa-f]{6}$", description="Background color"
+    )
+    surface: str = Field(
+        default="#F8F9FA", pattern=r"^#[0-9A-Fa-f]{6}$", description="Surface/card color"
+    )
+    accent: str = Field(
+        default="#2563EB", pattern=r"^#[0-9A-Fa-f]{6}$", description="Accent color for highlights"
+    )
+    muted: str = Field(
+        default="#6B7280", pattern=r"^#[0-9A-Fa-f]{6}$", description="Muted/secondary text"
+    )
+    success: str = Field(
+        default="#059669", pattern=r"^#[0-9A-Fa-f]{6}$", description="Success/positive color"
+    )
+    danger: str = Field(
+        default="#DC2626", pattern=r"^#[0-9A-Fa-f]{6}$", description="Danger/warning color"
+    )
+
+
+class Typography(BaseModel):
+    """Brand typography settings."""
+
+    primary_font: str = Field(default="Inter", description="Primary font family")
+    secondary_font: str = Field(default="JetBrains Mono", description="Secondary/code font")
+    weights: dict[str, int] = Field(
+        default_factory=lambda: {"headline": 700, "body": 400, "caption": 300}
+    )
+    sizes: dict[str, int] = Field(
+        default_factory=lambda: {
+            "headline": 48,
+            "subheadline": 32,
+            "body": 18,
+            "caption": 14,
+            "min_slide_headline": 48,
+            "min_slide_body": 24,
+        }
+    )
+
+
+class SpacingConfig(BaseModel):
+    """Brand spacing configuration."""
+
+    base_unit: int = Field(default=4, ge=1, description="Base spacing unit in px")
+    margin: int = Field(default=64, ge=0, description="Default margin in px")
+    padding: int = Field(default=32, ge=0, description="Default padding in px")
+    gap: int = Field(default=16, ge=0, description="Default gap between elements in px")
+
+
+class LayoutConfig(BaseModel):
+    """Layout dimensions for visual content."""
+
+    slide_width: int = Field(default=1080, ge=100, description="Carousel slide width in px")
+    slide_height: int = Field(default=1350, ge=100, description="Carousel slide height in px (4:5)")
+    slide_aspect: str = Field(default="4:5", description="Slide aspect ratio")
+    image_width: int = Field(default=1080, ge=100, description="Single image width in px")
+    image_height: int = Field(default=1080, ge=100, description="Single image height in px")
+    border_radius: int = Field(default=12, ge=0, description="Default border radius in px")
+
+
+class SafeZoneConfig(BaseModel):
+    """Safe zones for carousel slides (LinkedIn page counter, etc)."""
+
+    slide_top: int = Field(default=40, ge=0)
+    slide_bottom: int = Field(default=120, ge=0)
+    slide_left: int = Field(default=100, ge=0)
+    slide_right: int = Field(default=100, ge=0)
+    page_counter_top: int = Field(
+        default=100, ge=0, description="Top exclusion for page counter overlay"
+    )
+    page_counter_right: int = Field(
+        default=150, ge=0, description="Right exclusion for page counter overlay"
+    )
+
+
+class VisualRules(BaseModel):
+    """Visual design rules enforced by brand-designer GATE."""
+
+    max_fonts_per_slide: int = Field(default=2, ge=1)
+    max_colors_per_slide: int = Field(default=3, ge=1)
+    min_contrast_ratio: float = Field(default=4.5, ge=1.0, description="WCAG AA minimum")
+
+
+class BrandVisualIdentity(BaseModel):
+    """Complete visual identity loaded from config/brand-visual.yaml.
+
+    Multi-tenant: a different user swaps this YAML file with their brand.
+    Generic field names — no hardcoded brand references.
+    """
+
+    model_config = {"extra": "ignore"}
+
+    colors: ColorPalette = Field(default_factory=ColorPalette)
+    typography: Typography = Field(default_factory=Typography)
+    spacing: SpacingConfig = Field(default_factory=SpacingConfig)
+    layout: LayoutConfig = Field(default_factory=LayoutConfig)
+    safe_zones: SafeZoneConfig = Field(default_factory=SafeZoneConfig)
+    rules: VisualRules = Field(default_factory=VisualRules)
+
+    def to_css_variables(self) -> str:
+        """Generate CSS custom properties from brand config."""
+        lines = [":root {"]
+        for field_name, value in self.colors.model_dump().items():
+            css_name = field_name.replace("_", "-")
+            lines.append(f"  --brand-color-{css_name}: {value};")
+        lines.append(
+            f'  --brand-font-primary: "{self.typography.primary_font}", system-ui, sans-serif;'
+        )
+        lines.append(
+            f'  --brand-font-secondary: "{self.typography.secondary_font}", monospace;'
+        )
+        for name, weight in self.typography.weights.items():
+            lines.append(f"  --brand-weight-{name}: {weight};")
+        for name, size in self.typography.sizes.items():
+            css_name = name.replace("_", "-")
+            lines.append(f"  --brand-size-{css_name}: {size}px;")
+        lines.append(f"  --brand-spacing-base: {self.spacing.base_unit}px;")
+        lines.append(f"  --brand-spacing-margin: {self.spacing.margin}px;")
+        lines.append(f"  --brand-spacing-padding: {self.spacing.padding}px;")
+        lines.append(f"  --brand-spacing-gap: {self.spacing.gap}px;")
+        lines.append(f"  --brand-slide-width: {self.layout.slide_width}px;")
+        lines.append(f"  --brand-slide-height: {self.layout.slide_height}px;")
+        lines.append(f"  --brand-image-width: {self.layout.image_width}px;")
+        lines.append(f"  --brand-image-height: {self.layout.image_height}px;")
+        lines.append(f"  --brand-border-radius: {self.layout.border_radius}px;")
+        lines.append("}")
+        return "\n".join(lines)
 
 
 class NicheInsight(BaseModel):

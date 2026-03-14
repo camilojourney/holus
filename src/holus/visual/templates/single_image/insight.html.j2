@@ -1,0 +1,48 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="single-container">
+  <div class="single-content">
+    {% if label %}
+    <span class="single-label">{{ label }}</span>
+    {% endif %}
+
+    <h1 class="single-headline">{{ headline | default("Key Insight") }}</h1>
+
+    {% if body %}
+    <p class="single-body">{{ body }}</p>
+    {% endif %}
+
+    {% if stat_value %}
+    <div class="single-stat">
+      <span class="single-stat-value">{{ stat_value }}</span>
+      {% if stat_label %}
+      <span class="single-stat-label">{{ stat_label }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if quote %}
+    <blockquote class="single-quote">
+      <p>{{ quote }}</p>
+      {% if quote_author %}
+      <cite>— {{ quote_author }}</cite>
+      {% endif %}
+    </blockquote>
+    {% endif %}
+
+    {% if source %}
+    <p class="single-source">{{ source }}</p>
+    {% endif %}
+  </div>
+
+  <div class="single-footer">
+    {% if author_name %}
+    <span class="single-author">{{ author_name }}</span>
+    {% endif %}
+    {% if brand_handle %}
+    <span class="single-handle">{{ brand_handle }}</span>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

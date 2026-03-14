@@ -1,0 +1,54 @@
+/* Base styles — brand tokens as CSS custom properties.
+ * The :root block with --brand-* variables is injected by brand.py
+ * via the brand_css template variable. This file provides reset and
+ * shared element styles that consume those variables.
+ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--brand-font-primary);
+  font-weight: var(--brand-weight-body);
+  font-size: var(--brand-size-body);
+  color: var(--brand-color-text);
+  background-color: var(--brand-color-background);
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4 {
+  font-weight: var(--brand-weight-headline);
+  line-height: 1.2;
+}
+
+h1 { font-size: var(--brand-size-headline); }
+h2 { font-size: var(--brand-size-subheadline); }
+
+code, pre {
+  font-family: var(--brand-font-secondary);
+}
+
+blockquote {
+  border-left: 4px solid var(--brand-color-primary);
+  padding-left: var(--brand-spacing-padding);
+  font-style: italic;
+}
+
+blockquote cite {
+  font-style: normal;
+  font-weight: var(--brand-weight-caption);
+  color: var(--brand-color-muted);
+  display: block;
+  margin-top: var(--brand-spacing-gap);
+}

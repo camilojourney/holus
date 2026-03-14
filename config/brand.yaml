@@ -287,3 +287,11 @@ platform_strategy:
     → Instagram (visual version or condensed caption)
     → Threads (conversational version)
     → Facebook (bilingual ES if applicable)
+
+# ─── VISUAL IDENTITY ────────────────────────────────────────────────────────
+# Loaded from config/brand-visual.yaml for multi-tenant flexibility.
+# A different user replaces brand-visual.yaml with their own brand config.
+
+visual_identity:
+  config_file: "brand-visual.yaml"
+  status: "active"

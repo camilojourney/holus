@@ -1,0 +1,153 @@
+/* Carousel slide styles — 1080x1350 viewport (4:5 aspect ratio).
+ * Safe zones prevent content from overlapping with LinkedIn page counters
+ * and platform UI chrome.
+ */
+
+.slide-container {
+  width: var(--brand-slide-width);
+  height: var(--brand-slide-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--brand-spacing-margin);
+  padding-top: 40px;    /* safe zone top */
+  padding-bottom: 120px; /* safe zone bottom — LinkedIn page counter */
+  padding-left: 100px;  /* safe zone left */
+  padding-right: 100px; /* safe zone right */
+  overflow: hidden;
+  position: relative;
+}
+
+/* Hook slide — primary color background, large headline */
+.slide-hook {
+  background-color: var(--brand-color-primary);
+  color: var(--brand-color-background);
+}
+
+.slide-hook .slide-headline {
+  font-size: var(--brand-size-min-slide-headline);
+  color: var(--brand-color-background);
+}
+
+.slide-hook .slide-subheadline {
+  font-size: var(--brand-size-min-slide-body);
+  color: var(--brand-color-background);
+  opacity: 0.9;
+  margin-top: var(--brand-spacing-gap);
+}
+
+/* Body slide — surface background, readable text */
+.slide-body {
+  background-color: var(--brand-color-surface);
+}
+
+.slide-title {
+  color: var(--brand-color-primary);
+  margin-bottom: var(--brand-spacing-gap);
+}
+
+.slide-body-text {
+  font-size: var(--brand-size-min-slide-body);
+  line-height: 1.6;
+}
+
+.slide-bullets {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--brand-spacing-gap);
+}
+
+.slide-bullets li {
+  font-size: var(--brand-size-min-slide-body);
+  padding: calc(var(--brand-spacing-gap) / 2) 0;
+  border-bottom: 1px solid var(--brand-color-muted);
+}
+
+.slide-bullets li::before {
+  content: "\2022";
+  color: var(--brand-color-primary);
+  font-weight: bold;
+  margin-right: calc(var(--brand-spacing-gap) / 2);
+}
+
+.slide-highlight {
+  background-color: var(--brand-color-primary);
+  color: var(--brand-color-background);
+  padding: var(--brand-spacing-padding);
+  border-radius: var(--brand-border-radius);
+  margin-top: var(--brand-spacing-gap);
+  font-size: var(--brand-size-min-slide-body);
+}
+
+/* CTA slide — accent-driven */
+.slide-cta {
+  background-color: var(--brand-color-text);
+  color: var(--brand-color-background);
+  text-align: center;
+}
+
+.slide-cta-headline {
+  color: var(--brand-color-primary);
+  font-size: var(--brand-size-min-slide-headline);
+}
+
+.slide-cta-body {
+  font-size: var(--brand-size-min-slide-body);
+  opacity: 0.9;
+  margin-top: var(--brand-spacing-gap);
+}
+
+.slide-cta-button {
+  display: inline-block;
+  background-color: var(--brand-color-primary);
+  color: var(--brand-color-background);
+  padding: var(--brand-spacing-gap) var(--brand-spacing-padding);
+  border-radius: var(--brand-border-radius);
+  font-weight: var(--brand-weight-headline);
+  font-size: var(--brand-size-min-slide-body);
+  margin-top: var(--brand-spacing-padding);
+}
+
+.slide-cta-handles {
+  margin-top: var(--brand-spacing-padding);
+}
+
+.slide-cta-handle {
+  color: var(--brand-color-accent);
+  font-family: var(--brand-font-secondary);
+  margin: 0 calc(var(--brand-spacing-gap) / 2);
+}
+
+/* Shared slide elements */
+.slide-label {
+  display: inline-block;
+  font-size: var(--brand-size-caption);
+  font-weight: var(--brand-weight-caption);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--brand-spacing-gap);
+  opacity: 0.8;
+}
+
+.slide-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.slide-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--brand-size-caption);
+  opacity: 0.7;
+}
+
+.slide-counter {
+  font-family: var(--brand-font-secondary);
+}
+
+.slide-author {
+  font-weight: var(--brand-weight-caption);
+}
