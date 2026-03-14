@@ -1,0 +1,120 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+<style>
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at top center, color-mix(in srgb, var(--brand-color-primary) 18%, transparent), transparent 38%),
+      linear-gradient(180deg, #020617 0%, #0f172a 100%);
+    font-family: "Inter", var(--brand-font-primary), sans-serif;
+  }
+
+  .video-shell {
+    box-sizing: border-box;
+    width: var(--brand-image-width);
+    height: var(--brand-image-height);
+    padding: var(--brand-spacing-margin);
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 24px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.99) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .video-shell::before {
+    content: "";
+    position: absolute;
+    inset: 24px;
+    border-radius: 36px;
+    border: 1px solid color-mix(in srgb, var(--brand-color-primary) 24%, #1e293b);
+    pointer-events: none;
+  }
+
+  .video-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 18px;
+    padding: 72px 80px 48px;
+  }
+
+  .video-play {
+    width: 180px;
+    height: 180px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--brand-color-primary) 18%, #0f172a);
+    border: 2px solid color-mix(in srgb, var(--brand-color-primary) 48%, transparent);
+    color: #f8fafc;
+    font-size: 86px;
+    line-height: 1;
+  }
+
+  .video-title {
+    margin: 0;
+    max-width: 760px;
+    font-size: 72px;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: #f8fafc;
+  }
+
+  .video-duration {
+    margin: 0;
+    font-size: 24px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+
+  .video-footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  .video-brand,
+  .video-platform {
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .video-brand {
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+
+  .video-platform {
+    color: #94a3b8;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="video-shell">
+  <div class="video-card">
+    <div class="video-play" aria-hidden="true">▶</div>
+    <h1 class="video-title">{{ title }}</h1>
+    <p class="video-duration">{{ duration_hint }}</p>
+  </div>
+
+  <div class="video-footer">
+    <span class="video-brand">Holus</span>
+    <span class="video-platform">{{ platform }}</span>
+  </div>
+</div>
+{% endblock %}

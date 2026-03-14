@@ -1,0 +1,120 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+<style>
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--brand-color-primary) 22%, transparent), transparent 34%),
+      linear-gradient(180deg, #020617 0%, #0f172a 100%);
+    font-family: "Inter", var(--brand-font-primary), sans-serif;
+  }
+
+  .poll-shell {
+    box-sizing: border-box;
+    width: var(--brand-image-width);
+    height: var(--brand-image-height);
+    padding: var(--brand-spacing-margin);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 28px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .poll-shell::before {
+    content: "";
+    position: absolute;
+    inset: 24px;
+    border-radius: 36px;
+    border: 1px solid color-mix(in srgb, var(--brand-color-primary) 28%, #1e293b);
+    pointer-events: none;
+  }
+
+  .poll-header,
+  .poll-footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .poll-title {
+    margin: 0;
+    max-width: 760px;
+    font-size: 60px;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: #f8fafc;
+  }
+
+  .poll-platform {
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brand-color-primary) 18%, #0f172a);
+    border: 1px solid color-mix(in srgb, var(--brand-color-primary) 42%, transparent);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #e2e8f0;
+  }
+
+  .poll-stage {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .poll-stage svg {
+    width: 100%;
+    max-width: 920px;
+    height: auto;
+    filter: drop-shadow(0 24px 60px rgba(15, 23, 42, 0.45));
+  }
+
+  .poll-footer {
+    padding-top: 20px;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  .poll-brand,
+  .poll-footer-label {
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+
+  .poll-brand {
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="poll-shell">
+  <div class="poll-header">
+    <h1 class="poll-title">{{ question }}</h1>
+    {% if platform_label %}
+    <span class="poll-platform">{{ platform_label }}</span>
+    {% endif %}
+  </div>
+
+  <div class="poll-stage">
+    {{ svg_content | safe }}
+  </div>
+
+  <div class="poll-footer">
+    <span class="poll-brand">Holus</span>
+    <span class="poll-footer-label">{{ platform_label or "Audience Poll" }}</span>
+  </div>
+</div>
+{% endblock %}

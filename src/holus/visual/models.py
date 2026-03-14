@@ -22,7 +22,9 @@ class OutputFormat(StrEnum):
 class RenderSpec(BaseModel):
     """Specification for a single render job."""
 
-    template: str = Field(description="Template path relative to templates/ dir, e.g. 'single_image/insight'")
+    template: str = Field(
+        description="Template path relative to templates/ dir, e.g. 'single_image/insight'"
+    )
     variables: dict[str, str | int | float | bool | list[str]] = Field(
         default_factory=dict, description="Template variables"
     )
@@ -47,16 +49,40 @@ class CarouselSpec(BaseModel):
 
     slides: list[SlideSpec] = Field(min_length=1, description="Ordered list of slides")
     viewport_width: int = Field(default=1080, ge=100, description="Slide width in px")
-    viewport_height: int = Field(default=1350, ge=100, description="Slide height in px (4:5 aspect)")
-    output_format: OutputFormat = Field(default=OutputFormat.PNG, description="Per-slide output format")
-    timeout_ms: int = Field(default=30_000, ge=1000, le=120_000, description="Per-slide render timeout")
+    viewport_height: int = Field(
+        default=1350, ge=100, description="Slide height in px (4:5 aspect)"
+    )
+    output_format: OutputFormat = Field(
+        default=OutputFormat.PNG, description="Per-slide output format"
+    )
+    timeout_ms: int = Field(
+        default=30_000, ge=1000, le=120_000, description="Per-slide render timeout"
+    )
+
+
+class PollSpec(BaseModel):
+    """Specification for a social media poll graphic."""
+
+    question: str = Field(description="Poll question text")
+    options: list[str] = Field(min_length=2, max_length=4, description="Poll answer options (2-4)")
+    duration_days: int = Field(default=7, ge=1, le=14, description="Poll duration in days")
+
+
+class VideoSkeletonSpec(BaseModel):
+    """Placeholder spec for video_reel content — renders a branded holding frame."""
+
+    title: str = Field(description="Video title shown on placeholder")
+    duration_hint: str = Field(default="~60s", description="Expected video duration")
+    platform: str = Field(default="instagram", description="Target platform")
 
 
 class RenderResult(BaseModel):
     """Outcome of a render operation."""
 
     success: bool = Field(description="Whether the render completed without error")
-    output_bytes: bytes | None = Field(default=None, description="Rendered content bytes (PNG or PDF)")
+    output_bytes: bytes | None = Field(
+        default=None, description="Rendered content bytes (PNG or PDF)"
+    )
     duration_ms: int = Field(default=0, ge=0, description="Render duration in ms")
     error: str | None = Field(default=None, description="Error message if success=False")
     rendered_at: datetime = Field(

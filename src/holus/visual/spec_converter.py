@@ -13,6 +13,7 @@ from typing import Any
 
 from holus.visual.chart import generate_svg
 from holus.visual.models import CarouselSpec, OutputFormat, RenderSpec, SlideSpec
+from holus.visual.poll import generate_poll_svg
 
 
 def data_viz_to_spec(
@@ -72,6 +73,42 @@ def data_viz_to_spec(
 
     return RenderSpec(
         template="single_image/data_viz",
+        variables=variables,
+        output_format=output_format,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
+    )
+
+
+def poll_to_spec(
+    poll_output: dict[str, Any],
+    *,
+    output_format: OutputFormat = OutputFormat.PNG,
+    viewport_width: int = 1080,
+    viewport_height: int = 1080,
+) -> RenderSpec:
+    """Convert poll agent output to a RenderSpec."""
+    _require_keys(poll_output, ["question", "options"])
+
+    options = poll_output["options"]
+    if not isinstance(options, list) or not (2 <= len(options) <= 4):
+        msg = "options must be a list of 2-4 items"
+        raise ValueError(msg)
+
+    color = str(poll_output.get("color_scheme") or "#6366f1")
+    svg_str = generate_poll_svg(
+        question=str(poll_output["question"]),
+        options=[str(option) for option in options],
+        color_accent=color,
+    )
+    variables: dict[str, str | int | float | bool | list[str]] = {
+        "question": str(poll_output["question"]),
+        "svg_content": svg_str,
+        "platform_label": str(poll_output.get("platform", "")),
+    }
+
+    return RenderSpec(
+        template="single_image/poll",
         variables=variables,
         output_format=output_format,
         viewport_width=viewport_width,

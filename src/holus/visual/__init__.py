@@ -10,12 +10,21 @@ from typing import TYPE_CHECKING
 
 from holus.visual.brand import BrandVisualIdentityLoader
 from holus.visual.engine import PlaywrightEngine
-from holus.visual.models import CarouselSpec, OutputFormat, RenderResult, RenderSpec, SlideSpec
+from holus.visual.models import (
+    CarouselSpec,
+    OutputFormat,
+    PollSpec,
+    RenderResult,
+    RenderSpec,
+    SlideSpec,
+    VideoSkeletonSpec,
+)
 from holus.visual.spec_converter import (
     before_after_to_spec,
     carousel_spec_to_slides,
     data_viz_to_spec,
     insight_to_spec,
+    poll_to_spec,
 )
 from holus.visual.templates import TemplateEngine
 
@@ -111,14 +120,17 @@ __all__ = [
     "CarouselSpec",
     "OutputFormat",
     "PlaywrightEngine",
+    "PollSpec",
     "RenderResult",
     "RenderSpec",
     "SlideSpec",
     "TemplateEngine",
+    "VideoSkeletonSpec",
     "before_after_to_spec",
     "carousel_spec_to_slides",
     "data_viz_to_spec",
     "insight_to_spec",
+    "poll_to_spec",
     "render_carousel_visual",
     "render_visual",
 ]
