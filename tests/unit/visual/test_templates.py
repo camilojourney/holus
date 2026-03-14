@@ -147,3 +147,53 @@ class TestTemplateEngine:
         html = engine.render("single_image/insight", {"headline": "Test"})
         assert "Test" in html
         assert "--brand-color-primary" in html  # brand CSS still present
+
+
+class TestListAvailableStyles:
+    """Test discovery of available CSS styles."""
+
+    def _make_engine(self, styles_dir: Path) -> TemplateEngine:
+        """Create a TemplateEngine with a custom styles directory."""
+        return TemplateEngine(styles_dir=styles_dir)
+
+    def test_returns_sorted_list(self, tmp_path: Path):
+        styles_dir = tmp_path / "styles"
+        styles_dir.mkdir()
+        (styles_dir / "zebra.css").write_text("/* zebra */", encoding="utf-8")
+        (styles_dir / "alpha.css").write_text("/* alpha */", encoding="utf-8")
+        (styles_dir / "middle.css").write_text("/* middle */", encoding="utf-8")
+
+        engine = self._make_engine(styles_dir)
+
+        assert engine.list_available_styles() == ["alpha", "middle", "zebra"]
+
+    def test_excludes_non_css_files(self, tmp_path: Path):
+        styles_dir = tmp_path / "styles"
+        styles_dir.mkdir()
+        (styles_dir / "base.css").write_text("/* css */", encoding="utf-8")
+        (styles_dir / "notes.txt").write_text("ignore me", encoding="utf-8")
+        (styles_dir / "theme.css.bak").write_text("ignore me too", encoding="utf-8")
+        (styles_dir / "README").write_text("ignore me", encoding="utf-8")
+
+        engine = self._make_engine(styles_dir)
+
+        assert engine.list_available_styles() == ["base"]
+
+    def test_handles_empty_dir(self, tmp_path: Path):
+        styles_dir = tmp_path / "styles"
+        styles_dir.mkdir()
+
+        engine = self._make_engine(styles_dir)
+
+        assert engine.list_available_styles() == []
+
+    def test_returns_names_without_css_extension(self, tmp_path: Path):
+        styles_dir = tmp_path / "styles"
+        nested_dir = styles_dir / "carousel"
+        nested_dir.mkdir(parents=True)
+        (styles_dir / "base.css").write_text("/* base */", encoding="utf-8")
+        (nested_dir / "accent.css").write_text("/* accent */", encoding="utf-8")
+
+        engine = self._make_engine(styles_dir)
+
+        assert engine.list_available_styles() == ["base", "carousel/accent"]

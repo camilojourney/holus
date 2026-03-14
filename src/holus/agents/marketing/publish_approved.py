@@ -9,6 +9,7 @@ import argparse
 import asyncio
 import os
 import sys
+from typing import Any
 
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -111,11 +112,21 @@ async def publish_all() -> None:
                 )
 
                 try:
-                    request = PublishRequest(
-                        content=content.text,
-                        platforms=[content.platform],
-                        style="raw",  # Content is already written by the agent
-                    )
+                    # Build request with media attachment if rendered visual exists
+                    publish_kwargs: dict[str, Any] = {
+                        "content": content.text,
+                        "platforms": [content.platform],
+                        "style": "raw",  # Content is already written by the agent
+                    }
+
+                    if content.rendered_pdf_path:
+                        publish_kwargs["media_url"] = content.rendered_pdf_path
+                        publish_kwargs["media_type"] = "document"
+                    elif content.rendered_image_path:
+                        publish_kwargs["media_url"] = content.rendered_image_path
+                        publish_kwargs["media_type"] = "image"
+
+                    request = PublishRequest(**publish_kwargs)
 
                     result = await client.publish(request)
 

@@ -4,7 +4,8 @@ ReAct loop:
   1. observe  -- read products config, knowledge files, and memory.
   2. reason   -- produce structured content decisions.
   3. act      -- generate platform-specific text and queue for review.
-  4. evaluate -- append decision/execution metadata to trajectory log.
+  4. render   -- produce visual attachments for pieces with visual intent.
+  5. evaluate -- append decision/execution metadata to trajectory log.
 """
 
 from __future__ import annotations
@@ -132,18 +133,20 @@ class MarketingAgent(BaseAgent):
     }
 
     def build_graph(self) -> StateGraph[MarketingState]:
-        """Construct the marketing observe -> reason -> act -> evaluate graph."""
+        """Construct the marketing observe -> reason -> act -> render -> evaluate graph."""
         graph = StateGraph(MarketingState)
 
         graph.add_node("observe", self.observe)
         graph.add_node("reason", self.reason)
         graph.add_node("act", self.act)
+        graph.add_node("render", self.render)
         graph.add_node("evaluate", self.evaluate)
 
         graph.add_edge(START, "observe")
         graph.add_edge("observe", "reason")
         graph.add_edge("reason", "act")
-        graph.add_edge("act", "evaluate")
+        graph.add_edge("act", "render")
+        graph.add_edge("render", "evaluate")
         graph.add_edge("evaluate", END)
 
         return graph
@@ -981,6 +984,113 @@ class MarketingAgent(BaseAgent):
             "post_results": post_results,
         }
 
+    async def render(self, state: MarketingState) -> dict[str, Any]:
+        """Render phase: produce visual attachments for pieces with visual intent.
+
+        Checks each generated piece for visual content_type (CAROUSEL, VIDEO_REEL)
+        or content_pillar suggesting visuals (ai_frameworks, results_proof).
+        Renders matching pieces via the visual pipeline and updates their
+        visual_attachment_path and visual_format fields. Text-only pieces pass
+        through unchanged. Errors are logged and the piece stays text-only.
+        """
+        self.check_kill_switch()
+
+        generated_content: list[dict[str, Any]] = list(state.get("generated_content", []))
+        if not generated_content:
+            return {"generated_content": generated_content}
+
+        rendered_dir = Path("data/rendered")
+        rendered_dir.mkdir(parents=True, exist_ok=True)
+
+        for piece_data in generated_content:
+            decision = piece_data.get("decision", {})
+            content_type = str(decision.get("content_type", "")).lower()
+            content_pillar = str(decision.get("content_pillar", "")).lower()
+            piece_id = piece_data.get("piece_id", "unknown")
+            text = piece_data.get("text", "")
+
+            # Determine if this piece needs visual rendering
+            is_carousel = content_type in ("carousel", "video_reel")
+            is_visual_pillar = content_pillar in ("ai_frameworks", "results_proof")
+
+            if not (is_carousel or is_visual_pillar):
+                continue
+
+            try:
+                from holus.visual import (
+                    BrandVisualIdentityLoader,
+                    render_carousel_visual,
+                    render_visual,
+                )
+                from holus.visual.spec_converter import (
+                    carousel_spec_to_slides,
+                    insight_to_spec,
+                )
+
+                loader = BrandVisualIdentityLoader()
+                brand_config = loader.load()
+
+                if is_carousel:
+                    # Build a carousel spec from the content
+                    carousel_data = {
+                        "slides": [
+                            {
+                                "type": "hook",
+                                "variables": {
+                                    "headline": decision.get("hook", decision.get("topic", "")),
+                                },
+                            },
+                            {
+                                "type": "body",
+                                "variables": {
+                                    "body": text[:500],
+                                },
+                            },
+                            {
+                                "type": "cta",
+                                "variables": {
+                                    "headline": "Follow for more",
+                                },
+                            },
+                        ],
+                    }
+                    carousel_spec = carousel_spec_to_slides(carousel_data)
+                    output_bytes = await render_carousel_visual(
+                        carousel_spec, brand_config=brand_config
+                    )
+                    ext = "pdf"
+                    output_path = rendered_dir / f"{piece_id}.pdf"
+                else:
+                    # Single image for visual pillar content (quote/stat graphic)
+                    hook = decision.get("hook", "")
+                    spec = insight_to_spec(
+                        text=text[:300],
+                        quote=hook if hook else None,
+                    )
+                    output_bytes = await render_visual(spec, brand_config=brand_config)
+                    ext = "png"
+                    output_path = rendered_dir / f"{piece_id}.png"
+
+                output_path.write_bytes(output_bytes)
+                piece_data["visual_attachment_path"] = str(output_path)
+                piece_data["visual_format"] = ext
+
+                logger.info(
+                    "Rendered visual for piece %s: %s (%s)",
+                    piece_id,
+                    output_path,
+                    ext,
+                )
+
+            except Exception:
+                logger.warning(
+                    "Visual rendering failed for piece %s; piece stays text-only",
+                    piece_id,
+                    exc_info=True,
+                )
+
+        return {"generated_content": generated_content}
+
     async def evaluate(self, state: MarketingState) -> dict[str, Any]:
         """Evaluate phase: append cycle entries to trajectory.jsonl."""
         self.check_kill_switch()
@@ -1104,17 +1214,30 @@ class MarketingAgent(BaseAgent):
     def _write_queue_item(self, piece: GeneratedPiece, queue_dir: Path) -> Path:
         """Write a content piece to the queue as YAML (matches content_queue.py)."""
         path = queue_dir / f"{piece.piece_id}.yaml"
-        data = {
+        data: dict[str, Any] = {
             "piece_id": piece.piece_id,
             "product": piece.decision.product,
-            "platform": piece.decision.platform.value,
+            "platform": piece.platform.value,
             "content_type": piece.decision.content_type.value,
             "topic": piece.decision.topic,
             "text": piece.text,
             "reasoning": piece.decision.reasoning,
+            "model_used": piece.model_used,
             "generated_at": piece.generated_at.isoformat(),
             "status": "pending_review",
         }
+
+        # Pass through visual rendering fields if present
+        if piece.visual_attachment_path:
+            visual_path = piece.visual_attachment_path
+            if visual_path.endswith(".pdf"):
+                data["rendered_pdf_path"] = visual_path
+                data["media_type"] = "document"
+            elif visual_path.endswith(".png"):
+                data["rendered_image_path"] = visual_path
+                data["media_type"] = "image"
+            data["visual_format"] = piece.visual_format
+
         path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
         return path
 
@@ -1232,12 +1355,13 @@ class MarketingAgent(BaseAgent):
     ) -> tuple[str, str]:
         """Generate content text for a decision using authority-building prompts.
 
-        Uses Camilo's voice, brand positioning, and anti-patterns from brand.yaml.
+        For LinkedIn posts, uses the specialist chain (hook-architect → storyteller
+        → voice-guardian → cta-strategist) for higher quality output.
+        Falls back to monolithic Sonnet prompt if any specialist fails.
         Falls back to template text when API key is unavailable.
         """
         brand = brand or {}
         products_dict = products.get("products", {})
-        product_info = format_product_info(decision.product, products_dict)
 
         if not self.config.anthropic_api_key:
             fallback_text = self._fallback_content_text(decision)
@@ -1245,6 +1369,22 @@ class MarketingAgent(BaseAgent):
                 fallback_text, decision.platform
             ), "template-fallback"
 
+        # Try specialist chain for text-heavy platforms
+        _CHAIN_PLATFORMS = {Platform.LINKEDIN, Platform.INSTAGRAM, Platform.THREADS}
+        if decision.platform in _CHAIN_PLATFORMS:
+            try:
+                text = self._specialist_chain(decision=decision, brand=brand)
+                if text and len(text) > 50:
+                    return self._enforce_platform_limit(
+                        text, decision.platform
+                    ), f"specialist-chain/{self.config.sonnet_model}"
+            except Exception as exc:
+                logger.warning(
+                    "Specialist chain failed, falling back to monolithic prompt: %s", exc
+                )
+
+        # Monolithic prompt fallback
+        product_info = format_product_info(decision.product, products_dict)
         system_prompt = SONNET_CONTENT_PROMPT.format(
             topic=decision.topic,
             content_pillar=decision.content_pillar,
@@ -1271,6 +1411,196 @@ class MarketingAgent(BaseAgent):
             text = self._fallback_content_text(decision)
 
         return self._enforce_platform_limit(text, decision.platform), self.config.sonnet_model
+
+    # ------------------------------------------------------------------
+    # Specialist chain (hook → storyteller → voice-guardian → CTA)
+    # ------------------------------------------------------------------
+
+    _GENERATION_PREFIX = (
+        "IMPORTANT: You are in GENERATION MODE. Do NOT search for, read, or access "
+        "any files. Do NOT use any tools. Generate content directly based on the brief "
+        "provided and the instructions in your system prompt. Respond with text only.\n\n"
+    )
+
+    _PLATFORM_STORY_HINTS: ClassVar[dict[str, str]] = {
+        "linkedin": "Write a professional narrative (800-1500 chars). Use arrow bullets, standalone pivot lines, builder-philosopher tone.",
+        "instagram": "Write a conversational caption (600-1200 chars). More personal, visual language. End with 10-15 relevant hashtags on a separate line. Use line breaks for readability.",
+        "threads": "Write a punchy, casual take (300-500 chars). Conversational tone, no hashtags. Think Twitter energy but with more room.",
+    }
+
+    _PLATFORM_CTA_HINTS: ClassVar[dict[str, str]] = {
+        "linkedin": "Professional CTAs: questions that invite discussion, polls, or direct profile visits.",
+        "instagram": "Instagram CTAs: \"Link in bio\", save/share prompts, comment triggers. Never direct URLs in captions.",
+        "threads": "Threads CTAs: short engagement hooks, repost prompts, casual questions.",
+    }
+
+    def _specialist_chain(
+        self,
+        *,
+        decision: ContentDecision,
+        brand: dict[str, Any],
+    ) -> str:
+        """Run the specialist chain: hook → storyteller → voice-guardian → CTA.
+
+        Returns the assembled post text or raises on failure.
+        """
+        from holus.core.prompt_loader import PromptLoader
+
+        loader = PromptLoader()
+
+        # Step 1: Hook Architect
+        hook_prompt = loader.get_prompt("hook-architect")
+        hook_input = (
+            f"{self._GENERATION_PREFIX}"
+            f"Content brief:\n"
+            f"- Content pillar: {decision.content_pillar}\n"
+            f"- Core claim: {decision.topic}\n"
+            f"- Product: {decision.product}\n"
+            f"- Platform: {decision.platform.value}\n"
+        )
+        hook_resp = self.claude.call(
+            cached_prompt=CachedPrompt(system_prompt=hook_prompt),
+            messages=[{"role": "user", "content": hook_input}],
+            tier="operational",
+            max_tokens=1000,
+            temperature=0.4,
+            agent_id=f"{self.agent_name}/hook-architect",
+        )
+        hook_output = self._extract_response_text(hook_resp).strip()
+        best_hook = self._extract_hook_from_output(hook_output, decision)
+        logger.info("Specialist chain: hook selected (%d chars)", len(best_hook))
+
+        # Step 2: Storyteller
+        story_prompt = loader.get_prompt("storyteller")
+        story_input = (
+            f"{self._GENERATION_PREFIX}"
+            f"Content brief:\n"
+            f"- Content pillar: {decision.content_pillar}\n"
+            f"- Core claim: {decision.topic}\n"
+            f"- Product: {decision.product}\n"
+            f"- Platform: {decision.platform.value}\n"
+            f"- Hook (from hook-architect): {best_hook}\n\n"
+            f"Write the narrative body. Do NOT include the hook itself.\n\n"
+            f"Platform guidance: {self._PLATFORM_STORY_HINTS.get(decision.platform.value, '')}"
+        )
+        story_resp = self.claude.call(
+            cached_prompt=CachedPrompt(system_prompt=story_prompt),
+            messages=[{"role": "user", "content": story_input}],
+            tier="operational",
+            max_tokens=1500,
+            temperature=0.4,
+            agent_id=f"{self.agent_name}/storyteller",
+        )
+        story_output = self._extract_response_text(story_resp).strip()
+        body = self._extract_body_from_output(story_output)
+        if not body:
+            raise ValueError("Storyteller returned empty body")
+        logger.info("Specialist chain: body generated (%d chars)", len(body))
+
+        # Step 3: Voice Guardian (GATE)
+        guardian_prompt = loader.get_prompt("voice-guardian")
+        full_draft = f"{best_hook}\n\n{body}"
+        guardian_input = (
+            f"{self._GENERATION_PREFIX}"
+            f"Review the following {decision.platform.value} post for brand consistency:\n\n"
+            f"---\n{full_draft}\n---\n\n"
+            f"Apply all checks from brand.yaml anti_patterns and voice-profile.md."
+        )
+        guardian_resp = self.claude.call(
+            cached_prompt=CachedPrompt(system_prompt=guardian_prompt),
+            messages=[{"role": "user", "content": guardian_input}],
+            tier="classification",
+            max_tokens=800,
+            temperature=0.0,
+            agent_id=f"{self.agent_name}/voice-guardian",
+        )
+        guardian_output = self._extract_response_text(guardian_resp).strip()
+        upper = guardian_output.upper()
+        gate_passed = "PASS" in upper
+        if "FAIL" in upper:
+            gate_passed = False
+        logger.info("Specialist chain: voice guardian %s", "PASS" if gate_passed else "FAIL")
+
+        if not gate_passed:
+            # If voice guardian fails, fall back to monolithic prompt
+            raise ValueError(f"Voice guardian FAIL: {guardian_output[:200]}")
+
+        # Step 4: CTA Strategist
+        cta_prompt = loader.get_prompt("cta-strategist")
+        cta_input = (
+            f"{self._GENERATION_PREFIX}"
+            f"Content brief:\n"
+            f"- Content pillar: {decision.content_pillar}\n"
+            f"- Hook: {best_hook}\n"
+            f"- Body (first 400 chars): {body[:400]}\n\n"
+            f"Design 2-3 CTA options for this {decision.platform.value} post.\n\n"
+            f"Platform guidance: {self._PLATFORM_CTA_HINTS.get(decision.platform.value, '')}"
+        )
+        cta_resp = self.claude.call(
+            cached_prompt=CachedPrompt(system_prompt=cta_prompt),
+            messages=[{"role": "user", "content": cta_input}],
+            tier="operational",
+            max_tokens=800,
+            temperature=0.4,
+            agent_id=f"{self.agent_name}/cta-strategist",
+        )
+        cta_output = self._extract_response_text(cta_resp).strip()
+        cta_text = self._extract_cta_from_output(cta_output)
+
+        # Assemble: hook + body + CTA
+        assembled = f"{best_hook}\n\n{body}"
+        if cta_text:
+            assembled += f"\n\n{cta_text}"
+
+        logger.info("Specialist chain: assembled post (%d chars)", len(assembled))
+        return assembled
+
+    def _extract_hook_from_output(self, output: str, decision: ContentDecision) -> str:
+        """Extract the best hook from hook-architect JSON output."""
+        clean = self._strip_code_fences(output)
+        try:
+            data = json.loads(clean)
+            rec_idx = data["recommended"]["index"]
+            return data["hooks"][rec_idx]["text"]
+        except (json.JSONDecodeError, KeyError, IndexError, TypeError):
+            pass
+        # Regex fallback: find first "text" value
+        match = re.search(r'"text":\s*"([^"]+)"', output)
+        if match:
+            return match.group(1)
+        # Use the decision hook or topic
+        return decision.hook or decision.topic
+
+    def _extract_body_from_output(self, output: str) -> str:
+        """Extract the narrative body from storyteller JSON or plain text."""
+        clean = self._strip_code_fences(output)
+        try:
+            data = json.loads(clean)
+            return data.get("body", clean)
+        except (json.JSONDecodeError, TypeError):
+            return output
+
+    def _extract_cta_from_output(self, output: str) -> str:
+        """Extract the first CTA text from cta-strategist JSON output."""
+        clean = self._strip_code_fences(output)
+        try:
+            data = json.loads(clean)
+            options = data.get("options", [])
+            if options and isinstance(options[0], dict):
+                return options[0].get("text", "")
+        except (json.JSONDecodeError, TypeError):
+            pass
+        return ""
+
+    @staticmethod
+    def _strip_code_fences(text: str) -> str:
+        """Remove markdown code fences from JSON output."""
+        stripped = text.strip()
+        if stripped.startswith("```"):
+            lines = stripped.split("\n")
+            lines = [l for l in lines if not l.strip().startswith("```")]
+            return "\n".join(lines)
+        return stripped
 
     def _fallback_content_text(self, decision: ContentDecision) -> str:
         """Generate fallback content with authority-building voice."""

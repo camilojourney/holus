@@ -68,6 +68,10 @@ class ContentDecision(BaseModel):
         description="Expected engagement level",
     )
     repurpose_notes: str = Field(default="", description="Adaptation notes for repurposing")
+    suggested_visual_format: str | None = Field(
+        default=None,
+        description="Visual format suggestion: 'carousel', 'single_image', 'none', or None (no visual)",
+    )
 
 
 class GeneratedPiece(BaseModel):
@@ -91,6 +95,12 @@ class GeneratedPiece(BaseModel):
         description="Content lifecycle status",
     )
     post_url: str | None = Field(default=None, description="URL after publishing (if published)")
+    visual_attachment_path: str | None = Field(
+        default=None, description="Path to the rendered visual attachment (PNG/PDF) for this piece"
+    )
+    visual_format: str | None = Field(
+        default=None, description="Format of the visual attachment (png, pdf, etc.)"
+    )
 
 
 # ---------------------------------------------------------------------------

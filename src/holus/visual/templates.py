@@ -100,3 +100,12 @@ class TemplateEngine:
             name = str(relative).removesuffix(".html.j2")
             templates.append(name)
         return sorted(templates)
+
+    def list_available_styles(self) -> list[str]:
+        """List all available style names (without .css extension)."""
+        styles: list[str] = []
+        for path in self._styles_dir.rglob("*.css"):
+            relative = path.relative_to(self._styles_dir)
+            name = str(relative).removesuffix(".css")
+            styles.append(name)
+        return sorted(styles)
