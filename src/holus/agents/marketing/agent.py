@@ -1010,7 +1010,8 @@ class MarketingAgent(BaseAgent):
             text = piece_data.get("text", "")
 
             # Determine if this piece needs visual rendering
-            is_carousel = content_type in ("carousel", "video_reel")
+            # video_reel is excluded — video rendering is not yet built
+            is_carousel = content_type == "carousel"
             is_visual_pillar = content_pillar in ("ai_frameworks", "results_proof")
 
             if not (is_carousel or is_visual_pillar):
@@ -1074,6 +1075,23 @@ class MarketingAgent(BaseAgent):
                 output_path.write_bytes(output_bytes)
                 piece_data["visual_attachment_path"] = str(output_path)
                 piece_data["visual_format"] = ext
+
+                # Update queue YAML on disk (act already wrote it without visual data)
+                queue_file = Path("data/content-queue") / f"{piece_id}.yaml"
+                if queue_file.exists():
+                    import yaml
+
+                    queue_data = yaml.safe_load(queue_file.read_text()) or {}
+                    if ext == "pdf":
+                        queue_data["rendered_pdf_path"] = str(output_path)
+                        queue_data["media_type"] = "document"
+                    else:
+                        queue_data["rendered_image_path"] = str(output_path)
+                        queue_data["media_type"] = "image"
+                    queue_data["visual_format"] = ext
+                    queue_file.write_text(
+                        yaml.dump(queue_data, default_flow_style=False, sort_keys=False)
+                    )
 
                 logger.info(
                     "Rendered visual for piece %s: %s (%s)",
