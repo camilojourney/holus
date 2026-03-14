@@ -1,0 +1,31 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-summary">
+  <div class="slide-content">
+    {% if label %}
+    <span class="slide-label">{{ label }}</span>
+    {% endif %}
+
+    <h2 class="slide-title">{{ title | default("Key Takeaways") }}</h2>
+
+    {% if takeaways %}
+    <ol class="summary-list">
+      {% for item in takeaways %}
+      <li>
+        <span class="summary-number">{{ loop.index }}</span>
+        <span class="summary-text">{{ item }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+  </div>
+
+  <div class="slide-footer">
+    {% if author_name %}
+    <span class="slide-author">{{ author_name }}</span>
+    {% endif %}
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}

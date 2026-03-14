@@ -227,6 +227,129 @@ class PlaywrightEngine:
             results.append(result)
         return results
 
+    async def render_carousel_pdf(self, spec: CarouselSpec) -> RenderResult:
+        """Render all slides of a carousel as a single multi-page PDF.
+
+        Each slide becomes a separate 1080x1350 page in the PDF document,
+        suitable for LinkedIn carousel (document) uploads.
+
+        Args:
+            spec: Carousel specification with ordered slides.
+
+        Returns:
+            RenderResult with PDF bytes containing all slides as pages.
+        """
+        if self._browser is None:
+            return RenderResult(
+                success=False,
+                error="Browser not started. Use 'async with PlaywrightEngine()' context manager.",
+                format=OutputFormat.PDF,
+            )
+
+        if not spec.slides:
+            return RenderResult(
+                success=False,
+                error="No slides provided.",
+                format=OutputFormat.PDF,
+            )
+
+        started = time.perf_counter()
+        try:
+            # Render each slide to HTML
+            html_pages: list[str] = []
+            for slide in spec.slides:
+                slide_vars = {
+                    **slide.variables,
+                    "slide_number": slide.slide_number,
+                    "total_slides": len(spec.slides),
+                }
+                html = self._template_engine.render(slide.template, slide_vars)
+                html_pages.append(html)
+
+            # Combine into a single multi-page PDF
+            combined_html = self._combine_carousel_html(
+                html_pages,
+                width=spec.viewport_width,
+                height=spec.viewport_height,
+            )
+
+            page = await self._browser.new_page()  # type: ignore[union-attr]
+            try:
+                await page.set_content(
+                    combined_html,
+                    wait_until="networkidle",
+                    timeout=spec.timeout_ms,
+                )
+                pdf_bytes = await page.pdf(
+                    width=f"{spec.viewport_width}px",
+                    height=f"{spec.viewport_height}px",
+                    print_background=True,
+                )
+                duration_ms = int((time.perf_counter() - started) * 1000)
+                return RenderResult(
+                    success=True,
+                    output_bytes=pdf_bytes,
+                    duration_ms=duration_ms,
+                    format=OutputFormat.PDF,
+                )
+            finally:
+                await page.close()
+        except Exception as exc:
+            duration_ms = int((time.perf_counter() - started) * 1000)
+            return RenderResult(
+                success=False,
+                error=str(exc),
+                duration_ms=duration_ms,
+                format=OutputFormat.PDF,
+            )
+
+    @staticmethod
+    def _combine_carousel_html(
+        pages: list[str],
+        width: int = 1080,
+        height: int = 1350,
+    ) -> str:
+        """Combine multiple carousel slide HTML pages for PDF rendering.
+
+        Each page is wrapped in a fixed-dimension div with CSS page-break rules
+        so the PDF renderer produces one page per slide at the correct dimensions.
+        """
+        sections: list[str] = []
+        for i, page_html in enumerate(pages):
+            break_style = "page-break-before: always;" if i > 0 else ""
+            sections.append(
+                f'<div class="carousel-pdf-page" style="'
+                f"width: {width}px; height: {height}px; "
+                f"overflow: hidden; {break_style}"
+                f'">{page_html}</div>'
+            )
+
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@page {{
+  size: {width}px {height}px;
+  margin: 0;
+}}
+body {{
+  margin: 0;
+  padding: 0;
+}}
+.carousel-pdf-page {{
+  page-break-after: always;
+}}
+.carousel-pdf-page:last-child {{
+  page-break-after: auto;
+}}
+</style>
+</head>
+<body>
+{"".join(sections)}
+</body>
+</html>"""
+
     @staticmethod
     def _combine_html_pages(pages: list[str]) -> str:
         """Combine multiple HTML pages with CSS page breaks for PDF rendering."""

@@ -1,0 +1,90 @@
+/* Carousel-specific styles — 1080x1350 viewport (4:5 aspect ratio).
+ * Extends slide.css with carousel-specific layout, safe zones matching
+ * LinkedIn document format, and typography minimums for readability.
+ *
+ * Safe zones:
+ *   - Left/Right: 100px (platform chrome + visual breathing room)
+ *   - Bottom: 120px (LinkedIn page counter overlay)
+ *   - Top-right: 150x100px (reserved for page counter badge)
+ */
+
+/* Page counter badge — top-right safe zone */
+.carousel-page-counter {
+  position: absolute;
+  top: 40px;
+  right: 100px;
+  font-family: var(--brand-font-secondary);
+  font-size: var(--brand-size-caption);
+  font-weight: var(--brand-weight-caption);
+  color: var(--brand-color-muted);
+  background-color: var(--brand-color-surface);
+  padding: 8px 16px;
+  border-radius: var(--brand-border-radius);
+  z-index: 10;
+}
+
+/* Summary slide — key takeaways list */
+.slide-summary {
+  background-color: var(--brand-color-surface);
+}
+
+.slide-summary .slide-title {
+  color: var(--brand-color-primary);
+  font-size: 48px;
+  font-weight: var(--brand-weight-headline);
+  margin-bottom: var(--brand-spacing-padding);
+}
+
+.slide-summary .summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.slide-summary .summary-list li {
+  font-size: var(--brand-size-min-slide-body);
+  line-height: 1.5;
+  padding: calc(var(--brand-spacing-gap) * 0.75) 0;
+  border-bottom: 1px solid var(--brand-color-muted);
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--brand-spacing-gap) / 2);
+}
+
+.slide-summary .summary-list li:last-child {
+  border-bottom: none;
+}
+
+.slide-summary .summary-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  background-color: var(--brand-color-primary);
+  color: var(--brand-color-background);
+  border-radius: 50%;
+  font-weight: var(--brand-weight-headline);
+  font-size: 18px;
+}
+
+.slide-summary .summary-text {
+  flex: 1;
+}
+
+/* Carousel-specific headline enforcement — 48pt minimum */
+.carousel-slide .slide-headline,
+.carousel-slide .slide-cta-headline,
+.carousel-slide .slide-title {
+  font-size: max(48px, var(--brand-size-min-slide-headline));
+}
+
+/* Carousel-specific body text enforcement — 24pt minimum */
+.carousel-slide .slide-body-text,
+.carousel-slide .slide-cta-body,
+.carousel-slide .slide-highlight,
+.carousel-slide .slide-bullets li,
+.carousel-slide .summary-list li {
+  font-size: max(24px, var(--brand-size-min-slide-body));
+}

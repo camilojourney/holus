@@ -72,7 +72,7 @@ class TemplateEngine:
         # Determine which supplementary CSS to load based on template path
         supplementary_css = ""
         if template_name.startswith("carousel/"):
-            supplementary_css = self._load_style("slide.css")
+            supplementary_css = self._load_style("slide.css") + "\n" + self._load_style("carousel.css")
         elif template_name.startswith("single_image/"):
             supplementary_css = self._load_style("single.css")
 

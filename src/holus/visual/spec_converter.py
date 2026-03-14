@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from holus.visual.models import OutputFormat, RenderSpec
+from holus.visual.models import CarouselSpec, OutputFormat, RenderSpec, SlideSpec
 
 
 def data_viz_to_spec(
@@ -182,6 +182,79 @@ def insight_to_spec(
         output_format=output_format,
         viewport_width=viewport_width,
         viewport_height=viewport_height,
+    )
+
+
+def carousel_spec_to_slides(
+    carousel_output: dict[str, Any],
+    *,
+    output_format: OutputFormat = OutputFormat.PNG,
+    viewport_width: int = 1080,
+    viewport_height: int = 1350,
+) -> CarouselSpec:
+    """Convert carousel-architect agent JSON output to a CarouselSpec.
+
+    The carousel-architect agent produces output with:
+    - slides: list[dict] — ordered slide definitions, each containing:
+        - type: str — one of "hook", "body", "summary", "cta"
+        - variables: dict — template-specific variables (headline, body, takeaways, etc.)
+    - title: str (optional) — carousel title for metadata
+
+    Template mapping:
+    - "hook" → "carousel/hook_slide"
+    - "body" → "carousel/body_slide"
+    - "summary" → "carousel/summary_slide"
+    - "cta" → "carousel/cta_slide"
+
+    Args:
+        carousel_output: Dict from carousel-architect agent output contract.
+        output_format: Target format (PNG or PDF).
+        viewport_width: Slide width in px.
+        viewport_height: Slide height in px (default 1350 for 4:5 aspect).
+
+    Returns:
+        CarouselSpec with ordered SlideSpecs.
+
+    Raises:
+        ValueError: If slides is missing, empty, or contains unknown slide types.
+    """
+    _require_keys(carousel_output, ["slides"])
+
+    raw_slides = carousel_output["slides"]
+    if not isinstance(raw_slides, list) or len(raw_slides) == 0:
+        msg = "slides must be a non-empty list"
+        raise ValueError(msg)
+
+    type_to_template = {
+        "hook": "carousel/hook_slide",
+        "body": "carousel/body_slide",
+        "summary": "carousel/summary_slide",
+        "cta": "carousel/cta_slide",
+    }
+
+    slide_specs: list[SlideSpec] = []
+    for i, raw_slide in enumerate(raw_slides, start=1):
+        slide_type = raw_slide.get("type", "body")
+        if slide_type not in type_to_template:
+            msg = f"Unknown slide type '{slide_type}' at index {i - 1}. Valid types: {', '.join(type_to_template)}"
+            raise ValueError(msg)
+
+        template = type_to_template[slide_type]
+        variables = dict(raw_slide.get("variables", {}))
+
+        slide_specs.append(
+            SlideSpec(
+                template=template,
+                variables=variables,
+                slide_number=i,
+            )
+        )
+
+    return CarouselSpec(
+        slides=slide_specs,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
+        output_format=output_format,
     )
 
 
