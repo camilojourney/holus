@@ -261,7 +261,7 @@ def _attempt_post(raw: dict) -> None:
 
         resp = requests.post(
             f"{api_base}/api/v1/publish",
-            json={"content": text, "platforms": [platform]},
+            json={"content": text, "targets": [platform]},
             headers={"X-API-Key": api_key, "Content-Type": "application/json"},
             timeout=10,
         )
