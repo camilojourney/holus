@@ -128,6 +128,9 @@ class TemplateEngine:
             if "bullet_points" not in normalized_variables and "bullets" in normalized_variables:
                 normalized_variables["bullet_points"] = normalized_variables["bullets"]
 
+        if template_name == "carousel/summary_slide" and "takeaways" not in normalized_variables and "items" in normalized_variables:
+            normalized_variables["takeaways"] = normalized_variables["items"]
+
         return normalized_variables
 
     def _post_process_html(
