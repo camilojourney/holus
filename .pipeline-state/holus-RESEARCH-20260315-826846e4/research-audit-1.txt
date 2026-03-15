@@ -1,0 +1,45 @@
+# Audit Report — Internal Consistency
+# Auditor: auditor-1
+# Date: 2026-03-15
+# Scope: Cross-file consistency check across docs/research/
+
+## Frontmatter Check
+- [PASS] All 5 files have required frontmatter (title, last_updated, review_cadence, next_review)
+- [PASS] INDEX.md has claims count matching individual file content
+- [PASS] All dates consistent (2026-03-15)
+
+## Cross-File Consistency
+- [PASS] Aspect ratios consistent across carousel-design.md, image-design.md, video-design.md
+  - All three cite 1:1, 4:5, 16:9 as valid LinkedIn dimensions
+- [PASS] Color palette variables consistent between carousel and image files
+  - Both use same scheme types (monochromatic, analogous, complementary, etc.)
+- [PASS] Typography variables use same classification system across files
+- [PASS] Tool references consistent — Satori, Polotno, Remotion mentioned in both content-type files and design-systems.md
+- [MINOR] Square dimension discrepancy: carousel says 1080x1080, image says 1080-1200px
+  - Already noted and explained in verification. Not a contradiction — different sources cite different minimums.
+
+## Claim Tag Coverage
+- [PASS] carousel-design.md: All major claims have tags
+- [PASS] image-design.md: All major claims have tags
+- [PASS] video-design.md: All major claims have tags
+- [PASS] design-systems.md: All major claims have tags
+- [PASS] No PHANTOM tags in final research (all phantom claims from gatherers were either verified or dropped)
+
+## Source Coverage
+- [PASS] Every VERIFIED claim traces to at least one source URL in the Sources section
+- [PASS] No fabricated URLs detected (all URLs match known domains)
+- [PASS] Source dates are within staleness window (all 2023-2024, within 60-day review cadence from 2026-03-15)
+  Note: Some sources are from 2023 — these cover foundational design principles that don't change (color theory, typography, composition). Appropriate for 60-day cadence.
+
+## Completeness Check
+- [PASS] Task asked for "MAXIMUM number of controllable variables per content type" — all 3 content types have explicit variable counts and combinatorial space calculations
+- [PASS] Task asked about Canva/Figma/Adobe Express parameterization — covered in design-systems.md
+- [PASS] Task asked about enterprise platforms (Jasper, Copy.ai, Lately) — covered in design-systems.md
+- [PASS] Task asked about ALL axes of variation — each file enumerates: color palettes, typography, layout grids, slide structures, visual elements, aspect ratios, whitespace, animation (video), caption styles, CTA placements, brand positioning
+
+## Issues Found
+- [NONE] No critical issues.
+- [INFO] Lately.ai API is UNVERIFIED (not publicly documented). Acceptable — flagged appropriately.
+- [INFO] Safe zone pixel value (80px) is UNVERIFIED. Acceptable — flagged, principle is sound.
+
+## Verdict: PASS

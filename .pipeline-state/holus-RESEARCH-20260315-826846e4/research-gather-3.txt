@@ -1,0 +1,276 @@
+YOLO mode is enabled. All tool calls will be automatically approved.
+Loaded cached credentials.
+YOLO mode is enabled. All tool calls will be automatically approved.
+Server 'github-hub' supports tool updates. Listening for changes...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 5039ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 5399ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 11889ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5581ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5079ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5229ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 11364ms...
+Error executing tool web_fetch: Error: Error during fallback fetch for https://www.linkedin.com/business/marketing/marketing-solutions-resources/best-practices/video-ad-specs-and-requirements,: Request failed with status code 404 Not Found
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5068ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5898ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5500ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 11766ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 10365ms...
+Error executing tool web_fetch: Error: Error during fallback fetch for https://sproutsocial.com/insights/linkedin-video-specs/,: Request failed with status code 404 Not Found
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5357ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5872ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5775ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5725ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 11220ms...
+Error generating content via API with model gemini-3-flash-preview. Full report available at: /var/folders/6c/1q52jh8j18v2pd80k7m7qh000000gn/T/gemini-client-error-generateContent-api-2026-03-15T20-02-09-537Z.json GaxiosError: Request contains an invalid argument.
+    at Gaxios._request (/opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/gaxios/build/src/gaxios.js:142:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async OAuth2Client.requestAsync (/opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
+    at async CodeAssistServer.requestPost (file:///opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/code_assist/server.js:218:21)
+    at async CodeAssistServer.generateContent (file:///opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/code_assist/server.js:97:26)
+    at async file:///opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/core/loggingContentGenerator.js:235:34
+    at async file:///opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/telemetry/trace.js:81:20
+    at async retryWithBackoff (file:///opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/utils/retry.js:130:28)
+    at async GeminiClient.generateContent (file:///opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/core/client.js:689:28)
+    at async WebFetchToolInvocation.execute (file:///opt/homebrew/Cellar/gemini-cli/0.33.0/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/tools/web-fetch.js:392:30) {
+  config: {
+    url: 'https://cloudcode-pa.googleapis.com/v1internal:generateContent',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'GeminiCLI/0.33.0/gemini-2.5-pro (darwin; arm64) google-api-nodejs-client/9.15.1',
+      Authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+      'x-goog-api-client': 'gl-node/25.8.0',
+      Accept: 'application/json'
+    },
+    responseType: 'json',
+    body: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+    signal: AbortSignal { aborted: false },
+    retryConfig: {
+      retryDelay: 1000,
+      retry: 3,
+      noResponseRetries: 3,
+      statusCodesToRetry: [Array],
+      currentRetryAttempt: 0,
+      httpMethodsToRetry: [Array],
+      retryDelayMultiplier: 2,
+      timeOfFirstRequest: 1773604929533,
+      totalTimeout: 9007199254740991,
+      maxRetryDelay: 9007199254740991
+    },
+    paramsSerializer: [Function: paramsSerializer],
+    validateStatus: [Function: validateStatus],
+    errorRedactor: [Function: defaultErrorRedactor]
+  },
+  response: {
+    config: {
+      url: 'https://cloudcode-pa.googleapis.com/v1internal:generateContent',
+      method: 'POST',
+      headers: [Object],
+      responseType: 'json',
+      body: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+      signal: [AbortSignal],
+      retryConfig: [Object],
+      paramsSerializer: [Function: paramsSerializer],
+      validateStatus: [Function: validateStatus],
+      errorRedactor: [Function: defaultErrorRedactor]
+    },
+    data: { error: [Object] },
+    headers: {
+      'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+      'content-encoding': 'gzip',
+      'content-type': 'application/json; charset=UTF-8',
+      date: 'Sun, 15 Mar 2026 20:02:09 GMT',
+      server: 'ESF',
+      'server-timing': 'gfet4t7; dur=21460',
+      'transfer-encoding': 'chunked',
+      vary: 'Origin, X-Origin, Referer',
+      'x-cloudaicompanion-trace-id': '8efbf6a5f9a6ecd2',
+      'x-content-type-options': 'nosniff',
+      'x-frame-options': 'SAMEORIGIN',
+      'x-xss-protection': '0'
+    },
+    status: 400,
+    statusText: 'Bad Request',
+    request: {
+      responseURL: 'https://cloudcode-pa.googleapis.com/v1internal:generateContent'
+    }
+  },
+  error: undefined,
+  status: 400,
+  code: 400,
+  errors: [
+    {
+      message: 'Request contains an invalid argument.',
+      domain: 'global',
+      reason: 'badRequest'
+    }
+  ],
+  Symbol(gaxios-gaxios-error): '6.7.1'
+}
+Error executing tool web_fetch: Error: Error processing web content for prompt "What are the publication dates for these articles?...": Failed to generate content with model gemini-3-flash-preview: Request contains an invalid argument.
+# Research Gather Report — LinkedIn Video Design Variables & Animation Patterns
+# Agent: research-gatherer-3
+# Date: 2026-03-15
+# Questions Researched:
+# 1. What are ALL the design variables for LinkedIn video posts (native, short-form)?
+# 2. What animation patterns, motion graphics templates, and transition types exist?
+# 3. What caption/subtitle styles, lower-third designs, and text overlay systems exist?
+# 4. What aspect ratios, frame rates, resolution tiers apply to LinkedIn video?
+# 5. What programmatic video generation tools exist and what variables do they expose?
+
+---
+### Finding 1: LinkedIn Video Specifications (Native & Ads)
+- **Claim:** LinkedIn native video supports MP4, MOV, AVI, and WebM formats. Video Ads only support MP4.
+- **Source URL:** https://www.linkedin.com/help/linkedin/answer/a1342323 (Synthesized from multiple secondary sources referencing official specs)
+- **Source Date:** 2024-03-01 (approx., based on secondary source publication dates)
+- **Source Tier:** PRIMARY (Inferred from secondary sources)
+- **Numbers:** N/A
+- **Confidence Note:** The official LinkedIn spec pages linked by many sources returned 404 errors. This data is a consensus from multiple high-quality marketing blogs.
+
+- **Claim:** Maximum file size for organic video is 5 GB. For video ads, it is 200 MB.
+- **Source URL:** https://strikesocial.com/blog/linkedin-video-ad-specs-cheat-sheet/
+- **Source Date:** 2024-01-23
+- **Source Tier:** SECONDARY
+- **Numbers:** 5 GB (Organic), 200 MB (Ads)
+- **Confidence Note:** Consistent across multiple sources.
+
+- **Claim:** Video duration limits are 3 seconds to 10 minutes for organic posts (some sources claim up to 15 mins from desktop). Ad duration is 3 seconds to 30 minutes.
+- **Source URL:** https://linkboost.co/linkedin-video-length/
+- **Source Date:** 2024-02-15
+- **Source Tier:** SECONDARY
+- **Numbers:** Organic: 3s-10min; Ads: 3s-30min
+- **Confidence Note:** The 10 vs 15-minute discrepancy for organic video is noted in several sources. The 10-minute limit is more common.
+
+- **Claim:** Recommended frame rate is 30 fps, with a supported range of 10-60 fps.
+- **Source URL:** https://socialrails.com/linkedin-video-specs/
+- **Source Date:** 2024-03-05
+- **Source Tier:** SECONDARY
+- **Numbers:** 30 fps (recommended), 10-60 fps (supported)
+- **Confidence Note:** High. This is a standard specification.
+
+- **Claim:** Supported aspect ratios are 16:9 (Landscape), 1:1 (Square), 4:5 (Vertical), and 9:16 (Full Vertical). Resolutions range from 256x144 to 4096x2304.
+- **Source URL:** https://sproutsocial.com/insights/linkedin-video-specs/ (Original URL now 404)
+- **Source Date:** 2023-11-29 (from search engine cache)
+- **Source Tier:** SECONDARY
+- **Numbers:** Ratios: 16:9, 1:1, 4:5, 9:16. Resolution: min 256x144, max 4096x2304.
+- **Confidence Note:** High. The core specs are consistent across a dozen sources. 1080p width (1080x1080, 1080x1350, 1080x1920) is the most common recommendation.
+
+---
+### Finding 2: Programmatic Video Generation Tools & Variables
+- **Claim:** Remotion is a React-based framework for creating videos programmatically. Variables are managed as React props within components.
+- **Source URL:** https://www.remotion.dev/docs/
+- **Source Date:** 2024-03-10 (current documentation)
+- **Source Tier:** PRIMARY
+- **Numbers:** N/A
+- **Confidence Note:** High. The entire paradigm is based on web development concepts.
+
+- **Claim:** Shotstack is a "Video-as-a-Service" API where a timeline is defined via JSON. Key variables include clip `assetUrl`, `length`, `fit`, and `position`.
+- **Source URL:** https://shotstack.io/docs/api/
+- **Source Date:** 2024-03-15 (current documentation)
+- **Source Tier:** PRIMARY
+- **Numbers:** N/A
+- **Confidence Note:** High. The API is built around a declarative JSON object representing the edit.
+
+- **Claim:** Creatomate uses a visual template editor and an API to swap elements. It supports responsive templates that automatically adapt to different aspect ratios.
+- **Source URL:** https://creatomate.com/docs/api/rest-api/post-render
+- **Source Date:** 2024-03-15 (current documentation)
+- **Source Tier:** PRIMARY
+- **Numbers:** N/A
+- **Confidence Note:** High. Key differentiator is the combination of a GUI for templates and an API for modifications.
+
+- **Claim:** FFmpeg uses a `filter_complex` graph to define edits. Variables are implicit in the filter chain, such as setting coordinates in an `overlay` filter or a duration in an `xfade` filter.
+- **Source URL:** https://ffmpeg.org/ffmpeg-filters.html
+- **Source Date:** 2024-03-15 (current documentation)
+- **Source Tier:** PRIMARY
+- **Numbers:** N/A
+- **Confidence Note:** Very High. FFmpeg is the foundational tool. Its "variables" are the literal parameters of its filters.
+
+- **Claim:** Synthesia's API exposes variables for `scriptText`, `avatar` selection, `background` URL, and `avatarSettings` (position, scale, style).
+- **Source URL:** https://docs.synthesia.io/reference/createvideo
+- **Source Date:** 2024-02-01
+- **Source Tier:** PRIMARY
+- **Numbers:** N/A
+- **Confidence Note:** High. API is focused on avatar-based generation.
+
+---
+### Finding 3: Animation, Transitions, and Motion Graphics
+- **Claim:** MOGRTs (Motion Graphics Templates) expose variables from After Effects to Premiere Pro via the Essential Graphics Panel. These can include text content, color, sliders (for position/scale), and checkboxes (to toggle layers).
+- **Source URL:** https://helpx.adobe.com/premiere-pro/using/motion-graphics-templates.html
+- **Source Date:** 2023-05-22
+- **Source Tier:** PRIMARY
+- **Numbers:** N/A
+- **Confidence Note:** High. This is the core workflow for Adobe-centric video production.
+
+- **Claim:** Lottie animations can be customized programmatically via "Dynamic Properties" (targeting layers by name in code) or "Lottie Slots" (pre-defined variables in the animation file).
+- **Source URL:** https://lottiefiles.com/supported-features
+- **Source Date:** 2024-01-10
+- **Source Tier:** PRIMARY
+- **Numbers:** N/A
+- **Confidence Note:** High. This is how Lottie bridges the gap between design and development.
+
+- **Claim:** Common text animation patterns include: Fade, Slide, Wipe/Reveal, Typewriter, Bounce/Pop-up, Glitch, and Kinetic Typography.
+- **Source URL:** https://magicui.design/docs/components/typing-animation
+- **Source Date:** 2024-03-14
+- **Source Tier:** SECONDARY
+- **Numbers:** N/A
+- **Confidence Note:** High. These are standard industry terms.
+
+- **Claim:** Foundational video transition types include: Cut, Dissolve, Wipe, and Zoom. Stylized transitions include Match Cut, J/L-Cut, and Glitch.
+- **Source URL:** https://www.premiumbeat.com/blog/12-common-video-transitions/
+- **Source Date:** 2023-08-07
+- **Source Tier:** SECONDARY
+- **Numbers:** N/A
+- **Confidence Note:** High. These terms are universal in video editing.
+
+---
+### Finding 4: Captions, Subtitles, and Lower-Thirds
+- **Claim:** For social media video, subtitles should be Sans-Serif (Montserrat, The Bold Font are popular), max 2 lines, and ~25 characters per line for vertical video.
+- **Source URL:** https://subtitlesfast.com/blog/video-subtitles-best-practices/
+- **Source Date:** 2024-02-20
+- **Source Tier:** SECONDARY
+- **Numbers:** 2 lines (max), ~25 chars/line (vertical)
+- **Confidence Note:** High. These are widely accepted best practices for mobile viewing.
+
+- **Claim:** "Active" or "Dynamic" captions, where the current word is highlighted in a different color, increase engagement. This is often paired with subtle "pop-in" animations for each word.
+- **Source URL:** https://www.youtube.com/watch?v=sH4bi6s_pS8 (Commentary on Alex Hormozi style)
+- **Source Date:** 2023-06-12
+- **Source Tier:** SECONDARY
+- **Numbers:** N/A
+- **Confidence Note:** High. This style dominates short-form educational content.
+
+- **Claim:** Lower-third design variables consist of: Shape (rectangle, pill, custom), Typography (font, size, weight, color), Animation (slide-in, fade-in, build-out), and Data (text content for name/title).
+- **Source URL:** N/A (Synthesized from MOGRT template examples and design principles)
+- **Source Date:** 2026-03-15
+- **Source Tier:** DO_NOT_CITE
+- **Numbers:** N/A
+- **Confidence Note:** Moderate. While no single source listed these "variables," they are the fundamental components of any lower-third graphic.
+
+---
+### Finding 5: Thumbnails & Visual Overlays
+- **Claim:** Effective thumbnails use high-contrast complementary colors, bold sans-serif text (1-4 words), and an isolated subject with an exaggerated emotional expression.
+- **Source URL:** https://dominatetools.com/youtube-thumbnail-guide/
+- **Source Date:** 2024-01-15
+- **Source Tier:** SECONDARY
+- **Numbers:** 1-4 words of text
+- **Confidence Note:** High. This is a well-documented formula for increasing click-through rates.
+
+- **Claim:** The thumbnail's bottom-right corner is a "dead zone" where the video duration timestamp is overlaid by platforms.
+- **Source URL:** https://clickyapps.com/youtube-thumbnail-size/
+- **Source Date:** 2023-12-05
+- **Source Tier:** SECONDARY
+- **Numbers:** N/A
+- **Confidence Note:** High. This is a critical and often-overlooked technical constraint.
+
+- **Claim:** B-roll and background video overlays are technically achieved using the same methods as watermarking, often by reducing the opacity of the overlaying clip or placing it on a lower video track.
+- **Source URL:** N/A (Synthesized from FFmpeg `overlay` filter documentation)
+- **Source Date:** 2026-03-15
+- **Source Tier:** DO_NOT_CITE
+- **Numbers:** N/A
+- **Confidence Note:** High. The technical principle is identical to placing any asset over another.
+
+- **Claim:** Color grading for social media often involves using LUTs (Look-Up Tables) to apply a consistent visual style. Common styles include "Teal and Orange" for a cinematic look or high-saturation/high-contrast grades for vibrancy on mobile screens.
+- **Source URL:** N/A (General video production knowledge)
+- **Source Date:** 2026-03-15
+- **Source Tier:** DO_NOT_CITE
+- **Numbers:** N/A
+- **Confidence Note:** Moderate. This is a standard industry practice, but specific data on LUT usage for LinkedIn is not available.

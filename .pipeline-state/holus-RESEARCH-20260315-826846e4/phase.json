@@ -1,0 +1,98 @@
+{
+  "correlation_id": "holus-RESEARCH-20260315-826846e4",
+  "repo": "holus",
+  "phase": "RESEARCH",
+  "started_at": "2026-03-15T14:00:00Z",
+  "current_subphase": "COMPLETED",
+  "phases_completed": ["GATHER", "ADVERSARY", "VERIFY", "SYNTHESIZE", "AUDIT"],
+  "status": "COMPLETED",
+  "workers": [
+    {
+      "id": "gatherer-1",
+      "subphase": "GATHER",
+      "status": "COMPLETED",
+      "model": "gemini-auto",
+      "output": "research-gather-1.txt",
+      "started_at": "2026-03-15T14:00:05Z",
+      "ended_at": "2026-03-15T14:03:00Z",
+      "scope": "LinkedIn carousel/PDF design variables"
+    },
+    {
+      "id": "gatherer-2",
+      "subphase": "GATHER",
+      "status": "COMPLETED",
+      "model": "gemini-auto",
+      "output": "research-gather-2.txt",
+      "started_at": "2026-03-15T14:00:05Z",
+      "ended_at": "2026-03-15T14:05:00Z",
+      "scope": "LinkedIn image post design variables"
+    },
+    {
+      "id": "gatherer-3",
+      "subphase": "GATHER",
+      "status": "COMPLETED",
+      "model": "gemini-auto",
+      "output": "research-gather-3.txt",
+      "started_at": "2026-03-15T14:00:05Z",
+      "ended_at": "2026-03-15T14:06:00Z",
+      "scope": "LinkedIn video design variables & animation"
+    },
+    {
+      "id": "gatherer-4",
+      "subphase": "GATHER",
+      "status": "COMPLETED",
+      "model": "gemini-auto",
+      "output": "research-gather-4.txt",
+      "started_at": "2026-03-15T14:00:05Z",
+      "ended_at": "2026-03-15T14:05:30Z",
+      "scope": "Design system parameterization & enterprise platforms"
+    },
+    {
+      "id": "adversary-1",
+      "subphase": "ADVERSARY",
+      "status": "COMPLETED",
+      "model": "gemini-auto",
+      "output": "research-adversary-1.txt",
+      "started_at": "2026-03-15T14:00:06Z",
+      "ended_at": "2026-03-15T14:04:00Z",
+      "result": "PROCEED_WITH_CAUTION",
+      "scope": "Counter-evidence for Creative Tool Registry"
+    },
+    {
+      "id": "verifier-1",
+      "subphase": "VERIFY",
+      "status": "COMPLETED",
+      "model": "claude-sonnet",
+      "output": "research-verify-1.txt",
+      "started_at": "2026-03-15T14:07:00Z",
+      "ended_at": "2026-03-15T14:10:00Z"
+    },
+    {
+      "id": "verifier-2",
+      "subphase": "VERIFY",
+      "status": "COMPLETED",
+      "model": "claude-sonnet",
+      "output": "research-verify-2.txt",
+      "started_at": "2026-03-15T14:07:00Z",
+      "ended_at": "2026-03-15T14:10:00Z"
+    },
+    {
+      "id": "synthesizer-1",
+      "subphase": "SYNTHESIZE",
+      "status": "COMPLETED",
+      "model": "claude-opus",
+      "output": "docs/research/*.md",
+      "started_at": "2026-03-15T14:11:00Z",
+      "ended_at": "2026-03-15T14:18:00Z"
+    },
+    {
+      "id": "auditor-1",
+      "subphase": "AUDIT",
+      "status": "COMPLETED",
+      "model": "claude-sonnet",
+      "output": "research-audit-1.txt",
+      "started_at": "2026-03-15T14:19:00Z",
+      "ended_at": "2026-03-15T14:20:00Z"
+    }
+  ]
+}

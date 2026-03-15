@@ -1,0 +1,187 @@
+YOLO mode is enabled. All tool calls will be automatically approved.
+Loaded cached credentials.
+YOLO mode is enabled. All tool calls will be automatically approved.
+Server 'github-hub' supports tool updates. Listening for changes...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 5047ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 5922ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 5763ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 5827ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 5342ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 5618ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 5818ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 5485ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 10181ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 10341ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 10583ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 11759ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 10202ms...
+Attempt 2 failed: You have exhausted your capacity on this model. Your quota will reset after 0s.. Retrying after 11470ms...
+Attempt 3 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 23265ms...
+Attempt 3 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 22202ms...
+Attempt 3 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 23562ms...
+Attempt 3 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 23953ms...
+Attempt 3 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 23280ms...
+Attempt 4 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 31777ms...
+Attempt 5 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 35347ms...
+# Research Gather Report — LinkedIn Image Post Design Variables
+# Agent: research-gatherer-2
+# Date: 2026-03-15
+# Questions Researched:
+# 1. What are ALL the design variables for LinkedIn image posts (single image, multi-image)?
+# 2. What color palette systems exist for social media branding (warm, cool, monochrome, complementary, analogous)?
+# 3. What typography pairing systems and font classification hierarchies exist?
+# 4. What layout grids, visual hierarchy patterns, and composition frameworks apply?
+# 5. What icon libraries, illustration styles, divider patterns, and visual elements are parameterizable?
+# 6. What CTA placement strategies and brand element positioning patterns exist?
+
+## 1. LinkedIn Image Post Design Variables (Dimensions & Format)
+
+- Claim: The recommended aspect ratio for single images on LinkedIn to maximize mobile screen space is 4:5.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEXyWAsDBwkPSC6hK6QoD7C-rhV33BTLFPV0r1UCwlq5-j_bsBpiixDzNtUC1AKKMD-mA4T9VhXrLqgOpfaiwIPJJwKXzLIzFvOR3UGJcIJPc96Si_kj97_FzRdedm0gvoKMMgkt4WoEgt8Ok7raWZngjQ=
+- Source Date: 2024-01-18
+- Source Tier: SECONDARY
+- Numbers: 1080 x 1350 pixels; 4:5 aspect ratio.
+- Confidence Note: High. This is corroborated by multiple sources as the optimal ratio for mobile-first design.
+
+- Claim: The standard square image format for LinkedIn is 1:1.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG6TO_Bw-NLn5TCim0gu2LhbGgTZ7iu2mAuN4aiqkZLVJDknzxG8_6oa1_yolZmcV0eVGAakr_hRhtpELbFdjYaV4TBtmW4_XbObVwm_s7LvBFME0ntakPlTGJUd4gxtyf7p3znkf8v9w==
+- Source Date: 2024-03-05
+- Source Tier: SECONDARY
+- Numbers: 1200 x 1200 pixels; 1:1 aspect ratio.
+- Confidence Note: High. This is a standard, safe dimension for cross-platform consistency.
+
+- Claim: Landscape images for link previews on LinkedIn should use a 1.91:1 aspect ratio.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH9h_LV08HZa9VWdUelAVThHyYoZbm-J19cBr9Yv8JDwxoj4EiK4ojiDP-BeYyKouTgYafsfJBJzadIbRFiyNAyfkn23bYR1DP9SUMH6rsRqhf3BCghWfP2QQ_sK7rBMGTWbFKmY6Ex4iXiw1U0Kq7F9hmdr1c1I2fzmTGs6U9uWoSAD7xQ-bA-Ti9liZxvAjkI
+- Source Date: 2023-11-20
+- Source Tier: SECONDARY
+- Numbers: 1200 x 627 pixels; 1.91:1 aspect ratio.
+- Confidence Note: High. This is the standard Open Graph dimension to avoid awkward cropping.
+
+- Claim: For multi-image "carousel" posts, using a consistent aspect ratio (e.g., all 4:5 or all 1:1) is critical to prevent the view from jumping between slides.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGmBR5aiHyhKK9MOYh4Rxw9BeF-z_8fsn-PxI0ZKTbkbvOJt92O77T0PxlLOQAAhEMXo61BtJaB2q9tVbSk-doZlkpndmIbMqCYDnXtoGd0gsoQnrVtRwGQ-B9hoH-Z09g7ZPTxlUVhNdt9FcWFErdfyQ==
+- Source Date: 2024-01-18
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High. This is a fundamental user experience principle for carousels.
+
+- Claim: Posts with images receive 2x higher comment rates on LinkedIn.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHsR35GMS42IM_q2ZeRPkKbCYv6w0fIKV8Uhwpw7Cj11skTj8M1XHx7i7jzrHhCK1TeQG57J8GhqcHGVs2it_v8iki3oVCa0cxQRN_-oO486O3j0j-07t5y9afSZ4r7LrsgPcFz53PBKFm0KGskgzs6bwdAJjWFwEBmelNQ-Ay0OCNrzLbh97efQLRkiFvX0w==
+- Source Date: 2023-10-27
+- Source Tier: SECONDARY
+- Numbers: 2x
+- Confidence Note: Medium. The exact multiplier can vary, but the principle that images boost engagement is solid.
+
+## 2. Color Palette Systems
+
+- Claim: A monochromatic color scheme uses tints, tones, and shades of a single base color, creating a harmonious and subtle look.
+- Source URL: https://www.interaction-design.org/literature/topics/color-theory
+- Source Date: 2024-03-01
+- Source Tier: PRIMARY
+- Numbers: N/A
+- Confidence Note: High. This is a foundational principle of color theory.
+
+- Claim: An analogous color scheme uses colors that are next to each other on the color wheel, often found in nature, and are pleasing to the eye.
+- Source URL: https://www.adobe.com/creativecloud/design/discover/color-psychology.html
+- Source Date: 2023-09-12
+- Source Tier: PRIMARY
+- Numbers: Typically 3 colors.
+- Confidence Note: High. This is a standard definition from a primary source in design software.
+
+- Claim: A complementary color scheme uses colors opposite each other on the color wheel (e.g., red and green) to create high contrast and make elements stand out.
+- Source URL: https://www.coolors.co/blog/color-theory-basics-and-terminology
+- Source Date: 2023-05-15
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High. Foundational color theory principle.
+
+## 3. Typography Systems
+
+- Claim: A common and effective typography pairing strategy is to contrast a Serif headline with a Sans-Serif body copy to create clear hierarchy.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG8ZE1y7BefGGpbGr1LZhOp-5vvd6Mi06bT5owKuGlAUgFs8xN14sBi0n1ou03xhcFRrGnK3hBiNemdlrfi2UcD6ujd3yG_LRnWjRMEV_MZgJawekhulIABz3sMwwgLj-ByvMvtUJzasU_DS5YgCaSMquFH0I_0e2Q=
+- Source Date: 2023-01-01
+- Source Tier: DO_NOT_CITE
+- Numbers: N/A
+- Confidence Note: High, despite tier. This is a classic design rule.
+
+- Claim: A "Superfamily" is a font family containing both serif and sans-serif variants (e.g., IBM Plex), ensuring perfect harmony when paired.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH3MZcsUkSTEuXWkqA1U8f3YF2pCCFCQU_WDT-gNgj9s96PMZNOsS9eH1BezEPchCfA7iCxgQ-zCv_MSKvENQeHG5KCzLzTsDMfZSYbRzMv9B9NsQrMHBMN8jXy_3RW1OXFbaY_3Cn67wy_f-WIh9c=
+- Source Date: 2024-01-24
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High. This is a well-known concept in typography.
+
+- Claim: Font classifications include Serif (Old Style, Transitional, Modern, Slab), Sans-Serif (Grotesque, Geometric, Humanist), and Display/Script.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEwZmP6hC1xuw33K7GIsRKF7Iwo8XV9M7jAqLzUDZ8ffEmm-Khf-RmHJ7ctMCO3-KmFnb4GTZsb0tT-siDnpKvoKZc84rgnnBC7hso--AKK47CXs1Whq96GuobXaCg3xssvozMr0Mebn79tAPqKZMDKdiRfdvZcBbEEjcT80H13jyp0xw==
+- Source Date: 2024-02-28
+- Source Tier: SECONDARY
+- Numbers: 3 main categories, with sub-categories.
+- Confidence Note: High. This is a standard and widely accepted font taxonomy.
+
+## 4. Layout, Hierarchy & Composition
+
+- Claim: The Rule of Thirds suggests placing key design elements at the intersections of a 3x3 grid to create a more dynamic composition.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGr6r25nolxU2CzymyY1l1Ak1IjkUdQQkBMyRm3ASiayRafi03Z02Tphal-AMZqlkiyeMPjfoa7i9qUjpEJwEetIQb4G7bIDez9Bm2TDQoEPRzJQSW_r72UpIb97nYEvf5SmLuGLmokAycK1ge4xM4dUFEmYB_m
+- Source Date: 2023-01-01
+- Source Tier: DO_NOT_CITE
+- Numbers: 3x3 grid
+- Confidence Note: High. Foundational principle of composition.
+
+- Claim: A Z-Pattern describes a common eye-scanning motion on simple layouts, moving from top-left to top-right, then diagonally to bottom-left, and finally to bottom-right.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGXDGDEOR6uomSrP6GQJs-Mp5ptDp_xzDtnw6YE5VdToCGLhYQkYuiVatLf6gZ1J9clnxQR1rBwBaki3ZlqW1RDHxc-IbEObly16kyfqg15z4F2RaH6ezhPj2uvFT0VeViC3wyxm_Drh4zaVKliA2R8KG0Z-hYi4yIp1zAzLQ==
+- Source Date: 2023-11-01
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High. This is a well-documented pattern in UX design. Placing a CTA in the bottom-right capitalizes on this pattern.
+
+- Claim: For mobile-first social media design, it is crucial to keep key information within a 1:1 "safe zone" in the center of a 4:5 post to ensure it is visible in grid previews.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEXCoJLeRJTnIroJNOwY9RmP60L41Q0xC0ywzSICWEVt3CzHuGf09CqsA8GzXrJHiDDez4Cc4rdvH0591QV9gBJ8lDrmrG4qjitWAteAMjYbacvSsuJled4gyfP7bifVmnaJPTUUNzZSVZcRWvWKlqa7PY=
+- Source Date: 2023-06-21
+- Source Tier: SECONDARY
+- Numbers: 1:1 safe zone within a 4:5 canvas.
+- Confidence Note: High. This is a practical and modern workflow for Instagram and adaptable to other platforms.
+
+## 5. Parameterizable Visual Elements
+
+- Claim: Google Material Symbols is a variable font that allows parameterization of Fill, Weight, Grade, and Optical Size.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEW_PhrOPck2dDSEJ3i3gTaJxnSAwWHy8c5s9CNCMFsfIMkSvE9r1eYkk1ERvcxqMWRUuwR4b_IuG7Qi9aheYPcWIQSObxo1jmrg22XqpeJyuhB-fa-uW5bGVd18iz_zqRVYJE=
+- Source Date: 2023-10-18
+- Source Tier: SECONDARY
+- Numbers: 4 axes of parameterization.
+- Confidence Note: High. Information is from a design-focused blog discussing a primary Google product.
+
+- Claim: Lucide is a lightweight, community-run icon library focused on consistency and easy customization of stroke width and color via CSS.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEW_PhrOPck2dDSEJ3i3gTaJxnSAwWHy8c5s9CNCMFsfIMkSvE9r1eYkk1ERvcxqMWRUuwR4b_IuG7Qi9aheYPcWIQSObxo1jmrg22XqpeJyuhB-fa-uW5bGVd18iz_zqRVYJE=
+- Source Date: 2023-10-18
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High.
+
+- Claim: Blush.design is a tool that allows for parameterizable illustrations where users can change character poses, clothing, colors, and backgrounds within a consistent style.
+- Source URL: https://blush.design/
+- Source Date: 2024-01-01
+- Source Tier: PRIMARY
+- Numbers: N/A
+- Confidence Note: High. Direct observation from the tool's own website.
+
+## 6. CTA & Brand Element Placement
+
+- Claim: For a standard Z-Pattern layout, the most effective location for a Call-To-Action (CTA) is the bottom-right corner, where the user's eye path naturally concludes.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGXDGDEOR6uomSrP6GQJs-Mp5ptDp_xzDtnw6YE5VdToCGLhYQkYuiVatLf6gZ1J9clnxQR1rBwBaki3ZlqW1RDHxc-IbEObly16kyfqg15z4F2RaH6ezhPj2uvFT0VeViC3wyxm_Drh4zaVKliA2R8KG0Z-hYi4yIp1zAzLQ==
+- Source Date: 2023-11-01
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High. This is a logical application of the Z-Pattern scanning behavior.
+
+- Claim: Using high color contrast for CTA buttons naturally draws the eye and increases their prominence within a visual hierarchy.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFMRPnj1d7hySBvdkBmuZlTwj5rd8FlQWdvXYkfaJsnfwZcfYXxx6fq0BFfRJtYScaa5t80T7LgqVu-YN0n5dFDxxeJ-LztisODO-H7Z3anWBwN_owOYa9KlhM_56fW-XLTzkJLGxikPDDL7hW1pGO_zYPuUjcG54pw
+- Source Date: 2023-01-01
+- Source Tier: DO_NOT_CITE
+- Numbers: N/A
+- Confidence Note: High. This is a fundamental principle of visual hierarchy and accessibility.
+
+- Claim: On mobile, 88% of LinkedIn users browse vertically, making a 4:5 aspect ratio with vertically stacked elements more effective for engagement.
+- Source URL: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHkN7YucvpinATRSsiorIxJJtVAIR7NIOtqQFVVCJcyBCG5x6vO_xf8BTB45vX7xt0Fskap8VbC1i0Ix7E5QfCrAhzkTMlVHmJdRBC0WqsOKMyHS_0D8FPIrjdd7oG4a20jrNMk3Vwa2l6iSkb1KQ==
+- Source Date: 2023-11-01
+- Source Tier: SECONDARY
+- Numbers: 88% of users on mobile, 31% more engagement for vertical images.
+- Confidence Note: Medium. The specific percentage is hard to verify, but the trend of mobile dominance and vertical format preference is undisputed.

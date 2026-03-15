@@ -1,0 +1,38 @@
+{
+  "phase": "RESEARCH",
+  "doctrine_path": "/Users/mini/.openclaw/workspace/github/~Projects/core/agents/managers/research-manager.md",
+  "input_payload": {
+    "repo_path": "/Users/mini/.openclaw/workspace/github/holus",
+    "task": "creative toolset research"
+  },
+  "correlation_id": "holus-RESEARCH-20260315-826846e4",
+  "status": "COMPLETED",
+  "output_summary": {
+    "mode": "SCRATCH",
+    "directory_structure": "docs/research/ folder",
+    "files_created": [
+      "docs/research/INDEX.md",
+      "docs/research/carousel-design.md",
+      "docs/research/image-design.md",
+      "docs/research/video-design.md",
+      "docs/research/design-systems.md"
+    ],
+    "adversary_verdict": "PROCEED_WITH_CAUTION",
+    "verification_stats": {
+      "verified": 48,
+      "corrected": 1,
+      "unverified": 4,
+      "phantom": 0,
+      "primary_sources": 17,
+      "secondary_sources": 34
+    },
+    "key_findings": {
+      "carousel_variables": "60+ controllable axes, ~86K combinations from 8 axes",
+      "image_variables": "42 independent axes, ~2.25M combinations",
+      "video_variables": "55+ independent axes, ~706K combinations from 8 axes",
+      "recommended_tools": "Satori (static) + Remotion (video) — programmatic, unlimited variables",
+      "design_token_standard": "W3C DTCG — 17+ token types as natural registry vocabulary",
+      "risk": "Generic output perception HIGH — authenticity matters more than visual polish on LinkedIn"
+    }
+  }
+}

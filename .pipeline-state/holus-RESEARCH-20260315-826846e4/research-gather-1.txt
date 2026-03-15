@@ -1,0 +1,114 @@
+YOLO mode is enabled. All tool calls will be automatically approved.
+Loaded cached credentials.
+YOLO mode is enabled. All tool calls will be automatically approved.
+Server 'github-hub' supports tool updates. Listening for changes...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 2s.. Retrying after 5156ms...
+Attempt 1 failed: You have exhausted your capacity on this model. Your quota will reset after 1s.. Retrying after 5403ms...
+# Research Gather Report — LinkedIn Carousel/PDF Design Variables
+# Agent: research-gatherer-1
+# Date: 2026-03-15
+# Questions Researched:
+# 1. What are ALL the design variables for LinkedIn carousel/PDF posts?
+# 2. How do professional tools (Canva, Figma, Adobe Express) parameterize carousel templates?
+# 3. What slide structures, layout grids, typography pairings, color palette systems exist?
+# 4. What are the aspect ratios, whitespace strategies, icon systems, divider styles, gradient/texture options?
+# 5. How do enterprise content platforms handle carousel visual variation programmatically?
+
+---
+- Claim: The standard method for creating a "carousel" on LinkedIn is to upload a multi-page PDF document, as native image-based carousels were removed in late 2023.
+- Source URL: https://expandi.io/blog/linkedin-carousel-posts/
+- Source Date: 2024-02-27
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High. This is corroborated by numerous recent sources.
+
+- Claim: The recommended square aspect ratio for LinkedIn carousels is 1080x1080 pixels.
+- Source URL: https://www.ligosocial.com/blog/linkedin-carousel-post-complete-guide
+- Source Date: 2024-01-10
+- Source Tier: SECONDARY
+- Numbers: 1080 x 1080 px, 1:1 ratio.
+- Confidence Note: High. This is the most commonly cited dimension.
+
+- Claim: A portrait aspect ratio of 1080x1350 pixels can be used to maximize screen real estate on mobile devices.
+- Source URL: https://carouselli.com/linkedin-carousel-post-guide-examples/
+- Source Date: 2024-03-05
+- Source Tier: SECONDARY
+- Numbers: 1080 x 1350 px, 4:5 ratio.
+- Confidence Note: High. Frequently recommended for mobile-first strategies.
+
+- Claim: The maximum file size for a LinkedIn document upload is 100 MB, and the maximum number of pages is 300.
+- Source URL: https://postiv.ai/linkedin-carousel-dimensions/
+- Source Date: 2024-05-15
+- Source Tier: SECONDARY
+- Numbers: 100 MB, 300 pages.
+- Confidence Note: High. These are the official LinkedIn limits.
+
+- Claim: The optimal number of slides for engagement is between 6 and 12.
+- Source URL: https://carouselli.com/linkedin-carousel-post-guide-examples/
+- Source Date: 2024-03-05
+- Source Tier: SECONDARY
+- Numbers: 6-12 slides.
+- Confidence Note: Medium. This is a "best practice" recommendation, not a hard rule. Data backing is often proprietary.
+
+- Claim: For readability, body text should be a minimum of 24pt on a 1080px canvas.
+- Source URL: https://postnitro.ai/blog/linkedin-carousel-design
+- Source Date: 2024-04-22
+- Source Tier: SECONDARY
+- Numbers: 24pt minimum.
+- Confidence Note: Medium. This is a common design recommendation, actual size depends on the font family.
+
+- Claim: Critical content should be kept within a "safe zone," at least 80 pixels from the edges, to avoid being obscured by LinkedIn's UI.
+- Source URL: https://www.reddit.com/r/linkedin/comments/18gjtl1/linkedin_carousel_safe_area_what_are_the_actual/
+- Source Date: 2023-12-12
+- Source Tier: DO_NOT_CITE
+- Numbers: 80px.
+- Confidence Note: Low. A specific number cited in a community forum, but the principle of a safe zone is sound and repeated across sources without specific pixel values.
+
+- Claim: Canva's "Bulk Create" feature allows users to generate multiple carousel slides by mapping data from a CSV file to design elements.
+- Source URL: https://www.nathanvisser.com/blog/how-to-bulk-create-social-media-graphics-in-canva
+- Source Date: 2023-10-23
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High. This is a core feature of Canva for batch content creation.
+
+- Claim: Figma uses "Component Properties" (Boolean, Instance Swap, Text) and "Variants" to create interactive, stateful carousel templates.
+- Source URL: https://www.youtube.com/watch?v=k9wXY1a32yE
+- Source Date: 2023-05-11
+- Source Tier: SECONDARY
+- Numbers: N/A
+- Confidence Note: High. This is the standard, documented method for creating complex components in Figma.
+
+- Claim: The Adobe Document Generation API can programmatically create documents by merging a JSON data object with a tagged Word or PDF template.
+- Source URL: https://developer.adobe.com/document-services/docs/overview/document-generation-api/
+- Source Date: 2024-03-12
+- Source Tier: PRIMARY
+- Numbers: N/A
+- Confidence Note: High. Official developer documentation.
+
+- Claim: The 60-30-10 rule is a common system for applying color palettes: 60% primary/background, 30% secondary, 10% accent.
+- Source URL: https://www.canva.com/learn/60-30-10-rule/
+- Source Date: 2023-08-29
+- Source Tier: SECONDARY
+- Numbers: 60%, 30%, 10%.
+- Confidence Note: High. This is a foundational design principle.
+
+- Claim: A "Perfect Fourth" (1.333) or "Major Third" (1.250) typographic scale can be used to create a harmonious hierarchy for headlines, sub-headlines, and body text.
+- Source URL: https://type-scale.com/
+- Source Date: N/A
+- Source Tier: SECONDARY
+- Numbers: 1.333, 1.250.
+- Confidence Note: High. This is a standard tool and methodology in UI/UX design.
+
+- Claim: Programmatic generation of carousel slides as images can be achieved with libraries like Satori (HTML/CSS to SVG) or as PDF files with `react-pdf` (React components to PDF).
+- Source URL: https://github.com/vercel/satori
+- Source Date: N/A
+- Source Tier: PRIMARY
+- Numbers: N/A
+- Confidence Note: High. Official GitHub repository.
+
+- Claim: Enterprise AI content platforms like Jasper and Copy.ai appear to focus on generating text content for social media rather than offering specialized, programmatic carousel *design* generation systems.
+- Source URL: N/A
+- Source Date: 2026-03-15
+- Source Tier: N/A
+- Numbers: N/A
+- Confidence Note: Medium. This is a "negative finding" based on the absence of marketing materials or documentation for such a feature after targeted searches. The platforms' core value proposition is text generation.
