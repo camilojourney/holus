@@ -3,35 +3,35 @@
 # All rendering templates consume these values via CSS custom properties.
 
 colors:
-  primary: "#E85D04"       # Primary brand color
-  text: "#1A1A2E"          # Primary text color
-  background: "#FFFFFF"    # Background color
-  surface: "#F8F9FA"       # Surface/card color
-  accent: "#2563EB"        # Accent color for highlights
-  muted: "#6B7280"         # Muted/secondary text
-  success: "#059669"       # Success/positive color
-  danger: "#DC2626"        # Danger/warning color
+  primary: "#6366F1"       # Indigo-500 — AI/tech, hook slide background + CTAs
+  text: "#F8FAFC"          # Slate-50 — near white, main text on dark backgrounds
+  background: "#0A0F1E"    # Deep navy — premium dark base
+  surface: "#0F172A"       # Slate-900 — body slide surface
+  accent: "#A5B4FC"        # Indigo-300 — lighter accent for highlights and bullets
+  muted: "#64748B"         # Slate-500 — labels, counters, secondary text
+  success: "#34D399"       # Emerald-400
+  danger: "#F87171"        # Red-400
 
 typography:
-  primary_font: "Inter"
+  primary_font: "Plus Jakarta Sans"
   secondary_font: "JetBrains Mono"
   weights:
-    headline: 700
+    headline: 800
     body: 400
-    caption: 300
+    caption: 500
   sizes:
-    headline: 48
-    subheadline: 32
-    body: 18
-    caption: 14
-    min_slide_headline: 48
-    min_slide_body: 24
+    headline: 72
+    subheadline: 40
+    body: 20
+    caption: 13
+    min_slide_headline: 64
+    min_slide_body: 28
 
 spacing:
   base_unit: 4
   margin: 64
-  padding: 32
-  gap: 16
+  padding: 40
+  gap: 24
 
 layout:
   slide_width: 1080
@@ -39,13 +39,13 @@ layout:
   slide_aspect: "4:5"
   image_width: 1080
   image_height: 1080
-  border_radius: 12
+  border_radius: 16
 
 safe_zones:
-  slide_top: 40
+  slide_top: 48
   slide_bottom: 120
-  slide_left: 100
-  slide_right: 100
+  slide_left: 96
+  slide_right: 96
   page_counter_top: 100
   page_counter_right: 150
 

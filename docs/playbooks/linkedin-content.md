@@ -89,13 +89,37 @@ image, or video, it is not posted — it is flagged for refinement.
 
 ## Production Stack
 
-| Component | Tool |
-|-----------|------|
-| Caption + carousel outline | Holus (idea_runner.py) |
-| PDF render | Python PDF renderer (reportlab/weasyprint) — to be built |
-| Image generation | Pilaster MCP |
-| Video script | Holus (idea_runner.py) |
-| Video editing | Genpeli |
-| Localization | bilingual-localizer agent |
-| Publishing | social-media-automatization (targets: legacy mode) |
-| Review + approve | Observatory (localhost:3000/content) |
+| Component | Tool | Status |
+|-----------|------|--------|
+| Caption + carousel outline | Holus (idea_runner.py) | ✅ Built |
+| PDF render | Playwright (carousel_builder.py → engine.py) | ✅ Built |
+| Slide templates | Jinja2 HTML/CSS, 4 types: hook/body/summary/cta | ✅ Built |
+| Design system | Plus Jakarta Sans + deep navy dark theme | ✅ Built |
+| Image generation | Pilaster MCP | Pending wiring |
+| Video script | Holus (idea_runner.py) | ✅ Built |
+| Video editing | Genpeli | ✅ Exists |
+| Localization | bilingual-localizer agent | Pending wiring |
+| Publishing | social-media-automatization (targets: legacy mode) | ✅ Working |
+| Review + approve | Observatory (localhost:3000/content) | ✅ Built |
+
+## Carousel PDF pipeline (detail)
+
+```
+idea_runner.py
+  → FORMAT_INSTRUCTIONS["carousel_outline"]
+  → generator returns {"slides": [...], "caption": "...", "hook_score": "..."}
+  → save_piece() calls carousel_builder.build_carousel_pdf()
+  → carousel_builder → spec_converter.carousel_spec_to_slides() → CarouselSpec
+  → PlaywrightEngine.render_carousel_pdf() → PDF bytes
+  → saved: data/content-queue/{platform}-carousel-{piece_id}.pdf
+  → JSON saved: data/content-queue/{platform}-carousel_outline-{piece_id}.json
+     (includes slides[], caption, pdf_path reference)
+```
+
+## Slide design spec
+
+- **Canvas:** 1080×1350px
+- **Font:** Plus Jakarta Sans (800w headline, 400w body)
+- **Dark theme:** `#0A0F1E` navy base, `#6366F1` indigo primary, `#F8FAFC` text
+- **Progress indicator:** pill-shaped active dot, small dots for remaining slides
+- **Safe zones:** 96px sides, 120px bottom (LinkedIn page counter)

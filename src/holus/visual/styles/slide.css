@@ -1,6 +1,9 @@
 /* Carousel slide styles — 1080x1350 viewport (4:5 aspect ratio).
  * Safe zones prevent content from overlapping with LinkedIn page counters
  * and platform UI chrome.
+ *
+ * Dark theme: hook slides use indigo (#6366F1) bg, body slides use deep navy,
+ * CTA slides use indigo. All text is near-white (--brand-color-text).
  */
 
 .slide-container {
@@ -10,127 +13,244 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding-top: 40px;    /* safe zone top */
+  padding-top: 56px;
   padding-bottom: 120px; /* safe zone bottom — LinkedIn page counter */
-  padding-left: 100px;  /* safe zone left */
-  padding-right: 100px; /* safe zone right */
+  padding-left: 96px;
+  padding-right: 96px;
   overflow: hidden;
   position: relative;
+  color: var(--brand-color-text);
 }
 
-/* Hook slide — primary color background, large headline */
+/* ─── Hook slide ─────────────────────────────────────────────────────────── */
+
 .slide-hook {
   background-color: var(--brand-color-primary);
-  color: var(--brand-color-background);
 }
 
+/* Subtle diagonal texture overlay */
+.slide-hook::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Top accent line */
 .slide-hook::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, var(--brand-color-primary), var(--brand-color-accent));
+  height: 4px;
+  background: linear-gradient(90deg, #fff4, #fff0);
   pointer-events: none;
 }
 
 .slide-hook .slide-headline {
   font-size: var(--brand-size-min-slide-headline);
-  color: var(--brand-color-background);
+  font-weight: var(--brand-weight-headline);
+  color: #ffffff;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 .slide-hook .slide-subheadline {
   font-size: var(--brand-size-min-slide-body);
-  color: var(--brand-color-background);
-  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.80);
   margin-top: var(--brand-spacing-gap);
+  line-height: 1.5;
+  font-weight: 400;
 }
 
-/* Body slide — surface background, readable text */
+.slide-hook .slide-label {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* ─── Body slide ─────────────────────────────────────────────────────────── */
+
 .slide-body {
   background-color: var(--brand-color-surface);
 }
 
-.slide-title {
-  color: var(--brand-color-primary);
-  margin-bottom: var(--brand-spacing-gap);
+/* Left accent bar */
+.slide-body .slide-title {
+  font-size: 40px;
+  font-weight: var(--brand-weight-headline);
+  color: var(--brand-color-accent);
+  margin-bottom: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  padding-left: 20px;
+  border-left: 4px solid var(--brand-color-primary);
 }
 
 .slide-body-text {
   font-size: var(--brand-size-min-slide-body);
-  line-height: 1.6;
+  line-height: 1.65;
+  color: var(--brand-color-text);
 }
 
 .slide-bullets {
   list-style: none;
   padding: 0;
   margin-top: var(--brand-spacing-gap);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .slide-bullets li {
   font-size: var(--brand-size-min-slide-body);
-  padding: calc(var(--brand-spacing-gap) / 2) 0 calc(var(--brand-spacing-gap) / 2) 20px;
-  border-left: 3px solid var(--brand-color-primary);
+  line-height: 1.5;
+  color: var(--brand-color-text);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.slide-bullets li::before {
+  content: "→";
+  color: var(--brand-color-primary);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .slide-highlight {
-  background-color: var(--brand-color-primary);
-  color: var(--brand-color-background);
+  background: linear-gradient(135deg, var(--brand-color-primary), #4F46E5);
+  color: #ffffff;
   padding: var(--brand-spacing-padding);
   border-radius: var(--brand-border-radius);
   margin-top: var(--brand-spacing-gap);
   font-size: var(--brand-size-min-slide-body);
+  font-weight: 600;
+  line-height: 1.5;
 }
 
-/* CTA slide — accent-driven */
+/* ─── Summary slide ──────────────────────────────────────────────────────── */
+
+.slide-summary {
+  background-color: var(--brand-color-background);
+}
+
+.slide-summary .slide-title {
+  color: var(--brand-color-accent);
+  font-size: 40px;
+  font-weight: var(--brand-weight-headline);
+  margin-bottom: var(--brand-spacing-padding);
+  padding-left: 20px;
+  border-left: 4px solid var(--brand-color-primary);
+  letter-spacing: -0.01em;
+}
+
+.slide-summary .summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.slide-summary .summary-list li {
+  font-size: var(--brand-size-min-slide-body);
+  line-height: 1.5;
+  color: var(--brand-color-text);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.slide-summary .summary-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.slide-summary .summary-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  background-color: var(--brand-color-primary);
+  color: #ffffff;
+  border-radius: 50%;
+  font-weight: var(--brand-weight-headline);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.slide-summary .summary-text {
+  flex: 1;
+}
+
+/* ─── CTA slide ──────────────────────────────────────────────────────────── */
+
 .slide-cta {
-  background-color: var(--brand-color-text);
-  color: var(--brand-color-background);
+  background: linear-gradient(145deg, #0A0F1E 0%, #1e1b4b 100%);
   text-align: center;
+  justify-content: center;
+}
+
+.slide-cta .slide-content {
+  align-items: center;
+  gap: 28px;
 }
 
 .slide-cta-headline {
-  color: var(--brand-color-primary);
-  font-size: var(--brand-size-min-slide-headline);
+  font-size: 44px;
+  font-weight: var(--brand-weight-headline);
+  color: var(--brand-color-text);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  max-width: 80%;
 }
 
 .slide-cta-body {
   font-size: var(--brand-size-min-slide-body);
-  opacity: 0.9;
-  margin-top: var(--brand-spacing-gap);
+  color: var(--brand-color-muted);
+  margin-top: 8px;
+  line-height: 1.6;
 }
 
-.slide-cta-button {
-  display: inline-block;
-  background-color: var(--brand-color-primary);
-  color: var(--brand-color-background);
-  padding: var(--brand-spacing-gap) var(--brand-spacing-padding);
-  border-radius: var(--brand-border-radius);
-  font-weight: var(--brand-weight-headline);
-  font-size: var(--brand-size-min-slide-body);
-  margin-top: var(--brand-spacing-padding);
+.slide-cta-divider {
+  width: 48px;
+  height: 3px;
+  background: var(--brand-color-primary);
+  border-radius: 99px;
+  margin: 8px auto;
 }
 
 .slide-cta-handles {
   margin-top: var(--brand-spacing-padding);
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .slide-cta-handle {
   color: var(--brand-color-accent);
   font-family: var(--brand-font-secondary);
-  margin: 0 calc(var(--brand-spacing-gap) / 2);
+  font-size: 14px;
 }
 
-/* Shared slide elements */
+/* ─── Shared slide elements ──────────────────────────────────────────────── */
+
 .slide-label {
   display: inline-block;
   font-size: var(--brand-size-caption);
   font-weight: var(--brand-weight-caption);
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   margin-bottom: var(--brand-spacing-gap);
-  opacity: 0.8;
+  color: var(--brand-color-muted);
 }
 
 .slide-content {
@@ -146,24 +266,27 @@
   align-items: center;
   gap: var(--brand-spacing-gap);
   font-size: var(--brand-size-caption);
+  color: var(--brand-color-muted);
 }
 
+/* Progress dots — bottom of every slide */
 .slide-progress {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-left: auto;
 }
 
 .slide-progress-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background-color: var(--brand-color-muted);
-  opacity: 0.45;
+  opacity: 0.35;
 }
 
 .slide-progress-dot.is-active {
+  width: 24px;
   background-color: var(--brand-color-primary);
   opacity: 1;
 }
@@ -182,5 +305,22 @@
 
 .slide-author {
   font-weight: var(--brand-weight-caption);
-  opacity: 0.7;
+  font-size: var(--brand-size-caption);
+  color: var(--brand-color-muted);
+  letter-spacing: 0.5px;
+}
+
+/* Carousel-specific overrides */
+.carousel-slide .slide-headline,
+.carousel-slide .slide-cta-headline,
+.carousel-slide .slide-title {
+  font-size: max(48px, var(--brand-size-min-slide-headline));
+}
+
+.carousel-slide .slide-body-text,
+.carousel-slide .slide-cta-body,
+.carousel-slide .slide-highlight,
+.carousel-slide .slide-bullets li,
+.carousel-slide .summary-list li {
+  font-size: max(24px, var(--brand-size-min-slide-body));
 }

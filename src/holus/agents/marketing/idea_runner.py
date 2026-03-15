@@ -201,12 +201,25 @@ Separate tweets with "---" on its own line.
 """,
     "carousel_outline": """
 <format_instructions>
-LinkedIn carousel outline. 7-10 slides.
-Output the slide-by-slide plan, not the actual design.
-Format: Slide N: [headline] | [supporting text, max 30 words]
-Slide 1: Hook slide (big statement, no explanation yet)
-Slides 2-N-1: One idea per slide. Build the argument.
-Slide N: Takeaway + lightweight CTA
+LinkedIn carousel (PDF). 8-10 slides. Portrait 1080x1350px.
+Return JSON with this exact structure — no prose, no markdown fences:
+{
+  "slides": [
+    {"type": "hook", "variables": {"headline": "max 8 words — the scroll stopper", "subheadline": "optional, max 12 words"}},
+    {"type": "body", "variables": {"title": "max 6 words", "body": "max 20 words", "bullet_points": ["→ point one", "→ point two"]}},
+    {"type": "summary", "variables": {"title": "The takeaway", "items": ["one-sentence key insight"]}},
+    {"type": "cta",  "variables": {"headline": "the closing question — lightweight, no 'follow me'"}}
+  ],
+  "caption": "150-char companion post caption. Teases the carousel. Ends with Swipe →",
+  "hook_score": "1-10",
+  "voice_check": "PASS or FAIL"
+}
+Slide type rules:
+- hook (slide 1 only): headline ≤8 words. Optional subheadline ≤12 words. No bullets.
+- body (slides 2 to N-2): title + body OR bullets — max 30 words total per slide. One idea only.
+- summary (second-to-last): title + items list (2-4 key takeaways, one sentence each).
+- cta (last slide): headline = the CTA question. No buttons. No "follow me".
+Use bullet_points only when the idea is a list. Use body text when it flows as a sentence.
 </format_instructions>
 """,
     "video_script": """
@@ -275,14 +288,22 @@ def save_piece(
     offset_days = decision.get("scheduled_offset_days", 0)
     scheduled_at = (now + timedelta(days=offset_days)).isoformat()
 
-    text = generated.get("text", "")
-    hashtags = generated.get("hashtags", [])
-    if hashtags and not any(h in text for h in hashtags):
-        full_text = f"{text}\n\n{' '.join(hashtags)}"
-    else:
-        full_text = text
+    fmt = decision.get("format", "text_post")
 
-    data = {
+    # Carousel: text = caption, slides stored separately, PDF rendered
+    if fmt == "carousel_outline":
+        text = generated.get("caption", generated.get("text", ""))
+        hashtags = generated.get("hashtags", [])
+        full_text = text
+    else:
+        text = generated.get("text", "")
+        hashtags = generated.get("hashtags", [])
+        if hashtags and not any(h in text for h in hashtags):
+            full_text = f"{text}\n\n{' '.join(hashtags)}"
+        else:
+            full_text = text
+
+    data: dict = {
         "piece_id": piece_id,
         "platform": decision.get("platform", "linkedin"),
         "content_type": decision.get("format", "text_post"),
@@ -314,6 +335,19 @@ def save_piece(
             "voice_check": generated.get("voice_check", "?"),
         },
     }
+
+    # For carousels: store slide definitions and render PDF
+    if fmt == "carousel_outline" and generated.get("slides"):
+        data["slides"] = generated["slides"]
+        pdf_filename = f"{decision.get('platform', 'linkedin')}-carousel-{piece_id}.pdf"
+        pdf_path = queue_dir / pdf_filename
+        try:
+            from holus.visual.carousel_builder import build_carousel_pdf
+            build_carousel_pdf(generated, pdf_path)
+            data["pdf_path"] = str(pdf_path)
+            print(f"  → PDF rendered: {pdf_path.name}")
+        except Exception as exc:
+            print(f"  ⚠ PDF render failed (outline saved): {exc}")
 
     filename = f"{decision.get('platform', 'linkedin')}-{decision.get('format', 'post')}-{piece_id}.json"
     path = queue_dir / filename
