@@ -105,6 +105,31 @@ Source: type-scale.com, Google Fonts classification, Typewolf pairings
 | **Adobe Doc Gen API** | JSON → tagged Word/PDF template | JSON key-value pairs | developer.adobe.com [VERIFIED] |
 | **Polotno.js** | Canvas as JSON object | Every element property (x, y, fill, fontSize, opacity, etc.) | polotno.com [VERIFIED] |
 
+## 9. Cross-Platform Rendering
+
+The design variables above (color, typography, layout, visual elements, slide structure) are **platform-agnostic**. The same Tool Registry serves every platform that uses swipeable multi-slide content — the only thing that changes is how the final artifact is rendered and delivered.
+
+| Platform | Delivery Format | Dimensions | Rendering Difference |
+|----------|----------------|------------|---------------------|
+| **LinkedIn** | PDF upload (document post) | 1080×1350 (4:5) or 1080×1080 (1:1) | Each PDF page = one slide. Playwright renders HTML → multi-page PDF. LinkedIn's viewer adds page counter. |
+| **Instagram** | Image carousel (up to 20 images) | 1080×1350 (4:5) or 1080×1080 (1:1) | Each slide = separate PNG/JPEG. Same HTML templates, rendered as individual screenshots instead of combined PDF. |
+| **Instagram Stories/Reels** | Image sequence or video | 1080×1920 (9:16) | Same slide content, different aspect ratio + safe zones for story UI elements. |
+| **Twitter/X** | Image carousel (up to 4 images) | 1200×675 (16:9) or 1080×1080 (1:1) | Max 4 slides — condense content. Same templates, different page count constraint. |
+
+**What stays the same across platforms:**
+- Slide content (headlines, body text, bullets, takeaways)
+- Color palettes, typography pairings, visual elements
+- Slide structure patterns (hook → body → summary → CTA)
+- Brand positioning (logo, handles, CTA style)
+
+**What changes per platform:**
+- Output format: PDF (LinkedIn) vs PNG sequence (Instagram) vs JPEG (Twitter)
+- Aspect ratio and safe zones
+- Max slide count (LinkedIn: 300, Instagram: 20, Twitter: 4)
+- Platform-specific UI overlays to avoid (LinkedIn page counter, IG story UI, Twitter crop zones)
+
+The Playwright engine already supports both `render_carousel_pdf()` (LinkedIn) and `render_carousel()` → individual PNGs (Instagram/Twitter). The same `CarouselSpec` feeds both renderers — only the output method differs.
+
 ## Total Controllable Variables: Carousel
 
 **Minimum (template-based):** ~25 variables (palette, fonts, content slots, logo position, CTA)
