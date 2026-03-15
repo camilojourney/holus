@@ -1,0 +1,653 @@
+================================================================================
+RESEARCH: Evaluation Frameworks and Prompt Optimization for LLM Pipelines
+Date: 2026-03-14
+================================================================================
+
+TABLE OF CONTENTS
+1. DSPy — Prompt Optimization
+2. LangSmith — Evaluation Platform
+3. Braintrust — LLM Evaluation & Observability
+4. DeepEval — Test-Driven LLM Evaluation
+5. Langfuse — Observability & Evaluation (Open Source)
+6. Other Notable Frameworks (Ragas, Phoenix/Arize, Promptfoo, LangCheck, Opik)
+7. Comparative Analysis for Multi-Agent Content Generation
+8. Recommendations
+
+================================================================================
+1. DSPy — PROMPT OPTIMIZATION FRAMEWORK
+================================================================================
+
+CURRENT VERSION: DSPy v2.5
+MATURITY: Production-ready. Originated at Stanford NLP. Active development.
+LICENSE: MIT
+REPO: https://github.com/stanfordnlp/dspy
+
+CORE ABSTRACTIONS:
+
+a) Signatures
+   - Define input/output behavior as typed declarations (not prompt strings)
+   - Can be a short string like "question -> answer" or class-based with field descriptions
+   - DSPy infers the prompting implementation from the signature
+   - Isolates interface from implementation — enables automatic optimization
+   CLAIM: Signatures replace hand-written prompts with declarative I/O specs
+   SOURCE: https://dspy.ai/learn/programming/signatures/
+   CONFIDENCE: HIGH
+
+b) Modules
+   - Building blocks that wrap LM calls with specific prompting strategies
+   - Built-in modules:
+     * dspy.Predict — basic LM invocation with a signature
+     * dspy.ChainOfThought — adds reasoning step before output
+     * dspy.ReAct — agent with tool use and reasoning loops
+     * dspy.ProgramOfThought — code generation and execution
+   - Modules are composable: you build programs by nesting modules
+   CLAIM: Modules abstract prompting techniques (CoT, ReAct, etc.) into reusable components
+   SOURCE: https://dspy.ai/ , https://deepwiki.com/stanfordnlp/dspy
+   CONFIDENCE: HIGH
+
+c) Optimizers (formerly Teleprompters)
+   - Automatically tune prompts and weights to maximize user-defined metrics
+   - Key optimizers:
+     * BootstrapFewShot — generates traces, filters by metric, uses as few-shot examples
+     * COPRO — optimizes instruction text
+     * MIPROv2 — jointly optimizes both instructions AND few-shot examples
+       Uses Bayesian Optimization for efficient search
+       Data-aware and demonstration-aware instruction generation
+       Uses minibatching for efficiency
+   CLAIM: MIPROv2 achieves 15-30% performance improvements over manually crafted prompts on complex reasoning tasks
+   SOURCE: https://dspy.ai/learn/optimization/optimizers/ , https://dspy.ai/api/optimizers/MIPROv2/
+   CONFIDENCE: MEDIUM (benchmark-dependent, informal runs cited)
+
+d) Assertions
+   - Runtime constraints that validate LM outputs
+   - Can trigger retries with feedback when assertions fail
+
+NOTABLE RESULTS:
+   - HotPotQA: ReAct score raised from 24% to 51% by teaching gpt-4o-mini task specifics
+   - MIPROv2 shown to outperform manual prompt engineering across multiple benchmarks
+   CLAIM: DSPy optimizers consistently outperform hand-tuned prompts on standard benchmarks
+   SOURCE: https://dspy.ai/ , https://towardsdatascience.com/systematic-llm-prompt-engineering-using-dspy-optimization/
+   CONFIDENCE: MEDIUM (results vary by task and model)
+
+INTEGRATION EFFORT: Medium. Requires rethinking prompt design as signatures/modules.
+Not a drop-in replacement — it's a different programming paradigm.
+
+================================================================================
+2. LANGSMITH — EVALUATION PLATFORM
+================================================================================
+
+VENDOR: LangChain (same team)
+TYPE: Managed SaaS (cloud-hosted)
+URL: https://www.langchain.com/langsmith/evaluation
+
+EVALUATION CAPABILITIES:
+
+a) Offline (Dataset-Based) Evaluation
+   - Run against curated datasets during development
+   - Acts as unit tests for LLM applications
+   - Catch regressions before deployment
+   CLAIM: Offline evaluation runs against curated datasets to catch regressions pre-deployment
+   SOURCE: https://docs.langchain.com/langsmith/evaluation
+   CONFIDENCE: HIGH
+
+b) Online Evaluation
+   - Scores real-world production traffic in real-time
+   - Detects quality drift in production
+   CLAIM: Online evaluation scores production traffic in real-time for quality drift detection
+   SOURCE: https://www.langchain.com/langsmith/evaluation
+   CONFIDENCE: HIGH
+
+c) Annotation Queues
+   - Flag production runs for human review
+   - Assign to subject-matter experts with predefined rubrics
+   - Human feedback calibrates automated evaluators
+   - Improves prompts and augments datasets with high-quality test cases
+   CLAIM: Annotation queues enable scalable human-in-the-loop review with predefined rubrics
+   SOURCE: https://changelog.langchain.com/announcements/run-evaluators-in-the-langsmith-ui
+   CONFIDENCE: HIGH
+
+d) Custom Evaluators
+   - Write in Python or TypeScript with arbitrary business logic
+   - Run in LangSmith Playground across datasets (no coding required for UI-based ones)
+   - Evaluator types: heuristic checks, LLM-as-judge, pairwise comparisons, human
+   CLAIM: Custom evaluators support Python/TypeScript with arbitrary business logic, including no-code UI evaluators
+   SOURCE: https://changelog.langchain.com/announcements/custom-code-evaluators-in-langsmith
+   CONFIDENCE: HIGH
+
+e) Experiments
+   - Compare prompt versions side-by-side
+   - Track metrics across iterations
+   - Multi-turn evaluation for full agent conversations
+
+PRICING (2026):
+   - Developer (Free): 5K traces/month, 1 seat, 1 workspace, 14-day retention
+   - Plus: $39/seat/month, 100K traces, 400-day retention, overage ~$0.50/1K traces
+   - Enterprise: Custom pricing, SSO, dedicated support, custom retention
+   CLAIM: LangSmith free tier limited to 5K traces; Plus at $39/seat/month
+   SOURCE: https://www.langchain.com/pricing , https://checkthat.ai/brands/langsmith/pricing
+   CONFIDENCE: HIGH
+
+INTEGRATION EFFORT: Low if already using LangChain/LangGraph. Higher for custom stacks.
+LOCK-IN RISK: Moderate — tightly coupled with LangChain ecosystem.
+
+================================================================================
+3. BRAINTRUST — LLM EVALUATION & OBSERVABILITY
+================================================================================
+
+TYPE: Managed SaaS platform
+URL: https://www.braintrust.dev/
+FUNDING: $80M Series B (Feb 2026)
+
+CORE CAPABILITIES:
+
+a) Scoring Functions
+   - Score with LLMs, code, or humans
+   - "Loop" feature generates custom scorers from natural language descriptions
+   - Built-in scorers: Factuality, LevenshteinDistance, and more
+   - Eval function takes 3 inputs: data (datasets), task (prompt function), scores (metrics)
+   CLAIM: Loop generates custom scorers from natural language in minutes
+   SOURCE: https://www.braintrust.dev/ , https://www.braintrust.dev/articles/how-to-eval
+   CONFIDENCE: HIGH
+
+b) Experiments
+   - Compare prompts side-by-side
+   - Catch regressions automatically in CI
+   - Production logs flow directly into datasets with one click
+   - CI/CD integration blocks merges when quality degrades
+   CLAIM: Braintrust is the only platform with built-in CI/CD deployment blocking for quality regressions
+   SOURCE: https://www.braintrust.dev/articles/best-ai-evaluation-tools-2026
+   CONFIDENCE: MEDIUM (self-reported; other tools can achieve this with custom setup)
+
+c) Datasets
+   - Production traces convert into test cases with one click
+   - Managed dataset versioning
+   CLAIM: One-click production trace to test case conversion
+   SOURCE: https://www.braintrust.dev/
+   CONFIDENCE: HIGH
+
+d) Tracing
+   - Brainstore: purpose-built database, 80% faster at querying complex AI traces
+   - Captures every step: prompts, tool calls, retrieved context, latency, cost
+   - Real-time inspection of traces and drill-down into tool calls
+   CLAIM: Brainstore is 80% faster at querying complex AI traces vs previous architecture
+   SOURCE: https://www.braintrust.dev/
+   CONFIDENCE: MEDIUM (vendor claim)
+
+PRICING (2026):
+   - Free: 1M trace spans/month, unlimited users, 10K evaluation runs
+   - Pro: $249/month, usage-based charges beyond limits
+   - Enterprise: Custom pricing, on-prem/hybrid deployment, SLAs
+   CLAIM: Free tier includes 1M trace spans and 10K eval runs
+   SOURCE: https://www.braintrust.dev/pricing
+   CONFIDENCE: HIGH
+
+INTEGRATION EFFORT: Low-medium. Framework-agnostic. Good SDK support.
+
+================================================================================
+4. DEEPEVAL — TEST-DRIVEN LLM EVALUATION
+================================================================================
+
+TYPE: Open-source framework + optional cloud platform (Confident AI)
+LICENSE: Apache-2.0
+REPO: https://github.com/confident-ai/deepeval
+URL: https://deepeval.com/
+
+CORE METRICS:
+
+a) G-Eval
+   - LLM-as-a-judge with Chain-of-Thought (CoT) for ANY custom criteria
+   - Most versatile metric — evaluates almost any use case with human-like accuracy
+   - Based on the G-Eval research paper
+   CLAIM: G-Eval achieves human-like accuracy for custom evaluation criteria using CoT
+   SOURCE: https://deepeval.com/docs/metrics-llm-evals
+   CONFIDENCE: MEDIUM (depends on judge model quality)
+
+b) Hallucination Metric
+   - Formula: Hallucination = Number of Contradicted Contexts / Total Number of Contexts
+   - Uses LLM to check each context against actual_output for contradictions
+   CLAIM: Hallucination metric measures contradiction rate between output and provided contexts
+   SOURCE: https://deepeval.com/docs/metrics-hallucination
+   CONFIDENCE: HIGH
+
+c) Faithfulness Metric
+   - LLM-as-a-judge measures if output factually aligns with retrieval_context
+   - Evaluates RAG pipeline generator quality
+   CLAIM: Faithfulness metric evaluates factual alignment between output and retrieval context
+   SOURCE: https://deepeval.com/docs/metrics-faithfulness
+   CONFIDENCE: HIGH
+
+d) Answer Relevancy
+   - Measures how relevant the answer is to the question
+   - Part of the RAG evaluation triad
+
+e) RAG Triad (5 metrics)
+   - Answer relevancy, faithfulness, contextual relevancy, contextual recall, contextual precision
+   - Each maps to a specific RAG hyperparameter
+   CLAIM: DeepEval's 5-metric RAG triad maps each metric to specific RAG hyperparameters
+   SOURCE: https://www.braintrust.dev/articles/deepeval-alternatives-2026
+   CONFIDENCE: HIGH
+
+TEST-DRIVEN APPROACH:
+   - pytest-compatible: run LLM evaluations in CI/CD like regular unit tests
+   - `deepeval test run` command for local and CI execution
+   - 30+ built-in metrics
+   CLAIM: DeepEval wraps LLM metrics into pytest-compatible tests for CI/CD integration
+   SOURCE: https://github.com/confident-ai/deepeval , https://google.github.io/litmus/evaluate-deepeval
+   CONFIDENCE: HIGH
+
+CONFIDENT AI PLATFORM PRICING (2026):
+   - Free: $0, 5 test runs/week, 10K traces/month, 1-week retention
+   - Starter: $19.99/user/month, 20K traces/month, 1-month retention
+   - Premium: $79.99/user/month, 100K traces/month, 3-month retention, alerting
+   - Team/Enterprise: Custom, HIPAA/SOC2/SSO, AI red teaming
+   CLAIM: DeepEval open-source is fully free; Confident AI cloud starts at $19.99/user/month
+   SOURCE: https://www.confident-ai.com/pricing
+   CONFIDENCE: HIGH
+
+INTEGRATION EFFORT: Very low. pip install deepeval, write test cases, run.
+
+================================================================================
+5. LANGFUSE — OBSERVABILITY & EVALUATION (OPEN SOURCE)
+================================================================================
+
+TYPE: Open-source platform (MIT) + managed cloud
+REPO: https://github.com/langfuse/langfuse
+URL: https://langfuse.com/
+YC BATCH: W23
+
+CURRENT STATE (2026):
+
+a) Tracing & Observability
+   - Captures full context: prompts, responses, tool calls, relationships, timing
+   - Natively understands LLM concepts: token usage, model parameters, prompt/completion pairs
+   - OpenTelemetry compatible
+   - Per-step evaluation scoring within traces
+   CLAIM: Langfuse provides LLM-native tracing with token usage, model params, and per-step scoring
+   SOURCE: https://langfuse.com/docs/observability/overview
+   CONFIDENCE: HIGH
+
+b) Evaluation
+   - Fully managed LLM-as-a-Judge evaluations on production or development traces
+   - Step-wise evaluations (any step within application)
+   - Evaluate prompts and models on datasets directly in UI (no code needed)
+   - Combines model-based, human annotation, and custom API/SDK workflows
+   CLAIM: Langfuse supports managed LLM-as-a-Judge, human annotation, and custom evaluators
+   SOURCE: https://langfuse.com/docs/evaluation/overview
+   CONFIDENCE: HIGH
+
+c) Prompt Management
+   - Version and edit prompts via UI, SDKs, or API
+   - Deploy to production via labels without code changes
+   - Compare latency, cost, and evaluation metrics across prompt versions
+   CLAIM: Langfuse prompt management enables no-code deployment via labels with version comparison
+   SOURCE: https://langfuse.com/docs/prompt-management/overview
+   CONFIDENCE: HIGH
+
+d) Metrics & Analytics
+   - Customizable dashboards and metrics API
+   - Cost tracking per model, per trace
+   - Sliceable by metadata dimensions
+
+PRICING (2026):
+   - Cloud Free: 50K observations/month
+   - Cloud Pro: From $59/month (usage-based)
+   - Self-hosted (MIT): Free, no usage limits
+   - Self-hosted Enterprise: $500/month license (RBAC, SCIM, protected prompts)
+   CLAIM: Self-hosted Langfuse is MIT-licensed and free with no usage limits
+   SOURCE: https://langfuse.com/pricing , https://langfuse.com/pricing-self-host
+   CONFIDENCE: HIGH
+
+SELF-HOSTING REQUIREMENTS:
+   - PostgreSQL, ClickHouse, Redis, S3-compatible storage
+   - Docker Compose (dev/test) or Kubernetes (production)
+   - Estimated cost: $3,000-4,000/month including infra + DevOps overhead
+   CLAIM: Self-hosted production deployment costs ~$3-4K/month including operational overhead
+   SOURCE: https://checkthat.ai/brands/langfuse/pricing
+   CONFIDENCE: MEDIUM (varies by scale and team)
+
+FRAMEWORK INTEGRATIONS:
+   - OpenAI SDK, LangChain, LlamaIndex, DSPy, Vercel AI SDK, LiteLLM
+   - OpenTelemetry native
+   - Ragas integration for RAG evaluation
+
+INTEGRATION EFFORT: Low. SDK wrappers for most frameworks. Self-hosting adds ops burden.
+
+================================================================================
+6. OTHER NOTABLE FRAMEWORKS
+================================================================================
+
+--- 6a. RAGAS (Retrieval Augmented Generation Assessment) ---
+
+TYPE: Open-source framework for RAG evaluation
+PAPER: https://arxiv.org/abs/2309.15217
+DOCS: https://docs.ragas.io/
+
+KEY METRICS:
+   - Context Precision: ranks relevant chunks higher in retrieved context
+   - Context Recall: measures if all relevant info was retrieved (requires ground truth)
+   - Faithfulness: factual consistency of answer with context
+   - Answer Relevancy: relevance of answer to question
+   - Noise Sensitivity: robustness to irrelevant context
+
+2026 UPDATES:
+   - Now supports agentic workflow metrics, tool use evaluation, SQL evaluation
+   - Multimodal extensions: Multimodal Faithfulness, etc.
+   CLAIM: Ragas now supports agentic workflows, tool use, SQL, and multimodal evaluation
+   SOURCE: https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/
+   CONFIDENCE: MEDIUM
+
+INTEGRATION: Works with Langfuse, LangSmith, and standalone
+BEST FOR: RAG-specific evaluation pipelines
+
+--- 6b. Arize Phoenix ---
+
+TYPE: Open-source (OpenTelemetry-based)
+REPO: https://github.com/Arize-ai/phoenix
+URL: https://phoenix.arize.com/
+
+KEY FEATURES:
+   - Built on OpenTelemetry + OpenInference conventions
+   - Tracing, evaluation, debugging for LLM apps
+   - LLM-based evaluators, code-based checks, human labels
+   - Vendor/language/framework agnostic
+   - Supports: OpenAI Agents SDK, Claude Agent SDK, LangGraph, Vercel AI SDK,
+     CrewAI, LlamaIndex, DSPy, and more
+   - Runs locally, in Jupyter, Docker, Kubernetes, or cloud (app.phoenix.arize.com)
+   CLAIM: Phoenix is vendor-agnostic, built on OpenTelemetry with broad framework support
+   SOURCE: https://github.com/Arize-ai/phoenix , https://arize.com/docs/phoenix
+   CONFIDENCE: HIGH
+
+BEST FOR: Teams wanting open-source, OTel-native observability without vendor lock-in
+
+--- 6c. Promptfoo ---
+
+TYPE: Open-source CLI and library (MIT license, TypeScript)
+REPO: https://github.com/promptfoo/promptfoo
+URL: https://www.promptfoo.dev/
+
+KEY FEATURES:
+   - Test prompts, agents, and RAGs with declarative YAML configs
+   - Compare performance across 50+ LLM providers (GPT, Claude, Gemini, Llama, etc.)
+   - Red teaming / pentesting: scans for 50+ vulnerability types
+     * Prompt injection (direct and indirect)
+     * Jailbreaks, PII leaks, tool misuse, toxic content
+     * OWASP Top 10 LLM vulnerabilities
+   - CI/CD integration
+   - 300,000+ developers, 127 Fortune 500 companies (2026)
+   CLAIM: Promptfoo used by 300K+ developers and 127 Fortune 500 companies for LLM security testing
+   SOURCE: https://www.promptfoo.dev/ , https://appsecsanta.com/promptfoo
+   CONFIDENCE: MEDIUM (vendor-reported numbers)
+
+BEST FOR: Security-focused evaluation, red teaming, model comparison
+UNIQUE VALUE: Best-in-class red teaming / vulnerability scanning for LLM apps
+
+--- 6d. LangCheck ---
+
+TYPE: Open-source Python library
+REPO: https://pypi.org/project/langcheck/
+DOCS: https://langcheck.readthedocs.io/
+
+KEY FEATURES:
+   - Simple Pythonic API for text quality evaluation
+   - Reference-free metrics (toxicity, fluency, etc.)
+   - Reference-based metrics (semantic similarity)
+   - Pairwise comparison metrics
+   - Multi-lingual: English, Japanese, Chinese, German
+   - Interactive visualizations (langcheck.plot)
+   - Text augmentation for prompt perturbation testing
+   CLAIM: LangCheck provides multilingual text quality metrics with simple Pythonic API
+   SOURCE: https://langcheck.readthedocs.io/en/latest/metrics.html
+   CONFIDENCE: HIGH
+
+BEST FOR: Quick text quality checks, multilingual evaluation
+LIMITATIONS: Narrower scope than DeepEval or Ragas; less active community
+
+--- 6e. Opik by Comet ---
+
+TYPE: Open-source (MIT) + managed cloud
+REPO: https://github.com/comet-ml/opik
+URL: https://www.comet.com/site/products/opik/
+
+KEY FEATURES:
+   - Full-stack observability: tracing, evaluation, monitoring, dashboards
+   - Pytest-compatible "model unit tests" for CI/CD
+   - LLM-as-a-judge + custom metrics via SDK
+   - Experiment management with test sets
+   - Self-hostable via Docker Compose or Kubernetes
+   - MIT licensed — no licensing fees
+   - Framework support: LangChain, DSPy, OpenAI, and more
+
+2026 UPDATES:
+   - Gemini 3.1 support added
+   - Claude Sonnet 4.6 as default Anthropic model
+   - Native plugin for agent frameworks
+   CLAIM: Opik is MIT-licensed with full self-hosting, pytest-compatible model testing, and broad framework support
+   SOURCE: https://github.com/comet-ml/opik , https://www.comet.com/docs/opik/
+   CONFIDENCE: HIGH
+
+BEST FOR: Teams wanting MIT-licensed, self-hosted evaluation + observability
+
+================================================================================
+7. COMPARATIVE ANALYSIS FOR MULTI-AGENT CONTENT GENERATION
+================================================================================
+
+EVALUATION NEEDS FOR MULTI-AGENT CONTENT SYSTEMS:
+   - Per-agent tracing (which agent produced what)
+   - End-to-end pipeline quality scoring
+   - Content quality metrics (faithfulness, relevance, toxicity, style)
+   - Specialist agent performance comparison
+   - Regression detection across prompt/model changes
+   - Production monitoring for quality drift
+
+FRAMEWORK COMPARISON MATRIX:
+
+| Capability                  | DSPy    | LangSmith | Braintrust | DeepEval | Langfuse | Phoenix |
+|-----------------------------|---------|-----------|------------|----------|----------|---------|
+| Prompt Optimization         | *****   | **        | **         | *        | **       | *       |
+| Evaluation Metrics          | **      | ****      | ****       | *****    | ***      | ***     |
+| Production Observability    | *       | ****      | *****      | **       | ****     | ****    |
+| Multi-Agent Tracing         | *       | ***       | ****       | **       | ***      | ****    |
+| CI/CD Integration           | **      | ***       | *****      | ****     | **       | **      |
+| Self-Hosting Option         | N/A     | No        | No         | N/A      | Yes      | Yes     |
+| Open Source                 | Yes     | No        | No         | Yes      | Yes      | Yes     |
+| Content Quality Metrics     | **      | ***       | ***        | *****    | ***      | ***     |
+| Human-in-the-Loop           | *       | ****      | ***        | **       | ***      | ***     |
+| Red Teaming / Security      | *       | *         | *          | **       | *        | *       |
+| Cost (small team)           | Free    | $39/seat  | Free-$249  | Free     | Free     | Free    |
+
+(Stars: * = minimal, ***** = best-in-class)
+
+STRENGTHS BY TOOL FOR MULTI-AGENT CONTENT:
+
+DSPy:
+   + Best for: Automatically optimizing prompts for each specialist agent
+   + Unique: Programmatic prompt optimization replaces manual prompt engineering
+   - Weakness: No observability, no production monitoring, no tracing
+   - Not an evaluation platform — it's an optimization framework
+
+LangSmith:
+   + Best for: Teams already on LangChain/LangGraph
+   + Strong annotation queues for content review workflows
+   - Weakness: Vendor lock-in to LangChain ecosystem
+   - Limited multi-agent tracing compared to Braintrust
+
+Braintrust:
+   + Best for: Production quality gates with CI/CD blocking
+   + One-click trace-to-test-case conversion
+   + Best free tier (1M spans)
+   - Weakness: Proprietary, no self-hosting
+   - $249/month Pro plan jumps quickly
+
+DeepEval:
+   + Best for: Testing content quality with 30+ metrics in CI
+   + G-Eval handles arbitrary content quality criteria
+   + Hallucination + faithfulness metrics critical for content generation
+   + Fully open-source, runs locally
+   - Weakness: Limited observability/tracing for production
+   - Cloud platform (Confident AI) needed for dashboards
+
+Langfuse:
+   + Best for: Self-hosted observability + evaluation (already in Holus stack)
+   + Prompt management with version comparison
+   + Open source, no vendor lock-in
+   + Integrates with Ragas for RAG metrics
+   - Weakness: Evaluation features less mature than Braintrust/DeepEval
+   - Self-hosting operational burden
+
+Phoenix/Arize:
+   + Best for: OTel-native, vendor-agnostic observability
+   + Broad framework support including Claude Agent SDK
+   - Weakness: Evaluation less developed than specialized tools
+
+MULTI-AGENT SPECIFIC CONSIDERATIONS:
+
+1. MASEval is the only tool specifically supporting multi-agent coordination
+   across frameworks with per-agent tracing
+   CLAIM: MASEval supports multi-agent coordination with per-agent tracing across frameworks
+   SOURCE: https://arxiv.org/html/2603.08835
+   CONFIDENCE: MEDIUM (academic, may not be production-ready)
+
+2. By 2026, effective stacks prioritize "traceability" — linking evaluation
+   scores to exact prompt version, model, and dataset that produced them
+   CLAIM: Traceability (linking scores to exact prompt/model/dataset versions) is the key 2026 best practice
+   SOURCE: https://futureagi.substack.com/p/llm-evaluation-frameworks-metrics
+   CONFIDENCE: HIGH
+
+3. Agentic evals now measure task completion, tool use correctness, context
+   retention across turns, and role alignment — not just text quality
+   CLAIM: Agentic evals measure task completion, tool correctness, context retention, and role alignment
+   SOURCE: https://research.aimultiple.com/agentic-evals/
+   CONFIDENCE: HIGH
+
+================================================================================
+8. RECOMMENDATIONS FOR HOLUS (MULTI-AGENT CONTENT GENERATION)
+================================================================================
+
+RECOMMENDED STACK (layered approach):
+
+Layer 1 — OBSERVABILITY: Langfuse (already in Holus stack)
+   - Keep Langfuse for tracing, cost tracking, prompt management
+   - Self-hosted = data sovereignty, no vendor lock-in
+   - Add per-agent trace tagging for specialist performance tracking
+
+Layer 2 — EVALUATION METRICS: DeepEval
+   - Use DeepEval's G-Eval for content quality scoring (custom criteria per content type)
+   - Hallucination + Faithfulness metrics for factual content
+   - Answer Relevancy for relevance to brief/topic
+   - pytest integration = runs in CI, catches regressions
+   - Free, open-source, no cloud dependency
+
+Layer 3 — PROMPT OPTIMIZATION: DSPy (experimental)
+   - Use MIPROv2 to optimize specialist agent prompts
+   - Define signatures for each content type
+   - Run optimization against quality metrics from DeepEval
+   - Higher integration effort but highest optimization ceiling
+
+Layer 4 — RED TEAMING (optional): Promptfoo
+   - Scan content generation for safety issues
+   - Test for prompt injection in user-facing content workflows
+
+WHY NOT:
+   - LangSmith: Holus doesn't use LangChain. Lock-in not worth it.
+   - Braintrust: Excellent but proprietary. $249/month Pro is expensive for
+     features Langfuse + DeepEval provide at $0.
+   - Phoenix: Good but overlaps with Langfuse (already in stack).
+
+INTEGRATION PATTERN:
+   1. Langfuse traces every agent call (already wired)
+   2. DeepEval runs as eval_gate.py replacement/supplement
+      - Content quality gate: G-Eval with custom rubric
+      - Factual gate: Hallucination + Faithfulness
+      - Relevance gate: Answer Relevancy
+   3. DSPy optimizes prompts offline against DeepEval metrics
+   4. Langfuse prompt management deploys optimized prompts
+
+ESTIMATED EFFORT:
+   - DeepEval integration: 1-2 days (pip install, write test cases, wire to CI)
+   - DSPy integration: 3-5 days (refactor agent prompts to signatures, set up optimization)
+   - Langfuse already integrated
+   - Total: ~1 week for Layer 1+2, +1 week for Layer 3
+
+================================================================================
+SOURCES INDEX
+================================================================================
+
+DSPy:
+- https://dspy.ai/
+- https://dspy.ai/learn/optimization/optimizers/
+- https://dspy.ai/learn/programming/signatures/
+- https://dspy.ai/api/optimizers/MIPROv2/
+- https://dspy.ai/api/optimizers/BootstrapFewShot/
+- https://github.com/stanfordnlp/dspy
+- https://deepwiki.com/stanfordnlp/dspy
+- https://towardsdatascience.com/systematic-llm-prompt-engineering-using-dspy-optimization/
+
+LangSmith:
+- https://www.langchain.com/langsmith/evaluation
+- https://docs.langchain.com/langsmith/evaluation
+- https://www.langchain.com/pricing
+- https://changelog.langchain.com/announcements/run-evaluators-in-the-langsmith-ui
+- https://changelog.langchain.com/announcements/custom-code-evaluators-in-langsmith
+- https://checkthat.ai/brands/langsmith/pricing
+
+Braintrust:
+- https://www.braintrust.dev/
+- https://www.braintrust.dev/docs/core/experiments
+- https://www.braintrust.dev/articles/how-to-eval
+- https://www.braintrust.dev/articles/best-ai-evaluation-tools-2026
+- https://www.braintrust.dev/pricing
+- https://siliconangle.com/2026/02/17/braintrust-lands-80m-series-b-funding-round-become-observability-layer-ai/
+
+DeepEval:
+- https://github.com/confident-ai/deepeval
+- https://deepeval.com/docs/metrics-llm-evals
+- https://deepeval.com/docs/metrics-hallucination
+- https://deepeval.com/docs/metrics-faithfulness
+- https://www.confident-ai.com/pricing
+- https://google.github.io/litmus/evaluate-deepeval
+
+Langfuse:
+- https://langfuse.com/
+- https://langfuse.com/docs/observability/overview
+- https://langfuse.com/docs/evaluation/overview
+- https://langfuse.com/docs/prompt-management/overview
+- https://langfuse.com/pricing
+- https://langfuse.com/pricing-self-host
+- https://langfuse.com/faq/all/ten-reasons-to-use-langfuse
+
+Ragas:
+- https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/
+- https://arxiv.org/abs/2309.15217
+- https://langfuse.com/guides/cookbook/evaluation_of_rag_with_ragas
+
+Phoenix/Arize:
+- https://github.com/Arize-ai/phoenix
+- https://arize.com/docs/phoenix
+- https://phoenix.arize.com/
+
+Promptfoo:
+- https://github.com/promptfoo/promptfoo
+- https://www.promptfoo.dev/
+- https://www.promptfoo.dev/docs/red-team/
+- https://appsecsanta.com/promptfoo
+
+LangCheck:
+- https://langcheck.readthedocs.io/en/latest/metrics.html
+- https://pypi.org/project/langcheck/
+
+Opik:
+- https://github.com/comet-ml/opik
+- https://www.comet.com/site/products/opik/
+- https://www.comet.com/docs/opik/
+
+Multi-Agent Evaluation:
+- https://arxiv.org/html/2603.08835 (MASEval)
+- https://research.aimultiple.com/agentic-evals/
+- https://futureagi.substack.com/p/llm-evaluation-frameworks-metrics
+- https://www.braintrust.dev/articles/langfuse-alternatives-2026
+- https://www.braintrust.dev/articles/langsmith-alternatives-2026
+- https://www.braintrust.dev/articles/deepeval-alternatives-2026
+
+================================================================================
+END OF RESEARCH
+================================================================================

@@ -1,0 +1,57 @@
+{
+  "correlation_id": "holus-RESEARCH-20260314-47034b9e",
+  "repo": "holus",
+  "phase": "RESEARCH",
+  "started_at": "2026-03-14T12:00:00Z",
+  "current_subphase": "COMPLETED",
+  "phases_completed": ["GATHER", "ADVERSARY", "VERIFY", "SYNTHESIZE"],
+  "status": "COMPLETED",
+  "workers": [
+    {
+      "id": "gatherer-1",
+      "subphase": "GATHER",
+      "status": "COMPLETED",
+      "model": "claude-opus",
+      "output": "research-gather-1.txt",
+      "started_at": "2026-03-14T12:01:00Z",
+      "ended_at": "2026-03-14T12:09:00Z"
+    },
+    {
+      "id": "gatherer-2",
+      "subphase": "GATHER",
+      "status": "COMPLETED",
+      "model": "claude-opus",
+      "output": "research-gather-2.txt",
+      "started_at": "2026-03-14T12:01:00Z",
+      "ended_at": "2026-03-14T12:12:00Z"
+    },
+    {
+      "id": "gatherer-3",
+      "subphase": "GATHER",
+      "status": "COMPLETED",
+      "model": "claude-opus",
+      "output": "research-gather-3.txt",
+      "started_at": "2026-03-14T12:01:00Z",
+      "ended_at": "2026-03-14T12:10:00Z"
+    },
+    {
+      "id": "adversary-1",
+      "subphase": "ADVERSARY",
+      "status": "COMPLETED",
+      "model": "claude-opus",
+      "output": "research-adversary-1.txt",
+      "started_at": "2026-03-14T12:01:00Z",
+      "ended_at": "2026-03-14T12:06:00Z",
+      "result": "PROCEED_WITH_CAUTION"
+    },
+    {
+      "id": "synthesizer-1",
+      "subphase": "SYNTHESIZE",
+      "status": "COMPLETED",
+      "model": "claude-opus",
+      "output": "001-agent-evaluation-observability.md",
+      "started_at": "2026-03-14T12:12:00Z",
+      "ended_at": "2026-03-14T12:20:00Z"
+    }
+  ]
+}

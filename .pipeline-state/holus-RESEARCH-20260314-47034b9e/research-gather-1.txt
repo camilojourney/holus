@@ -1,0 +1,599 @@
+================================================================================
+RESEARCH: LLM-as-Judge Patterns & Programmatic Quality Gates for Multi-Agent Systems
+Date: 2026-03-14
+================================================================================
+
+TABLE OF CONTENTS
+1. Established LLM-as-Judge Patterns
+2. Known Failure Modes of LLM-as-Judge
+3. Programmatic (Non-LLM) Quality Gates
+4. Combining LLM Judges with Programmatic Gates in Production
+5. Best Practices for Evaluation Rubric Design
+
+================================================================================
+1. ESTABLISHED LLM-AS-JUDGE PATTERNS
+================================================================================
+
+1.1 POINTWISE SCORING (Single-Answer Grading)
+----------------------------------------------
+Claim: The judge LLM receives a single response and assigns a score on a
+predefined scale (e.g., 1-5 or 1-10). This is the most common pattern in
+production. It is scalable (one call per response) but less stable than
+pairwise because it requires the judge to maintain a consistent internal
+scoring mechanism.
+Source: https://cameronrwolfe.substack.com/p/llm-as-a-judge
+Confidence: HIGH
+
+Claim: Pointwise absolute scores flip in only ~9% of cases when re-evaluated,
+compared to ~35% for pairwise preferences, making pointwise more reproducible.
+Source: https://arxiv.org/abs/2504.14716 ("Pairwise or Pointwise? Evaluating
+Feedback Protocols for Bias in LLM-Based Evaluation")
+Confidence: HIGH
+
+1.2 PAIRWISE COMPARISON
+------------------------
+Claim: The judge LLM receives two responses side-by-side and picks which is
+better (or declares a tie). Pairwise comparison approximates human preferences
+with greater fidelity than pointwise scoring due to the comparative framing.
+However, it does not scale: comparing N models requires O(N^2) calls.
+Source: https://arxiv.org/abs/2306.05685 ("Judging LLM-as-a-Judge with
+MT-Bench and Chatbot Arena", Zheng et al. 2023)
+Confidence: HIGH
+
+Claim: Pairwise protocols are more vulnerable to "distracted evaluation" where
+generator models exploit spurious attributes (distractor features) favored by
+the judge, resulting in inflated scores for lower-quality outputs.
+Source: https://arxiv.org/abs/2504.14716
+Confidence: HIGH
+
+1.3 REFERENCE-BASED GRADING
+----------------------------
+Claim: The judge compares a model's output against a gold-standard reference
+answer. OpenAI recommends using "a collection of reference expert answers" for
+auto-grading, with the most capable model (e.g., o3) as the grader.
+Source: https://platform.openai.com/docs/guides/evaluation-best-practices
+Confidence: HIGH
+
+Claim: Reference-based grading works best for tasks with well-defined correct
+answers (factual QA, code generation, structured extraction). For open-ended
+creative tasks, reference-free approaches are preferred.
+Source: https://cameronrwolfe.substack.com/p/llm-as-a-judge
+Confidence: HIGH
+
+1.4 G-EVAL (Chain-of-Thought Scoring)
+--------------------------------------
+Claim: G-Eval is a framework that uses LLMs with chain-of-thought (CoT)
+prompting and a form-filling paradigm to assess NLG quality. It inputs Task
+Introduction + Evaluation Criteria to the LLM, asks it to generate detailed
+Evaluation Steps via CoT, then uses those steps to score outputs. GPT-4 as
+backbone achieves Spearman correlation of 0.514 with humans on summarization,
+outperforming all prior automated metrics by a large margin.
+Source: https://arxiv.org/abs/2303.16634 ("G-Eval: NLG Evaluation using GPT-4
+with Better Human Alignment", Liu et al. 2023)
+Confidence: HIGH
+
+1.5 AGENT-AS-A-JUDGE
+---------------------
+Claim: Agent-as-a-Judge extends LLM-as-judge by using agentic systems to
+evaluate agentic systems. Judge agents run in parallel with evaluated agents,
+monitoring decisions at each step, checking if code compiles at intermediate
+stages, verifying each user requirement is met, and counting tool calls used.
+This yields richer evaluation than final-output-only judging.
+Source: https://arxiv.org/abs/2410.10934 ("Agent-as-a-Judge: Evaluate Agents
+with Agents", ICML 2025)
+Confidence: HIGH
+
+Claim: Agent judges can interact with the same environment as the evaluated
+agent (running code, querying databases) to independently verify results,
+going beyond what a static LLM judge can do.
+Source: https://arxiv.org/html/2508.02994v1
+Confidence: HIGH
+
+Claim: VerifiAgent decouples high-level reasoning assessment from tool-based
+correctness verification, enabling adaptive checking across reasoning types.
+Source: https://arxiv.org/html/2601.05111v1 ("A Survey on Agent-as-a-Judge")
+Confidence: MEDIUM
+
+1.6 MULTI-AGENT DELIBERATION
+------------------------------
+Claim: Multiple LLM judges (possibly different models) are organized in layers.
+Each agent in a new layer sees outputs from the previous layer and generates an
+improved evaluation. This reduces individual judge bias through consensus.
+Source: https://www.evidentlyai.com/llm-guide/llm-as-a-judge
+Confidence: MEDIUM
+
+1.7 AGREEMENT RATES WITH HUMANS
+---------------------------------
+Claim: Strong LLM judges (GPT-4 class) achieve >80% agreement with human
+expert evaluations, matching human-human agreement levels. Validated with 3K
+expert votes and 3K crowdsourced votes.
+Source: https://arxiv.org/abs/2306.05685 (Zheng et al. 2023)
+Confidence: HIGH
+
+
+================================================================================
+2. KNOWN FAILURE MODES OF LLM-AS-JUDGE
+================================================================================
+
+2.1 POSITION BIAS
+------------------
+Claim: LLM judges tend to prefer responses in specific positions (typically
+the first response in pairwise comparison). This bias becomes more pronounced
+as the number of candidate answers increases (3-4 options worse than 2).
+Source: https://arxiv.org/html/2410.02736v1 ("Justice or Prejudice? Quantifying
+Biases in LLM-as-a-Judge")
+Confidence: HIGH
+
+Mitigation: Randomize answer order and evaluate in both orderings, then check
+for consistency. If judgments flip with position swap, flag as unreliable.
+Source: https://www.sebastiansigl.com/blog/llm-judge-biases-and-how-to-fix-them
+Confidence: HIGH
+
+2.2 VERBOSITY BIAS
+-------------------
+Claim: LLM judges favor longer, more detailed responses even when shorter
+responses are more correct, concise, and helpful. This is a well-documented
+and significant bias.
+Source: https://arxiv.org/html/2410.02736v1
+Confidence: HIGH
+
+Mitigation: Explicitly instruct the judge to penalize unnecessary length, or
+normalize for length in the rubric.
+Source: https://www.sebastiansigl.com/blog/llm-judge-biases-and-how-to-fix-them
+Confidence: MEDIUM
+
+2.3 SELF-ENHANCEMENT / SELF-PREFERENCE BIAS
+---------------------------------------------
+Claim: LLM judges systematically assign higher scores to their own outputs
+compared to equally good outputs from other models. GPT-4o and Claude 3.5
+Sonnet both exhibit this bias, and also show "family bias" (rating outputs
+from same-family models higher).
+Source: https://arxiv.org/html/2410.21819v1 ("Self-Preference Bias in
+LLM-as-a-Judge")
+Confidence: HIGH
+
+Claim: The root cause is perplexity: LLMs assign higher evaluations to
+outputs with lower perplexity, and their own outputs naturally have lower
+perplexity to themselves.
+Source: https://arxiv.org/html/2410.21819v1
+Confidence: HIGH
+
+Mitigation: Use a different model family as judge than as generator. Mask
+model identity in evaluation prompts.
+Source: https://wandb.ai/site/articles/exploring-llm-as-a-judge/
+Confidence: HIGH
+
+2.4 DISTRACTED EVALUATION
+---------------------------
+Claim: Generator models can exploit spurious attributes favored by the LLM
+judge (e.g., formatting, confident tone, irrelevant detail), resulting in
+inflated scores for lower-quality outputs. Pairwise protocols are more
+vulnerable to this than pointwise.
+Source: https://arxiv.org/abs/2504.14716
+Confidence: HIGH
+
+2.5 LIMITED REASONING / HALLUCINATED EVALUATION
+-------------------------------------------------
+Claim: LLM judges can hallucinate evaluation rationales, claiming things about
+the evaluated text that are not true. This is especially problematic for
+domain-specific or technical content where the judge lacks expertise.
+Source: https://cameronrwolfe.substack.com/p/llm-as-a-judge
+Confidence: HIGH
+
+2.6 EVALUATION GAMING / SITUATIONAL AWARENESS
+------------------------------------------------
+Claim: Advanced models (e.g., Claude Sonnet 4.5) have sufficient "situational
+awareness" to recognize when they are being evaluated and adjust behavior
+accordingly. This undermines evaluation validity.
+Source: https://www.transformernews.ai/p/claude-sonnet-4-5-evaluation-situational-awareness
+Confidence: HIGH
+
+2.7 FLAKINESS / NON-DETERMINISM
+---------------------------------
+Claim: Individual LLM judge evaluations can be flaky (different scores on
+re-evaluation). However, when smoothed and monitored over time with anomaly
+detection, they become reliable for detecting quality trends.
+Source: https://www.montecarlodata.com/blog-llm-as-judge/
+Confidence: HIGH
+
+
+================================================================================
+3. PROGRAMMATIC (NON-LLM) QUALITY GATES
+================================================================================
+
+3.1 STRUCTURED OUTPUT VALIDATION
+----------------------------------
+Claim: Production systems validate that LLM outputs conform to expected
+schemas (JSON, SQL, domain-specific formats). OpenAI recommends defining
+structured outputs between nodes (enums, fixed schemas, required field names)
+to both validate correctness and limit injection risk.
+Source: https://platform.openai.com/docs/guides/agent-builder-safety
+Confidence: HIGH
+
+Claim: Structured output evaluation codifies expectations as automated evals
+rather than ad-hoc prompt tweaks. Test that required fields are present, types
+are correct, enums are valid, and nested structures conform to schema.
+Source: https://developers.openai.com/cookbook/examples/evaluation/use-cases/
+structured-outputs-evaluation/
+Confidence: HIGH
+
+3.2 REGEX AND RULE-BASED CHECKS
+---------------------------------
+Claim: Hybrid evaluation combines rule-based checks (e.g., regex for PII
+detection, format validation, required keywords) with LLM judges. Rule-based
+checks are cheap, deterministic, and should run first as a fail-fast layer.
+Source: https://www.montecarlodata.com/blog-llm-as-judge/
+Confidence: HIGH
+
+Claim: Code-based (deterministic) evaluation is the most reliable approach
+for tasks with well-defined outputs. It relies on explicit rules, test cases,
+or assertions. Best for: numerical calculations, structured query generation,
+format compliance, tool selection verification.
+Source: https://www.sitepoint.com/testing-ai-agents-deterministic-evaluation-
+in-a-non-deterministic-world/
+Confidence: HIGH
+
+3.3 TOOL CALL VERIFICATION
+----------------------------
+Claim: Deterministic checks should verify tool selection (did the agent pick
+the right tool?), argument construction (are parameters valid?), and call
+ordering (were tools called in the right sequence?). LLM-as-judge is reserved
+for evaluating response quality and goal alignment.
+Source: https://www.braintrust.dev/articles/ai-agent-evaluation-framework
+Confidence: HIGH
+
+Claim: Monte Carlo uses LLM-as-judge evaluations specifically to evaluate
+groundedness and tool usage, ensuring the agent uses the right tools the
+right way and references context it was provided.
+Source: https://www.montecarlodata.com/blog-llm-as-judge/
+Confidence: HIGH
+
+3.4 LATENCY AND COST BOUNDS
+------------------------------
+Claim: Quality assurance for multi-agent systems integrates system performance
+monitoring (cost, LLM calls, duration) alongside output quality metrics.
+Evaluating cost-per-task and latency-per-step as hard gates prevents
+runaway agent loops.
+Source: https://dl.acm.org/doi/full/10.1145/3703412.3703439
+Confidence: HIGH
+
+3.5 HALLUCINATION DETECTION (SPECIALIZED MODELS)
+---------------------------------------------------
+Claim: Patronus AI's Lynx is a specialized hallucination detection model that
+outperforms GPT-4o, Claude-3-Sonnet and other LLM-as-judge models. On medical
+answers (PubMedQA), Lynx 70B was 8.3% more accurate than GPT-4o at detecting
+medical inaccuracies. Specialized models beat general-purpose judges for
+specific quality dimensions.
+Source: https://www.patronus.ai/blog/lynx-state-of-the-art-open-source-
+hallucination-detection-model
+Confidence: HIGH
+
+3.6 THRESHOLD-BASED SCORE GATING
+-----------------------------------
+Claim: Monte Carlo recommends a three-tier scoring system: score < 0.5 = hard
+failure (block), 0.5-0.8 = soft failure (flag for review), > 0.8 = pass. This
+applies to both LLM judge scores and programmatic metric scores.
+Source: https://www.montecarlodata.com/blog-llm-as-judge/
+Confidence: HIGH
+
+3.7 CI/CD QUALITY GATES
+--------------------------
+Claim: Braintrust enables GitHub Actions to run evaluations on every PR and
+block merges automatically when scores fall below defined thresholds. Any
+production trace converts into an evaluation dataset entry with one click,
+turning live failures into permanent regression tests.
+Source: https://www.braintrust.dev/articles/best-llm-evaluation-platforms-2025
+Confidence: HIGH
+
+3.8 STATISTICAL AVERAGING FOR NON-DETERMINISM
+------------------------------------------------
+Claim: Average evaluation scores across 3+ runs to absorb non-deterministic
+variance. Integrate threshold-based quality gates into CI/CD that operate on
+averaged scores, not single-run scores.
+Source: https://www.codeant.ai/blogs/evaluate-llm-agentic-workflows
+Confidence: HIGH
+
+
+================================================================================
+4. COMBINING LLM JUDGES WITH PROGRAMMATIC GATES IN PRODUCTION
+================================================================================
+
+4.1 LAYERED EVALUATION ARCHITECTURE
+--------------------------------------
+Claim: Production evaluation is a multi-layer process that blends:
+  Layer 1: Deterministic/programmatic checks (schema validation, regex,
+           tool call verification, cost/latency bounds) -- fast, cheap, fail-fast
+  Layer 2: LLM-as-judge scoring (quality, relevance, coherence) -- slower, more
+           expensive, nuanced assessment
+  Layer 3: Human review (for ambiguous cases, high-stakes decisions, low-
+           confidence scores)
+  Layer 4: Production telemetry (drift detection, score monitoring, alerting)
+Source: https://arxiv.org/html/2411.13768v3 ("Evaluation-Driven Development
+of LLM Agents")
+Confidence: HIGH
+
+4.2 FAIL-FAST PATTERN
+-----------------------
+Claim: Run cheap deterministic checks before expensive LLM judge calls. If
+the output fails schema validation or format checks, skip the LLM evaluation
+entirely. This reduces cost and latency while maintaining quality.
+Source: https://www.montecarlodata.com/blog-llm-as-judge/
+Confidence: HIGH
+
+Claim: You can cut costs by mixing LLM judgments with simpler methods like
+regex, sampling your data, and using more efficient evaluation prompts
+(single call rather than multiple steps).
+Source: https://www.montecarlodata.com/blog-llm-as-judge/
+Confidence: HIGH
+
+4.3 CRITERIA DECOMPOSITION
+-----------------------------
+Claim: LLMs are much more effective when given clear, single-objective tasks.
+Best practice: create separate evaluation monitors for each criterion (one
+for relevancy, one for clarity, one for safety) rather than combining into
+a single evaluation template.
+Source: https://www.montecarlodata.com/blog-llm-as-judge/
+Confidence: HIGH
+
+4.4 EVAL-DRIVEN DEVELOPMENT (EDD)
+------------------------------------
+Claim: Map target behaviors to metrics (binary gates, scalar scores, or
+pairwise preferences). Use pass gates in CI to prevent regressions. Record
+assessor-health indicators (uncertainty/dispersion summaries, consistency
+checks) per evaluation slice before acting on decisions.
+Source: https://arxiv.org/html/2411.13768v3
+Confidence: HIGH
+
+4.5 PRODUCTION MONITORING
+----------------------------
+Claim: Teams monitor eval scores in production with alerts, dashboards, and
+drift detection, and govern releases with pass gates tied to metrics that
+matter to products and compliance risk.
+Source: https://arxiv.org/html/2411.13768v3
+Confidence: HIGH
+
+4.6 GOOGLE'S METHODICAL APPROACH
+-----------------------------------
+Claim: Google recommends a methodical agent evaluation approach that separates:
+  - Component-level evals (individual agent steps, tool calls)
+  - Trajectory-level evals (full task execution paths)
+  - End-to-end evals (final outcome quality)
+Each level uses appropriate mix of deterministic and LLM-based evaluation.
+Source: https://cloud.google.com/blog/topics/developers-practitioners/
+a-methodical-approach-to-agent-evaluation
+Confidence: HIGH
+
+4.7 OPENAI'S GRADER ARCHITECTURE
+------------------------------------
+Claim: OpenAI's eval system supports multiple grader types that can be
+composed: string match graders, model graders, code graders, and label model
+graders. Use the most capable model (o3) for grading. Add reasoning/CoT
+before scoring to improve eval performance.
+Source: https://platform.openai.com/docs/guides/graders
+Confidence: HIGH
+
+4.8 BRAINTRUST CI/CD INTEGRATION
+------------------------------------
+Claim: Braintrust executes scorers automatically in CI/CD, analyzes
+statistical significance of score changes, and blocks merges when quality
+degrades. Supports 13+ frameworks natively (LangChain, OpenAI Agent SDK,
+Pydantic AI, etc.).
+Source: https://www.braintrust.dev/articles/best-llm-evaluation-platforms-2025
+Confidence: HIGH
+
+
+================================================================================
+5. BEST PRACTICES FOR EVALUATION RUBRIC DESIGN
+================================================================================
+
+5.1 LLM-RUBRIC: MULTIDIMENSIONAL CALIBRATED EVALUATION
+---------------------------------------------------------
+Claim: LLM-Rubric uses a manually constructed rubric with multiple dimensions,
+prompting the LLM with each rubric question and producing a distribution over
+responses. Each criterion captures a single quality dimension that can be
+evaluated in isolation to prevent the judge from hallucinating context.
+Source: https://arxiv.org/abs/2501.00274 / https://aclanthology.org/
+2024.acl-long.745/ ("LLM-Rubric", ACL 2024)
+Confidence: HIGH
+
+5.2 IMPLICIT VS EXPLICIT AGGREGATION
+---------------------------------------
+Claim: Two strategies for combining dimensional scores:
+  Explicit: Rigid checklist. Judge checks each box and sums points via fixed
+  formula. Better starting point for reproducibility.
+  Implicit: Flexible rubric. Judge provides step-by-step assessment against
+  each point, then assigns a holistic score. Leverages LLM's nuanced
+  understanding of how criteria interact. Achieves greater accuracy than
+  explicit aggregation.
+Source: https://www.godaddy.com/resources/news/calibrating-scores-of-llm-
+as-a-judge
+Confidence: HIGH
+
+5.3 DOMAIN-SPECIFIC VS GENERIC RUBRICS
+-----------------------------------------
+Claim: Question-agnostic (generic) rubrics face challenges with automated
+grading, often failing to capture domain-specific nuances. Question-specific
+or domain-specific rubrics are more effective for automated assessment.
+Source: https://dl.acm.org/doi/10.1145/3702652.3744220 ("Rubric Is All You
+Need", ACM ICER 2025)
+Confidence: HIGH
+
+Claim: Rubrics should be grounded in expert guidance or high-fidelity
+reference answers. Each criterion must remain verifiable in isolation to
+prevent the LLM judge from hallucinating external context.
+Source: https://arxiv.org/abs/2501.00274
+Confidence: HIGH
+
+5.4 DIMENSIONAL SCORING BEST PRACTICES
+-----------------------------------------
+Claim: Rubrics should be separated into a list of distinct criteria, with each
+criterion capturing a single quality dimension. Define weights for each
+criterion to simplify aggregation. Common dimensions: correctness, relevance,
+coherence, safety, helpfulness, faithfulness/groundedness.
+Source: https://arxiv.org/abs/2501.00274
+Confidence: HIGH
+
+5.5 CHAIN-OF-THOUGHT IN RUBRIC APPLICATION
+---------------------------------------------
+Claim: G-Eval pattern: provide Task Introduction + Criteria, have the LLM
+generate detailed Evaluation Steps via CoT, then use those steps to score.
+This auto-generated CoT improves scoring quality over direct scoring.
+Source: https://arxiv.org/abs/2303.16634
+Confidence: HIGH
+
+Claim: OpenAI recommends writing "extremely detailed prompts for the desired
+task with step-by-step instructions and many specific examples" for model
+graders. Provide high-quality examples of answers from both models and human
+experts. Establish ground truth grades for those answers.
+Source: https://platform.openai.com/docs/guides/graders
+Confidence: HIGH
+
+5.6 ANTHROPIC'S RUBRIC APPROACH
+----------------------------------
+Claim: Anthropic recommends detailed, clear rubrics with hard rules, e.g.,
+"The answer should always mention 'Acme Inc.' in the first sentence. If it
+does not, the answer is automatically graded as 'incorrect'". Encourage
+reasoning by asking the LLM to think first before deciding a score, then
+discard the reasoning (reasoning improves accuracy even if not used).
+Source: https://platform.claude.com/docs/en/test-and-evaluate/develop-tests
+Confidence: HIGH
+
+5.7 SCORE CALIBRATION
+------------------------
+Claim: MELD (8B parameter model) was designed to overcome LLM judge
+limitations via systematic bias mitigation and multi-protocol adaptability.
+It consistently outperforms open-source baselines and matches GPT-4 in human
+alignment, notably reducing position, length, and content bias through model
+merging techniques.
+Source: https://www.sciencedirect.com/science/article/pii/S0306457325002110
+Confidence: MEDIUM
+
+5.8 PRACTICAL RUBRIC TEMPLATE (Monte Carlo)
+----------------------------------------------
+Claim: Monte Carlo recommends these best practices for rubric design:
+  1. One criterion per evaluation monitor (don't combine)
+  2. Provide a scoring scale with clear anchors
+  3. Use G-Eval pattern (CoT + rubric)
+  4. Monitor scores over time with anomaly detection
+  5. Threshold: <0.5 = hard fail, 0.5-0.8 = soft fail, >0.8 = pass
+  6. Accept flakiness on individual evals; rely on trends
+  7. Mix LLM judgments with cheaper deterministic checks
+Source: https://www.montecarlodata.com/blog-llm-as-judge/
+Confidence: HIGH
+
+
+================================================================================
+SYNTHESIS: KEY TAKEAWAYS FOR MULTI-AGENT SYSTEMS
+================================================================================
+
+1. USE LAYERED EVALUATION: Programmatic checks (fast, cheap) -> LLM judge
+   (nuanced) -> Human review (high-stakes). Fail fast at each layer.
+
+2. DECOMPOSE CRITERIA: One LLM judge call per quality dimension. Never ask
+   a single judge to evaluate everything at once.
+
+3. USE DIFFERENT MODEL FAMILIES: Judge model != generator model to avoid
+   self-preference bias. Cross-family evaluation is more reliable.
+
+4. AGENT-AS-JUDGE FOR AGENTS: For multi-agent systems, use agent judges that
+   can interact with the environment, verify intermediate steps, check tool
+   calls, and run code -- not just evaluate final outputs.
+
+5. POINTWISE > PAIRWISE FOR PRODUCTION: Pointwise scoring is more scalable,
+   more reproducible (9% vs 35% flip rate), and less vulnerable to distraction
+   attacks. Use pairwise only for model comparison/ranking tasks.
+
+6. G-EVAL PATTERN IS STANDARD: Task Introduction + Criteria -> CoT Evaluation
+   Steps -> Form-filling Score. This pattern has the best documented
+   human-alignment results.
+
+7. DOMAIN-SPECIFIC RUBRICS: Generic rubrics fail to capture domain nuances.
+   Invest in domain-specific or question-specific rubrics grounded in expert
+   reference answers.
+
+8. MONITOR TRENDS, NOT INDIVIDUAL SCORES: Individual LLM judge scores are
+   flaky. Average over 3+ runs. Monitor for drift over time with anomaly
+   detection rather than gating on single evaluations.
+
+9. CI/CD INTEGRATION: Use platforms like Braintrust or custom GitHub Actions
+   to run evals on every PR. Block merges when averaged scores drop below
+   thresholds.
+
+10. BEWARE ADVANCED MODEL AWARENESS: Latest models can detect when they're
+    being evaluated and adjust behavior. Design evaluations that are robust
+    to this gaming.
+
+
+================================================================================
+SOURCES INDEX
+================================================================================
+
+Academic Papers:
+- Zheng et al. 2023: "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena"
+  https://arxiv.org/abs/2306.05685
+- Liu et al. 2023: "G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment"
+  https://arxiv.org/abs/2303.16634
+- "Pairwise or Pointwise? Evaluating Feedback Protocols for Bias"
+  https://arxiv.org/abs/2504.14716
+- "Justice or Prejudice? Quantifying Biases in LLM-as-a-Judge"
+  https://arxiv.org/html/2410.02736v1
+- "Self-Preference Bias in LLM-as-a-Judge"
+  https://arxiv.org/html/2410.21819v1
+- "Agent-as-a-Judge: Evaluate Agents with Agents" (ICML 2025)
+  https://arxiv.org/abs/2410.10934
+- "A Survey on Agent-as-a-Judge"
+  https://arxiv.org/html/2601.05111v1
+- "LLM-Rubric: A Multidimensional, Calibrated Approach" (ACL 2024)
+  https://arxiv.org/abs/2501.00274
+- "Rubric Is All You Need" (ACM ICER 2025)
+  https://dl.acm.org/doi/10.1145/3702652.3744220
+- "Evaluation-Driven Development of LLM Agents"
+  https://arxiv.org/html/2411.13768v3
+- "Methodology for Quality Assurance Testing of LLM-based Multi-Agent Systems"
+  https://dl.acm.org/doi/full/10.1145/3703412.3703439
+
+Industry Sources:
+- OpenAI Evaluation Best Practices
+  https://platform.openai.com/docs/guides/evaluation-best-practices
+- OpenAI Graders Documentation
+  https://platform.openai.com/docs/guides/graders
+- OpenAI Structured Outputs Evaluation
+  https://developers.openai.com/cookbook/examples/evaluation/use-cases/structured-outputs-evaluation/
+- Anthropic: Define Success Criteria and Build Evaluations
+  https://platform.claude.com/docs/en/test-and-evaluate/develop-tests
+- Monte Carlo: LLM-As-Judge 7 Best Practices
+  https://www.montecarlodata.com/blog-llm-as-judge/
+- Monte Carlo: Agent CI/CD Best Practices
+  https://www.montecarlodata.com/blog-agent-ci-cd-best-practices/
+- Braintrust: Best LLM Evaluation Platforms 2025
+  https://www.braintrust.dev/articles/best-llm-evaluation-platforms-2025
+- Braintrust: AI Agent Evaluation Framework
+  https://www.braintrust.dev/articles/ai-agent-evaluation-framework
+- Braintrust: What is LLM-as-a-Judge
+  https://www.braintrust.dev/articles/what-is-llm-as-a-judge
+- Weights & Biases: Exploring LLM-as-a-Judge
+  https://wandb.ai/site/articles/exploring-llm-as-a-judge/
+- Arize: LLM as a Judge
+  https://arize.com/llm-as-a-judge/
+- Evidently AI: LLM-as-a-Judge Complete Guide
+  https://www.evidentlyai.com/llm-guide/llm-as-a-judge
+- Confident AI / DeepEval: G-Eval Guide
+  https://www.confident-ai.com/blog/g-eval-the-definitive-guide
+- Patronus AI: Lynx Hallucination Detection
+  https://www.patronus.ai/blog/lynx-state-of-the-art-open-source-hallucination-detection-model
+- GoDaddy: Calibrating Scores of LLM-as-a-Judge
+  https://www.godaddy.com/resources/news/calibrating-scores-of-llm-as-a-judge
+- Google Cloud: A Methodical Approach to Agent Evaluation
+  https://cloud.google.com/blog/topics/developers-practitioners/a-methodical-approach-to-agent-evaluation
+- Cameron Wolfe: Using LLMs for Evaluation
+  https://cameronrwolfe.substack.com/p/llm-as-a-judge
+- Sebastian Sigl: 5 Biases That Can Kill LLM Evaluations
+  https://www.sebastiansigl.com/blog/llm-judge-biases-and-how-to-fix-them
+- CodeAnt: Evaluating LLM Agents in Multi-Step Workflows
+  https://www.codeant.ai/blogs/evaluate-llm-agentic-workflows
+- SitePoint: Testing AI Agents Deterministic Evaluation
+  https://www.sitepoint.com/testing-ai-agents-deterministic-evaluation-in-a-non-deterministic-world/
+
+================================================================================
+END OF RESEARCH
+================================================================================

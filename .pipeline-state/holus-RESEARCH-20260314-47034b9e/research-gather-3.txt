@@ -1,0 +1,620 @@
+==============================================================================
+RESEARCH REPORT: Self-Improvement Loops, Observability Dashboards, and
+Human-in-the-Loop Patterns for Multi-Agent AI Systems
+==============================================================================
+Date: 2026-03-14
+Researcher: Claude Opus 4.6
+
+==============================================================================
+1. HOW DO PRODUCTION MULTI-AGENT SYSTEMS IMPLEMENT SELF-IMPROVEMENT?
+==============================================================================
+
+FINDING 1.1: Reflexion — Episodic Memory for Self-Correction
+- Claim: Reflexion converts environment feedback (free-form language or scalar)
+  into linguistic self-reflections stored as episodic memory. The agent uses
+  these reflections as context in subsequent attempts, enabling rapid learning
+  from prior mistakes WITHOUT modifying model weights. Demonstrated gains on
+  multi-hop QA and code generation.
+- Source: Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement
+  Learning" (NeurIPS 2023) — https://arxiv.org/abs/2303.11366
+  Prompt Engineering Guide: https://www.promptingguide.ai/techniques/reflexion
+- Confidence: HIGH
+
+FINDING 1.2: SiriuS — Self-Improving Multi-Agent Systems via Bootstrapped Reasoning
+- Claim: Stanford's SiriuS (NeurIPS 2025) maintains an experience library of
+  successful reasoning trajectories. Failed trajectories are augmented through
+  feedback, regeneration, and rephrasing. Agents are then fine-tuned on the
+  curated library. Boosts performance 2.86-21.88% on reasoning/biomedical QA.
+  Supports three multi-agent settings: collaborative QA, actor-critic iterative
+  refinement, and competitive negotiation.
+- Source: Zhao, Yuksekgonul, Wu, Zou — https://arxiv.org/abs/2502.04780
+  GitHub: https://github.com/zou-group/sirius
+- Confidence: HIGH
+
+FINDING 1.3: Prompt Optimization Without Weight Changes
+- Claim: DSPy optimizers (formerly "teleprompters") systematically generate
+  prompt variations using LLMs, test them against evaluation metrics, and keep
+  only those that score numerically better. The bootstrapping process validates
+  demonstrations via the metric, filtering out ineffective ones automatically.
+  MIPROv2 (2025) adds auto-configuration modes (light/medium/heavy) to balance
+  optimization depth vs. compute cost.
+- Source: DSPy framework — https://dspy.ai/learn/optimization/optimizers/
+  MIPROv2 docs: https://dspy.ai/
+- Confidence: HIGH
+
+FINDING 1.4: Automatic Prompt Rewriting via Trajectory Analysis
+- Claim: Production self-improvement follows the pattern: collect execution
+  traces -> score outcomes -> identify failure modes -> rewrite prompts ->
+  validate on holdout set -> deploy. The key insight from Trace (Stanford) is
+  that workflow execution traces are analogous to backpropagated gradients and
+  can provide information for efficient optimization.
+- Source: Trace framework — https://arxiv.org/abs/2406.16218
+  Yohei Nakajima blog: https://yoheinakajima.com/better-ways-to-build-self-improving-ai-agents/
+- Confidence: HIGH
+
+FINDING 1.5: Self-Evolving Agents Survey (2025)
+- Claim: A comprehensive survey categorizes self-evolving agent approaches into
+  single-agent optimization (prompt tuning, self-refine), multi-agent
+  optimization (role assignment, communication protocol evolution), and
+  domain-specific optimizations. Key methods: SELF, SCoRe, PAG interpret
+  execution traces or natural-language critiques as reward signals within
+  online SFT+RL frameworks for continuous policy improvement.
+- Source: "A Survey of Self-Evolving Agents" — https://arxiv.org/html/2507.21046v4
+  Awesome-Self-Evolving-Agents: https://github.com/EvoAgentX/Awesome-Self-Evolving-Agents
+- Confidence: HIGH
+
+FINDING 1.6: Multi-Agent Reflexion (MAR)
+- Claim: MAR extends Reflexion to multi-agent settings where multiple LLM
+  agents collaboratively reflect on failures. Each agent generates its own
+  reflection, then agents share reflections to build a richer episodic memory.
+  Improves reasoning abilities beyond single-agent Reflexion.
+- Source: https://arxiv.org/html/2512.20845
+- Confidence: HIGH
+
+==============================================================================
+2. OBSERVABILITY PATTERNS FOR MONITORING AGENT HEALTH
+==============================================================================
+
+FINDING 2.1: Langfuse — Open-Source LLM Observability
+- Claim: Langfuse is an open-source platform that logs traces and sessions,
+  captures nested traces for chains/agents, groups interactions by session, and
+  tracks prompt versions. Stronger on detailed tracing for complex workflows.
+  Supports integration with DSPy, LangChain, and custom frameworks.
+- Source: https://langfuse.com/
+  Comparison: https://www.helicone.ai/blog/the-complete-guide-to-LLM-observability-platforms
+- Confidence: HIGH
+
+FINDING 2.2: Helicone — Proxy-Based Zero-SDK Monitoring
+- Claim: Helicone uses a proxy architecture (change base URL, no SDK needed).
+  Logs requests, responses, tokens, and costs. Built on Cloudflare Workers +
+  ClickHouse + Kafka for high scalability. Has processed over 2 billion LLM
+  interactions. Best for teams wanting minimal integration effort.
+- Source: https://www.helicone.ai/blog/the-complete-guide-to-LLM-observability-platforms
+- Confidence: HIGH
+
+FINDING 2.3: Braintrust — Evaluation-First Observability
+- Claim: Braintrust focuses on LLM evaluation for enterprise use cases. Best-in-
+  class nested trace visualization and debugging tools for multi-agent systems.
+  Runs evaluations directly on production traces to catch quality issues in
+  specific pipeline steps. Combines monitoring + evaluation + experimentation.
+- Source: https://www.braintrust.dev/articles/best-llm-monitoring-tools-2026
+  https://www.braintrust.dev/articles/best-ai-observability-tools-2026
+- Confidence: HIGH
+
+FINDING 2.4: OpenTelemetry GenAI Semantic Conventions
+- Claim: OTel GenAI SIG (started April 2024) is defining standard semantic
+  conventions for LLM observability: LLM call spans, agent step spans, session
+  grouping, vector DB queries, tool calls, token counts, cost, hallucination
+  indicators, and quality scores. Status: "Development" as of 2025. Datadog
+  supports OTel GenAI conventions natively (v1.37+). A new proposal covers
+  agentic systems specifically: tasks, actions, agents, teams, artifacts,
+  and memory relationships.
+- Source: https://opentelemetry.io/docs/specs/semconv/gen-ai/
+  Agent spans: https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/
+  Blog: https://opentelemetry.io/blog/2025/ai-agent-observability/
+  Agentic proposal: https://github.com/open-telemetry/semantic-conventions/issues/2664
+- Confidence: HIGH
+
+FINDING 2.5: Custom Dashboard Architecture
+- Claim: Modern LLM observability dashboards include: (a) trace visualization
+  with timing breakdowns across multi-step agent workflows, (b) aggregated
+  metrics dashboards for latency, cost, token usage, and eval scores,
+  (c) webhook-triggered alerts when thresholds are exceeded, (d) custom
+  scorers running continuously on production traffic. Leading platforms in
+  2026: Braintrust, Langfuse, Helicone, Maxim AI, Datadog.
+- Source: https://www.braintrust.dev/articles/best-llm-monitoring-tools-2026
+  https://www.getmaxim.ai/articles/top-5-ai-agent-observability-platforms-in-2026/
+- Confidence: HIGH
+
+FINDING 2.6: Datadog LLM Observability
+- Claim: Datadog provides enterprise-grade LLM observability with native OTel
+  GenAI semantic convention support. Includes: distributed tracing for LLM
+  pipelines, cost tracking per model/agent, latency breakdowns, and integration
+  with existing infrastructure monitoring. Best for teams already using Datadog.
+- Source: https://docs.datadoghq.com/llm_observability/
+  https://www.datadoghq.com/blog/llm-otel-semantic-convention/
+- Confidence: HIGH
+
+==============================================================================
+3. METRICS: PER-AGENT EVALUATION VS END-TO-END PIPELINE EVALUATION
+==============================================================================
+
+FINDING 3.1: Agent-Level Metrics
+- Claim: Per-agent metrics should include: task completion rate, tool
+  classification accuracy (correct tool selected), argument correctness,
+  step efficiency (steps taken vs optimal), plan adherence, plan quality,
+  cost per task, latency per step, and quality scores from LLM-as-judge.
+  Tool Classification Accuracy is critical — misclassification leads to
+  cascading failures.
+- Source: Anthropic "Demystifying Evals for AI Agents" —
+  https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents
+  Galileo: https://galileo.ai/blog/ai-agent-metrics
+- Confidence: HIGH
+
+FINDING 3.2: Pipeline-Level Metrics and Compound Errors
+- Claim: In multi-agent pipelines, mistakes propagate and compound across tool
+  calls and handoffs. Memory failures increase with scenario complexity.
+  Environment violations appear only in multi-agent scenarios where production
+  states change despite guardrails. Key pipeline metrics: end-to-end task
+  completion, throughput, error propagation rate, compound error rate (product
+  of per-step error probabilities), latency percentiles, and total cost.
+- Source: https://arxiv.org/html/2512.12791v1 (Beyond Task Completion framework)
+  https://www.stackai.com/blog/how-to-evaluate-agentic-ai-pipelines-metrics-frameworks-and-real-world-examples
+- Confidence: HIGH
+
+FINDING 3.3: Outcome-Based vs Path-Based Evaluation
+- Claim: Anthropic found that checking specific tool call sequences is too
+  rigid. Agents regularly find valid approaches designers didn't anticipate.
+  Best practice: grade what the agent PRODUCED (outcomes), not the path it
+  took. Use multiple trials per task because model outputs vary between runs.
+  Each task should have multiple graders with multiple assertions.
+- Source: https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents
+- Confidence: HIGH
+
+FINDING 3.4: Swiss Cheese Model for Agent Evaluation
+- Claim: Anthropic recommends a layered evaluation approach inspired by the
+  Swiss Cheese Model from safety engineering. No single evaluation layer
+  catches every issue. Multiple methods combined ensure failures that slip
+  through one layer are caught by another. Layers: unit evals, integration
+  evals, production monitoring, human review.
+- Source: https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents
+- Confidence: HIGH
+
+FINDING 3.5: Below-Adequate Testing Creates Blind Spots
+- Claim: Below adequate evaluation levels, too many agent behaviors remain
+  untested, creating blind spots that compound in production. Teams need
+  sufficient coverage of edge cases, failure modes, and adversarial inputs
+  to avoid surprise failures at scale.
+- Source: https://www.stackai.com/blog/how-to-evaluate-agentic-ai-pipelines-metrics-frameworks-and-real-world-examples
+- Confidence: MEDIUM
+
+FINDING 3.6: DeepEval Agent Metrics Framework
+- Claim: DeepEval provides structured agent evaluation with specific metrics:
+  task completion (binary + partial credit), tool correctness (right tool for
+  task), reasoning quality (chain-of-thought assessment), and cost efficiency.
+  Integrates with CI/CD for continuous evaluation.
+- Source: https://deepeval.com/guides/guides-ai-agent-evaluation
+- Confidence: HIGH
+
+==============================================================================
+4. BEST PRACTICES FOR AGENT OBSERVATORY/DASHBOARD DESIGN
+==============================================================================
+
+FINDING 4.1: Alert Threshold Recommendations
+- Claim: Meaningful alert thresholds for LLM agent monitoring:
+  - Quality degradation: >10% drop triggers alert
+  - Cost spikes: >20% above baseline triggers alert
+  - Latency increases: >15% above baseline triggers alert
+  - Error rate changes: >5% increase triggers alert
+  Custom scorers should run continuously on production traffic with these
+  threshold-based alerts to catch regressions before users report them.
+- Source: https://www.braintrust.dev/articles/best-llm-monitoring-tools-2026
+  https://www.getmaxim.ai/articles/llm-observability-best-practices-for-2025/
+- Confidence: HIGH
+
+FINDING 4.2: Real-Time vs Batch Monitoring
+- Claim: Real-time monitoring is essential for: latency tracking, error rates,
+  cost accumulation, and token usage. Batch evaluation is appropriate for:
+  quality scoring (LLM-as-judge), regression testing against golden datasets,
+  A/B test analysis, and trend detection. Most production systems need both:
+  real-time dashboards for operational health + batch pipelines for quality
+  assurance.
+- Source: https://www.braintrust.dev/articles/best-ai-observability-tools-2026
+  https://langwatch.ai/blog/top-10-llm-observability-tools-complete-guide-for-2025
+- Confidence: HIGH
+
+FINDING 4.3: What to Surface in Dashboards
+- Claim: Essential dashboard components for multi-agent systems:
+  1. Trace view: timing breakdowns across each step in multi-step workflows
+  2. Session grouping: aggregate metrics per user session/conversation
+  3. Cost tracking: per-agent, per-model, per-pipeline breakdowns
+  4. Token usage: input/output tokens by model and agent
+  5. Eval scores: quality metrics tracked over time with trend lines
+  6. Error categorization: tool failures, timeout, hallucination, refusal
+  7. Agent-level health: per-agent success rate, avg latency, cost
+- Source: https://docs.datadoghq.com/llm_observability/
+  https://www.braintrust.dev/articles/best-llm-monitoring-tools-2026
+- Confidence: HIGH
+
+FINDING 4.4: Agent Observability Architecture Pattern
+- Claim: Agent observability consolidates and visualizes AI agent trace
+  telemetry, then sets evaluation monitors leveraging LLM-as-judge or
+  deterministic checks. The pattern: instrument -> collect -> visualize ->
+  evaluate -> alert. Critical to adopt OpenTelemetry GenAI semantic
+  conventions for interoperability across frameworks.
+- Source: https://opentelemetry.io/blog/2025/ai-agent-observability/
+  https://www.getmaxim.ai/articles/top-5-ai-agent-observability-platforms-in-2026/
+- Confidence: HIGH
+
+FINDING 4.5: Maxim AI — Quality-Focused Observability
+- Claim: Maxim AI differentiates by focusing on quality evaluation alongside
+  monitoring. Custom scorers run continuously on production traffic, with
+  threshold-based alerts catching regressions proactively. Designed
+  specifically for AI agent workflows with multi-step visualization.
+- Source: https://www.getmaxim.ai/articles/top-5-llm-observability-platforms-in-2026/
+- Confidence: MEDIUM
+
+==============================================================================
+5. WHEN SHOULD EVALUATION BE AUTOMATED VS HUMAN-IN-THE-LOOP?
+==============================================================================
+
+FINDING 5.1: Risk-Based Automation Tiers
+- Claim: Agents are best for low-to-moderate risk, reversible actions, and
+  internal-only exposure. Human-in-the-loop is required or strongly preferred
+  for: high-stakes situations (safety, finance, employment, healthcare),
+  external exposure, or hard-to-reverse decisions. This maps to a clear
+  decision framework based on reversibility and consequence severity.
+- Source: https://skywork.ai/blog/agent-vs-human-in-the-loop-2025-comparison/
+  https://witness.ai/blog/human-in-the-loop-ai/
+- Confidence: HIGH
+
+FINDING 5.2: Confidence Threshold Guidelines by Domain
+- Claim: Effective HITL systems target 10-15% escalation rates (85-90%
+  autonomous). Confidence thresholds vary by domain:
+  - Financial services: 90-95% (regulatory scrutiny)
+  - Customer service: 80-85% (routine inquiries)
+  - Healthcare: 95%+ (patient safety)
+  Systems route low-confidence predictions to humans while executing
+  high-confidence decisions autonomously.
+- Source: https://skywork.ai/blog/agent-vs-human-in-the-loop-2025-comparison/
+  https://beetroot.co/ai-ml/human-in-the-loop-meets-agentic-ai-building-trust-and-control-in-automated-workflows/
+- Confidence: HIGH
+
+FINDING 5.3: The Human Oversight Effectiveness Problem
+- Claim: CRITICAL WARNING — Research reveals humans do NOT catch AI errors at
+  the rate required to justify relying on them as safety mechanisms. A 2025
+  analysis found humans in "in the loop" governance functions provided correct
+  oversight only about half the time. Human oversight often rubber-stamps
+  automated decisions, especially under: time pressure, high workload, or
+  after long periods of error-free operation (automation complacency).
+- Source: https://www.responsibleaifoundation.com/post/human-in-the-loop-but-where
+- Confidence: HIGH
+
+FINDING 5.4: Best Practice — Combine Automated + Human + Periodic Review
+- Claim: The most effective teams use three layers: (1) automated evals for
+  fast iteration, (2) production monitoring for ground truth, and (3) periodic
+  human review for calibration. Without evals, teams get stuck in reactive
+  loops — catching issues only in production where fixing one failure creates
+  others.
+- Source: https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents
+- Confidence: HIGH
+
+FINDING 5.5: When to Insert Human Checkpoints
+- Claim: Human review is most valuable at these specific points:
+  - Model uncertainty is high (low confidence scores)
+  - Novel/out-of-distribution inputs detected
+  - Cost-sensitive decisions exceeding dollar thresholds
+  - Safety-critical outputs (medical, legal, financial advice)
+  - Edge cases where training data is sparse
+  - When initial deployment needs calibration data
+- Source: https://witness.ai/blog/human-in-the-loop-ai/
+  https://galileo.ai/blog/human-in-the-loop-agent-oversight
+- Confidence: HIGH
+
+FINDING 5.6: Graduated Autonomy Pattern
+- Claim: Best practice is graduated autonomy: start with human-in-the-loop for
+  all decisions, then progressively automate as confidence builds. Track
+  human override rate — when humans approve >95% of decisions in a category,
+  that category is a candidate for full automation. Maintain "circuit breaker"
+  capability to revert to full HITL when anomalies detected.
+- Source: https://beetroot.co/ai-ml/human-in-the-loop-meets-agentic-ai-building-trust-and-control-in-automated-workflows/
+  https://galileo.ai/blog/human-in-the-loop-agent-oversight
+- Confidence: HIGH
+
+==============================================================================
+6. PROMPT OPTIMIZATION TRIGGERS AND INFRASTRUCTURE
+==============================================================================
+
+FINDING 6.1: DSPy Optimizer Ecosystem (2025-2026)
+- Claim: DSPy optimizers include: BootstrapFewShot (demo-based), BootstrapRS
+  (random search), MIPROv2 (instruction + demo optimization with auto-config),
+  and GEPA (reflective prompt optimizer). GEPA uses reflective reasoning to
+  analyze failed examples and generate improved instructions. MIPROv2 offers
+  light/medium/heavy modes and integrates with MLflow and Langfuse for
+  monitoring optimization progress.
+- Source: https://dspy.ai/learn/optimization/optimizers/
+  https://dspy.ai/api/optimizers/GEPA/overview/
+- Confidence: HIGH
+
+FINDING 6.2: Score Degradation Detection Pattern
+- Claim: The practical pattern for detecting prompt degradation:
+  1. Establish baseline scores on a golden evaluation set
+  2. Run continuous eval on production traffic (sampling)
+  3. Trigger optimization when scores drop below baseline - N% threshold
+  4. Use DSPy's metric-validated bootstrapping as quality gate (only keep
+     demonstrations that pass the metric)
+  5. A/B test optimized prompt vs current prompt on holdout set
+  6. Deploy only if statistically significant improvement confirmed
+- Source: https://dspy.ai/learn/optimization/optimizers/
+  https://towardsdatascience.com/prompt-like-a-data-scientist-auto-prompt-optimization-and-testing-with-dspy-ff699f030cb7/
+- Confidence: MEDIUM (synthesized from multiple sources, no single canonical reference)
+
+FINDING 6.3: A/B Testing Infrastructure for Prompts
+- Claim: Following traditional ML practices: define candidate prompts, evaluate
+  performance against test sets, select the one achieving highest score. DSPy
+  enables this by treating prompt selection as an optimization problem with
+  clear metrics. Production A/B testing requires: traffic splitting, metric
+  collection per variant, statistical significance testing, and rollback
+  capability.
+- Source: https://haystack.deepset.ai/cookbook/prompt_optimization_with_dspy
+  https://docs.wandb.ai/weave/cookbooks/dspy_prompt_optimization
+- Confidence: HIGH
+
+FINDING 6.4: Manual Review Cycles Still Matter
+- Claim: Even with automated optimization, periodic manual review is essential.
+  DSPy's comparative study found that teleprompter algorithms don't always
+  align LLM evaluation metrics to human evaluation. Human review cycles are
+  needed to: validate metric alignment, catch distribution shifts, identify
+  new failure modes not covered by existing metrics, and update golden
+  evaluation sets.
+- Source: https://arxiv.org/html/2412.15298v1 (Comparative Study of DSPy Teleprompters)
+- Confidence: HIGH
+
+FINDING 6.5: Three-Layer Prompt Resolution (Holus-Relevant)
+- Claim: A practical production pattern for prompt A/B testing: maintain a
+  three-layer prompt resolution system where (1) optimizer-promoted variants
+  override (2) canonical prompt files, which override (3) hardcoded defaults.
+  This enables prompt optimization without code changes and supports rollback.
+  NOTE: Holus already implements this pattern in its PromptLoader.
+- Source: Holus ARCHITECTURE.md (existing implementation)
+  Validated by DSPy and Braintrust A/B testing patterns
+- Confidence: HIGH
+
+==============================================================================
+7. REAL-WORLD EXAMPLES OF SELF-IMPROVING AGENT SYSTEMS
+==============================================================================
+
+FINDING 7.1: Voyager — Lifelong Learning Agent in Minecraft
+- Claim: Voyager (Nvidia, 2023) is an LLM-powered embodied agent with three
+  key components: (1) automatic curriculum that maximizes exploration, (2) an
+  ever-growing skill library of executable code for storing/retrieving complex
+  behaviors, and (3) an iterative prompting mechanism incorporating environment
+  feedback, execution errors, and self-verification for program improvement.
+  The skill library is the key self-improvement mechanism — it grows over time.
+- Source: https://voyager.minedojo.org/
+  https://openreview.net/forum?id=ehfRiF0R3a
+- Confidence: HIGH
+
+FINDING 7.2: LATS — Language Agent Tree Search
+- Claim: LATS (ICML 2024) unifies reasoning, acting, and planning by
+  integrating Monte Carlo Tree Search with LM-powered value functions and
+  self-reflections. Six operations: selection, expansion, evaluation,
+  simulation, backpropagation, reflection. Achieves 92.7% pass@1 on HumanEval
+  with GPT-4. Key insight: using the LM itself as both the value function and
+  the reflection generator creates a closed self-improvement loop.
+- Source: https://arxiv.org/abs/2310.04406
+  GitHub: https://github.com/lapisrocks/LanguageAgentTreeSearch
+- Confidence: HIGH
+
+FINDING 7.3: TextGrad — Automatic Differentiation via Text
+- Claim: TextGrad constructs backpropagation-analogous optimization for
+  compound AI systems where traditional gradients are unavailable. Textual
+  feedback serves as a differentiable training signal for prompt and parameter
+  optimization. Enables end-to-end optimization of multi-component pipelines
+  by propagating textual "gradients" through black-box LLM calls.
+- Source: https://arxiv.org/abs/2406.07496
+- Confidence: HIGH
+
+FINDING 7.4: Self-Refine — Iterative Refinement with Self-Feedback
+- Claim: Self-Refine is a foundational pattern where an LLM generates output,
+  critiques its own output, then refines based on the critique. No external
+  feedback needed — the model serves as its own reviewer. Simple but effective
+  for code generation, writing, and reasoning tasks.
+- Source: Madaan et al., "Self-Refine: Iterative Refinement with Self-Feedback"
+- Confidence: HIGH
+
+FINDING 7.5: OpenAI Self-Evolving Agents Cookbook
+- Claim: OpenAI published a cookbook for "autonomous agent retraining" that
+  covers self-evolving agent patterns. The approach involves collecting
+  execution data, identifying improvement opportunities, and automatically
+  updating agent behavior through retraining or prompt optimization.
+- Source: https://cookbook.openai.com/examples/partners/self_evolving_agents/autonomous_agent_retraining
+- Confidence: HIGH
+
+FINDING 7.6: A Self-Improving Coding Agent (2025)
+- Claim: Recent work (arXiv 2504.15228) demonstrates a self-improving coding
+  agent that iteratively improves its own code generation capabilities through
+  execution feedback and trajectory analysis. Uses a loop of: attempt task ->
+  execute -> observe errors -> reflect -> retry with improved strategy.
+- Source: https://arxiv.org/html/2504.15228v2
+- Confidence: MEDIUM
+
+FINDING 7.7: SiriuS in Practice
+- Claim: SiriuS (Stanford, NeurIPS 2025) is the most directly relevant example
+  for Holus. It demonstrates multi-agent self-improvement via: (1) experience
+  library construction from successful trajectories, (2) library augmentation
+  from failed trajectories through feedback/regeneration/rephrasing, (3)
+  iterative fine-tuning with reward-based evaluation. Tested in collaborative
+  QA, actor-critic, and competitive (negotiation) settings.
+- Source: https://arxiv.org/abs/2502.04780
+  https://github.com/zou-group/sirius
+- Confidence: HIGH
+
+==============================================================================
+8. STATE OF THE ART: COMPOUND AI SYSTEM EVALUATION
+==============================================================================
+
+FINDING 8.1: DSPy Assertions
+- Claim: DSPy Assertions are computational constraints for self-refining
+  language model pipelines. They enable declarative specification of
+  correctness criteria that are checked at runtime, with automatic retry
+  and refinement when assertions fail. This makes compound AI systems more
+  reliable by catching errors within the pipeline rather than only at output.
+- Source: https://dspy.ai/ and https://dspy.ai/cheatsheet/
+- Confidence: HIGH
+
+FINDING 8.2: Trace (Stanford) — OPTO Framework
+- Claim: Trace formalizes "Optimization with Trace Oracle" (OPTO), where an
+  optimizer receives an execution trace + feedback and updates parameters
+  iteratively. Uses PyTorch-like syntax. The LLM-based optimizer "OptoPrime"
+  handles: first-order numerical optimization, prompt optimization,
+  hyperparameter tuning, robot controller design, and code debugging. Often
+  competitive with specialized optimizers for each domain.
+- Source: https://arxiv.org/abs/2406.16218
+  OpenReview: https://openreview.net/forum?id=rYs2Dmn9tD
+- Confidence: HIGH
+
+FINDING 8.3: Compound AI Systems Optimization Survey (EMNLP 2025)
+- Claim: A comprehensive survey published at EMNLP 2025 covers methods for
+  optimizing compound AI systems, including end-to-end optimization,
+  module-level optimization, and hybrid approaches. Covers TextGrad, Trace,
+  DSPy, and emerging methods. Identifies key challenge: local optima in
+  individual modules may not correspond to global optima of the system.
+- Source: https://aclanthology.org/2025.emnlp-main.1463.pdf
+  Also: https://arxiv.org/html/2506.08234
+- Confidence: HIGH
+
+FINDING 8.4: AgentBench
+- Claim: AgentBench evaluates LLM-as-agent performance across 8 distinct
+  environments in multi-turn settings: OS tasks, database querying, knowledge
+  graph reasoning, digital card game, lateral thinking puzzles, household
+  tasks, web shopping, web browsing. Provides standardized multi-domain
+  agent evaluation.
+- Source: https://o-mega.ai/articles/the-best-ai-agent-evals-and-benchmarks-full-2025-guide
+  https://www.evidentlyai.com/blog/ai-agent-benchmarks
+- Confidence: HIGH
+
+FINDING 8.5: Optimas — Globally Aligned Local Rewards (2025)
+- Claim: Optimas addresses the challenge of optimizing compound AI systems by
+  aligning local (per-module) rewards with global objectives. This solves a
+  key problem where optimizing individual agents independently leads to
+  suboptimal system-level performance. Uses a coordination mechanism to ensure
+  per-agent optimization serves the whole pipeline.
+- Source: https://arxiv.org/html/2507.03041v1
+- Confidence: MEDIUM
+
+FINDING 8.6: Textual Equilibrium Propagation (2026)
+- Claim: Textual Equilibrium Propagation extends equilibrium propagation
+  concepts to deep compound AI systems, enabling optimization of multi-layer
+  LLM pipelines through textual feedback signals. Represents cutting-edge
+  work on making compound system optimization more principled.
+- Source: https://arxiv.org/html/2601.21064
+- Confidence: MEDIUM
+
+FINDING 8.7: DeepEval Agent Evaluation Framework
+- Claim: DeepEval provides a dedicated AI agent evaluation framework with
+  metrics for task completion, tool correctness, and multi-step reasoning.
+  Integrates with production pipelines for continuous evaluation.
+- Source: https://deepeval.com/guides/guides-ai-agent-evaluation
+- Confidence: HIGH
+
+FINDING 8.8: Bloom (Anthropic, 2025) — Automated Behavioral Evaluations
+- Claim: Bloom is Anthropic's open-source tool for automated behavioral evals.
+  Takes a researcher-specified behavior and quantifies its frequency and
+  severity across automatically generated scenarios. Evaluations correlate
+  strongly with hand-labelled judgments and reliably separate baseline models
+  from intentionally misaligned ones.
+- Source: https://alignment.anthropic.com/2025/bloom-auto-evals/
+- Confidence: HIGH
+
+FINDING 8.9: Agent Evaluation Benchmark Compendium
+- Claim: A compendium of 50+ benchmarks for evaluating AI agents, categorized
+  into: Function Calling & Tool Use, General Assistant & Reasoning, Coding &
+  Software Engineering, and Computer Interaction. Provides the most complete
+  landscape of available agent evaluation tools.
+- Source: https://github.com/philschmid/ai-agent-benchmark-compendium
+- Confidence: HIGH
+
+==============================================================================
+SYNTHESIS: KEY PATTERNS FOR HOLUS IMPLEMENTATION
+==============================================================================
+
+Based on all findings, here are the most production-relevant patterns for Holus:
+
+1. SELF-IMPROVEMENT LOOP (implement first):
+   - Collect execution traces per agent run (Langfuse/OTel)
+   - Score outcomes with multiple domain-specific graders (Anthropic Swiss Cheese pattern)
+   - Store successful trajectories in experience library (SiriuS pattern)
+   - When scores degrade >10%, trigger DSPy/GEPA optimization cycle
+   - A/B test optimized prompts via three-layer prompt resolution (already built)
+   - Grade OUTCOMES not PATHS (Anthropic finding)
+
+2. OBSERVABILITY STACK (recommended for Holus):
+   - Langfuse for tracing (open-source, nested agent traces, prompt versioning)
+   - OTel GenAI semantic conventions for standardization
+   - Custom Observatory dashboard (spec 028/029 already in progress):
+     - Per-agent health cards: success rate, avg latency, cost, eval scores
+     - Cost/token tracking per model and per agent
+     - Eval score trend lines with regression detection
+   - Alert thresholds: quality -10%, cost +20%, latency +15%, errors +5%
+
+3. EVALUATION ARCHITECTURE (three layers, Swiss Cheese):
+   - Layer 1 — Automated: continuous scoring on production traffic samples
+     using domain-specific evaluators (already in Holus: 7 judge types)
+   - Layer 2 — Production monitoring: real-time error rates, latency, cost
+   - Layer 3 — Periodic human review: metric calibration, golden set updates
+   - Outcome-based grading (not path-based)
+   - Multiple trials per task for consistency
+
+4. HUMAN-IN-THE-LOOP DECISION FRAMEWORK:
+   - Automate: confidence >85%, reversible, internal, low-stakes
+   - Human review: confidence <85%, irreversible, external, high-stakes
+   - WARNING: humans catch AI errors only ~50% of the time under pressure
+   - Target 10-15% escalation rate for sustainable HITL
+   - Graduated autonomy: start conservative, automate categories where
+     human override rate >95%
+   - Holus Phase 1 (human approval for all publishing) aligns with this
+
+5. COMPOUND SYSTEM OPTIMIZATION:
+   - Use Trace/OPTO framework concepts for end-to-end pipeline optimization
+   - DSPy Assertions for runtime correctness constraints at boundaries
+   - Align local rewards with global objectives (Optimas pattern) — avoid
+     optimizing individual agents at expense of pipeline quality
+   - Key risk: compound error rates multiply across pipeline steps
+
+6. PROMPT OPTIMIZATION TRIGGERS (specific to Holus):
+   - Monitor eval scores per agent in trajectory.jsonl
+   - Trigger optimization when: 3 consecutive below-threshold scores,
+     or rolling 7-day average drops >10% below baseline
+   - Use GEPA (reflective optimizer) to analyze failures and propose fixes
+   - Test via PromptLoader layer 1 (config/prompts/) before promoting
+   - Require human approval before promoting optimized prompts to canonical
+
+==============================================================================
+RELEVANCE TO HOLUS EXISTING ARCHITECTURE
+==============================================================================
+
+Holus already has several of these patterns partially implemented:
+
+ALREADY BUILT:
+- Three-layer prompt resolution (PromptLoader) — enables A/B testing
+- Domain-specific evaluator routing (7 judge types)
+- Trajectory logging (trajectory.jsonl)
+- Weekly learning loop concept
+- Observatory API (spec 028, implemented)
+- Agent Registry (AGENTS.yaml, spec 030, implemented)
+
+GAPS TO FILL:
+- No OTel instrumentation yet — need GenAI semantic conventions on agent spans
+- No automated score degradation detection — currently manual
+- No DSPy/GEPA integration for automated prompt optimization
+- Observatory frontend (spec 029) is partial — needs alert thresholds
+- No experience library (SiriuS pattern) — trajectory.jsonl logs but doesn't
+  curate successful trajectories for reuse
+- No compound error rate tracking across the full pipeline
+- Human-in-the-loop graduated autonomy not formalized — Phase 1/2 transition
+  lacks quantitative criteria
+
+==============================================================================
+END OF REPORT
+==============================================================================

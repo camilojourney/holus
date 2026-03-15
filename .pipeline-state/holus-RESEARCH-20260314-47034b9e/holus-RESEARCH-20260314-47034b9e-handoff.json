@@ -1,0 +1,23 @@
+{
+  "phase": "RESEARCH",
+  "correlation_id": "holus-RESEARCH-20260314-47034b9e",
+  "repo": "holus",
+  "status": "COMPLETED",
+  "mode": "SCRATCH",
+  "adversary_verdict": "PROCEED_WITH_CAUTION",
+  "outputs": [
+    "docs/research/001-agent-evaluation-observability.md"
+  ],
+  "key_findings": [
+    "Use 3-tier evaluation (programmatic -> LLM sample -> human review), NOT 7 judges on every output",
+    "Pointwise scoring with G-Eval pattern is the production standard for LLM-as-judge",
+    "Self-preference bias: use different model family as judge than generator",
+    "Self-improvement loops require hard floors, human review of prompt changes, and diversity monitoring",
+    "DSPy prompt optimization only after 100+ evaluated outputs — manual tuning first",
+    "Langfuse recommended for observability (open-source, self-hosted, nested traces)",
+    "Graduated autonomy: Phase 1 -> 2 -> 3 based on quantitative criteria, not vibes",
+    "Cost reduction: $900/month (original plan) -> $30-60/month (recommended) with 80% quality signal"
+  ],
+  "next_phase": "SPECS",
+  "next_phase_input": "Write spec for Holus evaluation infrastructure based on docs/research/001-agent-evaluation-observability.md"
+}
