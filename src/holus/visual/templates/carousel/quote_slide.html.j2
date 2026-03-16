@@ -1,0 +1,23 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-quote {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
+  <div class="slide-content">
+    <blockquote class="quote-block">
+      <p class="quote-text">{{ quote_text | default("") }}</p>
+    </blockquote>
+    {% if attribution %}
+    <div class="quote-attribution">
+      <span class="quote-author">{{ attribution }}</span>
+      {% if attribution_title %}
+      <span class="quote-title">{{ attribution_title }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="slide-footer">
+    {% if author_name %}<span class="slide-author">{{ author_name }}</span>{% endif %}
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}

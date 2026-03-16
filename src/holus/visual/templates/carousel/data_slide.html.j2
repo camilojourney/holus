@@ -1,0 +1,21 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-data {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
+  <div class="slide-content">
+    {% if title %}
+    <h2 class="slide-title">{{ title }}</h2>
+    {% endif %}
+    {% if chart_svg %}
+    <div class="data-chart">{{ chart_svg | safe }}</div>
+    {% endif %}
+    {% if source_label %}
+    <span class="data-source">{{ source_label }}</span>
+    {% endif %}
+  </div>
+  <div class="slide-footer">
+    {% if author_name %}<span class="slide-author">{{ author_name }}</span>{% endif %}
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}

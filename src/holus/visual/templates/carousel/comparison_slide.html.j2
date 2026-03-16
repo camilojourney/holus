@@ -1,0 +1,37 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-comparison {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
+  <div class="slide-content">
+    <div class="comparison-grid">
+      <div class="comparison-left">
+        <h3 class="comparison-title">{{ left_title | default("Option A") }}</h3>
+        {% if left_items %}
+        <ul class="comparison-items">
+          {% for item in left_items %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      <div class="comparison-divider">
+        <span class="comparison-vs">{{ vs_label | default("vs") }}</span>
+      </div>
+      <div class="comparison-right">
+        <h3 class="comparison-title">{{ right_title | default("Option B") }}</h3>
+        {% if right_items %}
+        <ul class="comparison-items">
+          {% for item in right_items %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    {% if author_name %}<span class="slide-author">{{ author_name }}</span>{% endif %}
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}

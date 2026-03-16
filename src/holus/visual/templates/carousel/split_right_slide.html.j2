@@ -1,0 +1,32 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-split-right {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
+  <div class="split-grid">
+    <div class="split-content">
+      {% if title %}
+      <h2 class="slide-title">{{ title }}</h2>
+      {% endif %}
+      {% if body %}
+      <p class="slide-body-text">{{ body }}</p>
+      {% endif %}
+      {% if bullet_points %}
+      <ul class="slide-bullets">
+        {% for point in bullet_points %}
+        <li>{{ point }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    <div class="split-graphic">
+      {% if graphic_svg %}
+      {{ graphic_svg | safe }}
+      {% endif %}
+    </div>
+  </div>
+  <div class="slide-footer">
+    {% if author_name %}<span class="slide-author">{{ author_name }}</span>{% endif %}
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}

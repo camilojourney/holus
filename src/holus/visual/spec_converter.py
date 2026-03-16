@@ -280,6 +280,13 @@ def carousel_spec_to_slides(
         "body": "carousel/body_slide",
         "summary": "carousel/summary_slide",
         "cta": "carousel/cta_slide",
+        "split_left": "carousel/split_left_slide",
+        "split_right": "carousel/split_right_slide",
+        "centered": "carousel/centered_slide",
+        "quote": "carousel/quote_slide",
+        "stat": "carousel/stat_slide",
+        "comparison": "carousel/comparison_slide",
+        "data": "carousel/data_slide",
     }
 
     slide_specs: list[SlideSpec] = []

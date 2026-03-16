@@ -1,0 +1,29 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-stat {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
+  <div class="slide-content">
+    <div class="stat-block">
+      <span class="stat-value">{{ stat_value | default("0") }}</span>
+      {% if stat_label %}
+      <span class="stat-label">{{ stat_label }}</span>
+      {% endif %}
+      {% if trend %}
+      <span class="stat-trend stat-trend-{{ trend }}">
+        {% if trend == "up" %}&#8599;{% elif trend == "down" %}&#8600;{% else %}&#8594;{% endif %}
+      </span>
+      {% endif %}
+    </div>
+    {% if context %}
+    <p class="stat-context">{{ context }}</p>
+    {% endif %}
+    {% if sparkline_svg %}
+    <div class="stat-sparkline">{{ sparkline_svg | safe }}</div>
+    {% endif %}
+  </div>
+  <div class="slide-footer">
+    {% if author_name %}<span class="slide-author">{{ author_name }}</span>{% endif %}
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}

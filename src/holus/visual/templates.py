@@ -73,16 +73,39 @@ class TemplateEngine:
             brand = self._brand_loader.load()
             brand_css = brand.to_css_variables()
 
+        # Resolve visual_effect → effect_class
+        visual_effect = normalized_variables.pop("visual_effect", None)
+        if isinstance(visual_effect, str) and visual_effect != "none":
+            effect_map = {
+                "glass": "glass-panel",
+                "neubrutalism": "neubrutalism",
+                "depth": "depth-shadow",
+                "glow": "glow-primary",
+                "grain": "grain-overlay",
+            }
+            normalized_variables["effect_class"] = effect_map.get(visual_effect, "")
+
+        # Resolve background_gradient preset names
+        bg_gradient = normalized_variables.get("background_gradient")
+        if isinstance(bg_gradient, str) and bg_gradient:
+            from holus.visual.gradients import resolve_gradient
+            normalized_variables["background_gradient"] = resolve_gradient(bg_gradient)
+
         # Load style files
         base_css = self._load_style("base.css")
         # Determine which supplementary CSS to load based on template path
         supplementary_css = ""
         if template_name.startswith("carousel/"):
             supplementary_css = (
-                self._load_style("slide.css") + "\n" + self._load_style("carousel.css")
+                self._load_style("slide.css") + "\n"
+                + self._load_style("carousel.css") + "\n"
+                + self._load_style("effects.css")
             )
         elif template_name.startswith("single_image/"):
-            supplementary_css = self._load_style("single.css")
+            supplementary_css = (
+                self._load_style("single.css") + "\n"
+                + self._load_style("effects.css")
+            )
 
         context: dict[str, str | int | float | bool | list[str]] = {
             "brand_css": brand_css,

@@ -1,0 +1,16 @@
+{% extends "base.html.j2" %}
+
+{% block body %}
+<div class="slide-container slide-centered {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
+  <div class="slide-content">
+    <h1 class="centered-text">{{ text | default("") }}</h1>
+    {% if subtext %}
+    <p class="centered-subtext">{{ subtext }}</p>
+    {% endif %}
+  </div>
+  <div class="slide-footer">
+    {% if author_name %}<span class="slide-author">{{ author_name }}</span>{% endif %}
+    <span class="slide-counter">{{ slide_number | default(1) }} / {{ total_slides | default(1) }}</span>
+  </div>
+</div>
+{% endblock %}
