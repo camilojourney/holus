@@ -15,9 +15,15 @@ Domain-specific research for Holus's content creation pipeline. Covers design va
 
 ## Content Type Variables — Carousel
 
-### Carousel/PDF Design Variables for LinkedIn
+### Carousel/PDF Design Variables
 
 LinkedIn carousels are uploaded as multi-page PDF documents. Native image-based carousels were removed in late 2023. [VERIFIED]
+
+**Cross-platform note:** Instagram carousels use image-based slides (up to 20 images per post), not PDFs. However, the **design tooling is the same** — the same Playwright HTML-to-image render pipeline produces both:
+- **LinkedIn:** Render all slides → combine into one multi-page PDF → upload as document post.
+- **Instagram:** Render each slide → export as individual PNGs → upload as multi-image post.
+
+The slide templates, typography, color system, and layout variables are shared. Only the **output format** and **safe zones** differ (Instagram has no page counter overlay, but has a swipe indicator at the bottom). The `PlaywrightEngine` already supports both `render_carousel_pdf()` (LinkedIn) and `render_carousel()` → individual PNGs (Instagram). [VERIFIED — implemented in holus visual pipeline]
 
 ### 1. Canvas & Dimensions
 
