@@ -59,6 +59,14 @@ class BrandVisualIdentityLoader:
         self._cached = BrandVisualIdentity(**data)
         return self._cached
 
+    def load_theme(self, theme_name: str) -> BrandVisualIdentity:
+        """Load identity with theme-specific color overrides applied."""
+        identity = self.load()
+        if theme_name and theme_name in identity.themes:
+            theme_colors = identity.themes[theme_name].colors
+            return identity.model_copy(update={"colors": theme_colors})
+        return identity
+
     def to_css_variables(self) -> str:
         """Convenience: load brand and generate CSS custom properties."""
         return self.load().to_css_variables()

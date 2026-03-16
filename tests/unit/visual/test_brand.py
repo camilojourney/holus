@@ -9,6 +9,8 @@ import yaml
 from holus.agents.marketing.models import BrandVisualIdentity
 from holus.visual.brand import BrandVisualIdentityLoader
 
+_REPO_BRAND_CONFIG = Path("config/brand-visual.yaml")
+
 
 class TestBrandVisualIdentityLoader:
     """Test brand config loading from YAML."""
@@ -85,3 +87,49 @@ class TestBrandVisualIdentityLoader:
     def test_default_config_path(self):
         loader = BrandVisualIdentityLoader()
         assert loader.config_path == Path("config/brand-visual.yaml")
+
+    def test_load_themes_from_yaml(self):
+        loader = BrandVisualIdentityLoader(_REPO_BRAND_CONFIG)
+        brand = loader.load()
+
+        assert len(brand.themes) == 5
+        assert set(brand.themes) == {"dark", "light", "warm", "cool", "bold"}
+
+    def test_load_theme_dark(self):
+        loader = BrandVisualIdentityLoader(_REPO_BRAND_CONFIG)
+
+        brand = loader.load_theme("dark")
+
+        assert brand.colors.primary == "#6366F1"
+        assert brand.colors.background == "#0A0F1E"
+
+    def test_load_theme_warm(self):
+        loader = BrandVisualIdentityLoader(_REPO_BRAND_CONFIG)
+
+        brand = loader.load_theme("warm")
+
+        assert brand.colors.primary == "#F59E0B"
+        assert brand.colors.surface == "#2C1F1A"
+
+    def test_load_theme_unknown(self):
+        loader = BrandVisualIdentityLoader(_REPO_BRAND_CONFIG)
+
+        brand = loader.load_theme("nonexistent")
+
+        assert brand.colors.primary == "#6366F1"
+        assert brand.colors.background == "#0A0F1E"
+
+    def test_to_css_variables_with_theme(self):
+        loader = BrandVisualIdentityLoader(_REPO_BRAND_CONFIG)
+
+        css = loader.load().to_css_variables(theme_name="cool")
+
+        assert "--brand-color-primary: #06B6D4;" in css
+        assert "--brand-color-accent: #67E8F9;" in css
+
+    def test_themes_inherit_typography(self):
+        loader = BrandVisualIdentityLoader(_REPO_BRAND_CONFIG)
+
+        brand = loader.load_theme("warm")
+
+        assert brand.typography.primary_font == "Plus Jakarta Sans"

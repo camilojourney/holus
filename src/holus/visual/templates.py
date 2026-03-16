@@ -65,9 +65,13 @@ class TemplateEngine:
         template_path = f"{template_name}.html.j2"
         template = self._env.get_template(template_path)
         normalized_variables = self._normalize_variables(template_name, variables)
-
-        brand = self._brand_loader.load()
-        brand_css = brand.to_css_variables()
+        theme_name = normalized_variables.pop("theme", None)
+        if isinstance(theme_name, str) and theme_name:
+            themed_identity = self._brand_loader.load_theme(theme_name)
+            brand_css = themed_identity.to_css_variables()
+        else:
+            brand = self._brand_loader.load()
+            brand_css = brand.to_css_variables()
 
         # Load style files
         base_css = self._load_style("base.css")

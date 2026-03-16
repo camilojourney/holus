@@ -261,6 +261,14 @@ class VisualRules(BaseModel):
     min_contrast_ratio: float = Field(default=4.5, ge=1.0, description="WCAG AA minimum")
 
 
+class ThemeColors(BaseModel):
+    """Per-theme color overrides. Only colors change per theme."""
+
+    model_config = {"extra": "ignore"}
+
+    colors: ColorPalette
+
+
 class BrandVisualIdentity(BaseModel):
     """Complete visual identity loaded from config/brand-visual.yaml.
 
@@ -276,11 +284,16 @@ class BrandVisualIdentity(BaseModel):
     layout: LayoutConfig = Field(default_factory=LayoutConfig)
     safe_zones: SafeZoneConfig = Field(default_factory=SafeZoneConfig)
     rules: VisualRules = Field(default_factory=VisualRules)
+    themes: dict[str, ThemeColors] = Field(default_factory=dict)
 
-    def to_css_variables(self) -> str:
+    def to_css_variables(self, theme_name: str | None = None) -> str:
         """Generate CSS custom properties from brand config."""
+        colors = self.colors
+        if theme_name is not None and theme_name in self.themes:
+            colors = self.themes[theme_name].colors
+
         lines = [":root {"]
-        for field_name, value in self.colors.model_dump().items():
+        for field_name, value in colors.model_dump().items():
             css_name = field_name.replace("_", "-")
             lines.append(f"  --brand-color-{css_name}: {value};")
         lines.append(

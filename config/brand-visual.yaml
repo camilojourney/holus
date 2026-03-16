@@ -53,3 +53,59 @@ rules:
   max_fonts_per_slide: 2
   max_colors_per_slide: 3
   min_contrast_ratio: 4.5
+
+themes:
+  dark:
+    colors:
+      primary: "#6366F1"
+      text: "#F8FAFC"
+      background: "#0A0F1E"
+      surface: "#0F172A"
+      accent: "#A5B4FC"
+      muted: "#64748B"
+      success: "#34D399"
+      danger: "#F87171"
+
+  light:
+    colors:
+      primary: "#4F46E5"
+      text: "#1E293B"
+      background: "#FAFAFA"
+      surface: "#FFFFFF"
+      accent: "#818CF8"
+      muted: "#94A3B8"
+      success: "#059669"
+      danger: "#DC2626"
+
+  warm:
+    colors:
+      primary: "#F59E0B"
+      text: "#FEF3C7"
+      background: "#1C1310"
+      surface: "#2C1F1A"
+      accent: "#FCD34D"
+      muted: "#92400E"
+      success: "#34D399"
+      danger: "#F87171"
+
+  cool:
+    colors:
+      primary: "#06B6D4"
+      text: "#E0F2FE"
+      background: "#0C1222"
+      surface: "#111827"
+      accent: "#67E8F9"
+      muted: "#64748B"
+      success: "#34D399"
+      danger: "#F87171"
+
+  bold:
+    colors:
+      primary: "#EF4444"
+      text: "#FAFAFA"
+      background: "#18181B"
+      surface: "#27272A"
+      accent: "#FCA5A5"
+      muted: "#71717A"
+      success: "#34D399"
+      danger: "#F87171"
