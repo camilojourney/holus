@@ -523,3 +523,40 @@ def run_from_idea(raw_idea: str) -> list[dict]:
     print(f"\nDone. {len(results)} piece(s) in data/content-queue/")
     print("Review in Observatory → localhost:3000/content\n")
     return results
+
+
+def run_from_bandit(raw_idea: str, *, platform: str | None = None) -> list[dict]:
+    """Like run_from_idea but uses Thompson Sampling to guide strategy.
+
+    The bandit suggests which (product, content_type, platform) to create.
+    Opus still writes the content — TS just biases the format decisions.
+    After publishing + analytics collection, call bandit.update() with reward.
+    """
+    try:
+        from holus.agents.marketing.strategy_bandit import StrategyBandit
+
+        bandit = StrategyBandit()
+        suggestion = bandit.suggest(platform=platform)
+
+        if suggestion:
+            print(f"\n🎰 Bandit suggests: {suggestion.arm.arm_id} "
+                  f"(θ={suggestion.sampled_theta:.2f}, "
+                  f"{'exploration' if suggestion.is_exploration else 'exploitation'})")
+
+            # Inject bandit suggestion into the idea as a hint
+            bandit_hint = (
+                f"\nBANDIT SUGGESTION: Create a {suggestion.arm.content_type} "
+                f"for {suggestion.arm.platform} featuring {suggestion.arm.product}. "
+                f"This combination has {'high' if not suggestion.is_exploration else 'unknown'} "
+                f"historical performance."
+            )
+            enhanced_idea = raw_idea + bandit_hint
+        else:
+            enhanced_idea = raw_idea
+            print("\n🎰 Bandit: no suggestion (no arms registered)")
+
+    except Exception as exc:
+        print(f"\n⚠ Bandit unavailable: {exc}")
+        enhanced_idea = raw_idea
+
+    return run_from_idea(enhanced_idea)
