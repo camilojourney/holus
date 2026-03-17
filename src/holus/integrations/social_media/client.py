@@ -189,6 +189,20 @@ class SocialMediaClient:
         data: dict[str, Any] = response.json()
         return data
 
+    async def get_post_analytics(
+        self,
+        post_id: str,
+    ) -> dict[str, Any]:
+        """Fetch latest engagement snapshot for a specific published post.
+
+        Calls GET /api/v1/analytics/posts/{post_id}/latest on social-media API.
+        Returns: {views, likes, comments, shares, saves, engagement_rate, ...}
+        """
+        response = await self.client.get(f"/api/v1/analytics/posts/{post_id}/latest")
+        response.raise_for_status()
+        data: dict[str, Any] = response.json()
+        return data
+
     async def get_top_posts(
         self,
         *,
