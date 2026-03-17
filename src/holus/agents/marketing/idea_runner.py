@@ -294,6 +294,68 @@ Write the {fmt} for this idea. Return JSON only.
 
 
 # ---------------------------------------------------------------------------
+# Step 2.5: Judge evaluation
+# ---------------------------------------------------------------------------
+
+
+def _evaluate_piece(raw_idea: str, fmt: str, platform: str, generated: dict) -> dict | None:
+    """Evaluate a generated piece with JudgeAgent. Non-blocking on failure."""
+    try:
+        from holus.self_improvement.judge import JudgeAgent
+
+        judge = JudgeAgent()
+
+        # Build evaluable text from the generated output
+        if fmt == "carousel_outline":
+            # For carousels, evaluate the slide content + caption
+            slides_text = json.dumps(generated.get("slides", []), indent=2)
+            caption = generated.get("caption", "")
+            output_text = f"Caption: {caption}\n\nSlides:\n{slides_text}"
+            content_type = "CAROUSEL"
+        elif fmt == "thread":
+            output_text = generated.get("text", "")
+            content_type = "THREAD"
+        else:
+            output_text = generated.get("text", "")
+            content_type = "TEXT_POST"
+
+        evaluation = judge.evaluate_with_routing(
+            task=f"Generate {fmt} for {platform}: {raw_idea[:200]}",
+            content_type=content_type,
+            output=output_text[:4000],
+        )
+
+        # Log to trajectory
+        from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
+
+        tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
+        tl.append(TrajectoryEntry(
+            agent_id="idea-runner",
+            task_type=fmt,
+            task_summary=f"{fmt} for {platform}: {raw_idea[:100]}",
+            status="success",
+            judge_verdict=evaluation.verdict.value,
+            judge_score=evaluation.score,
+            judge_feedback=evaluation.feedback,
+            model_used="anthropic/claude-sonnet-4-6",
+            metadata={
+                "schema_version": 2,
+                "platform": platform,
+                "content_type": content_type,
+                "format": fmt,
+                "idea": raw_idea[:200],
+                "dimension_scores": evaluation.dimension_scores,
+            },
+        ))
+
+        return evaluation.to_dict()
+
+    except Exception as exc:
+        print(f"  ⚠ Judge evaluation failed (non-blocking): {exc}")
+        return None
+
+
+# ---------------------------------------------------------------------------
 # Step 3: Save to content-queue
 # ---------------------------------------------------------------------------
 
@@ -403,6 +465,15 @@ def run_from_idea(raw_idea: str) -> list[dict]:
         print(f"\nStep 2/{len(decisions)+1}: Generating {fmt} for {platform}...")
         generated = generate_piece(raw_idea, decision)
 
+        # Step 2.5: Judge evaluates the generated content
+        judge_result = _evaluate_piece(raw_idea, fmt, platform, generated)
+        if judge_result:
+            generated["judge_verdict"] = judge_result["verdict"]
+            generated["judge_score"] = judge_result["score"]
+            generated["judge_feedback"] = judge_result["feedback"]
+            generated["judge_dimensions"] = judge_result.get("dimension_scores", {})
+            print(f"  → Judge: {judge_result['verdict']} ({judge_result['score']:.2f})")
+
         path = save_piece(raw_idea, decision, generated, queue_dir)
         hook = generated.get("hook_score", "?")
         voice = generated.get("voice_check", "?")
@@ -418,6 +489,8 @@ def run_from_idea(raw_idea: str) -> list[dict]:
             "queue_path": str(path),
             "hook_score": hook,
             "voice_check": voice,
+            "judge_verdict": judge_result["verdict"] if judge_result else None,
+            "judge_score": judge_result["score"] if judge_result else None,
         })
 
     print(f"\nDone. {len(results)} piece(s) in data/content-queue/")
