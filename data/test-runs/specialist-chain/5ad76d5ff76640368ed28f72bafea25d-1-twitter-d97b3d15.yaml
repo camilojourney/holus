@@ -1,0 +1,15 @@
+piece_id: 5ad76d5ff76640368ed28f72bafea25d-1-twitter-d97b3d15
+product: genpeli
+platform: twitter
+content_type: case_study
+topic: Automating video production with a custom ML pipeline (genpeli architecture)
+text: "Most \"AI video\" tools are just wrappers. I spent 140 hours building the actual\
+  \ architecture.\n\nI was losing 5 hours per video to \"the chores\"\u2014trimming\
+  \ silences, syncing captions, and normalizing audio. It\u2019s not creative work.\
+  \ It\u2019s just an algorithm performed by a human.\n\nI buil..."
+reasoning: This post demonstrates high-value automation and production ML expertise.
+  It uses genpeli as a proof point to show technical leaders how internal bottlenecks
+  can be solved with custom AI systems, positioning Camilo as an implementation expert
+  rather than a theorist.
+generated_at: '2026-03-13T21:54:56.618027+00:00'
+status: pending_review

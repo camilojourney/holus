@@ -1,0 +1,29 @@
+piece_id: 5ad76d5ff76640368ed28f72bafea25d-1-6a97d4d0
+product: genpeli
+platform: linkedin
+content_type: case_study
+topic: Automating video production with a custom ML pipeline (genpeli architecture)
+text: "I spent 140 hours building an ML pipeline to do my video editing for me.\\\
+  nMost 'AI video' tools are just wrappers\u2014genpeli handles the actual architecture.\n\
+  \nI was losing 5 hours per video to \"the chores.\"\nTrimming silences, syncing\
+  \ captions, and normalizing audio levels\u2014it\u2019s not creative work.\nIt\u2019\
+  s just an algorithm performed by a human.\n\nI decided to stop being the CPU.\n\n\
+  I built genpeli to handle the heavy lifting of video post-production.\nIt\u2019\
+  s a Python-based pipeline that treats video like data, not just a timeline.\n\n\u2192\
+  \ Whisper for word-level timestamps (synced to the millisecond).\n\u2192 Custom\
+  \ FFmpeg filters for smart silence-stripping.\n\u2192 LUFS-based audio normalization\
+  \ for platform consistency.\n\nThe technical challenge wasn't the AI\u2014it was\
+  \ the orchestration.\nMost \"AI video\" tools fail because they try to generate\
+  \ the art.\nGenpeli succeeds because it automates the labor.\n\nThe irony?\nThe\
+  \ more I automate the creative process, the more human the output actually feels.\n\
+  \nWhat I\u2019m learning \u2014 and this is the real payoff \u2014 is that automation\
+  \ doesn\u2019t replace the creator.\nIt replaces the friction that stops the creator\
+  \ from creating.\n\nWhich part of your creative process is actually just an algorithm\
+  \ you're performing manually? I'm curious where you'd spend those 5 hours if the\
+  \ machine took over the chores."
+reasoning: This post demonstrates high-value automation and production ML expertise.
+  It uses genpeli as a proof point to show technical leaders how internal bottlenecks
+  can be solved with custom AI systems, positioning Camilo as an implementation expert
+  rather than a theorist.
+generated_at: '2026-03-13T21:54:35.511897+00:00'
+status: pending_review

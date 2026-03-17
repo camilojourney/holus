@@ -1,0 +1,49 @@
+piece_id: cdd13afa12e2474aada65002dee11d1c-2-facebook-9a8d5e98
+product: genpeli
+platform: facebook
+content_type: case_study
+topic: "From raw footage to polished reel in 90 seconds \u2014 the Genpeli pipeline"
+text: "I've seen so many talented creators lose 4 entire hours to a single 60-second\
+  \ reel. It's the \"invisible\" work that kills the spark \u2014 the 400 micro-edits\
+  \ required just to keep someone from scrolling past.\n\nI built Genpeli because\
+  \ I wanted to take raw footage to a polished export in 90 seconds, not half a workday.\n\
+  \nThe bottleneck wasn't the creative vision. It was the mechanical heavy lifting\
+  \ that drains your energy. My goal with the Genpeli pipeline wasn't just to make\
+  \ another wrapper around an API; it was to build a decision-making engine for video.\n\
+  \nHere\u2019s how I\u2019m collapsing the timeline:\n\u2192 Smart-cuts: Finding\
+  \ that 0.3s of dead air that kills retention before it starts.\n\u2192 Transcription:\
+  \ Mapping Whisper timestamps to stylized, word-by-word overlays.\n\u2192 Normalization:\
+  \ Leveling the audio via FFmpeg so every word actually lands.\n\nMost tools focus\
+  \ on the \"filter.\" I'm focusing on the flow.\n\nThe math I'm using is simple:\n\
+  Creator ROI = (Content Impact \xD7 Frequency) - (Time to Edit)\xB2\n\nWhen you collapse\
+  \ the edit from hours to seconds, the \"cost\" of posting disappears. Once the friction\
+  \ is gone, the only thing left is the story you actually want to tell.\n\nHow much\
+  \ of your creative energy is currently trapped in those 0.3s gaps between sentences?\
+  \ \n\nComment if this resonates.\n\n#buildinpublic #automation #videoproduction\
+  \ #ai #python #creatoreconomy #solopreneur #softwareengineering #workflow #genpeli\
+  \ #videoediting #ml\n\n***\n\nHe visto a much\xEDsimos creadores talentosos perder\
+  \ 4 horas enteras en un solo reel de 60 segundos. Es el trabajo \"invisible\" lo\
+  \ que apaga la chispa \u2014 esos 400 micro-ajustes necesarios solo para evitar\
+  \ que alguien siga haciendo scroll.\n\nConstru\xED Genpeli porque quer\xEDa llevar\
+  \ el material original a un video pulido en 90 segundos, no en media jornada laboral.\n\
+  \nEl cuello de botella no era la visi\xF3n creativa. Era el esfuerzo mec\xE1nico\
+  \ lo que agotaba la energ\xEDa. Mi objetivo con el pipeline de Genpeli no era solo\
+  \ crear otra interfaz para una API; era construir un motor de toma de decisiones\
+  \ para video.\n\nAs\xED es como estoy reduciendo los tiempos:\n\u2192 Smart-cuts:\
+  \ Encontrando esos 0.3s de silencio que matan la retenci\xF3n antes de que empiece.\n\
+  \u2192 Transcripci\xF3n: Mapeando los timestamps de Whisper en capas de texto estilizadas\
+  \ palabra por palabra.\n\u2192 Normalizaci\xF3n: Nivelando el audio mediante FFmpeg\
+  \ para que cada palabra realmente se escuche.\n\nLa mayor\xEDa de las herramientas\
+  \ se enfocan en el \"filtro\". Yo me enfoco en el flujo.\n\nLa matem\xE1tica que\
+  \ uso es simple:\nROI del Creador = (Impacto del Contenido \xD7 Frecuencia) - (Tiempo\
+  \ de Edici\xF3n)\xB2\n\nCuando reduces la edici\xF3n de horas a segundos, el \"\
+  costo\" de publicar desaparece. Una vez que la fricci\xF3n se va, lo \xFAnico que\
+  \ queda es la historia que realmente quieres contar.\n\n\xBFCu\xE1nta de tu energ\xED\
+  a creativa est\xE1 atrapada actualmente en esos huecos de 0.3s entre frases?\n\n\
+  Comenta si esto resuena contigo.\n\n#buildinpublic #automatizacion #producciondevideo\
+  \ #ia #python #creatoreconomy #solopreneur #ingenieriadesoftware #workflow #genpeli\
+  \ #ediciondevideo #ml"
+reasoning: 'Instagram test: visual storytelling about video editing pipeline.'
+model_used: claude-sonnet-4-6
+generated_at: '2026-03-13T22:33:53.484260+00:00'
+status: pending_review

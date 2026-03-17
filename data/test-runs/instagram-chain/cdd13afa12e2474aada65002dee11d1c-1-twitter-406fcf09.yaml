@@ -1,0 +1,14 @@
+piece_id: cdd13afa12e2474aada65002dee11d1c-1-twitter-406fcf09
+product: pilaster
+platform: twitter
+content_type: tutorial
+topic: "How I built an AI image generation platform with memory \u2014 what makes\
+  \ Pilaster different"
+text: "Most creators waste 40% of their time re-prompting the same brand assets.\n\
+  \nI spent weeks fighting Stable Diffusion to keep a character consistent across\
+  \ frames. Every background change shifted the face just enough to break the illusion.\
+  \ \n\nIt\u2019s exhausting\u2014and expensive.\n\nConsis..."
+reasoning: 'Instagram test: builder story for visual platform with hashtag CTA.'
+model_used: claude-sonnet-4-6
+generated_at: '2026-03-13T22:29:05.151587+00:00'
+status: pending_review

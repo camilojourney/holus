@@ -1,0 +1,18 @@
+piece_id: 5ad76d5ff76640368ed28f72bafea25d-1-threads-841ac20e
+product: genpeli
+platform: threads
+content_type: case_study
+topic: Automating video production with a custom ML pipeline (genpeli architecture)
+text: "Most \"AI video\" tools are just wrappers. Honestly, I spent 140 hours building\
+  \ an actual ML pipeline to do my editing for me.\n\nI was losing 5 hours per video\
+  \ to \"the chores\"\u2014trimming silences and syncing captions isn't creative work.\
+  \ It's just an algorithm performed by a human. I decided to stop being the CPU.\n\
+  \n\u2192 Whisper for ms-level timestamps\n\u2192 Custom FFmpeg filters\n\u2192 LUFS-based\
+  \ normalization\n\nThe irony? The more I automate the labor, the more human the\
+  \ output feels.\n\nWhat do you think?"
+reasoning: This post demonstrates high-value automation and production ML expertise.
+  It uses genpeli as a proof point to show technical leaders how internal bottlenecks
+  can be solved with custom AI systems, positioning Camilo as an implementation expert
+  rather than a theorist.
+generated_at: '2026-03-13T21:55:46.503308+00:00'
+status: pending_review

@@ -1,0 +1,17 @@
+piece_id: cdd13afa12e2474aada65002dee11d1c-1-threads-0670f55a
+product: pilaster
+platform: threads
+content_type: tutorial
+topic: "How I built an AI image generation platform with memory \u2014 what makes\
+  \ Pilaster different"
+text: "Most people treat AI like a slot machine. I\u2019m building it to have a memory.\n\
+  \nHonestly, I spent weeks fighting stable diffusion to keep one character consistent.\
+  \ Every background change shifted the face\u2014it was exhausting.\n\nHere\u2019\
+  s the thing: consistency isn\u2019t a prompting skill. It\u2019s an infrastructure\
+  \ problem.\n\nI built a \"Character Registry\" for Pilaster that treats assets like\
+  \ variables.\n\n\u2192 Consistency up 85%\n\u2192 Prompts 60% shorter\n\nIf your\
+  \ platform forgets what you built yesterday, you aren\u2019t c..."
+reasoning: 'Instagram test: builder story for visual platform with hashtag CTA.'
+model_used: claude-sonnet-4-6
+generated_at: '2026-03-13T22:29:57.823015+00:00'
+status: pending_review
