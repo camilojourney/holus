@@ -14,6 +14,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from holus.visual.carousel_builder import _normalize_outline
 from holus.visual.engine import PlaywrightEngine
 from holus.visual.models import CarouselSpec, OutputFormat, SlideSpec
 from holus.visual.spec_converter import carousel_spec_to_slides
@@ -22,6 +23,62 @@ from holus.visual.templates import TemplateEngine
 # ---------------------------------------------------------------------------
 # carousel_spec_to_slides
 # ---------------------------------------------------------------------------
+
+
+class TestNormalizeOutlineDesign:
+    """Test _normalize_outline design block merging."""
+
+    def test_design_merged_into_slide_variables(self):
+        outline = {
+            "slides": [
+                {"type": "hook", "variables": {"headline": "Test"}},
+                {"type": "body", "variables": {"title": "B"}},
+            ],
+            "design": {
+                "theme": "warm",
+                "font_pairing": "editorial",
+                "gradient": "warm_sunset",
+                "effect": "glass",
+            },
+        }
+        result = _normalize_outline(outline)
+        for slide in result["slides"]:
+            assert slide["variables"]["theme"] == "warm"
+            assert slide["variables"]["font_pairing"] == "editorial"
+            assert slide["variables"]["background_gradient"] == "warm_sunset"
+            assert slide["variables"]["visual_effect"] == "glass"
+
+    def test_design_none_effect_not_merged(self):
+        outline = {
+            "slides": [{"type": "hook", "variables": {}}],
+            "design": {"effect": "none"},
+        }
+        result = _normalize_outline(outline)
+        assert "visual_effect" not in result["slides"][0]["variables"]
+
+    def test_no_design_block_works(self):
+        outline = {
+            "slides": [{"type": "hook", "variables": {"headline": "X"}}],
+        }
+        result = _normalize_outline(outline)
+        assert "theme" not in result["slides"][0]["variables"]
+
+    def test_slide_level_overrides_design(self):
+        outline = {
+            "slides": [{"type": "hook", "variables": {"headline": "X", "theme": "bold"}}],
+            "design": {"theme": "dark"},
+        }
+        result = _normalize_outline(outline)
+        assert result["slides"][0]["variables"]["theme"] == "bold"
+
+    def test_author_name_still_injected(self):
+        outline = {
+            "slides": [{"type": "hook", "variables": {"headline": "H"}}],
+            "design": {"theme": "cool"},
+        }
+        result = _normalize_outline(outline)
+        assert result["slides"][0]["variables"]["author_name"] == ""
+        assert result["slides"][0]["variables"]["theme"] == "cool"
 
 
 class TestCarouselSpecToSlides:
@@ -453,6 +510,21 @@ class TestCarouselEdgeCases:
         data = {"slides": [{"type": "hook", "variables": {}}]}
         spec = carousel_spec_to_slides(data)
         assert spec.slides[0].variables == {}
+
+    def test_new_slide_types_valid(self):
+        """All 11 slide types can be used together."""
+        data = {
+            "slides": [
+                {"type": t, "variables": {}}
+                for t in [
+                    "hook", "body", "summary", "cta",
+                    "split_left", "split_right", "centered",
+                    "quote", "stat", "comparison", "data",
+                ]
+            ]
+        }
+        spec = carousel_spec_to_slides(data)
+        assert len(spec.slides) == 11
 
     def test_all_slide_types_valid(self):
         """All four slide types can be used together."""

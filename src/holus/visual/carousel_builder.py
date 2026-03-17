@@ -31,15 +31,30 @@ logger = logging.getLogger(__name__)
 def _normalize_outline(outline: dict[str, Any]) -> dict[str, Any]:
     """Normalize idea_runner carousel output to carousel_spec_to_slides() format.
 
-    idea_runner returns {"slides": [...], "caption": "...", "hook_score": "...", ...}
-    spec_converter expects {"slides": [{"type": "hook"|"body"|"summary"|"cta", "variables": {...}}]}
+    idea_runner returns {"slides": [...], "caption": "...", "design": {...}, ...}
+    spec_converter expects {"slides": [{"type": "...", "variables": {...}}]}
 
-    Adds author_name to hook and cta slide variables if not already set.
+    Extracts the top-level ``design`` block and merges its fields into every
+    slide's variables so the template engine can resolve theme, font_pairing,
+    background_gradient, and visual_effect.
     """
     slides = outline.get("slides", [])
     if not slides:
         msg = "carousel outline has no slides"
         raise ValueError(msg)
+
+    # Extract carousel-level design decisions
+    design = outline.get("design", {})
+    design_vars: dict[str, str] = {}
+    if isinstance(design, dict):
+        if design.get("theme"):
+            design_vars["theme"] = design["theme"]
+        if design.get("font_pairing"):
+            design_vars["font_pairing"] = design["font_pairing"]
+        if design.get("gradient"):
+            design_vars["background_gradient"] = design["gradient"]
+        if design.get("effect") and design["effect"] != "none":
+            design_vars["visual_effect"] = design["effect"]
 
     normalized: list[dict[str, Any]] = []
     for slide in slides:
@@ -49,6 +64,11 @@ def _normalize_outline(outline: dict[str, Any]) -> dict[str, Any]:
         # Inject author name into hook and footer slides
         if slide_type in ("hook", "cta") and "author_name" not in variables:
             variables["author_name"] = ""
+
+        # Merge design decisions (slide-level overrides win)
+        for key, value in design_vars.items():
+            if key not in variables:
+                variables[key] = value
 
         normalized.append({"type": slide_type, "variables": variables})
 

@@ -207,19 +207,40 @@ Return JSON with this exact structure — no prose, no markdown fences:
   "slides": [
     {"type": "hook", "variables": {"headline": "max 8 words — the scroll stopper", "subheadline": "optional, max 12 words"}},
     {"type": "body", "variables": {"title": "max 6 words", "body": "max 20 words", "bullet_points": ["→ point one", "→ point two"]}},
+    {"type": "stat", "variables": {"stat_value": "73%", "stat_label": "label", "context": "one sentence", "trend": "up"}},
+    {"type": "quote", "variables": {"quote_text": "the quote", "attribution": "Author Name"}},
+    {"type": "comparison", "variables": {"left_title": "Before", "left_items": ["..."], "right_title": "After", "right_items": ["..."]}},
     {"type": "summary", "variables": {"title": "The takeaway", "items": ["one-sentence key insight"]}},
     {"type": "cta",  "variables": {"headline": "the closing question — lightweight, no 'follow me'"}}
   ],
+  "design": {
+    "theme": "dark",
+    "font_pairing": "tech",
+    "gradient": "dark_navy",
+    "effect": "none"
+  },
   "caption": "150-char companion post caption. Teases the carousel. Ends with Swipe →",
   "hook_score": "1-10",
   "voice_check": "PASS or FAIL"
 }
-Slide type rules:
+Slide types (pick the right mix — not all types needed):
 - hook (slide 1 only): headline ≤8 words. Optional subheadline ≤12 words. No bullets.
-- body (slides 2 to N-2): title + body OR bullets — max 30 words total per slide. One idea only.
-- summary (second-to-last): title + items list (2-4 key takeaways, one sentence each).
+- body (slides 2+): title + body OR bullets — max 30 words total per slide. One idea only.
+- stat: big number with label and context. Use for data-driven claims.
+- quote: quote text + attribution. Use for authority/social proof.
+- comparison: two columns with items. Use for before/after, old/new, X vs Y.
+- split_left / split_right: text on one side, graphic_svg placeholder on the other.
+- centered: single bold statement, no title bar.
+- data: title + chart_svg placeholder + source_label.
+- summary (second-to-last): title + items list (2-4 key takeaways).
 - cta (last slide): headline = the CTA question. No buttons. No "follow me".
-Use bullet_points only when the idea is a list. Use body text when it flows as a sentence.
+
+Design block — pick one of each:
+- theme: dark | light | warm | cool | bold
+- font_pairing: tech (dev content) | editorial (thought leadership) | modern (SaaS) | bold (punchy stats)
+- gradient: dark_navy | indigo_mesh | warm_sunset | cool_ocean | bold_fire | frosted_glass | aurora | minimal_light
+- effect: none | glass | neubrutalism | depth | glow | grain
+Match design to content tone. Data-heavy → tech+dark_navy. Thought leadership → editorial+aurora. Punchy → bold+bold_fire+neubrutalism.
 </format_instructions>
 """,
     "video_script": """
