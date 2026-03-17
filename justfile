@@ -262,6 +262,85 @@ build-observatory:
 health:
     uv run python -m holus health
 
+# -- Autonomous Content Engine -----------------------------------------------
+
+# Run ONE autonomous content cycle: generate → judge → auto-publish
+content-cycle *args:
+    uv run python -m holus.agents.marketing.orchestrator content {{args}}
+
+# Collect analytics for published content (run daily)
+collect-analytics:
+    uv run python -m holus.agents.marketing.orchestrator analytics
+
+# Run improvement cycle: learn → evolve prompts → evaluate A/B tests
+improve-cycle:
+    uv run python -m holus.agents.marketing.orchestrator improve
+
+# Auto-publish pending content based on judge scores
+auto-publish:
+    uv run python -c "import asyncio; from holus.agents.marketing.auto_publish import process_queue; print(asyncio.run(process_queue()))"
+
+# Auto-publish dry run (preview without actually posting)
+auto-publish-dry:
+    uv run python -c "import asyncio; from holus.agents.marketing.auto_publish import process_queue; print(asyncio.run(process_queue(dry_run=True)))"
+
+# Show open capability + knowledge gaps
+gaps:
+    @echo "=== Capability Gaps (need /code to fix) ==="
+    @ls -1 .self-improvement/capability-requests/*.md 2>/dev/null | grep -v README || echo "  None"
+    @echo ""
+    @echo "=== Knowledge Gaps (expert agent auto-resolves) ==="
+    @ls -1 .self-improvement/knowledge/requests/*.md 2>/dev/null | grep -v README || echo "  None"
+
+# Show Thompson Sampling arm performance
+arms:
+    @cat .self-improvement/bandit_arms.json 2>/dev/null | python3 -m json.tool || echo "No arms data yet"
+
+# Show self-improvement status dashboard
+improvement-status:
+    @echo "=== Trajectory ==="
+    @wc -l < .self-improvement/memory/trajectory.jsonl 2>/dev/null || echo "0 entries"
+    @echo ""
+    @echo "=== Latest Judge Scores ==="
+    @tail -5 .self-improvement/memory/trajectory.jsonl 2>/dev/null | python3 -c "import sys,json; [print(f'  {json.loads(l).get(\"agent_id\",\"?\")}: {json.loads(l).get(\"judge_score\",\"?\")}'[:60]) for l in sys.stdin if l.strip()]" 2>/dev/null || echo "  No entries"
+    @echo ""
+    @echo "=== Activation Gates ==="
+    @printf "  Trajectory entries: "; wc -l < .self-improvement/memory/trajectory.jsonl 2>/dev/null || echo "0"
+    @printf "  TS active (need 30/arm): "; cat .self-improvement/bandit_arms.json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('total_observations',0))" 2>/dev/null || echo "0"
+    @echo ""
+    @echo "=== Open Gaps ==="
+    @printf "  Capability: "; ls .self-improvement/capability-requests/*.md 2>/dev/null | grep -c -v README || echo "0"
+    @printf "  Knowledge:  "; ls .self-improvement/knowledge/requests/*.md 2>/dev/null | grep -c -v README || echo "0"
+
+# Run load test (100 simulated entries)
+load-test:
+    uv run python scripts/load_test.py
+
+# Schedule ALL autonomous crons (content + analytics + improvement)
+schedule-autonomous:
+    mkdir -p logs
+    cp infra/launchd/com.holus.marketing.plist ~/Library/LaunchAgents/ 2>/dev/null || true
+    cp infra/launchd/com.holus.analytics.plist ~/Library/LaunchAgents/ 2>/dev/null || true
+    cp infra/launchd/com.holus.improve.plist ~/Library/LaunchAgents/ 2>/dev/null || true
+    cp infra/launchd/com.holus.health.plist ~/Library/LaunchAgents/ 2>/dev/null || true
+    launchctl load ~/Library/LaunchAgents/com.holus.marketing.plist 2>/dev/null || true
+    launchctl load ~/Library/LaunchAgents/com.holus.analytics.plist 2>/dev/null || true
+    launchctl load ~/Library/LaunchAgents/com.holus.improve.plist 2>/dev/null || true
+    launchctl load ~/Library/LaunchAgents/com.holus.health.plist 2>/dev/null || true
+    @echo "All autonomous crons scheduled:"
+    @echo "  Content: every 6h"
+    @echo "  Analytics: daily 6am"
+    @echo "  Improvement: weekly Sunday"
+    @echo "  Health: every 5 min"
+
+# Unschedule all autonomous crons
+unschedule-autonomous:
+    -launchctl unload ~/Library/LaunchAgents/com.holus.marketing.plist 2>/dev/null
+    -launchctl unload ~/Library/LaunchAgents/com.holus.analytics.plist 2>/dev/null
+    -launchctl unload ~/Library/LaunchAgents/com.holus.improve.plist 2>/dev/null
+    -launchctl unload ~/Library/LaunchAgents/com.holus.health.plist 2>/dev/null
+    @echo "All autonomous crons unscheduled."
+
 # -- Self-Improvement --------------------------------------------------------
 
 # Run the weekly learning loop (pattern extraction from trajectory + analytics)

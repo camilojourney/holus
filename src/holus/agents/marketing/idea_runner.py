@@ -13,11 +13,14 @@ No Redis or PostgreSQL required — runs via the local LLM proxy.
 from __future__ import annotations
 
 import json
+import logging
 import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Proxy config
@@ -317,6 +320,24 @@ Write the {fmt} for this idea. Return JSON only.
         result = json.loads(cleaned)
     except (json.JSONDecodeError, TypeError):
         result = {"text": raw, "headline": raw_idea[:60], "hashtags": [], "hook_score": "?", "voice_check": "?"}
+
+    # Optional: Constitutional AI revision for text content
+    if fmt in ("text_post", "thread") and result.get("text"):
+        try:
+            import asyncio
+
+            from holus.agents.marketing.revision_loop import RevisionLoop
+
+            loop = RevisionLoop(max_rounds=1)
+            revision = asyncio.run(loop.improve(result["text"], fmt, platform))
+            if revision.get("improved"):
+                result["text"] = revision["revised_text"]
+                result["revised"] = True
+                print(f"  → Revised: {revision['rounds']} round(s) of critique")
+        except Exception as exc:
+            # Non-blocking — if revision fails, use original
+            logger.debug("Revision loop skipped: %s", exc)
+
     return result
 
 
@@ -346,11 +367,27 @@ def _evaluate_piece(raw_idea: str, fmt: str, platform: str, generated: dict) -> 
             output_text = generated.get("text", "")
             content_type = "TEXT_POST"
 
-        evaluation = judge.evaluate_with_routing(
-            task=f"Generate {fmt} for {platform}: {raw_idea[:200]}",
-            content_type=content_type,
-            output=output_text[:4000],
-        )
+        # Use platform-specific rubric if available
+        platform_rubric = None
+        try:
+            from holus.agents.marketing.platform_config import get_judge_rubric
+            platform_rubric = get_judge_rubric(platform)
+        except Exception:
+            pass
+
+        if platform_rubric:
+            evaluation = judge.evaluate(
+                task=f"Generate {fmt} for {platform}: {raw_idea[:200]}",
+                task_type=content_type.lower(),
+                output=output_text[:4000],
+                custom_rubric=platform_rubric,
+            )
+        else:
+            evaluation = judge.evaluate_with_routing(
+                task=f"Generate {fmt} for {platform}: {raw_idea[:200]}",
+                content_type=content_type,
+                output=output_text[:4000],
+            )
 
         # Log to trajectory
         from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
