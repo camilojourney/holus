@@ -167,6 +167,50 @@ def _send_telegram_notification(item: dict[str, Any], action: str, score: float)
         logger.debug("Telegram notification failed: %s", exc)
 
 
+def _trigger_reflexion(item: dict[str, Any], score: float) -> None:
+    """Generate and store a reflection for rejected content.
+
+    Uses judge feedback to create a structured reflection, then stores it
+    in trajectory for future retrieval during content generation.
+    """
+    try:
+        from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
+
+        feedback = item.get("judge_feedback", "No specific feedback")
+        topic = item.get("topic", "Unknown topic")[:100]
+        fmt = item.get("content_type", item.get("format", "unknown"))
+        platform = item.get("platform", "unknown")
+
+        reflection = (
+            f"REJECTED ({score:.2f}): {fmt} for {platform} — '{topic}'. "
+            f"Judge feedback: {feedback}. "
+            f"Next time: address this specific issue before generating."
+        )
+
+        tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
+        tl.append(TrajectoryEntry(
+            agent_id="auto-publish",
+            task_type="reflexion",
+            task_summary=f"Reflection on rejected {fmt}: {topic}",
+            status="success",
+            judge_score=score,
+            judge_verdict="FAIL",
+            judge_feedback=reflection,
+            metadata={
+                "schema_version": 2,
+                "failure_class": "quality_issue",
+                "platform": platform,
+                "content_type": fmt,
+                "original_feedback": feedback,
+            },
+        ))
+
+        logger.info("Reflexion stored for rejected piece: %s", topic[:50])
+
+    except Exception as exc:
+        logger.debug("Reflexion storage failed (non-blocking): %s", exc)
+
+
 async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
     """Process all pending_review items based on judge scores.
 
@@ -236,6 +280,8 @@ async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
                     "auto_rejected": True,
                 })
                 _send_telegram_notification(item, "auto_rejected", score)
+                # Reflexion: learn from the failure
+                _trigger_reflexion(item, score)
 
             results.append({
                 "piece_id": piece_id,
