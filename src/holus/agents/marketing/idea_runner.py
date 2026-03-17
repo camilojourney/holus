@@ -324,16 +324,18 @@ Write the {fmt} for this idea. Return JSON only.
     # Optional: Constitutional AI revision for text content
     if fmt in ("text_post", "thread") and result.get("text"):
         try:
-            import asyncio
-
             from holus.agents.marketing.revision_loop import RevisionLoop
 
             loop = RevisionLoop(max_rounds=1)
-            revision = asyncio.run(loop.improve(result["text"], fmt, platform))
-            if revision.get("improved"):
-                result["text"] = revision["revised_text"]
-                result["revised"] = True
-                print(f"  → Revised: {revision['rounds']} round(s) of critique")
+            # revision_loop functions are async but we're in sync context
+            # Call the underlying sync _call directly for critique + revise
+            critique_text = loop._call_sync(result["text"], fmt, platform)
+            if critique_text and "PASS" not in critique_text[:50]:
+                revised = loop._revise_sync(result["text"], critique_text)
+                if revised and revised != result["text"]:
+                    result["text"] = revised
+                    result["revised"] = True
+                    print("  → Revised: 1 round of critique")
         except Exception as exc:
             # Non-blocking — if revision fails, use original
             logger.debug("Revision loop skipped: %s", exc)

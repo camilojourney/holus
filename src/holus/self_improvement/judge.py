@@ -153,12 +153,20 @@ class JudgeAgent:
     def __init__(
         self,
         api_key: str | None = None,
-        model: str = "claude-haiku-4-5-20251001",
+        model: str = "anthropic/claude-haiku-4-5-20251001",
+        *,
+        use_proxy: bool = True,
+        proxy_url: str = "http://localhost:8080/v1/chat/completions",
     ) -> None:
-        import anthropic
-
-        self._client = anthropic.Anthropic(api_key=api_key)
         self._model = model
+        self._use_proxy = use_proxy
+        self._proxy_url = proxy_url
+
+        if not use_proxy:
+            import anthropic
+            self._client = anthropic.Anthropic(api_key=api_key)
+        else:
+            self._client = None
 
     def evaluate(
         self,
@@ -190,18 +198,38 @@ class JudgeAgent:
         )
 
         try:
-            response = self._client.messages.create(
-                model=self._model,
-                max_tokens=1024,
-                temperature=0.0,
-                system=JUDGE_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": user_message}],
-            )
+            if self._use_proxy:
+                import requests as _requests
 
-            response_text = ""
-            for block in response.content:
-                if hasattr(block, "text"):
-                    response_text += block.text
+                payload = {
+                    "model": self._model,
+                    "messages": [
+                        {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+                        {"role": "user", "content": user_message},
+                    ],
+                    "max_tokens": 1024,
+                    "temperature": 0.0,
+                }
+                resp = _requests.post(
+                    self._proxy_url,
+                    json=payload,
+                    headers={"Content-Type": "application/json", "Authorization": "Bearer local"},
+                    timeout=120,
+                )
+                resp.raise_for_status()
+                response_text = resp.json()["choices"][0]["message"]["content"]
+            else:
+                response = self._client.messages.create(
+                    model=self._model,
+                    max_tokens=1024,
+                    temperature=0.0,
+                    system=JUDGE_SYSTEM_PROMPT,
+                    messages=[{"role": "user", "content": user_message}],
+                )
+                response_text = ""
+                for block in response.content:
+                    if hasattr(block, "text"):
+                        response_text += block.text
 
             evaluation = json.loads(response_text)
 

@@ -109,11 +109,26 @@ def _call(model: str, system: str, user: str) -> str:
         return ""
 
 
+def _call_sync(system: str, user: str) -> str:
+    """Synchronous LLM call for use in sync contexts."""
+    return _call("anthropic/claude-sonnet-4-6", system, user)
+
+
 class RevisionLoop:
     """Generate → Critique → Revise loop for content quality."""
 
     def __init__(self, max_rounds: int = 1) -> None:
         self.max_rounds = max_rounds
+
+    def _call_sync(self, text: str, content_type: str, platform: str) -> str:
+        """Synchronous critique for use in sync contexts (idea_runner)."""
+        user_msg = f"<content_type>{content_type}</content_type>\n<platform>{platform}</platform>\n<content>\n{text}\n</content>\nCritique this content against the constitution. Be specific."
+        return _call("anthropic/claude-sonnet-4-6", CRITIQUE_PROMPT, user_msg)
+
+    def _revise_sync(self, text: str, critique_text: str) -> str:
+        """Synchronous revision for use in sync contexts."""
+        user_msg = f"<original>\n{text}\n</original>\n<critique>\n{critique_text}\n</critique>\nApply all suggested changes. Return the complete revised text only."
+        return _call("anthropic/claude-sonnet-4-6", REVISE_PROMPT, user_msg)
 
     async def improve(
         self,
