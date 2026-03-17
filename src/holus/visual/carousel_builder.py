@@ -70,9 +70,52 @@ def _normalize_outline(outline: dict[str, Any]) -> dict[str, Any]:
             if key not in variables:
                 variables[key] = value
 
+        # Auto-generate SVG charts where the LLM can't
+        _inject_auto_svg(slide_type, variables)
+
         normalized.append({"type": slide_type, "variables": variables})
 
     return {"slides": normalized}
+
+
+def _inject_auto_svg(slide_type: str, variables: dict[str, Any]) -> None:
+    """Auto-generate SVG charts for slides that benefit from them.
+
+    The LLM generates content but cannot produce SVGs. This function fills
+    in sparklines for stat slides and decorative patterns for split slides.
+    """
+    from holus.visual.charts import decorative_svg, sparkline_svg
+
+    if slide_type == "stat" and "sparkline_svg" not in variables:
+        # Generate a sparkline from the stat value if it's a percentage
+        stat_val = str(variables.get("stat_value", ""))
+        pct = None
+        import contextlib
+
+        for char in ("%", "x", "X"):
+            if char in stat_val:
+                with contextlib.suppress(ValueError):
+                    pct = float(stat_val.replace(char, "").replace(",", "").strip())
+                break
+        if pct is not None:
+            # Generate a plausible trend line ending at the stat value
+            import random
+
+            random.seed(hash(stat_val))  # deterministic per value
+            trend = variables.get("trend", "up")
+            base = pct * 0.4 if trend == "up" else pct * 1.4
+            points = [base]
+            for _ in range(9):
+                delta = (pct - base) / 10 + random.uniform(-pct * 0.05, pct * 0.05)
+                points.append(max(0, points[-1] + delta))
+            points.append(pct)
+            variables["sparkline_svg"] = sparkline_svg(points)
+
+    if slide_type in ("split_left", "split_right") and "graphic_svg" not in variables:
+        # Pick a decorative pattern — vary by slide position
+        patterns = ["circles", "grid", "waves", "blocks"]
+        idx = hash(str(variables.get("title", ""))) % len(patterns)
+        variables["graphic_svg"] = decorative_svg(patterns[idx])
 
 
 async def _render(outline: dict[str, Any], output_path: Path) -> Path:

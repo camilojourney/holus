@@ -81,6 +81,48 @@ class TestNormalizeOutlineDesign:
         assert result["slides"][0]["variables"]["theme"] == "cool"
 
 
+class TestAutoSvgInjection:
+    """Test _inject_auto_svg via _normalize_outline."""
+
+    def test_stat_slide_gets_sparkline(self):
+        outline = {
+            "slides": [{"type": "stat", "variables": {"stat_value": "73%", "trend": "up"}}],
+        }
+        result = _normalize_outline(outline)
+        assert "sparkline_svg" in result["slides"][0]["variables"]
+        assert "<svg" in result["slides"][0]["variables"]["sparkline_svg"]
+
+    def test_stat_slide_no_sparkline_if_provided(self):
+        outline = {
+            "slides": [{"type": "stat", "variables": {"stat_value": "73%", "sparkline_svg": "<svg>custom</svg>"}}],
+        }
+        result = _normalize_outline(outline)
+        assert result["slides"][0]["variables"]["sparkline_svg"] == "<svg>custom</svg>"
+
+    def test_split_slide_gets_decorative(self):
+        outline = {
+            "slides": [{"type": "split_left", "variables": {"title": "Test"}}],
+        }
+        result = _normalize_outline(outline)
+        assert "graphic_svg" in result["slides"][0]["variables"]
+        assert "<svg" in result["slides"][0]["variables"]["graphic_svg"]
+
+    def test_split_slide_no_decorative_if_provided(self):
+        outline = {
+            "slides": [{"type": "split_right", "variables": {"graphic_svg": "<svg>mine</svg>"}}],
+        }
+        result = _normalize_outline(outline)
+        assert result["slides"][0]["variables"]["graphic_svg"] == "<svg>mine</svg>"
+
+    def test_body_slide_not_injected(self):
+        outline = {
+            "slides": [{"type": "body", "variables": {"title": "X"}}],
+        }
+        result = _normalize_outline(outline)
+        assert "sparkline_svg" not in result["slides"][0]["variables"]
+        assert "graphic_svg" not in result["slides"][0]["variables"]
+
+
 class TestCarouselSpecToSlides:
     """Test carousel_spec_to_slides converter."""
 
