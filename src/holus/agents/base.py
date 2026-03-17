@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import abc
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
 import redis
@@ -104,12 +105,114 @@ class BaseAgent(abc.ABC):
         return f"You are the {self.agent_name} agent for Holus."
 
     def _evaluate_self(self, final_state: dict[str, Any]) -> dict[str, Any] | None:
-        """Post-execution self-evaluation hook. Override in subclasses.
+        """Post-execution self-evaluation via JudgeAgent + trajectory logging.
 
-        Returns evaluation dict or None if not implemented.
-        Called in run() after graph execution.
+        Calls JudgeAgent.evaluate_with_routing() on the agent's output,
+        then logs the result to trajectory.jsonl. This is THE foundation
+        for the self-improvement loop — without judge scores in trajectory,
+        no downstream optimization can activate.
+
+        Override in subclasses to customize task/output extraction from state.
         """
+        # Extract output from state — subclasses can override for richer extraction
+        output = self._extract_output_for_evaluation(final_state)
+        if not output:
+            return None
+
+        task_summary = final_state.get("task_summary", f"{self.agent_name} run")
+        content_type = final_state.get("content_type", "default")
+
+        try:
+            from holus.self_improvement.judge import JudgeAgent
+
+            judge = JudgeAgent(api_key=self.config.anthropic_api_key or None)
+            evaluation = judge.evaluate_with_routing(
+                task=task_summary,
+                content_type=content_type,
+                output=output[:4000],  # Cap to avoid token waste on long outputs
+            )
+
+            # Log to trajectory
+            self._log_trajectory(
+                task_type=content_type,
+                task_summary=task_summary,
+                status="success",
+                judge_verdict=evaluation.verdict.value,
+                judge_score=evaluation.score,
+                judge_feedback=evaluation.feedback,
+                metadata=final_state.get("metadata", {}),
+            )
+
+            return evaluation.to_dict()
+
+        except Exception as exc:
+            logger.warning("Self-evaluation failed (non-blocking): %s", exc)
+            # Still log the run, just without judge data
+            self._log_trajectory(
+                task_type=content_type,
+                task_summary=task_summary,
+                status="success",
+                metadata={"evaluation_error": str(exc)},
+            )
+            return None
+
+    def _extract_output_for_evaluation(self, final_state: dict[str, Any]) -> str | None:
+        """Extract the evaluable output from final state. Override in subclasses."""
+        # Try common state keys
+        for key in ("output", "generated_text", "text", "content", "result"):
+            val = final_state.get(key)
+            if isinstance(val, str) and val.strip():
+                return val
         return None
+
+    def _log_trajectory(
+        self,
+        *,
+        task_type: str = "",
+        task_summary: str = "",
+        status: str = "success",
+        judge_verdict: str | None = None,
+        judge_score: float | None = None,
+        judge_feedback: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        """Log an entry to trajectory.jsonl."""
+        try:
+            from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
+
+            tl = TrajectoryLogger(
+                Path(".self-improvement/memory/trajectory.jsonl")
+            )
+            entry = TrajectoryEntry(
+                agent_id=self.agent_name,
+                task_type=task_type,
+                task_summary=task_summary,
+                status=status,
+                judge_verdict=judge_verdict,
+                judge_score=judge_score,
+                judge_feedback=judge_feedback,
+                model_used=self.model_tier,
+                metadata={
+                    "schema_version": 2,
+                    "prompt_variant_id": self._get_prompt_variant_id(),
+                    **(metadata or {}),
+                },
+            )
+            tl.append(entry)
+        except Exception as exc:
+            logger.warning("Trajectory logging failed (non-blocking): %s", exc)
+
+    def _get_prompt_variant_id(self) -> str:
+        """Return the current prompt variant ID for observability."""
+        try:
+            from pathlib import Path as _Path
+
+            variant_path = _Path("config/prompts") / self.agent_name / "current.md"
+            if variant_path.exists():
+                return f"layer1:{variant_path.name}"
+            return "layer2:canonical"
+        except Exception:
+            return "unknown"
 
     @property
     def tools(self) -> list[dict[str, Any]]:
