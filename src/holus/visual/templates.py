@@ -66,12 +66,14 @@ class TemplateEngine:
         template = self._env.get_template(template_path)
         normalized_variables = self._normalize_variables(template_name, variables)
         theme_name = normalized_variables.pop("theme", None)
+        font_pairing_name = normalized_variables.pop("font_pairing", None)
+        fp_str = str(font_pairing_name) if isinstance(font_pairing_name, str) and font_pairing_name else None
         if isinstance(theme_name, str) and theme_name:
             themed_identity = self._brand_loader.load_theme(theme_name)
-            brand_css = themed_identity.to_css_variables()
+            brand_css = themed_identity.to_css_variables(font_pairing=fp_str)
         else:
             brand = self._brand_loader.load()
-            brand_css = brand.to_css_variables()
+            brand_css = brand.to_css_variables(font_pairing=fp_str)
 
         # Resolve visual_effect → effect_class
         visual_effect = normalized_variables.pop("visual_effect", None)

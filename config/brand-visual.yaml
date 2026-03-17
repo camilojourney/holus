@@ -27,6 +27,34 @@ typography:
     min_slide_headline: 64
     min_slide_body: 28
 
+# Font pairing presets — agent selects one per carousel.
+# Each pairing has a headline + body font with appropriate weights.
+font_pairings:
+  tech:
+    headline_font: "Plus Jakarta Sans"
+    headline_weight: 800
+    body_font: "JetBrains Mono"
+    body_weight: 400
+    vibe: "Clean tech, developer-oriented"
+  editorial:
+    headline_font: "Playfair Display"
+    headline_weight: 700
+    body_font: "Source Sans 3"
+    body_weight: 400
+    vibe: "Authority, long-form, thought leadership"
+  modern:
+    headline_font: "Space Grotesk"
+    headline_weight: 700
+    body_font: "Inter"
+    body_weight: 400
+    vibe: "Contemporary SaaS, startup feel"
+  bold:
+    headline_font: "Bebas Neue"
+    headline_weight: 400
+    body_font: "Barlow"
+    body_weight: 500
+    vibe: "High impact, punchy stats, attention-grabbing"
+
 spacing:
   base_unit: 4
   margin: 64

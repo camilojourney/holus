@@ -261,6 +261,16 @@ class VisualRules(BaseModel):
     min_contrast_ratio: float = Field(default=4.5, ge=1.0, description="WCAG AA minimum")
 
 
+class FontPairing(BaseModel):
+    """A named font pairing for carousel design variety."""
+
+    headline_font: str = Field(description="Font family for headlines")
+    headline_weight: int = Field(default=700, description="Font weight for headlines")
+    body_font: str = Field(description="Font family for body text")
+    body_weight: int = Field(default=400, description="Font weight for body text")
+    vibe: str = Field(default="", description="Description of when to use this pairing")
+
+
 class ThemeColors(BaseModel):
     """Per-theme color overrides. Only colors change per theme."""
 
@@ -285,24 +295,40 @@ class BrandVisualIdentity(BaseModel):
     safe_zones: SafeZoneConfig = Field(default_factory=SafeZoneConfig)
     rules: VisualRules = Field(default_factory=VisualRules)
     themes: dict[str, ThemeColors] = Field(default_factory=dict)
+    font_pairings: dict[str, FontPairing] = Field(default_factory=dict)
 
-    def to_css_variables(self, theme_name: str | None = None) -> str:
+    def to_css_variables(self, theme_name: str | None = None, font_pairing: str | None = None) -> str:
         """Generate CSS custom properties from brand config."""
         colors = self.colors
         if theme_name is not None and theme_name in self.themes:
             colors = self.themes[theme_name].colors
+
+        # Resolve font pairing
+        headline_font = self.typography.primary_font
+        body_font = self.typography.secondary_font
+        headline_weight = self.typography.weights.get("headline", 700)
+        body_weight = self.typography.weights.get("body", 400)
+        if font_pairing is not None and font_pairing in self.font_pairings:
+            fp = self.font_pairings[font_pairing]
+            headline_font = fp.headline_font
+            body_font = fp.body_font
+            headline_weight = fp.headline_weight
+            body_weight = fp.body_weight
 
         lines = [":root {"]
         for field_name, value in colors.model_dump().items():
             css_name = field_name.replace("_", "-")
             lines.append(f"  --brand-color-{css_name}: {value};")
         lines.append(
-            f'  --brand-font-primary: "{self.typography.primary_font}", system-ui, sans-serif;'
+            f'  --brand-font-primary: "{headline_font}", system-ui, sans-serif;'
         )
         lines.append(
-            f'  --brand-font-secondary: "{self.typography.secondary_font}", monospace;'
+            f'  --brand-font-secondary: "{body_font}", system-ui, sans-serif;'
         )
-        for name, weight in self.typography.weights.items():
+        weights = dict(self.typography.weights)
+        weights["headline"] = headline_weight
+        weights["body"] = body_weight
+        for name, weight in weights.items():
             lines.append(f"  --brand-weight-{name}: {weight};")
         for name, size in self.typography.sizes.items():
             css_name = name.replace("_", "-")
