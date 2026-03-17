@@ -1,0 +1,99 @@
+# Cold Start Content Calendar
+# Systematic coverage of all 20 combinations (5 pillars x 4 platforms)
+# in 4 days to seed data collection for the self-improvement loop.
+#
+# Run this ONCE when the system first activates to ensure every
+# (pillar, platform) combination has at least 1 data point.
+# After day 4, Thompson Sampling takes over strategy decisions.
+
+# Day 1: LinkedIn (primary platform, highest ROI)
+day_1:
+  - pillar: ai_engineering
+    platform: linkedin
+    format: carousel_outline
+    idea_seed: "How I built a self-improving AI agent — the 5 mechanisms"
+  - pillar: building_in_public
+    platform: linkedin
+    format: text_post
+    idea_seed: "What I learned shipping 10 repos in 3 months"
+  - pillar: systems_thinking
+    platform: linkedin
+    format: carousel_outline
+    idea_seed: "Why most AI agents fail after week 1 — the missing feedback loop"
+  - pillar: bilingual_ai
+    platform: linkedin
+    format: text_post
+    idea_seed: "The 600M Spanish-English market Silicon Valley ignores"
+  - pillar: contrarian_takes
+    platform: linkedin
+    format: text_post
+    idea_seed: "Stop fine-tuning. Start prompt-evolving."
+
+# Day 2: Twitter/X (quick takes, threads)
+day_2:
+  - pillar: ai_engineering
+    platform: twitter_x
+    format: thread
+    idea_seed: "5 things I learned building AI agents that actually improve"
+  - pillar: building_in_public
+    platform: twitter_x
+    format: text_post
+    idea_seed: "Revenue update: month 3 of building in public"
+  - pillar: systems_thinking
+    platform: twitter_x
+    format: thread
+    idea_seed: "Thompson Sampling for content strategy — how it actually works"
+  - pillar: bilingual_ai
+    platform: twitter_x
+    format: text_post
+    idea_seed: "Why I write code in English but think in Spanish"
+  - pillar: contrarian_takes
+    platform: twitter_x
+    format: text_post
+    idea_seed: "RAG is dead. Long live agentic retrieval."
+
+# Day 3: Instagram (visual, bilingual, personal)
+day_3:
+  - pillar: ai_engineering
+    platform: instagram
+    format: instagram_caption
+    idea_seed: "Behind the scenes of building an AI marketing agent"
+  - pillar: building_in_public
+    platform: instagram
+    format: instagram_caption
+    idea_seed: "My desk at 2am — what shipping an AI product looks like"
+  - pillar: systems_thinking
+    platform: instagram
+    format: instagram_caption
+    idea_seed: "The whiteboard where I designed the self-improvement loop"
+  - pillar: bilingual_ai
+    platform: instagram
+    format: instagram_caption
+    idea_seed: "Cuando la IA habla tu idioma — building for the bilingual web"
+  - pillar: contrarian_takes
+    platform: instagram
+    format: instagram_caption
+    idea_seed: "Everyone wants to fine-tune. Nobody wants to evaluate."
+
+# Day 4: Threads (conversational, casual)
+day_4:
+  - pillar: ai_engineering
+    platform: threads
+    format: instagram_caption
+    idea_seed: "Hot take: the best AI agent is the one that knows it sucks"
+  - pillar: building_in_public
+    platform: threads
+    format: instagram_caption
+    idea_seed: "Day 90 of building an autonomous content engine. Here's what surprised me."
+  - pillar: systems_thinking
+    platform: threads
+    format: instagram_caption
+    idea_seed: "Your AI agent doesn't need more tools. It needs a feedback loop."
+  - pillar: bilingual_ai
+    platform: threads
+    format: instagram_caption
+    idea_seed: "Building AI that speaks Spanglish — harder than it sounds"
+  - pillar: contrarian_takes
+    platform: threads
+    format: instagram_caption
+    idea_seed: "Most AI content tools don't actually learn. Here's proof."

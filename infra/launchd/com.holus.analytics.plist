@@ -4,21 +4,25 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.holus.marketing</string>
+    <string>com.holus.analytics</string>
     <key>ProgramArguments</key>
     <array>
         <string>/bin/zsh</string>
         <string>-c</string>
-        <string>cd /Users/mini/.openclaw/workspace/github/holus &amp;&amp; /opt/homebrew/bin/uv run python -m holus run marketing --once &gt;&gt; logs/marketing.log 2&gt;&amp;1</string>
+        <string>cd /Users/mini/.openclaw/workspace/github/holus &amp;&amp; /opt/homebrew/bin/uv run python -m holus collect-analytics &gt;&gt; logs/analytics.log 2&gt;&amp;1</string>
     </array>
-    <key>StartInterval</key>
-    <integer>21600</integer>
-    <key>RunAtLoad</key>
-    <true/>
+    <!-- Run daily at 6 AM ET (10:00 UTC) -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>6</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
     <key>StandardOutPath</key>
-    <string>/Users/mini/.openclaw/workspace/github/holus/logs/marketing.stdout.log</string>
+    <string>/Users/mini/.openclaw/workspace/github/holus/logs/analytics.stdout.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/mini/.openclaw/workspace/github/holus/logs/marketing.stderr.log</string>
+    <string>/Users/mini/.openclaw/workspace/github/holus/logs/analytics.stderr.log</string>
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
