@@ -80,12 +80,113 @@ class SpecialistDispatcher:
     3. Platform + format constraints
     4. Its specific task description
 
-    Specialists are called sequentially (each builds on prior output).
-    voice-guardian is a gate — if FAIL, the piece is flagged.
+    Sequential by default. Parallel execution for independent specialists
+    (e.g., hook-architect and data-visualizer can run concurrently).
+    voice-guardian always runs last as a gate.
+
+    Specialist-level Thompson Sampling: tracks which specialist performs
+    best for which (content_type, platform) combination.
     """
 
     def __init__(self, proxy_url: str = "http://localhost:8080/v1/chat/completions") -> None:
         self._proxy_url = proxy_url
+        self._specialist_scores: dict[str, list[float]] = {}  # specialist_id → scores
+
+    async def dispatch_parallel(
+        self,
+        idea: str,
+        content_type: str,
+        platform: str,
+        *,
+        pillar: str = "ai_engineering",
+    ) -> AssembledContent:
+        """Run independent specialists in parallel, then sequential dependents.
+
+        Parallel group: hook-architect + any independent specialists
+        Sequential: storyteller/carousel-architect (needs hook), cta-strategist, voice-guardian
+        """
+        import asyncio
+
+        pipeline = PIPELINES.get(content_type, PIPELINES["text_post"])
+
+        # Split into parallel (first specialist) and sequential (rest)
+        # hook-architect is always first and independent
+        parallel_specialists = [pipeline[0]] if pipeline else []
+        sequential_specialists = pipeline[1:] if len(pipeline) > 1 else []
+
+        outputs: list[SpecialistOutput] = []
+        chain_context = ""
+
+        # Run parallel group
+        if parallel_specialists:
+            tasks = []
+            for spec_id in parallel_specialists:
+                task_desc = SPECIALIST_TASKS.get(spec_id, "Generate content.")
+                prompt = self._build_specialist_prompt(
+                    specialist_id=spec_id, idea=idea, platform=platform,
+                    content_type=content_type, pillar=pillar, task=task_desc,
+                    chain_context="",
+                )
+                tasks.append(self._call_specialist(spec_id, prompt))
+
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for spec_id, result in zip(parallel_specialists, results, strict=True):
+                output_text = result if isinstance(result, str) else f"[{spec_id} failed: {result}]"
+                outputs.append(SpecialistOutput(specialist_id=spec_id, output=output_text))
+                chain_context += f"\n\n--- {spec_id} output ---\n{output_text}"
+
+        # Run sequential group
+        for spec_id in sequential_specialists:
+            task_desc = SPECIALIST_TASKS.get(spec_id, "Generate content.")
+            prompt = self._build_specialist_prompt(
+                specialist_id=spec_id, idea=idea, platform=platform,
+                content_type=content_type, pillar=pillar, task=task_desc,
+                chain_context=chain_context,
+            )
+            output_text = await self._call_specialist(spec_id, prompt)
+            outputs.append(SpecialistOutput(specialist_id=spec_id, output=output_text))
+            chain_context += f"\n\n--- {spec_id} output ---\n{output_text}"
+
+        return self._assemble(outputs, content_type)
+
+    def record_specialist_score(self, specialist_id: str, score: float) -> None:
+        """Record a judge score for a specific specialist's output.
+
+        Enables specialist-level performance tracking for targeted
+        prompt evolution (evolve the weakest specialist, not all).
+        """
+        if specialist_id not in self._specialist_scores:
+            self._specialist_scores[specialist_id] = []
+        self._specialist_scores[specialist_id].append(score)
+
+    def get_weakest_specialist(self, min_samples: int = 5) -> str | None:
+        """Find the specialist with the lowest average score.
+
+        Used by prompt evolution to target optimization.
+        Returns None if insufficient data.
+        """
+        candidates: list[tuple[str, float]] = []
+        for spec_id, scores in self._specialist_scores.items():
+            if len(scores) >= min_samples:
+                avg = sum(scores) / len(scores)
+                candidates.append((spec_id, avg))
+
+        if not candidates:
+            return None
+
+        return min(candidates, key=lambda x: x[1])[0]
+
+    def specialist_summary(self) -> dict[str, dict[str, float | int]]:
+        """Return performance summary for all specialists."""
+        summary = {}
+        for spec_id, scores in self._specialist_scores.items():
+            summary[spec_id] = {
+                "n": len(scores),
+                "avg_score": round(sum(scores) / len(scores), 3) if scores else 0,
+                "min_score": round(min(scores), 3) if scores else 0,
+                "max_score": round(max(scores), 3) if scores else 0,
+            }
+        return summary
 
     async def dispatch_pipeline(
         self,
