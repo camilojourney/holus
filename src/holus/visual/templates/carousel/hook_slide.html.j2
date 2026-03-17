@@ -1,7 +1,7 @@
 {% extends "base.html.j2" %}
 
 {% block body %}
-<div class="slide-container slide-hook">
+<div class="slide-container slide-hook {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
   <div class="slide-content">
     {% if label %}
     <span class="slide-label">{{ label }}</span>

@@ -1,7 +1,7 @@
 {% extends "base.html.j2" %}
 
 {% block body %}
-<div class="slide-container slide-cta">
+<div class="slide-container slide-cta {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
   <div class="slide-content">
     <h2 class="slide-cta-headline">{{ headline | default("Want more?") }}</h2>
 
