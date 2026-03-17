@@ -2,14 +2,14 @@
 title: Architecture Research — Design Patterns & System Design
 domain: multi-agent-systems
 owner: holus-research
-last_updated: 2026-03-15
+last_updated: 2026-03-17
 review_cadence: 90
-next_review: 2026-06-13
+next_review: 2026-06-15
 ---
 
 # Architecture Research — Design Patterns & System Design
 
-Architecture research for Holus: deterministic creativity patterns, creative tool registry design, agent evaluation infrastructure, and observability.
+Architecture research for Holus: deterministic creativity patterns, creative tool registry design, agent evaluation infrastructure, observability, self-improvement mechanisms, platform isolation, and gap detection.
 
 ---
 
@@ -724,3 +724,358 @@ Based on the research, these elements of the original design should be deferred 
 | Responsible AI Foundation | Human oversight reliability (50% catch rate) | [Human-in-the-Loop Analysis](https://www.responsibleaifoundation.com/post/human-in-the-loop-but-where) |
 | Cameron Wolfe (PhD) | LLM judge analysis, hallucinated rationales | [LLM-as-Judge Substack](https://cameronrwolfe.substack.com/p/llm-as-a-judge) |
 | Sebastian Sigl | 5 bias types and mitigations | [LLM Judge Biases](https://www.sebastiansigl.com/blog/llm-judge-biases-and-how-to-fix-them) |
+
+---
+
+## Self-Improvement Architecture (5 Mechanisms)
+
+Holus learns and improves through five distinct mechanisms, each with its own data requirements, activation conditions, and feedback loops. They operate at different timescales and reinforce each other: constitutional evaluation provides immediate quality signals, engagement rewards provide delayed real-world signals, Thompson Sampling exploits the best-performing variants, prompt evolution discovers new variants, and Reflexion accumulates per-task episodic wisdom.
+
+### Mechanism 1: Constitutional Evaluation
+
+**Pattern:** Haiku judges Sonnet output. A smaller, cheaper model evaluates the output of the generator model against a structured rubric (constitution). This is the inverse of the typical "bigger model judges smaller model" pattern -- it works because evaluation is a simpler task than generation, and the cost savings at scale are substantial.
+
+**Architecture:**
+- 7 domain-expert evaluators, each with a specialized rubric (content quality, brand voice, technical accuracy, audience fit, CTA effectiveness, visual coherence, platform optimization)
+- 2-tier evaluation structure:
+  - **Tier 1 (text):** Evaluates written content -- copy, captions, hooks, CTAs. Runs on every piece.
+  - **Tier 2 (visual):** Evaluates visual content -- carousel design, image composition, color consistency. Runs on visual outputs only.
+- Each evaluator scores on a 1-5 scale per rubric dimension, using the G-Eval pattern (CoT before scoring)
+- Scores feed into the engagement reward signal (Mechanism 2) as the "judge" component of the blended reward
+
+**Why Haiku judges Sonnet:** Cross-family evaluation avoids self-preference bias (see Section 3.4 above). Haiku is 10-20x cheaper per token than Sonnet, making 100% coverage economically viable. The evaluation task is constrained enough (structured rubric, fixed dimensions) that Haiku's capability ceiling is not the bottleneck.
+
+**Cost model:** ~$15-30/month at 100% coverage across all content types, assuming 200-400 content pieces/month.
+
+### Mechanism 2: Engagement Reward Signal
+
+**Pattern:** Platform-specific engagement metrics are weighted and blended into a single reward signal that combines judge scores (immediate) with real-world performance (delayed).
+
+**Platform-specific weights:**
+
+| Platform | Primary Signal | Weight | Secondary Signal | Weight | Tertiary Signal | Weight |
+|----------|---------------|--------|-----------------|--------|----------------|--------|
+| LinkedIn | Comments | 0.45 | Shares/Reposts | 0.30 | Clicks | 0.25 |
+| Instagram | Saves | 0.40 | Shares | 0.30 | Comments | 0.30 |
+| TikTok | Watch Time (avg %) | 0.50 | Shares | 0.25 | Comments | 0.25 |
+| Twitter/X | Retweets | 0.40 | Replies | 0.35 | Likes | 0.25 |
+| YouTube Shorts | Watch Time (avg %) | 0.45 | Subscribers Gained | 0.30 | Comments | 0.25 |
+
+**Rationale for weight choices:**
+- LinkedIn: Comments indicate genuine professional engagement (not drive-by likes). Shares amplify reach within target audience.
+- Instagram: Saves are the strongest signal of content value -- users bookmark content they intend to return to. Algorithm also weights saves heavily.
+- TikTok: Watch time is the algorithm's primary ranking signal. Content that holds attention gets distributed.
+- Twitter/X: Retweets represent active endorsement. Replies indicate conversation (higher quality than passive likes).
+
+**Blended reward formula:**
+
+```
+reward = alpha * judge_score + (1 - alpha) * engagement_score
+```
+
+Where:
+- `judge_score` = weighted average of constitutional evaluator scores, normalized to [0, 1]
+- `engagement_score` = platform-weighted engagement metric, z-scored against rolling 30-day baseline, then sigmoid-mapped to [0, 1]
+- `alpha` = dynamic weight, starts at 0.8 (judge-heavy), decays toward 0.5 as engagement data accumulates
+
+**Dynamic alpha weighting:** Early in the system's life, engagement data is sparse and noisy. Alpha starts high (0.8) to rely on judge scores. As the system accumulates engagement data (n increases), alpha decays:
+
+```
+alpha = max(0.5, 0.8 * exp(-n / 200))
+```
+
+At n=0, alpha=0.8. At n=100, alpha=0.49 (clamped to 0.5). The floor of 0.5 ensures judge scores always contribute at least half the signal -- this prevents the system from fully optimizing for engagement at the expense of quality (reward hacking guard).
+
+### Mechanism 3: Thompson Sampling
+
+**Pattern:** Gaussian Thompson Sampling with Normal-Inverse-Gamma (NIG) priors for multi-armed bandit selection of content variants.
+
+**Why Thompson Sampling over epsilon-greedy or UCB:**
+- Natural exploration/exploitation balance -- no epsilon hyperparameter to tune
+- Probability matching: the probability of selecting an arm equals the probability that it is optimal
+- Well-suited for non-stationary environments (social media engagement patterns shift)
+- Gaussian TS handles continuous reward signals (blended reward from Mechanism 2)
+
+**Architecture:**
+- Each "arm" is a content variant: a combination of (content_type, template, tone, hook_style, CTA_pattern)
+- NIG prior: Normal-Inverse-Gamma(mu_0, lambda_0, alpha_0, beta_0) per arm
+  - mu_0 = 0.5 (prior mean reward, center of [0,1] range)
+  - lambda_0 = 1 (weak prior -- one pseudo-observation)
+  - alpha_0 = 2, beta_0 = 0.5 (weakly informative variance prior)
+- On each pull: sample sigma^2 from InverseGamma(alpha, beta), then sample mu from Normal(mu_n, sigma^2/lambda_n)
+- Select the arm with the highest sampled mu
+- After observing reward: update NIG posterior analytically (conjugate update, no MCMC)
+
+**Operational constraints:**
+- **Cap: 5 active arms maximum** at any time. More arms dilute observations and slow convergence. When a new variant is proposed (by prompt evolution, Mechanism 4), the worst-performing arm is retired.
+- **Activation gate: n >= 30 engagement-scored entries per arm** before the arm's posterior is considered reliable. Below this threshold, arms are selected uniformly at random (pure exploration phase).
+- **Arm retirement:** An arm is retired when its posterior mean is >1 standard deviation below the best arm's posterior mean AND it has n >= 30 observations (sufficient data to be confident it's underperforming).
+
+**What constitutes an "arm":**
+- Not individual prompts (too fine-grained)
+- Not platforms (too coarse)
+- The sweet spot: (content_type x template_variant) combinations. Example: "tutorial x storytelling-template" vs "tutorial x data-driven-template" vs "case-study x minimal-template"
+
+### Mechanism 4: Prompt Evolution
+
+**Pattern:** Evolutionary prompt optimization -- maintain a small population of prompt variants, evolve them through mutation and crossover, select based on fitness (blended reward from Mechanism 2).
+
+**Architecture:**
+- Population size: 2-3 active variants per agent (not per arm -- per agent prompt)
+- Evolution operators:
+  - **Mutation:** Opus rewrites a section of the prompt with a specific directive (e.g., "make the hook more provocative", "add a concrete example to the CTA instruction"). Mutation magnitude is controlled -- small edits, not full rewrites.
+  - **Crossover:** Opus takes the best-performing sections from two parent prompts and combines them into a child prompt. Sections are defined by the KERNEL template structure (Role, Scope, Steps, Negatives, Output Contract, Contrastive Examples).
+- Selection: tournament selection -- compare 2 variants on recent 30-day blended reward, winner survives, loser is mutated or replaced.
+- Promoted via PromptLoader Layer 1 (`config/prompts/`) -- the existing three-layer prompt resolution supports this natively.
+
+**Evolution cycle:** Weekly.
+1. Monday: Measure fitness of all active variants over the past 7 days
+2. Tuesday: Opus generates 1 mutant and/or 1 crossover child
+3. Wednesday-Sunday: New variant runs in production alongside existing variants (Thompson Sampling selects between them)
+4. Following Monday: Evaluate, retire worst performer if population exceeds 3
+
+**Activation gate: n >= 500 total observations** across the agent's prompt variants before evolution begins. Below this threshold, there is not enough signal to distinguish prompt quality from noise. Running evolution too early wastes compute on random walks through prompt space.
+
+**Safeguards:**
+- All evolved prompts require human approval before production deployment (Phase 1-2)
+- Hard floor: if any evolved prompt scores >20% below baseline on constitutional evaluation (Mechanism 1), auto-revert and alert
+- Diversity constraint: evolved prompts must differ by at least 15% (edit distance) from all other active variants to prevent convergence to a single style
+
+### Mechanism 5: Reflexion
+
+**Pattern:** LangGraph execute-evaluate-reflect-retry loop with Mem0 episodic memory for per-task learning.
+
+**Architecture:**
+```
+┌─────────┐     ┌──────────┐     ┌──────────┐     ┌─────────┐
+│ Execute  │────→│ Evaluate │────→│ Reflect  │────→│  Retry  │
+│ (agent)  │     │ (judge)  │     │ (agent)  │     │ (agent) │
+└─────────┘     └──────────┘     └──────────┘     └─────────┘
+                                       │
+                                       ▼
+                                ┌─────────────┐
+                                │ Mem0 Memory │
+                                │ (episodic)  │
+                                └─────────────┘
+```
+
+**LangGraph implementation:**
+- State: `{content, eval_scores, reflections, attempt_count, task_context}`
+- Nodes: Execute, Evaluate, Reflect, Retry
+- Conditional edges: Evaluate -> Reflect (if score < threshold), Evaluate -> Output (if score >= threshold or attempt_count >= 2)
+- Maximum 2 retry attempts per task (hard cap to prevent infinite loops and runaway cost)
+
+**Mem0 episodic memory:**
+- After each reflect step, the reflection is stored in Mem0 with metadata: `{task_type, platform, product, failure_mode, reflection_text, timestamp}`
+- On subsequent tasks of the same type, relevant reflections are retrieved and injected into the agent's context
+- This creates per-task learning without weight changes -- the agent literally remembers what went wrong last time
+- Memory decay: reflections older than 90 days are deprioritized (not deleted) in retrieval ranking
+
+**Per-task learning loop:**
+1. Agent receives task (e.g., "write LinkedIn tutorial about Pilaster workflow diff")
+2. Mem0 retrieves relevant episodic memories (e.g., "last time I wrote a Pilaster tutorial, the CTA was too generic -- specify the exact feature link")
+3. Agent executes with retrieved context
+4. Judge evaluates output
+5. If below threshold: agent reflects ("The hook was weak because I led with the feature name instead of the problem it solves"), stores reflection, retries
+6. If above threshold: store success context for future retrieval
+
+---
+
+## Platform Isolation Design
+
+### Core Principle: One Codebase, Per-Platform Segmented Learning
+
+Holus runs as a single system but learns independently per platform. Instagram lessons do not contaminate LinkedIn strategy. TikTok hook patterns do not leak into Twitter copy. Each platform has its own audience, algorithm, and content grammar -- the system must respect these boundaries.
+
+### What Is Shared Across Platforms
+
+- **Brand voice:** The fundamental voice identity (Juan's tone, values, communication style) is platform-agnostic. Defined once in `config/brand-voice.yaml`, referenced by all agents.
+- **Infrastructure:** Agent runtime, LangGraph orchestration, MCP tool calls, Langfuse tracing, Observatory dashboard. All platform-neutral.
+- **Judge framework:** The constitutional evaluation structure (Mechanism 1) is shared -- the same 7 evaluator types exist for all platforms. But the rubrics within each evaluator are platform-specific (see "Isolated" below).
+- **Kill switch and guardrails:** Safety infrastructure is global. `config/guardrails.yaml` applies universally.
+
+### What Is Isolated Per Platform
+
+- **Prompt populations:** Each platform has its own set of 2-3 active prompt variants (Mechanism 4). A LinkedIn prompt variant does not compete against a TikTok prompt variant -- they evolve independently.
+- **Bandit arms:** Thompson Sampling (Mechanism 3) maintains separate arm sets per platform. The (content_type x template_variant) combinations are platform-specific. A "tutorial x storytelling" arm on LinkedIn is tracked independently from a "tutorial x storytelling" arm on TikTok.
+- **Judge rubrics:** While the evaluator types are shared, the rubric dimensions and weights are platform-specific. Example:
+  - LinkedIn `audience_fit` rubric emphasizes professional relevance, industry terminology, thought leadership framing
+  - TikTok `audience_fit` rubric emphasizes hook strength (first 3 seconds), visual pacing, trend alignment
+  - Instagram `audience_fit` rubric emphasizes save-worthiness, carousel flow, visual hierarchy
+- **Reward weights:** The engagement signal weights (Mechanism 2) are already defined per-platform in the table above.
+- **Performance patterns:** Learned lessons about what works (stored in `.self-improvement/MEMORY.md` and Mem0) are tagged by platform. When the marketing-strategist reasons about LinkedIn strategy, it retrieves only LinkedIn patterns.
+
+### What Crosses Platform Boundaries (Carefully)
+
+- **Topic performance only:** If a topic (e.g., "AI workflow automation") performs well on LinkedIn, that signal is shared with other platforms as a topic-level insight. But the formatting, hook style, content structure, and CTA pattern are NOT shared -- those are platform-specific.
+- **Cross-platform topic sharing is read-only:** The marketing-strategist can observe that a topic resonated on LinkedIn and decide to test it on TikTok. But the TikTok execution is built from TikTok-specific arms and prompts, not copied from LinkedIn.
+- **No format/hook/style leakage:** A LinkedIn carousel structure that works well is never auto-applied to Instagram. Each platform's content grammar is learned independently.
+
+### Implementation
+
+```yaml
+# config/platform-isolation.yaml
+platforms:
+  linkedin:
+    prompt_population_key: "linkedin"
+    bandit_namespace: "linkedin"
+    rubric_set: "config/rubrics/linkedin.yaml"
+    reward_weights: {comments: 0.45, shares: 0.30, clicks: 0.25}
+    memory_filter_tag: "platform:linkedin"
+  instagram:
+    prompt_population_key: "instagram"
+    bandit_namespace: "instagram"
+    rubric_set: "config/rubrics/instagram.yaml"
+    reward_weights: {saves: 0.40, shares: 0.30, comments: 0.30}
+    memory_filter_tag: "platform:instagram"
+  tiktok:
+    prompt_population_key: "tiktok"
+    bandit_namespace: "tiktok"
+    rubric_set: "config/rubrics/tiktok.yaml"
+    reward_weights: {watch_time: 0.50, shares: 0.25, comments: 0.25}
+    memory_filter_tag: "platform:tiktok"
+  twitter:
+    prompt_population_key: "twitter"
+    bandit_namespace: "twitter"
+    rubric_set: "config/rubrics/twitter.yaml"
+    reward_weights: {retweets: 0.40, replies: 0.35, likes: 0.25}
+    memory_filter_tag: "platform:twitter"
+  youtube_shorts:
+    prompt_population_key: "youtube_shorts"
+    bandit_namespace: "youtube_shorts"
+    rubric_set: "config/rubrics/youtube_shorts.yaml"
+    reward_weights: {watch_time: 0.45, subscribers_gained: 0.30, comments: 0.25}
+    memory_filter_tag: "platform:youtube_shorts"
+```
+
+---
+
+## Activation Gates
+
+Activation gates prevent self-improvement mechanisms from running before sufficient data exists. Running optimization on sparse data produces noise, not signal. Each mechanism has an independently calibrated gate based on engineering consultation.
+
+### Gate Summary
+
+| Mechanism | Gate | Threshold | Rationale |
+|-----------|------|-----------|-----------|
+| Thompson Sampling | Per-arm observations | n >= 30 engagement-scored entries per arm | Below 30, the NIG posterior is dominated by the prior. Central Limit Theorem requires ~30 observations for the sampling distribution to approximate normality. |
+| Prompt Evolution (genetic) | Total observations across all variants | n >= 500 total observations | Prompt quality differences are subtle. With 2-3 variants and weekly evolution cycles, 500 observations provides ~170+ per variant -- enough to detect a 10% performance difference at p<0.05. |
+| Blended reward (alpha decay) | Paired (judge + engagement) observations | n >= 100 paired observations | The dynamic alpha weighting (Mechanism 2) begins decaying from 0.8 toward 0.5 at n=0, but the exponential decay means meaningful blending doesn't occur until ~100 paired observations. Before this, judge scores dominate (which is the correct behavior for a cold-start system). |
+| Judge recalibration | Time-based + volume-based | Freeze for 90 days after initial calibration, then epochal recalibration with dual-scoring | Judge rubrics should not drift continuously. Freeze for 90 days to establish a stable baseline. After 90 days, recalibrate epochally (not continuously): score a held-out golden set with both old and new rubric, compare, human approves the delta. Dual-scoring during recalibration: run both old and new rubric in parallel for 1 week before switching. |
+
+### Gate Enforcement
+
+Gates are enforced in code, not convention. Each mechanism checks its activation condition before executing:
+
+```python
+# Pseudocode for gate enforcement
+class ActivationGate:
+    def thompson_sampling_ready(self, arm_id: str) -> bool:
+        """Arm must have >= 30 engagement-scored observations."""
+        return self.observation_store.count(arm_id, scored=True) >= 30
+
+    def prompt_evolution_ready(self, agent_id: str) -> bool:
+        """Agent must have >= 500 total observations across all variants."""
+        return self.observation_store.count_by_agent(agent_id) >= 500
+
+    def blended_reward_meaningful(self) -> bool:
+        """System must have >= 100 paired (judge + engagement) observations."""
+        return self.observation_store.count_paired() >= 100
+
+    def judge_recalibration_due(self) -> bool:
+        """90 days since last calibration AND human has approved."""
+        days_since = self.calibration_store.days_since_last()
+        return days_since >= 90
+```
+
+### Pre-Gate Behavior
+
+When a mechanism's gate is not met, the system falls back to simpler behavior:
+
+| Mechanism | Pre-Gate Behavior |
+|-----------|-------------------|
+| Thompson Sampling | Uniform random selection across arms (pure exploration) |
+| Prompt Evolution | Use canonical prompt from `agents/*.md` only (no variants) |
+| Blended reward | alpha = 0.8 (judge-dominated, engagement contributes minimally) |
+| Judge recalibration | Use initial rubric as-is, no changes |
+
+---
+
+## Gap Detection System
+
+### Purpose
+
+Not all failures are prompt problems. Some failures indicate missing capabilities (tools the system doesn't have) or missing knowledge (data the system doesn't know). The gap detection system classifies failures and routes them to the appropriate resolution path.
+
+### Failure Classification
+
+Reflexion (Mechanism 5) classifies each failure into one of four categories during the reflect step:
+
+| Category | Definition | Resolution Path | Resolver |
+|----------|-----------|----------------|----------|
+| `PROMPT_ISSUE` | The prompt was unclear, missing context, or poorly structured. The agent had the capability and data but produced poor output due to instruction quality. | Prompt evolution (Mechanism 4) generates a mutation targeting the identified weakness. | Agent (automatic) |
+| `CAPABILITY_GAP` | The task requires a tool or capability the system does not have. Example: "Need to generate a video thumbnail, but no image generation tool is connected." | Filed to `capability-requests/` for human resolution. | Human (manual) |
+| `DATA_GAP` | The task requires knowledge or data the system does not have. Example: "Don't know Pilaster's current pricing to include in the tutorial." | Filed to `knowledge/requests/` for agent auto-resolution (web search, MCP call, or human escalation). | Agent (automatic, with human fallback) |
+| `QUALITY_ISSUE` | The output met all structural requirements but was subjectively low quality -- boring, generic, off-brand. | Logged for pattern analysis. If 3+ QUALITY_ISSUE failures on the same content type, trigger human review of the rubric. | Human (pattern-triggered) |
+
+### capability-requests/ Directory
+
+When Reflexion classifies a failure as `CAPABILITY_GAP`, it writes a structured request:
+
+```yaml
+# capability-requests/2026-03-17-video-thumbnail-generation.yaml
+id: cap-001
+created: 2026-03-17
+status: open  # open | in-progress | resolved | wont-fix
+category: CAPABILITY_GAP
+description: "Cannot generate custom video thumbnails. Currently using auto-generated frames from genpeli, which are low quality."
+triggered_by: "reflexion on task tiktok-tutorial-2026-03-15"
+impact: "Thumbnail quality affects click-through rate. Estimated 20-30% CTR improvement with custom thumbnails."
+proposed_solution: "Connect pilaster-mcp generate_image() for thumbnail generation with a 'thumbnail' template."
+resolved_by: null
+resolved_date: null
+```
+
+**Human resolves these.** The agent cannot add new tools or capabilities to itself. It can only identify the gap and document the request with enough context for a human to act.
+
+### knowledge/requests/ Directory
+
+When Reflexion classifies a failure as `DATA_GAP`, it writes a knowledge request and attempts auto-resolution:
+
+```yaml
+# knowledge/requests/2026-03-17-pilaster-pricing.yaml
+id: know-001
+created: 2026-03-17
+status: resolved  # open | auto-resolving | resolved | escalated
+category: DATA_GAP
+description: "Need current Pilaster pricing tiers for tutorial content."
+triggered_by: "reflexion on task linkedin-tutorial-2026-03-16"
+auto_resolution_attempted: true
+resolution_method: "MCP call to pilaster-mcp get_product_info()"
+resolution_result: "Free tier: 50 generations/month. Pro: $19/month unlimited. Enterprise: custom."
+resolved_date: 2026-03-17
+```
+
+**Auto-resolution flow:**
+1. Agent identifies the data gap
+2. Agent checks available MCP tools for relevant data sources
+3. If MCP tool exists: call it, store result in `knowledge/`, mark resolved
+4. If no MCP tool: attempt web search (via SEO researcher agent with Gemini)
+5. If web search fails or data is sensitive/uncertain: escalate to human (`status: escalated`)
+
+### Pattern Analysis
+
+The gap detection system tracks failure categories over time:
+
+```
+Weekly summary (auto-generated in Observatory):
+  PROMPT_ISSUE:    12 (60%) → feeding Mechanism 4 (prompt evolution)
+  QUALITY_ISSUE:    4 (20%) → 2 unique content types flagged
+  DATA_GAP:         3 (15%) → 2 auto-resolved, 1 escalated
+  CAPABILITY_GAP:   1 (5%)  → 1 open request
+```
+
+**Pattern triggers:**
+- 3+ `QUALITY_ISSUE` on the same content type in 7 days → alert human to review rubric for that content type
+- 3+ `DATA_GAP` for the same data source → consider adding a persistent knowledge cache or new MCP tool
+- Any `CAPABILITY_GAP` → immediately visible in Observatory dashboard, human triages weekly
