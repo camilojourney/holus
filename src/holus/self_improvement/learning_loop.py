@@ -136,11 +136,33 @@ class WeeklyLearningLoop:
             if updated:
                 report.knowledge_files_updated.append("performance-patterns.md")
 
-        # 6 — Tally open knowledge gaps
-        gaps = list_open_gaps()
-        report.gaps_processed = len(gaps)
+        # 6 — Detect score drift (trigger optimization if quality is declining)
+        drift_agents = self._detect_drift(all_entries)
+        if drift_agents:
+            for agent_id in drift_agents:
+                insights.append(Insight(
+                    pattern=f"DRIFT DETECTED: {agent_id} — 30-day avg dropped 0.1+ from peak",
+                    confidence="medium",
+                    sample_size=len(recent),
+                    source="trajectory",
+                ))
+            logger.warning("Drift detected for agents: %s", drift_agents)
 
-        # 7 — Log the cycle
+        # 7 — Detect capability/data gaps from failure patterns
+        try:
+            from holus.self_improvement.gap_detector import detect_gaps, write_gap_request
+            gap_entries = [e.to_dict() for e in recent]
+            detected_gaps = detect_gaps(gap_entries, min_failures=3)
+            for gap in detected_gaps:
+                if gap["type"] in ("capability_gap", "data_gap"):
+                    write_gap_request(gap)
+            report.gaps_processed = len(detected_gaps)
+        except Exception as exc:
+            logger.debug("Gap detection failed (non-blocking): %s", exc)
+            gaps = list_open_gaps()
+            report.gaps_processed = len(gaps)
+
+        # 8 — Log the cycle
         self._log_cycle(report, start)
 
         logger.info(
@@ -174,10 +196,23 @@ class WeeklyLearningLoop:
                     "platform": platform,
                     "count": 0,
                     "statuses": [],
+                    "judge_scores": [],
+                    "engagement_signals": [],
+                    "blended_rewards": [],
                 }
 
             patterns[key]["count"] += 1
             patterns[key]["statuses"].append(entry.status)
+
+            # Collect scores for enriched analysis
+            if entry.judge_score is not None:
+                patterns[key]["judge_scores"].append(entry.judge_score)
+            eng = entry.metadata.get("engagement_signal")
+            if eng is not None:
+                patterns[key]["engagement_signals"].append(eng)
+            reward = entry.metadata.get("blended_reward")
+            if reward is not None:
+                patterns[key]["blended_rewards"].append(reward)
 
         return patterns
 
@@ -372,6 +407,40 @@ class WeeklyLearningLoop:
         path.write_text("\n".join(lines))
         logger.info("Updated performance-patterns.md")
         return True
+
+    def _detect_drift(
+        self,
+        all_entries: list[TrajectoryEntry],
+        *,
+        window_days: int = 30,
+        drop_threshold: float = 0.1,
+    ) -> list[str]:
+        """Detect score drift: agents whose 30-day avg dropped 0.1+ from peak.
+
+        Returns list of agent_ids that need prompt optimization.
+        """
+        cutoff_30d = (datetime.now(UTC) - timedelta(days=window_days)).isoformat()
+        recent_30d = [e for e in all_entries if e.timestamp >= cutoff_30d and e.judge_score is not None]
+
+        if len(recent_30d) < 10:
+            return []
+
+        # Group scores by agent_id
+        agent_scores: dict[str, list[float]] = {}
+        for e in recent_30d:
+            if e.judge_score is not None:
+                agent_scores.setdefault(e.agent_id, []).append(e.judge_score)
+
+        drifting: list[str] = []
+        for agent_id, scores in agent_scores.items():
+            if len(scores) < 5:
+                continue
+            peak = max(scores)
+            avg = sum(scores) / len(scores)
+            if peak - avg >= drop_threshold:
+                drifting.append(agent_id)
+
+        return drifting
 
     def _log_cycle(self, report: LearningReport, start: datetime) -> None:
         """Log the learning cycle itself to trajectory."""
