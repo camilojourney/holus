@@ -98,10 +98,28 @@ Only include decisions where the idea genuinely fits — omit platforms where it
 """
 
 
+def _load_prompt(agent_id: str, fallback: str) -> tuple[str, str]:
+    """Load prompt via 3-layer PromptLoader. Returns (prompt, variant_id)."""
+    try:
+        from holus.core.prompt_loader import PromptLoader
+
+        loader = PromptLoader()
+        prompt = loader.get_prompt(agent_id, fallback=fallback)
+        # Determine which layer resolved
+        if (Path("config/prompts") / agent_id / "current.md").exists():
+            return prompt, f"layer1:{agent_id}"
+        return prompt, "layer2:canonical" if prompt != fallback else "layer3:fallback"
+    except Exception:
+        return fallback, "layer3:fallback"
+
+
 def plan_formats(raw_idea: str) -> list[dict]:
     # Inject recently published topics to prevent repetition
     from holus.agents.marketing.topic_index import TopicIndex
     topic_context = TopicIndex().as_prompt_context(days=30)
+
+    # Load planner prompt via PromptLoader (falls back to PLANNER_SYSTEM constant)
+    planner_prompt, _variant = _load_prompt("idea-planner", PLANNER_SYSTEM)
 
     user_msg = f"""
 {topic_context}
@@ -112,7 +130,7 @@ def plan_formats(raw_idea: str) -> list[dict]:
 
 Plan 2-4 content formats for this idea. Return only the JSON array.
 """
-    raw = _call("anthropic/claude-opus-4-6", PLANNER_SYSTEM, user_msg, temperature=0.2)
+    raw = _call("anthropic/claude-opus-4-6", planner_prompt, user_msg, temperature=0.2)
     cleaned = _strip_fences(raw)
     try:
         decisions = json.loads(cleaned)
@@ -275,6 +293,9 @@ def generate_piece(raw_idea: str, decision: dict) -> dict:
     angle = decision.get("angle", raw_idea)
     fmt_instructions = FORMAT_INSTRUCTIONS.get(fmt, FORMAT_INSTRUCTIONS["text_post"])
 
+    # Load generator prompt via PromptLoader (falls back to GENERATOR_SYSTEM constant)
+    generator_prompt, _variant = _load_prompt("idea-generator", GENERATOR_SYSTEM)
+
     user_msg = f"""
 <idea>
 {raw_idea}
@@ -290,7 +311,7 @@ def generate_piece(raw_idea: str, decision: dict) -> dict:
 
 Write the {fmt} for this idea. Return JSON only.
 """
-    raw = _call("anthropic/claude-sonnet-4-6", GENERATOR_SYSTEM, user_msg, temperature=0.4)
+    raw = _call("anthropic/claude-sonnet-4-6", generator_prompt, user_msg, temperature=0.4)
     cleaned = _strip_fences(raw)
     try:
         result = json.loads(cleaned)
