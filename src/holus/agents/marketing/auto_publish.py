@@ -211,6 +211,82 @@ def _trigger_reflexion(item: dict[str, Any], score: float) -> None:
         logger.debug("Reflexion storage failed (non-blocking): %s", exc)
 
 
+def process_human_rejection(piece_id: str, reason: str) -> dict[str, Any]:
+    """Process a human rejection — store feedback for learning.
+
+    Called when a human reviews PARTIAL content and rejects it with a reason.
+    The rejection reason is stored in trajectory as a reflexion and used
+    to calibrate the judge (if judge passed but human rejected).
+
+    Returns: {piece_id, action, reason, judge_calibration_needed}
+    """
+    from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
+
+    file_path = None
+    judge_score = None
+
+    # Find the piece in the queue
+    for pattern in ("*.yaml", "*.json"):
+        for path in sorted(QUEUE_DIR.glob(pattern)):
+            try:
+                text = path.read_text(encoding="utf-8")
+                data = yaml.safe_load(text) if path.suffix == ".yaml" else json.loads(text)
+                if data.get("piece_id") == piece_id:
+                    file_path = str(path)
+                    judge_score = data.get("judge_score")
+                    # Update status
+                    data["status"] = "rejected"
+                    data["rejection_reason"] = reason
+                    data["rejected_by"] = "human"
+                    data["rejected_at"] = datetime.now(tz=UTC).isoformat()
+                    if path.suffix == ".yaml":
+                        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+                    else:
+                        path.write_text(json.dumps(data, indent=2))
+                    break
+            except Exception:
+                continue
+
+    # Judge calibration alert: human rejected what judge PASSED
+    calibration_needed = judge_score is not None and judge_score >= PASS_THRESHOLD
+
+    # Log to trajectory as human feedback
+    tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
+    tl.append(TrajectoryEntry(
+        agent_id="human-reviewer",
+        task_type="content_rejection",
+        task_summary=f"Human rejected {piece_id}: {reason[:200]}",
+        status="success",
+        judge_score=judge_score,
+        judge_feedback=reason,
+        metadata={
+            "schema_version": 2,
+            "piece_id": piece_id,
+            "rejection_reason": reason,
+            "rejected_by": "human",
+            "judge_calibration_needed": calibration_needed,
+            "failure_class": "quality_issue",
+        },
+    ))
+
+    # Also trigger reflexion
+    if file_path:
+        item = {"topic": piece_id, "judge_feedback": reason, "platform": "unknown"}
+        _trigger_reflexion(item, judge_score or 0.0)
+
+    logger.info(
+        "Human rejection processed: %s (calibration_needed=%s)",
+        piece_id, calibration_needed,
+    )
+
+    return {
+        "piece_id": piece_id,
+        "action": "human_rejected",
+        "reason": reason,
+        "judge_calibration_needed": calibration_needed,
+    }
+
+
 async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
     """Process all pending_review items based on judge scores.
 
