@@ -99,7 +99,13 @@ Only include decisions where the idea genuinely fits — omit platforms where it
 
 
 def plan_formats(raw_idea: str) -> list[dict]:
+    # Inject recently published topics to prevent repetition
+    from holus.agents.marketing.topic_index import TopicIndex
+    topic_context = TopicIndex().as_prompt_context(days=30)
+
     user_msg = f"""
+{topic_context}
+
 <idea>
 {raw_idea}
 </idea>
