@@ -155,4 +155,18 @@ def build_carousel_pdf(outline: dict[str, Any], output_path: Path) -> Path:
         ValueError: If the outline has no slides or an unknown slide type.
         RuntimeError: If the Playwright render fails.
     """
-    return asyncio.run(_render(outline, output_path))
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        # Already inside an async context — run in a new thread to avoid
+        # "cannot call asyncio.run() from a running event loop"
+        import concurrent.futures
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(asyncio.run, _render(outline, output_path))
+            return future.result(timeout=60)
+    else:
+        return asyncio.run(_render(outline, output_path))

@@ -314,6 +314,16 @@ async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
         verdict = _get_judge_verdict(item)
         file_path = item["_file_path"]
 
+        # Carousels without rendered PDF → skip (don't publish text-only "Swipe →")
+        content_type = item.get("content_type", "")
+        if content_type == "carousel_outline" and not item.get("pdf_path"):
+            results.append({
+                "piece_id": piece_id,
+                "action": "skipped",
+                "reason": "carousel without rendered PDF",
+            })
+            continue
+
         # No judge score → skip (leave for manual review)
         if score is None:
             results.append({

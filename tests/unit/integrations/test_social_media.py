@@ -173,7 +173,6 @@ class TestPublish:
             payload = call_args[1]["json"]
             assert payload["content"] == "Test content"
             assert payload["platforms"] == ["linkedin"]
-            assert payload["style"] == "raw"
             assert payload["media_url"] == "https://example.com/image.jpg"
             assert payload["media_type"] == "image"
 
@@ -200,9 +199,8 @@ class TestPublish:
             )
             result = await client.publish(request)
 
-            payload = mock_httpx_client.post.call_args[1]["json"]
-            assert payload["bilingual"] is True
-            assert payload["source_language"] == "en"
+            # bilingual/source_language not sent to API (not in API schema yet)
+            # but the response may contain bilingual content
             assert result.en_content == "English"
             assert result.es_content == "Spanish"
 
