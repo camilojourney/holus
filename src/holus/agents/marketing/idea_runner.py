@@ -365,6 +365,106 @@ Write the {fmt} for this idea. Return JSON only.
 
 
 # ---------------------------------------------------------------------------
+# Step 2.3: Generate companion visual for the post
+# ---------------------------------------------------------------------------
+
+VISUAL_DESIGNER_SYSTEM = """You design data visualizations for social media posts.
+Given a post's text, extract the key concepts and design a visual that explains
+the core idea at a glance. Return JSON only.
+
+You have two visual types available:
+
+1. "insight" — a branded card with a headline, optional stat, optional body text.
+   Good for: key takeaways, bold statements, single metrics.
+   JSON: {"type": "insight", "headline": "max 8 words", "body": "optional 1-2 sentences",
+          "stat_value": "optional e.g. 3x or 73%", "stat_label": "optional label for stat"}
+
+2. "data_viz" — a chart with data points.
+   Good for: comparisons, before/after metrics, ranked lists.
+   JSON: {"type": "data_viz", "chart_type": "bar|line|metric",
+          "title": "chart title max 6 words",
+          "data_points": [{"label": "X", "value": 85}, ...],
+          "highlight_index": 0, "source_label": "optional attribution"}
+
+Pick the type that best represents the post's core argument visually.
+The visual should be understandable WITHOUT reading the post — it's a scroll-stopper.
+STRONGLY prefer data_viz — charts grab attention on LinkedIn. Invent plausible
+percentages or rankings if the post doesn't have exact numbers. A bar chart showing
+"73% of agent failures are from X" is more engaging than a quote card.
+Only use insight for posts that are purely philosophical with no comparisons at all.
+Keep labels SHORT (max 3 words per label) so they don't overlap in the chart.
+
+Return ONLY the JSON object. No markdown fences, no explanation."""
+
+
+def _generate_visual_spec(post_text: str, fmt: str, platform: str) -> dict | None:
+    """Have Sonnet design a visual spec for the post. Returns spec dict or None."""
+    if fmt not in ("text_post", "thread", "instagram_caption"):
+        return None  # Carousels and video scripts don't need companion images
+
+    try:
+        user_msg = f"""Design a visual for this {platform} {fmt}:
+
+{post_text[:2000]}
+
+Return JSON only."""
+        raw = _call("anthropic/claude-sonnet-4-6", VISUAL_DESIGNER_SYSTEM, user_msg, temperature=0.3)
+        cleaned = _strip_fences(raw)
+        return json.loads(cleaned)
+    except Exception as exc:
+        logger.debug("Visual spec generation failed: %s", exc)
+        return None
+
+
+def _render_visual(visual_spec: dict, output_path: Path) -> bool:
+    """Render a visual spec to PNG using PlaywrightEngine. Returns True on success."""
+    import asyncio
+
+    async def _do_render() -> bytes:
+        from holus.visual import render_visual
+        from holus.visual.spec_converter import data_viz_to_spec, insight_to_spec
+
+        spec_type = visual_spec.get("type", "insight")
+
+        if spec_type == "data_viz":
+            render_spec = data_viz_to_spec(visual_spec)
+        else:
+            # insight type
+            render_spec = insight_to_spec(
+                text=visual_spec.get("body", visual_spec.get("headline", "")),
+                stat=visual_spec.get("stat_value"),
+            )
+            # Override template variables with richer data
+            if visual_spec.get("headline"):
+                render_spec.variables["headline"] = visual_spec["headline"]
+            if visual_spec.get("stat_label"):
+                render_spec.variables["stat_label"] = visual_spec["stat_label"]
+            render_spec.variables["author_name"] = "Juan Camilo Martinez"
+            render_spec.variables["brand_handle"] = "@juancamilomartinez"
+
+        return await render_visual(render_spec)
+
+    try:
+        # Handle both sync and async contexts
+        try:
+            asyncio.get_running_loop()
+            # We're in an async context — use nest_asyncio or thread
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                png_bytes = pool.submit(asyncio.run, _do_render()).result(timeout=30)
+        except RuntimeError:
+            # No running loop — safe to use asyncio.run
+            png_bytes = asyncio.run(_do_render())
+
+        output_path.write_bytes(png_bytes)
+        return True
+    except Exception as exc:
+        logger.debug("Visual render failed: %s", exc)
+        print(f"  ⚠ Visual render failed: {exc}")
+        return False
+
+
+# ---------------------------------------------------------------------------
 # Step 2.5: Judge evaluation
 # ---------------------------------------------------------------------------
 
@@ -524,6 +624,18 @@ def save_piece(
             print(f"  → PDF rendered: {pdf_path.name}")
         except Exception as exc:
             print(f"  ⚠ PDF render failed (outline saved): {exc}")
+
+    # For text posts: generate companion visual (PNG image)
+    if fmt in ("text_post", "thread", "instagram_caption"):
+        platform = decision.get("platform", "linkedin")
+        visual_spec = _generate_visual_spec(full_text, fmt, platform)
+        if visual_spec:
+            png_filename = f"{platform}-{fmt}-{piece_id}.png"
+            png_path = queue_dir / png_filename
+            if _render_visual(visual_spec, png_path):
+                data["rendered_image_path"] = str(png_path)
+                data["visual_spec"] = visual_spec
+                print(f"  → Visual rendered: {png_path.name}")
 
     filename = f"{decision.get('platform', 'linkedin')}-{decision.get('format', 'post')}-{piece_id}.json"
     path = queue_dir / filename
