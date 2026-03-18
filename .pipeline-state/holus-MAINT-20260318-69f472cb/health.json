@@ -1,0 +1,14 @@
+{
+  "repo": "holus",
+  "cid": "holus-MAINT-20260318-69f472cb",
+  "timestamp": "2026-03-18T20:15:00Z",
+  "checks": {
+    "dep_audit": {"status": "SKIPPED", "details": "pip-audit not installed"},
+    "lint": {"status": "FLAGGED", "count": 44, "fixable": 19},
+    "tests": {"status": "STALLED", "details": "pytest hangs after ~100 tests — likely blocking on external service (Redis/MCP)"},
+    "docker": {"status": "DOWN", "details": "Docker daemon not running (OrbStack)"},
+    "security": {"status": "FLAGGED", "findings": 7, "categories": {".env_not_gitignored": 1, "debug_true": 6, "cors_wildcard": 0}},
+    "complexity": {"status": "SKIPPED", "details": "radon not installed"}
+  },
+  "health_posture": "CRITICAL"
+}

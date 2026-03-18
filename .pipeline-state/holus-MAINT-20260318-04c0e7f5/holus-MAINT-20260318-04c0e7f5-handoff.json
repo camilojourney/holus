@@ -1,0 +1,21 @@
+{
+  "cid": "holus-MAINT-20260318-04c0e7f5",
+  "repo": "holus",
+  "timestamp": "2026-03-18T21:30:00Z",
+  "status": "COMPLETED",
+  "prompt_versions": {
+    "test-guardian": {"layer": 2, "version": "v1"},
+    "code-guardian": {"layer": 2, "version": "v1"}
+  },
+  "dep_audit": {"status": "SKIPPED", "critical": 0, "high": 0, "moderate": 0, "low": 0, "blocked_updates": []},
+  "lint": {"status": "21_ERRORS", "count": 21, "fixed": 0, "note": "all in tests/manual/ (DTZ005, E741)"},
+  "tests": {"status": "PASS", "passed": 1068, "total": 1070, "fixed": 0},
+  "security": {"status": "CLEAN", "findings": 0, "categories": {}},
+  "complexity": {"status": "SKIPPED", "flagged_functions": 0},
+  "health_posture": "DEGRADED",
+  "agents": {
+    "test-guardian": {"ran": false, "prompt_version": "v1"},
+    "code-guardian": {"ran": false, "prompt_version": "v1"}
+  },
+  "summary": "Tests pass (1068). 21 lint errors all in tests/manual/. Security clean. Deps+complexity skipped (tools not installed)."
+}
