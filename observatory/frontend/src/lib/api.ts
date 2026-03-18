@@ -33,7 +33,7 @@ import {
 const API_BASE =
   process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
 
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || !process.env.NEXT_PUBLIC_OBSERVATORY_URL;
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
 async function apiFetch<T>(
   path: string,
@@ -112,7 +112,21 @@ export async function fetchEvaluations(params?: {
     fallback = fallback.filter((e) => e.agent_id === params.agent_id);
   }
   return withFallback(
-    () => apiFetch<EvaluationRecord[]>(`/api/v1/evaluations${query}`),
+    async () => {
+      const resp = await apiFetch<unknown>(`/api/v1/evaluations${query}`);
+      const raw = Array.isArray(resp) ? resp : (resp as Record<string, unknown>).evaluations ?? [];
+      // Normalize API shape to EvaluationRecord
+      return (raw as Record<string, unknown>[]).map((e, i) => ({
+        id: String(e.id ?? `eval-${i}`),
+        agent_id: String(e.agent_id ?? 'unknown'),
+        agent_name: String(e.agent_name ?? e.agent_id ?? 'unknown'),
+        date: String(e.date ?? e.timestamp ?? ''),
+        score: Number(e.score ?? 0),
+        verdict: (e.passed ? 'pass' : 'fail') as EvaluationRecord['verdict'],
+        evaluator: e.evaluator as string | undefined,
+        notes: e.notes as string | undefined,
+      }));
+    },
     fallback,
   );
 }
@@ -176,7 +190,10 @@ export function contentImageUrl(pieceId: string, variant: 'a' | 'b' = 'a'): stri
 // Knowledge files
 export async function fetchKnowledge(): Promise<KnowledgeFile[]> {
   return withFallback(
-    () => apiFetch<KnowledgeFile[]>('/api/v1/knowledge'),
+    async () => {
+      const resp = await apiFetch<KnowledgeFile[] | { files: KnowledgeFile[] }>('/api/v1/knowledge');
+      return Array.isArray(resp) ? resp : resp.files ?? [];
+    },
     demoKnowledge,
   );
 }
