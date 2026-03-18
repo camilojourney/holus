@@ -97,25 +97,38 @@ def _update_item(file_path: str, updates: dict[str, Any]) -> None:
 async def _publish_piece(item: dict[str, Any]) -> str | None:
     """Publish a piece via social-media MCP. Returns publish_id or None."""
     try:
+        import os
+
         from holus.integrations.social_media import PublishRequest, SocialMediaClient
 
-        client = SocialMediaClient()
+        api_key = os.environ.get("POSTING_API_KEY", "")
+        if not api_key:
+            logger.error("POSTING_API_KEY not set — cannot publish")
+            return None
+
+        client = SocialMediaClient(api_key=api_key)
+        platform = item.get("platform", "linkedin")
+        # Normalize platform names (holus uses twitter_x, API uses twitter)
+        platform_map = {"twitter_x": "twitter"}
+        api_platform = platform_map.get(platform, platform)
         request = PublishRequest(
-            text=item.get("text", ""),
-            platform=item.get("platform", "linkedin"),
-            media_urls=[],
+            content=item.get("text", ""),
+            platforms=[api_platform],
         )
 
         # Add PDF/image attachment if available
         pdf_path = item.get("pdf_path") or item.get("rendered_pdf_path")
         image_path = item.get("rendered_image_path")
         if pdf_path:
-            request.media_urls = [pdf_path]
+            request.media_url = pdf_path
+            request.media_type = "document"
         elif image_path:
-            request.media_urls = [image_path]
+            request.media_url = image_path
+            request.media_type = "image"
 
-        result = await client.publish(request)
-        return result.post_id if result and result.post_id else None
+        async with client:
+            result = await client.publish(request)
+        return result.publish_id if result else None
 
     except Exception as exc:
         logger.error("Publish failed for %s: %s", item.get("piece_id", "?"), exc)

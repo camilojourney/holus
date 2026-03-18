@@ -130,23 +130,24 @@ class SocialMediaClient:
         if violations:
             raise ValueError(f"Content validation failed: {violations}")
 
-        # Build payload
+        # Build payload — only include fields the API accepts
         payload: dict[str, Any] = {
             "content": request.content,
-            "platforms": request.platforms,
-            "style": request.style,
         }
+        if request.platforms:
+            payload["platforms"] = request.platforms
         if request.media_url:
             payload["media_url"] = request.media_url
         if request.media_type:
             payload["media_type"] = request.media_type
-        if request.bilingual:
-            payload["bilingual"] = True
-            payload["source_language"] = request.source_language
 
         response = await self.client.post("/api/v1/publish", json=payload)
         response.raise_for_status()
         data = response.json()
+
+        # API wraps response in {"status": "ok", "data": {...}}
+        if isinstance(data, dict) and "data" in data:
+            data = data["data"]
 
         return PublishResult.model_validate(data)
 
