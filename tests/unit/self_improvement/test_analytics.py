@@ -1,6 +1,6 @@
 """Tests for advanced self-improvement analytics."""
 
-from holus.self_improvement.analytics import ab_test_significance, classify_failures, detect_anomalies
+from holus.self_improvement.analytics import ab_test_significance
 
 
 class TestABTestSignificance:

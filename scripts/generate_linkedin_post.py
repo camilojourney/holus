@@ -12,9 +12,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import requests
@@ -169,7 +168,7 @@ def save_to_queue(
     idea_source: str | None,
 ) -> str:
     piece_id = uuid.uuid4().hex[:16]
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     filename = f"linkedin-{piece_id}.json"
     output_dir = Path("data/content-queue")
     output_dir.mkdir(parents=True, exist_ok=True)

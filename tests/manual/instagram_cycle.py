@@ -8,12 +8,12 @@ Uses the 'experience' account set (English, @camiloexperience).
 """
 from __future__ import annotations
 
-import sys
-import os
 import json
+import os
+import sys
 import time
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 sys.stdout.reconfigure(line_buffering=True)
 
@@ -31,11 +31,12 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 async def run_cycle():
     print(f"[{datetime.now():%H:%M:%S}] Starting Instagram specialist chain cycle...")
 
-    from unittest.mock import patch, AsyncMock
+    from unittest.mock import patch
+
     from holus.agents.marketing.agent import MarketingAgent
+    from holus.agents.marketing.models import ContentDecision, ContentType, Platform
     from holus.core.config import HolusConfig
     from holus.core.cycle_state import HealthResult
-    from holus.agents.marketing.models import ContentDecision, ContentType, Platform
 
     mock_health = HealthResult(
         blocking_ok=True,

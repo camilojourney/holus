@@ -116,9 +116,8 @@ class TestGenerateImage:
         )
         mock_httpx_client.post.return_value = mock_response
 
-        with patch.object(client, "client", mock_httpx_client):
-            with pytest.raises(httpx.HTTPStatusError):
-                await client.generate_image(backend="comfyui", recipe=sample_recipe)
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+            await client.generate_image(backend="comfyui", recipe=sample_recipe)
 
 
 class TestGetCharacters:

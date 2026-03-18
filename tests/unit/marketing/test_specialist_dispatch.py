@@ -3,7 +3,6 @@
 from holus.agents.marketing.specialist_dispatch import (
     PIPELINES,
     SPECIALIST_TASKS,
-    AssembledContent,
     SpecialistDispatcher,
     SpecialistOutput,
 )

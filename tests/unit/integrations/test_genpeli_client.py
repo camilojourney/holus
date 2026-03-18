@@ -102,12 +102,11 @@ class TestProcessVideo:
         )
         mock_httpx_client.post.return_value = mock_response
 
-        with patch.object(client, "client", mock_httpx_client):
-            with pytest.raises(httpx.HTTPStatusError):
-                await client.process_video(
-                    video_urls=["https://example.com/video.mp4"],
-                    instruction="Edit",
-                )
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+            await client.process_video(
+                video_urls=["https://example.com/video.mp4"],
+                instruction="Edit",
+            )
 
 
 class TestCheckStatus:

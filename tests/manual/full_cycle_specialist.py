@@ -6,12 +6,12 @@ Saves all output to data/test-runs/specialist-chain/
 """
 from __future__ import annotations
 
-import sys
-import os
 import json
+import os
+import sys
 import time
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Force unbuffered output
 sys.stdout.reconfigure(line_buffering=True)
@@ -32,6 +32,7 @@ async def run_cycle():
     print(f"[{datetime.now():%H:%M:%S}] Starting full cycle with specialist chain...")
 
     from unittest.mock import patch
+
     from holus.agents.marketing.agent import MarketingAgent
     from holus.core.config import HolusConfig
     from holus.core.cycle_state import HealthResult

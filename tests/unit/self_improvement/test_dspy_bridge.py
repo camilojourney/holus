@@ -1,11 +1,10 @@
 """Tests for DSPy bridge — dataset building and few-shot selection."""
 
 import json
-from pathlib import Path
 
 import pytest
 
-from holus.self_improvement.dspy_bridge import DSPyBridge, DSPyExample
+from holus.self_improvement.dspy_bridge import DSPyBridge
 
 
 @pytest.fixture
@@ -56,7 +55,7 @@ class TestSelectFewShot:
         dataset = bridge.build_dataset("idea-generator", min_score=0.0)
         selected = bridge.select_few_shot(dataset, k=2, diverse=True)
         # Should pick from different content_types/platforms
-        platforms = {e.platform for e in selected}
+        _platforms = {e.platform for e in selected}
         assert len(selected) == 2
 
     def test_non_diverse_takes_top_k(self, trajectory_file, tmp_path):

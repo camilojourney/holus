@@ -1,6 +1,5 @@
 """Tests for Thompson Sampling strategy bandit."""
 
-from pathlib import Path
 
 import pytest
 

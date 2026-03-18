@@ -136,7 +136,7 @@ def main():
     # Cleanup
     traj_path.unlink(missing_ok=True)
 
-    print(f"\n=== LOAD TEST COMPLETE ===")
+    print("\n=== LOAD TEST COMPLETE ===")
     print(f"All operations under 1s for {n_entries} entries: system is production-ready for 100/day.\n")
 
 

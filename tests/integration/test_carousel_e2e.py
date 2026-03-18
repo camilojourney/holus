@@ -10,12 +10,9 @@ theme, gradient, font pairing, and visual effect produces non-zero output.
 
 from __future__ import annotations
 
-import asyncio
-from pathlib import Path
-
 import pytest
 
-from holus.visual.carousel_builder import _normalize_outline, build_carousel_pdf
+from holus.visual.carousel_builder import _normalize_outline
 from holus.visual.engine import PlaywrightEngine
 from holus.visual.spec_converter import carousel_spec_to_slides
 from holus.visual.templates import TemplateEngine

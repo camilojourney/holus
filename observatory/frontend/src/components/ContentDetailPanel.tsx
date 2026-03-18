@@ -252,9 +252,10 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                 <section>
                   <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                     Content
-                    {detail.char_count && (
-                      <span className="ml-2 normal-case font-normal text-gray-400">{detail.char_count} chars</span>
-                    )}
+                    <span className="ml-2 normal-case font-normal text-gray-400">
+                      {detail.text.split(/\s+/).filter(Boolean).length} words
+                      {detail.char_count ? ` · ${detail.char_count} chars` : ` · ${detail.text.length} chars`}
+                    </span>
                   </h3>
                   <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3">
                     <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">

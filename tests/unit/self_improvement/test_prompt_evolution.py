@@ -63,7 +63,7 @@ class TestPromptEvolution:
             evo._meta_path = evo._pop_dir / "population.json"
             evo.initialize_population("You are a test agent.")
             evo.record_evaluation("canonical", 0.85)
-            prompt, vid = evo.get_active_prompt()
+            _prompt, vid = evo.get_active_prompt()
             assert vid == "canonical"
         finally:
             mod.POPULATIONS_DIR = original

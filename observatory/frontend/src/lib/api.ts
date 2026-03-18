@@ -30,8 +30,11 @@ import {
   demoDimensionAverages,
 } from './demo-data';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
+// Server-side: use full URL to reach the API directly
+// Client-side: use relative URL so Next.js rewrites proxy it through port 3000
+const API_BASE_SERVER =
+  process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8003';
+const isServer = typeof window === 'undefined';
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
@@ -40,10 +43,13 @@ async function apiFetch<T>(
   options?: RequestInit & { revalidate?: number }
 ): Promise<T> {
   const { revalidate, ...fetchOptions } = options ?? {};
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...fetchOptions,
-    next: { revalidate: revalidate ?? 30 },
-  });
+  const base = isServer ? API_BASE_SERVER : '';
+  const fetchOpts: RequestInit = { ...fetchOptions };
+  // next.revalidate only works server-side
+  if (isServer) {
+    (fetchOpts as Record<string, unknown>).next = { revalidate: revalidate ?? 30 };
+  }
+  const res = await fetch(`${base}${path}`, fetchOpts);
   if (!res.ok) {
     throw new Error(`API error ${res.status} for ${path}`);
   }

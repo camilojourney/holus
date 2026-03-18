@@ -180,7 +180,7 @@ class TestMarketingAgentCycle:
             agent = MarketingAgent(config=config)
 
             # Run the full cycle (no API key → fallback decisions + fallback content)
-            final_state = asyncio.run(agent.run())
+            final_state = asyncio.run(asyncio.wait_for(agent.run(), timeout=120))
 
         # -- Assertions -------------------------------------------------------
         # observe: product_updates loaded
@@ -759,7 +759,7 @@ class TestAuthorityEngineE2E:
             mock_eb.return_value = MagicMock()
             config = _make_holus_config(tmp_path)
             agent = MarketingAgent(config=config)
-            state = asyncio.run(agent.run())
+            state = asyncio.run(asyncio.wait_for(agent.run(), timeout=30))
 
         # Brand identity loaded
         brand = state.get("brand_identity", {})
@@ -822,7 +822,7 @@ class TestAuthorityEngineE2E:
             agent.claude.call = MagicMock(side_effect=_authority_claude_side_effect)
             agent.claude.sonnet_model = "claude-sonnet-4-6"
 
-            state = asyncio.run(agent.run())
+            state = asyncio.run(asyncio.wait_for(agent.run(), timeout=30))
 
         # --- Brand identity ---
         brand = state.get("brand_identity", {})
@@ -998,7 +998,7 @@ class TestAuthorityEngineE2E:
             agent.claude.call = MagicMock(side_effect=_authority_claude_side_effect)
             agent.claude.sonnet_model = "claude-sonnet-4-6"
 
-            state = asyncio.run(agent.run())
+            state = asyncio.run(asyncio.wait_for(agent.run(), timeout=30))
 
         for piece in state.get("generated_content", []):
             text = piece.get("text", "")
