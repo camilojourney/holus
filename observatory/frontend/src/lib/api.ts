@@ -151,6 +151,28 @@ export async function patchContent(
   return res.json() as Promise<ContentDetail>;
 }
 
+// Choose A/B visual variant
+export async function chooseVisual(
+  id: string,
+  variant: 'a' | 'b',
+): Promise<ContentDetail> {
+  const base = process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
+  const res = await fetch(`${base}/api/v1/content/${id}/visual-choice?variant=${variant}`, {
+    method: 'PATCH',
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => res.statusText);
+    throw new Error(`PATCH visual-choice → ${res.status}: ${msg}`);
+  }
+  return res.json() as Promise<ContentDetail>;
+}
+
+// Image URL helper
+export function contentImageUrl(pieceId: string, variant: 'a' | 'b' = 'a'): string {
+  const base = process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
+  return `${base}/api/v1/content/${pieceId}/image${variant === 'b' ? '?variant=b' : ''}`;
+}
+
 // Knowledge files
 export async function fetchKnowledge(): Promise<KnowledgeFile[]> {
   return withFallback(

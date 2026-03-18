@@ -110,6 +110,12 @@ export interface ContentDetail extends ContentItem {
   hashtags?: string[];
   char_count?: number;
   agent_trace?: AgentTraceStep[];
+  image_url?: string;
+  image_b_url?: string;
+  visual_spec?: Record<string, unknown>;
+  visual_spec_b?: Record<string, unknown>;
+  judge_score?: number;
+  judge_verdict?: string;
 }
 
 export interface ContentStatusCounts {

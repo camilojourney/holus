@@ -120,12 +120,28 @@ def _raw_to_item(raw: dict, file_stem: str) -> ContentItem:
 
 def _raw_to_detail(raw: dict, file_stem: str) -> ContentDetail:
     item = _raw_to_item(raw, file_stem)
+    piece_id = str(raw.get("piece_id", raw.get("id", file_stem)))
+
+    # Build image URLs if rendered images exist
+    image_url = None
+    image_b_url = None
+    if raw.get("rendered_image_path"):
+        image_url = f"/api/v1/content/{piece_id}/image"
+    if raw.get("rendered_image_b_path"):
+        image_b_url = f"/api/v1/content/{piece_id}/image?variant=b"
+
     return ContentDetail(
         **item.model_dump(),
         text=raw.get("text"),
         hashtags=raw.get("hashtags", []),
         char_count=raw.get("char_count"),
         agent_trace=_parse_agent_trace(raw),
+        image_url=image_url,
+        image_b_url=image_b_url,
+        visual_spec=raw.get("visual_spec"),
+        visual_spec_b=raw.get("visual_spec_b"),
+        judge_score=raw.get("judge_score"),
+        judge_verdict=raw.get("judge_verdict"),
     )
 
 
@@ -198,6 +214,53 @@ async def get_content_detail(piece_id: str) -> ContentDetail:
         raw_id = str(raw.get("piece_id", raw.get("id", path.stem)))
         if raw_id == piece_id or path.stem == piece_id:
             return _raw_to_detail(raw, path.stem)
+    raise HTTPException(status_code=404, detail=f"Content piece {piece_id!r} not found")
+
+
+@router.get("/{piece_id}/image")
+async def get_content_image(piece_id: str, variant: str = "a") -> Any:
+    """Serve the rendered companion visual for a content piece."""
+    from fastapi.responses import FileResponse
+
+    files = _load_raw_files()
+    for path, raw in files:
+        raw_id = str(raw.get("piece_id", raw.get("id", path.stem)))
+        if raw_id == piece_id or path.stem == piece_id:
+            key = "rendered_image_b_path" if variant == "b" else "rendered_image_path"
+            image_path_str = raw.get(key)
+            if not image_path_str:
+                raise HTTPException(status_code=404, detail="No visual for this piece")
+            image_path = Path(image_path_str)
+            if not image_path.exists():
+                raise HTTPException(status_code=404, detail="Image file not found on disk")
+            return FileResponse(image_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail=f"Content piece {piece_id!r} not found")
+
+
+@router.patch("/{piece_id}/visual-choice")
+async def choose_visual_variant(piece_id: str, variant: str = "a") -> ContentDetail:
+    """Select which A/B visual variant to use. Copies chosen variant to rendered_image_path."""
+    files = _load_raw_files()
+    for path, raw in files:
+        raw_id = str(raw.get("piece_id", raw.get("id", path.stem)))
+        if raw_id != piece_id and path.stem != piece_id:
+            continue
+
+        if variant == "b" and raw.get("rendered_image_b_path"):
+            # Swap: B becomes primary
+            raw["rendered_image_path"] = raw["rendered_image_b_path"]
+            raw["visual_spec"] = raw.get("visual_spec_b", raw.get("visual_spec"))
+            raw["visual_chosen"] = "b"
+        else:
+            raw["visual_chosen"] = "a"
+
+        if path.suffix == ".json":
+            path.write_text(json.dumps(raw, indent=2), encoding="utf-8")
+        else:
+            path.write_text(yaml.dump(raw, default_flow_style=False), encoding="utf-8")
+
+        return _raw_to_detail(raw, path.stem)
+
     raise HTTPException(status_code=404, detail=f"Content piece {piece_id!r} not found")
 
 

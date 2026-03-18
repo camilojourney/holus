@@ -397,7 +397,9 @@ Keep labels SHORT (max 3 words per label) so they don't overlap in the chart.
 Return ONLY the JSON object. No markdown fences, no explanation."""
 
 
-def _generate_visual_spec(post_text: str, fmt: str, platform: str) -> dict | None:
+def _generate_visual_spec(
+    post_text: str, fmt: str, platform: str, *, temperature: float = 0.3,
+) -> dict | None:
     """Have Sonnet design a visual spec for the post. Returns spec dict or None."""
     if fmt not in ("text_post", "thread", "instagram_caption"):
         return None  # Carousels and video scripts don't need companion images
@@ -408,7 +410,7 @@ def _generate_visual_spec(post_text: str, fmt: str, platform: str) -> dict | Non
 {post_text[:2000]}
 
 Return JSON only."""
-        raw = _call("anthropic/claude-sonnet-4-6", VISUAL_DESIGNER_SYSTEM, user_msg, temperature=0.3)
+        raw = _call("anthropic/claude-sonnet-4-6", VISUAL_DESIGNER_SYSTEM, user_msg, temperature=temperature)
         cleaned = _strip_fences(raw)
         return json.loads(cleaned)
     except Exception as exc:
@@ -625,17 +627,31 @@ def save_piece(
         except Exception as exc:
             print(f"  ⚠ PDF render failed (outline saved): {exc}")
 
-    # For text posts: generate companion visual (PNG image)
+    # For text posts: generate A/B visual variants, judge picks the winner
     if fmt in ("text_post", "thread", "instagram_caption"):
         platform = decision.get("platform", "linkedin")
-        visual_spec = _generate_visual_spec(full_text, fmt, platform)
-        if visual_spec:
-            png_filename = f"{platform}-{fmt}-{piece_id}.png"
-            png_path = queue_dir / png_filename
-            if _render_visual(visual_spec, png_path):
-                data["rendered_image_path"] = str(png_path)
-                data["visual_spec"] = visual_spec
-                print(f"  → Visual rendered: {png_path.name}")
+
+        # Variant A
+        spec_a = _generate_visual_spec(full_text, fmt, platform)
+        if spec_a:
+            png_a = queue_dir / f"{platform}-{fmt}-{piece_id}-a.png"
+            if _render_visual(spec_a, png_a):
+                data["rendered_image_path"] = str(png_a)
+                data["visual_spec"] = spec_a
+                print(f"  → Visual A rendered: {png_a.name}")
+
+        # Variant B (higher temperature for creative variety)
+        spec_b = _generate_visual_spec(full_text, fmt, platform, temperature=0.8)
+        if spec_b and spec_b != spec_a:
+            png_b = queue_dir / f"{platform}-{fmt}-{piece_id}-b.png"
+            if _render_visual(spec_b, png_b):
+                data["rendered_image_b_path"] = str(png_b)
+                data["visual_spec_b"] = spec_b
+                print(f"  → Visual B rendered: {png_b.name}")
+
+        # Judge picks the better visual (auto-select, user can override in dashboard)
+        if data.get("rendered_image_path") and data.get("rendered_image_b_path"):
+            data["visual_chosen"] = "a"  # default; judge or user overrides
 
     filename = f"{decision.get('platform', 'linkedin')}-{decision.get('format', 'post')}-{piece_id}.json"
     path = queue_dir / filename

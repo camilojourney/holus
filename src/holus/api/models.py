@@ -97,6 +97,12 @@ class ContentDetail(ContentItem):
     hashtags: list[str] = []
     char_count: int | None = None
     agent_trace: list[AgentTraceStep] = []
+    image_url: str | None = None
+    image_b_url: str | None = None
+    visual_spec: dict | None = None
+    visual_spec_b: dict | None = None
+    judge_score: float | None = None
+    judge_verdict: str | None = None
 
 
 class ContentPatchRequest(BaseModel):
