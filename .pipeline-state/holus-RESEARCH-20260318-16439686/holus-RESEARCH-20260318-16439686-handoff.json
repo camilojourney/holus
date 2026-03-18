@@ -1,0 +1,38 @@
+{
+  "phase": "RESEARCH",
+  "cid": "holus-RESEARCH-20260318-16439686",
+  "mode": "TECHNICAL_OPTIONS",
+  "question": "Best approach for automated prompt optimization in multi-agent systems",
+  "options": [
+    {"name": "DSPy GEPA", "recommendation": true},
+    {"name": "DSPy MIPROv2", "recommendation": false},
+    {"name": "DSPy BootstrapFewShot", "recommendation": false},
+    {"name": "TextGrad", "recommendation": false},
+    {"name": "MASPOB", "recommendation": false},
+    {"name": "MAPRO", "recommendation": false}
+  ],
+  "recommendation": "DSPy GEPA as primary optimizer, BootstrapFewShot for cold start",
+  "confidence": "HIGH",
+  "sources": [
+    {"url": "https://dspy.ai/api/optimizers/GEPA/overview/", "tier": "PRIMARY", "verified": true},
+    {"url": "https://dspy.ai/faqs/", "tier": "PRIMARY", "verified": true},
+    {"url": "https://arxiv.org/abs/2507.19457", "tier": "PRIMARY", "verified": true},
+    {"url": "https://github.com/zou-group/textgrad/issues/112", "tier": "PRIMARY", "verified": true},
+    {"url": "https://arxiv.org/abs/2603.02630", "tier": "PRIMARY", "verified": true},
+    {"url": "https://arxiv.org/abs/2502.06855", "tier": "PRIMARY", "verified": true}
+  ],
+  "verified_count": 12,
+  "unverified_count": 3,
+  "phantom_count": 0,
+  "decision_points": [
+    {"name": "primary_optimizer", "recommendation": "DSPy GEPA", "confidence": "HIGH"},
+    {"name": "multi_agent_credit_assignment", "recommendation": "Per-agent contract scoring now, DSPy freeze later", "confidence": "MEDIUM"},
+    {"name": "low_data_strategy", "recommendation": "BootstrapFewShot to 30+ then GEPA", "confidence": "HIGH"}
+  ],
+  "prompt_versions": {
+    "gatherer": {"layer": 2, "version": "baseline"},
+    "adversary": {"layer": 2, "version": "baseline"}
+  },
+  "output_file": "docs/research/domain/prompt-optimization-multi-agent.md",
+  "timestamp": "2026-03-18T22:00:00Z"
+}
