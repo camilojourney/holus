@@ -57,7 +57,7 @@ export default function Sidebar() {
         </div>
         <button
           onClick={() => setOpen(false)}
-          className="md:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="md:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-label="Close navigation"
         >
           <X size={20} />
@@ -72,7 +72,7 @@ export default function Sidebar() {
               href={href}
               aria-current={active ? 'page' : undefined}
               onClick={() => setOpen(false)}
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                 active
                   ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white'
@@ -88,7 +88,7 @@ export default function Sidebar() {
         <p className="text-xs text-gray-400 dark:text-gray-600">Read-only</p>
         <button
           onClick={toggleTheme}
-          className="p-1.5 rounded-lg text-gray-400 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+          className="p-1.5 rounded-lg text-gray-400 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {dark ? <Sun size={16} /> : <Moon size={16} />}
@@ -102,7 +102,7 @@ export default function Sidebar() {
       {/* Mobile hamburger button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed top-4 left-4 z-40 md:hidden p-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-sm"
+        className="fixed top-4 left-4 z-40 md:hidden p-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         aria-label="Open navigation"
       >
         <Menu size={20} className="text-gray-700 dark:text-gray-300" />

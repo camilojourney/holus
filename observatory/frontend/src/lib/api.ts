@@ -14,6 +14,8 @@ import type {
   KnowledgeFile,
   CostBreakdown,
   GrowthData,
+  MemoryContent,
+  LessonsResponse,
 } from './types';
 import {
   demoAgents,
@@ -23,6 +25,9 @@ import {
   demoContent,
   demoKnowledge,
   demoGrowthData,
+  demoMemoryContent,
+  demoLessons,
+  demoDimensionAverages,
 } from './demo-data';
 
 const API_BASE =
@@ -77,6 +82,7 @@ export async function fetchAgent(id: string): Promise<AgentDetail> {
     ...(agent ?? demoAgents[0]),
     cycles: [],
     recent_scores: [7.2, 8.1, 6.9, 7.8, 8.4],
+    dimension_averages: demoDimensionAverages[id] ?? {},
   };
   return withFallback(
     () => apiFetch<AgentDetail>(`/api/v1/agents/${id}`),
@@ -177,6 +183,22 @@ export async function fetchResults(): Promise<GrowthData> {
   return withFallback(
     () => apiFetch<GrowthData>('/api/v1/results'),
     demoGrowthData,
+  );
+}
+
+// Knowledge — MEMORY.md content
+export async function fetchMemoryContent(): Promise<MemoryContent | null> {
+  return withFallback(
+    () => apiFetch<MemoryContent>('/api/v1/knowledge/memory/content'),
+    demoMemoryContent,
+  );
+}
+
+// Knowledge — recent lessons
+export async function fetchLessons(limit = 20): Promise<LessonsResponse> {
+  return withFallback(
+    () => apiFetch<LessonsResponse>(`/api/v1/knowledge/lessons/recent?limit=${limit}`),
+    demoLessons,
   );
 }
 

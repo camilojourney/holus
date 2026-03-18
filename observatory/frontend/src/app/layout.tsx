@@ -28,9 +28,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+        >
+          Skip to content
+        </a>
         <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 min-w-0 overflow-auto pt-14 md:pt-0">
+          <main id="main-content" className="flex-1 min-w-0 overflow-auto pt-14 md:pt-0">
             {children}
           </main>
         </div>

@@ -22,6 +22,7 @@ export interface Agent {
 export interface AgentDetail extends Agent {
   cycles: CycleRecord[];
   recent_scores: number[];
+  dimension_averages?: Record<string, number>;
 }
 
 export interface CycleRecord {
@@ -134,6 +135,27 @@ export interface KnowledgeFile {
   modified_at: string;
   size_bytes: number;
   freshness: FreshnessStatus;
+}
+
+export interface MemoryContent {
+  content: string;
+  last_modified: string;
+  size_bytes: number;
+}
+
+export interface LessonEntry {
+  id: string;
+  date?: string;
+  lesson?: string;
+  source?: string;
+  agent_id?: string;
+  category?: string;
+  context?: string;
+}
+
+export interface LessonsResponse {
+  lessons: LessonEntry[];
+  total: number;
 }
 
 export interface TrajectoryEvent {

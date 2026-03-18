@@ -10,6 +10,8 @@ import type {
   KnowledgeFile,
   TrajectoryEvent,
   GrowthData,
+  MemoryContent,
+  LessonsResponse,
 } from './types';
 
 // --- Agents ---
@@ -420,6 +422,115 @@ export const demoGrowthData: GrowthData = {
     invoz: { count: 5, total_impressions: 9400, avg_engagement_rate: 0.048 },
     holus: { count: 4, total_impressions: 10900, avg_engagement_rate: 0.071 },
   },
+};
+
+// --- Dimension Averages (per-agent rubric scores) ---
+
+export const demoDimensionAverages: Record<string, Record<string, number>> = {
+  'hook-architect': {
+    hook_strength: 8.4,
+    curiosity_gap: 7.8,
+    pattern_interrupt: 7.2,
+    emotional_resonance: 6.9,
+    clarity: 8.1,
+  },
+  'blog-writer': {
+    hook_strength: 7.6,
+    authority_signal: 8.2,
+    narrative_arc: 7.9,
+    technical_depth: 8.5,
+    readability: 7.8,
+    cta_strength: 6.8,
+  },
+  'carousel-architect': {
+    visual_flow: 8.1,
+    slide_hook: 7.5,
+    information_density: 7.8,
+    brand_consistency: 8.3,
+    cta_strength: 7.2,
+  },
+  'narrative-specialist': {
+    hook_strength: 7.3,
+    narrative_arc: 8.6,
+    emotional_resonance: 8.2,
+    authenticity: 8.4,
+    pacing: 7.7,
+  },
+  'tutorial-specialist': {
+    technical_depth: 8.7,
+    step_clarity: 8.3,
+    code_quality: 8.1,
+    readability: 7.9,
+    practical_value: 8.5,
+  },
+  'marketing-strategist': {
+    strategic_reasoning: 8.8,
+    audience_targeting: 7.9,
+    platform_awareness: 8.2,
+    data_driven: 8.0,
+    creativity: 7.4,
+  },
+  'seo-researcher': {
+    keyword_relevance: 8.3,
+    search_intent: 7.8,
+    competitive_analysis: 7.5,
+    trend_detection: 7.2,
+    actionability: 8.0,
+  },
+};
+
+// --- Memory Content (MEMORY.md) ---
+
+export const demoMemoryContent: MemoryContent = {
+  content: `# System Memory
+
+## Content Strategy Patterns
+
+- **Tutorials outperform promo posts 4:1** on LinkedIn (validated across 30+ posts)
+- **Carousels get 3x more saves** than text posts on LinkedIn
+- **Technical depth correlates with engagement** — shallow tips underperform deep dives
+- **Best posting window:** Tuesday-Thursday, 8-10am EST for LinkedIn
+- **Instagram Reels** drive more followers than static posts (2.3x growth rate)
+
+## Audience Insights
+
+- Primary audience: AI engineers, content creators, indie hackers
+- Pain points: "too many tools, no memory", "AI generations are inconsistent"
+- High-resonance topics: multi-agent systems, AI workflow automation, building in public
+
+## Brand Voice
+
+- Direct, technical but accessible
+- First person, builder perspective
+- Show the work — code snippets, architecture diagrams, real metrics
+- Never salesy, never "10 tips" listicles
+
+## What Not to Do
+
+- Avoid generic AI news commentary (low engagement, off-brand)
+- Never post about trading/finance (brand confusion risk)
+- Do not use corporate buzzwords ("synergy", "leverage", "disrupt")
+`,
+  last_modified: '2026-03-13T10:00:00Z',
+  size_bytes: 1024,
+};
+
+// --- Lessons ---
+
+export const demoLessons: LessonsResponse = {
+  lessons: [
+    { id: '1', date: '2026-03-13', lesson: 'Posts with code snippets get 2.4x more engagement than text-only posts', source: 'analytics_review', agent_id: 'marketing-strategist', category: 'content_format' },
+    { id: '2', date: '2026-03-12', lesson: 'LinkedIn algorithm favors posts with exactly 3 line breaks in the hook', source: 'a_b_test', agent_id: 'hook-architect', category: 'platform_optimization' },
+    { id: '3', date: '2026-03-12', lesson: 'Thread format on Twitter/X works better for technical content than single tweets', source: 'performance_data', agent_id: 'marketing-strategist', category: 'content_format' },
+    { id: '4', date: '2026-03-11', lesson: 'Carousel posts need a strong CTA on the last slide or saves drop by 40%', source: 'analytics_review', agent_id: 'carousel-architect', category: 'content_format' },
+    { id: '5', date: '2026-03-11', lesson: 'SEO keywords with "how to" prefix convert 3x better than bare technical terms', source: 'keyword_research', agent_id: 'seo-researcher', category: 'seo' },
+    { id: '6', date: '2026-03-10', lesson: 'Brand safety violations most common in automated caption generation — always review', source: 'evaluation_audit', agent_id: 'brand-safety-judge', category: 'safety' },
+    { id: '7', date: '2026-03-10', lesson: 'Tutorial posts should include a "before/after" comparison for maximum shareability', source: 'performance_data', agent_id: 'tutorial-specialist', category: 'content_format' },
+    { id: '8', date: '2026-03-09', lesson: 'Reposting top content to Threads 48h after LinkedIn gets 60% of original engagement', source: 'cross_post_test', agent_id: 'marketing-strategist', category: 'distribution' },
+    { id: '9', date: '2026-03-09', lesson: 'Narrative posts with personal failure stories outperform pure success stories 2:1', source: 'analytics_review', agent_id: 'narrative-specialist', category: 'storytelling' },
+    { id: '10', date: '2026-03-08', lesson: 'Instagram caption length sweet spot is 125-150 words for Reels', source: 'performance_data', agent_id: 'marketing-strategist', category: 'platform_optimization' },
+  ],
+  total: 47,
 };
 
 // --- Engagement data (extended for dedicated tracker page) ---

@@ -281,9 +281,10 @@ Juan records this himself. Holus does NOT generate the video.
 """,
     "instagram_caption": """
 <format_instructions>
-Instagram/Threads caption. 150-300 characters.
-The core insight only — no setup needed. Must work without context.
-Close with a simple question or statement.
+Instagram caption. 800-1500 characters (front-load value, use line breaks for readability).
+Include a concrete insight, stat, or takeaway worth bookmarking (save-worthy content).
+Structure: hook line → core insight with specifics → personal angle or lesson → closing question or CTA.
+End with a separate hashtag block of 5-15 relevant hashtags (mix of broad and niche).
 Can be in English, Spanish, or bilingual (your call based on the idea).
 </format_instructions>
 """,
@@ -322,7 +323,7 @@ Write the {fmt} for this idea. Return JSON only.
         result = {"text": raw, "headline": raw_idea[:60], "hashtags": [], "hook_score": "?", "voice_check": "?"}
 
     # Optional: Constitutional AI revision for text content
-    if fmt in ("text_post", "thread") and result.get("text"):
+    if fmt in ("text_post", "thread", "instagram_caption") and result.get("text"):
         try:
             from holus.agents.marketing.revision_loop import RevisionLoop
 
@@ -484,6 +485,12 @@ def save_piece(
             "voice_check": generated.get("voice_check", "?"),
         },
     }
+
+    # Write judge scores to queue file so auto-publish can read them
+    if generated.get("judge_score") is not None:
+        data["judge_score"] = generated["judge_score"]
+        data["judge_verdict"] = generated.get("judge_verdict")
+        data["judge_feedback"] = generated.get("judge_feedback", "")
 
     # For carousels: store slide definitions and render PDF
     if fmt == "carousel_outline" and generated.get("slides"):

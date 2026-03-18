@@ -18,6 +18,19 @@ class AgentInfo(BaseModel):
     run_count_7d: int = 0
 
 
+class AgentDetailResponse(BaseModel):
+    """Extended agent info with dimension averages for the detail page."""
+
+    id: str
+    name: str
+    model: str
+    role: str
+    last_run: datetime | None = None
+    last_status: str | None = None
+    run_count_7d: int = 0
+    dimension_averages: dict[str, float] = {}
+
+
 class AgentMetrics(BaseModel):
     agent_id: str
     avg_quality_score: float | None = None
@@ -142,6 +155,33 @@ class KnowledgeFile(BaseModel):
 
 class KnowledgeResponse(BaseModel):
     files: list[KnowledgeFile]
+
+
+class MemoryResponse(BaseModel):
+    """MEMORY.md content for the knowledge page."""
+
+    content: str
+    last_modified: datetime
+    size_bytes: int
+
+
+class LessonEntry(BaseModel):
+    """A single lesson from lessons.json."""
+
+    id: str | None = None
+    date: str | None = None
+    lesson: str | None = None
+    source: str | None = None
+    agent_id: str | None = None
+    category: str | None = None
+    context: str | None = None
+
+
+class LessonsResponse(BaseModel):
+    """Recent lessons for the knowledge page."""
+
+    lessons: list[LessonEntry]
+    total: int
 
 
 class HealthStatus(BaseModel):

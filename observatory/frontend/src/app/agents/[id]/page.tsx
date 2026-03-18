@@ -100,6 +100,60 @@ export default async function AgentDetailPage({ params }: Props) {
         </div>
       )}
 
+      {/* Capability Breakdown — horizontal bar chart of rubric dimensions */}
+      {(() => {
+        const dims = agent.dimension_averages ?? {};
+        const dimEntries = Object.entries(dims);
+        if (dimEntries.length === 0) {
+          return (
+            <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+              <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
+                Capability Breakdown
+              </h2>
+              <p className="text-sm text-gray-400 dark:text-gray-600">No evaluations yet</p>
+            </div>
+          );
+        }
+        const maxScore = 10;
+        return (
+          <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
+              Capability Breakdown
+            </h2>
+            <div className="space-y-3">
+              {dimEntries.map(([dim, score]) => {
+                const pct = Math.min((score / maxScore) * 100, 100);
+                const barColor =
+                  score >= 8
+                    ? 'bg-green-500 dark:bg-green-400'
+                    : score >= 6
+                    ? 'bg-yellow-500 dark:bg-yellow-400'
+                    : 'bg-red-500 dark:bg-red-400';
+                const label = dim.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <div key={dim}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        {label}
+                      </span>
+                      <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                        {score.toFixed(1)}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${barColor}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Cycle history table */}
       {agent.cycles?.length > 0 && (
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-950">

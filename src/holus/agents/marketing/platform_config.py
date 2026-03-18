@@ -94,7 +94,7 @@ PLATFORMS: dict[str, PlatformConfig] = {
         reward_weights={"saves": 0.4, "shares": 0.3, "comments": 0.2, "likes": 0.1},
         judge_rubric=(
             "Instagram content evaluation:\n"
-            "- visual_hook: Does the visual stop the scroll? (0-1)\n"
+            "- visual_hook: Does the opening line stop the scroll? (for caption-only posts, evaluate hook strength) (0-1)\n"
             "- caption_depth: Is there substance beyond the visual? (0-1)\n"
             "- save_worthiness: Would someone bookmark this for later? (0-1)\n"
             "- authenticity: Does it feel real, not corporate? (0-1)\n"

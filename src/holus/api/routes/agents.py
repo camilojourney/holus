@@ -10,7 +10,7 @@ from typing import Any
 import yaml
 from fastapi import APIRouter, HTTPException
 
-from holus.api.models import AgentInfo, AgentMetrics
+from holus.api.models import AgentDetailResponse, AgentInfo, AgentMetrics
 from holus.api.routes.trajectory import _load_trajectory
 
 logger = logging.getLogger(__name__)
@@ -98,16 +98,60 @@ async def list_agents() -> list[AgentInfo]:
     return result
 
 
-@router.get("/{agent_id}", response_model=AgentInfo)
-async def get_agent(agent_id: str) -> AgentInfo:
-    """Return a single agent by ID with full performance history."""
+def _aggregate_dimension_scores(agent_id: str, trajectory: list[dict[str, Any]], limit: int = 30) -> dict[str, float]:
+    """Aggregate dimension_scores from the last *limit* trajectory entries for this agent.
+
+    Each trajectory entry may contain a ``dimension_scores`` dict
+    (e.g. ``{"hook_strength": 8.2, "authority_signal": 7.5, ...}``).
+    We average each dimension across the most recent *limit* entries that have them.
+    """
+    agent_entries = [
+        e for e in trajectory
+        if e.get("agent_id") == agent_id and isinstance(e.get("dimension_scores"), dict)
+    ]
+    # Sort by timestamp descending, take last N
+    agent_entries.sort(key=lambda e: e.get("timestamp", ""), reverse=True)
+    agent_entries = agent_entries[:limit]
+
+    if not agent_entries:
+        return {}
+
+    sums: dict[str, float] = {}
+    counts: dict[str, int] = {}
+    for entry in agent_entries:
+        for dim, score in entry["dimension_scores"].items():
+            try:
+                val = float(score)
+            except (TypeError, ValueError):
+                continue
+            sums[dim] = sums.get(dim, 0.0) + val
+            counts[dim] = counts.get(dim, 0) + 1
+
+    return {dim: round(sums[dim] / counts[dim], 2) for dim in sorted(sums)}
+
+
+@router.get("/{agent_id}", response_model=AgentDetailResponse)
+async def get_agent(agent_id: str) -> AgentDetailResponse:
+    """Return a single agent by ID with dimension score averages."""
     agents_data = _load_agents_yaml()
 
     if agent_id not in agents_data:
         raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
 
     trajectory = _load_trajectory()
-    return _build_agent_info(agent_id, agents_data[agent_id], trajectory)
+    info = _build_agent_info(agent_id, agents_data[agent_id], trajectory)
+    dimension_averages = _aggregate_dimension_scores(agent_id, trajectory)
+
+    return AgentDetailResponse(
+        id=info.id,
+        name=info.name,
+        model=info.model,
+        role=info.role,
+        last_run=info.last_run,
+        last_status=info.last_status,
+        run_count_7d=info.run_count_7d,
+        dimension_averages=dimension_averages,
+    )
 
 
 @router.get("/{agent_id}/metrics", response_model=AgentMetrics)
