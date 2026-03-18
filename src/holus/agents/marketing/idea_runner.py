@@ -171,8 +171,11 @@ Sentences: Short. One idea per sentence. Line breaks for emphasis.
 Opening: NEVER start with "I" as the first word (LinkedIn algorithm).
 Emojis: None on LinkedIn. Clean text only.
 Exclamation marks: ZERO. Not one. None. Confidence doesn't shout.
+Formatting: NEVER use markdown (**bold**, *italic*, __underline__, #heading).
+            LinkedIn/Twitter/Instagram do NOT render markdown — asterisks show as literal text.
+            Use ALL CAPS sparingly for emphasis. Use line breaks for structure. That's it.
 Anti-patterns: No "follow me for more", no "in today's world", no "Let's dive in!",
-               no "In this post I will", no bullet walls.
+               no "In this post I will", no bullet walls, no markdown formatting.
 </voice_rules>
 
 <content_fidelity>
@@ -291,6 +294,19 @@ Can be in English, Spanish, or bilingual (your call based on the idea).
 }
 
 
+def _strip_markdown(text: str) -> str:
+    """Strip markdown formatting that social platforms render as literal characters."""
+    import re
+    # **bold** or __bold__ → just the text
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+    text = re.sub(r'__(.+?)__', r'\1', text)
+    # *italic* → just the text (but not bullet points like "* item")
+    text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'\1', text)
+    # # headings → just the text
+    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+    return text
+
+
 def generate_piece(raw_idea: str, decision: dict) -> dict:
     fmt = decision.get("format", "text_post")
     platform = decision.get("platform", "linkedin")
@@ -340,6 +356,10 @@ Write the {fmt} for this idea. Return JSON only.
         except Exception as exc:
             # Non-blocking — if revision fails, use original
             logger.debug("Revision loop skipped: %s", exc)
+
+    # Strip markdown formatting — social platforms render it as literal asterisks
+    if result.get("text"):
+        result["text"] = _strip_markdown(result["text"])
 
     return result
 
