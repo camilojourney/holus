@@ -152,8 +152,7 @@ export async function patchContent(
   id: string,
   body: PatchContentRequest,
 ): Promise<ContentDetail> {
-  const base = process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
-  const res = await fetch(`${base}/api/v1/content/${id}`, {
+  const res = await fetch(`/api/v1/content/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -170,8 +169,7 @@ export async function chooseVisual(
   id: string,
   variant: 'a' | 'b',
 ): Promise<ContentDetail> {
-  const base = process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
-  const res = await fetch(`${base}/api/v1/content/${id}/visual-choice?variant=${variant}`, {
+  const res = await fetch(`/api/v1/content/${id}/visual-choice?variant=${variant}`, {
     method: 'PATCH',
   });
   if (!res.ok) {
@@ -183,8 +181,7 @@ export async function chooseVisual(
 
 // Image URL helper
 export function contentImageUrl(pieceId: string, variant: 'a' | 'b' = 'a'): string {
-  const base = process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8001';
-  return `${base}/api/v1/content/${pieceId}/image${variant === 'b' ? '?variant=b' : ''}`;
+  return `/api/v1/content/${pieceId}/image${variant === 'b' ? '?variant=b' : ''}`;
 }
 
 // Knowledge files
