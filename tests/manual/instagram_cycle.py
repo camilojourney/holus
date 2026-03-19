@@ -12,7 +12,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.stdout.reconfigure(line_buffering=True)
@@ -29,7 +29,7 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 async def run_cycle():
-    print(f"[{datetime.now():%H:%M:%S}] Starting Instagram specialist chain cycle...")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Starting Instagram specialist chain cycle...")
 
     from unittest.mock import patch
 
@@ -82,26 +82,26 @@ async def run_cycle():
         result = await original_reason(state)
         # Override with our Instagram decisions
         result["content_decisions"] = [d.model_dump(mode="json") for d in instagram_decisions]
-        print(f"[{datetime.now():%H:%M:%S}] Injected {len(instagram_decisions)} Instagram decisions")
+        print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Injected {len(instagram_decisions)} Instagram decisions")
         return result
 
     agent.reason = mock_reason
 
-    print(f"[{datetime.now():%H:%M:%S}] Agent created (model={config.sonnet_model})")
-    print(f"[{datetime.now():%H:%M:%S}] Proxy: {config.anthropic_base_url}")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Agent created (model={config.sonnet_model})")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Proxy: {config.anthropic_base_url}")
     t0 = time.time()
 
     try:
         with patch("holus.agents.marketing.agent.run_preflight_checks", return_value=mock_health):
             result = await agent.run()
     except Exception as e:
-        print(f"[{datetime.now():%H:%M:%S}] CYCLE ERROR: {e}")
+        print(f"[{datetime.now(tz=UTC):%H:%M:%S}] CYCLE ERROR: {e}")
         import traceback
         traceback.print_exc()
         result = {"error": str(e)}
 
     elapsed = time.time() - t0
-    print(f"\n[{datetime.now():%H:%M:%S}] Cycle finished in {elapsed:.1f}s")
+    print(f"\n[{datetime.now(tz=UTC):%H:%M:%S}] Cycle finished in {elapsed:.1f}s")
 
     # Save result
     result_file = OUTPUT_DIR / "cycle_result.json"
@@ -112,7 +112,7 @@ async def run_cycle():
     queue_dir = HOLUS_ROOT / "data" / "content-queue"
     queue_files = list(queue_dir.glob("*.yaml")) if queue_dir.exists() else []
     ig_files = [f for f in queue_files if "instagram" in f.read_text().lower()]
-    print(f"\n[{datetime.now():%H:%M:%S}] Content queue: {len(queue_files)} total, {len(ig_files)} Instagram")
+    print(f"\n[{datetime.now(tz=UTC):%H:%M:%S}] Content queue: {len(queue_files)} total, {len(ig_files)} Instagram")
 
     for qf in ig_files:
         print(f"\n--- {qf.name} ---")
@@ -129,11 +129,11 @@ async def run_cycle():
     traj_file = HOLUS_ROOT / "data" / "trajectory.jsonl"
     if traj_file.exists():
         lines = traj_file.read_text().strip().split("\n")
-        recent = [json.loads(l) for l in lines[-5:]]
+        recent = [json.loads(line) for line in lines[-5:]]
         chain_used = sum(1 for e in recent if "specialist-chain" in e.get("execution", {}).get("model", ""))
-        print(f"\n[{datetime.now():%H:%M:%S}] Trajectory: {len(lines)} total, {chain_used} specialist-chain in last 5")
+        print(f"\n[{datetime.now(tz=UTC):%H:%M:%S}] Trajectory: {len(lines)} total, {chain_used} specialist-chain in last 5")
 
-    print(f"\n[{datetime.now():%H:%M:%S}] === DONE ===")
+    print(f"\n[{datetime.now(tz=UTC):%H:%M:%S}] === DONE ===")
     print(f"Total time: {elapsed:.1f}s")
     print(f"Output dir: {OUTPUT_DIR}")
 

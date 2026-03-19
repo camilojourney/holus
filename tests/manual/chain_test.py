@@ -71,7 +71,7 @@ def main() -> None:
     if clean.startswith("```"):
         # Remove opening ```json and closing ```
         lines = clean.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
+        lines = [line for line in lines if not line.strip().startswith("```")]
         clean = "\n".join(lines)
 
     try:
@@ -109,7 +109,7 @@ def main() -> None:
     story_clean = raw_story.strip()
     if story_clean.startswith("```"):
         lines = story_clean.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
+        lines = [line for line in lines if not line.strip().startswith("```")]
         story_clean = "\n".join(lines)
     try:
         story_data = json.loads(story_clean)

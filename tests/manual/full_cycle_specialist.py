@@ -10,7 +10,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Force unbuffered output
@@ -29,7 +29,7 @@ OUTPUT_DIR = HOLUS_ROOT / "data" / "test-runs" / "specialist-chain"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 async def run_cycle():
-    print(f"[{datetime.now():%H:%M:%S}] Starting full cycle with specialist chain...")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Starting full cycle with specialist chain...")
 
     from unittest.mock import patch
 
@@ -49,32 +49,32 @@ async def run_cycle():
 
     agent = MarketingAgent(config=config)
 
-    print(f"[{datetime.now():%H:%M:%S}] Agent created (model={config.sonnet_model}). Running...")
-    print(f"[{datetime.now():%H:%M:%S}] Proxy: {config.anthropic_base_url}")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Agent created (model={config.sonnet_model}). Running...")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Proxy: {config.anthropic_base_url}")
     t0 = time.time()
 
     try:
         with patch("holus.agents.marketing.agent.run_preflight_checks", return_value=mock_health):
             result = await agent.run()
     except Exception as e:
-        print(f"[{datetime.now():%H:%M:%S}] CYCLE ERROR: {e}")
+        print(f"[{datetime.now(tz=UTC):%H:%M:%S}] CYCLE ERROR: {e}")
         import traceback
         traceback.print_exc()
         result = {"error": str(e)}
 
     elapsed = time.time() - t0
-    print(f"[{datetime.now():%H:%M:%S}] Cycle finished in {elapsed:.1f}s")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Cycle finished in {elapsed:.1f}s")
 
     # Save result
     result_file = OUTPUT_DIR / "cycle_result.json"
     with open(result_file, "w") as f:
         json.dump(result if isinstance(result, dict) else {"raw": str(result)}, f, indent=2, default=str)
-    print(f"[{datetime.now():%H:%M:%S}] Result saved to {result_file}")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Result saved to {result_file}")
 
     # Check content queue
     queue_dir = HOLUS_ROOT / "data" / "content-queue"
     queue_files = list(queue_dir.glob("*.yaml")) if queue_dir.exists() else []
-    print(f"[{datetime.now():%H:%M:%S}] Content queue: {len(queue_files)} items")
+    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Content queue: {len(queue_files)} items")
     for qf in queue_files:
         print(f"  - {qf.name}")
         # Print first 10 lines of each queue file
@@ -89,7 +89,7 @@ async def run_cycle():
     traj_file = HOLUS_ROOT / "data" / "trajectory.jsonl"
     if traj_file.exists():
         lines = traj_file.read_text().strip().split("\n")
-        print(f"[{datetime.now():%H:%M:%S}] Trajectory: {len(lines)} entries")
+        print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Trajectory: {len(lines)} entries")
         if lines:
             last_entry = json.loads(lines[-1])
             model_used = last_entry.get("execution", {}).get("model", "unknown")
@@ -102,7 +102,7 @@ async def run_cycle():
     for qf in queue_files:
         shutil.copy2(qf, OUTPUT_DIR / qf.name)
 
-    print(f"\n[{datetime.now():%H:%M:%S}] === DONE ===")
+    print(f"\n[{datetime.now(tz=UTC):%H:%M:%S}] === DONE ===")
     print(f"Total time: {elapsed:.1f}s")
     print(f"Output dir: {OUTPUT_DIR}")
 
