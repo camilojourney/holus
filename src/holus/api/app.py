@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from holus.api.routes import (
     agents,
     alerts,
+    config,
     content,
     evaluations,
     health,
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     prefix = "/api/v1"
     app.include_router(agents.router, prefix=prefix)
     app.include_router(alerts.router, prefix=prefix)
+    app.include_router(config.router, prefix=prefix)
     app.include_router(trajectory.router, prefix=prefix)
     app.include_router(content.router, prefix=prefix)
     app.include_router(evaluations.router, prefix=prefix)

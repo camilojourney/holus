@@ -36,6 +36,8 @@ class PlatformConfig:
     optimal_posting_times: list[str] = field(default_factory=list)
     hashtag_limit: int = 0
     emoji_policy: str = "minimal"
+    # Risk routing (SPEC-016)
+    risk_tier: str = "low"  # low = auto-queue, high = require approval
 
 
 # Platform registry — each platform's configuration
@@ -62,6 +64,8 @@ PLATFORMS: dict[str, PlatformConfig] = {
         ],
         optimal_posting_times=["07:00-09:00 ET", "11:30-13:00 ET", "17:00-18:00 ET"],
         hashtag_limit=3,
+        risk_tier="low",  # LinkedIn = established, auto-queue
+
     ),
     "twitter": PlatformConfig(
         platform_id="twitter",
@@ -84,6 +88,8 @@ PLATFORMS: dict[str, PlatformConfig] = {
         ],
         optimal_posting_times=["08:00-10:00 ET", "12:00-13:00 ET"],
         hashtag_limit=2,
+        risk_tier="low",
+
     ),
     "twitter_x": None,  # Alias — resolved below
     "instagram": PlatformConfig(
@@ -108,6 +114,8 @@ PLATFORMS: dict[str, PlatformConfig] = {
         optimal_posting_times=["11:00-13:00 ET", "19:00-21:00 ET"],
         hashtag_limit=15,
         emoji_policy="moderate",
+        risk_tier="high",  # Instagram = visual-first, higher brand risk
+
     ),
     "threads": PlatformConfig(
         platform_id="threads",
@@ -130,6 +138,8 @@ PLATFORMS: dict[str, PlatformConfig] = {
         ],
         optimal_posting_times=["08:00-10:00 ET", "20:00-22:00 ET"],
         hashtag_limit=0,
+        risk_tier="low",
+
     ),
     "tiktok": PlatformConfig(
         platform_id="tiktok",
@@ -153,6 +163,8 @@ PLATFORMS: dict[str, PlatformConfig] = {
         optimal_posting_times=["19:00-22:00 ET"],
         hashtag_limit=5,
         emoji_policy="liberal",
+        risk_tier="high",  # TikTok = video-only, high production risk
+
     ),
     "facebook": PlatformConfig(
         platform_id="facebook",
@@ -174,6 +186,8 @@ PLATFORMS: dict[str, PlatformConfig] = {
         ],
         optimal_posting_times=["09:00-11:00 ET", "13:00-15:00 ET"],
         hashtag_limit=3,
+        risk_tier="low",
+
     ),
 }
 
@@ -202,3 +216,52 @@ def get_judge_rubric(platform: str) -> str:
 def get_reward_weights(platform: str) -> dict[str, float]:
     """Get the platform-specific reward weights."""
     return get_platform_config(platform).reward_weights
+
+
+# ---------------------------------------------------------------------------
+# Content config (externalized in config/content.yaml)
+# ---------------------------------------------------------------------------
+
+def load_content_config() -> dict:
+    """Load content configuration from config/content.yaml.
+
+    Returns the full config dict. Keys:
+      languages.primary, languages.additional,
+      platform_risk_overrides, approval, translation.
+    """
+    import yaml
+    from pathlib import Path
+
+    config_path = Path("config/content.yaml")
+    if not config_path.exists():
+        return {
+            "languages": {"primary": "en", "additional": []},
+            "platform_risk_overrides": {},
+            "approval": {"require_all": True, "auto_approve_after": 0},
+            "translation": {"provider": "none", "quality_check": False},
+        }
+    return yaml.safe_load(config_path.read_text()) or {}
+
+
+def get_languages() -> dict:
+    """Get language configuration: primary + additional languages."""
+    cfg = load_content_config()
+    return cfg.get("languages", {"primary": "en", "additional": []})
+
+
+def get_effective_risk_tier(platform: str) -> str:
+    """Get risk tier for a platform, with config overrides applied."""
+    cfg = load_content_config()
+    overrides = cfg.get("platform_risk_overrides", {})
+    if platform.lower() in overrides:
+        return overrides[platform.lower()]
+    return get_platform_config(platform).risk_tier
+
+
+def requires_approval(platform: str) -> bool:
+    """Check if a platform requires explicit approval before queuing."""
+    cfg = load_content_config()
+    approval = cfg.get("approval", {})
+    if approval.get("require_all", True):
+        return True
+    return get_effective_risk_tier(platform) == "high"

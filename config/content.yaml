@@ -1,0 +1,35 @@
+# Content generation configuration
+# Externalized so it can be changed without code deploys
+# and consumed via Observatory API for dashboard integration.
+
+# Languages for content generation
+# Primary language is used for original content.
+# Additional languages get translated versions queued separately.
+languages:
+  primary: en
+  additional:
+    - es
+  # Add more as needed: pt, fr, de, etc.
+
+# Platform risk routing
+# low = auto-queue (human reviews batch)
+# high = require explicit approval before queuing
+# Overrides the per-platform default in platform_config.py
+platform_risk_overrides: {}
+  # Example: force LinkedIn to high-risk during a campaign
+  # linkedin: high
+
+# Content approval settings
+approval:
+  # If true, ALL posts require approval regardless of risk tier
+  require_all: true
+  # Auto-approve low-risk platforms after N successful posts
+  auto_approve_after: 0  # 0 = never auto-approve (Phase 1)
+
+# Translation settings
+translation:
+  provider: claude  # claude | deepl | none
+  # claude = use Claude Sonnet to translate (included in API cost)
+  # deepl = use DeepL API (needs DEEPL_API_KEY)
+  # none = skip translation
+  quality_check: true  # Run judge on translated content too
