@@ -239,9 +239,12 @@ class TestAgentsEndpoint:
         assert data["success_rate"] == 1.0
 
     def test_agent_has_run_count_7d(self, client: TestClient, sample_agents_yaml: Path):
+        from datetime import UTC, datetime, timedelta
+
+        recent_ts = (datetime.now(UTC) - timedelta(hours=12)).isoformat()
         traj = [
             {
-                "timestamp": "2026-03-12T10:00:00Z",
+                "timestamp": recent_ts,
                 "agent_id": "marketing-strategist",
                 "action": "decide",
                 "outcome": "success",
