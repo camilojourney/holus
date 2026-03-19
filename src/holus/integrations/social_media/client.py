@@ -48,6 +48,26 @@ class PublishRequest(BaseModel):
     source_language: str = "en"
 
 
+class ScheduleRequest(BaseModel):
+    """Request to schedule content for later publishing with approval gate."""
+
+    content: str
+    platform: str
+    approval_required: bool = True
+    scheduled_at: str | None = None  # ISO-8601 timestamp
+    media_url: str | None = None
+    media_type: str | None = None
+
+
+class ScheduleResult(BaseModel):
+    """Result from the schedule endpoint."""
+
+    schedule_id: str
+    status: str = "pending_approval"  # pending_approval|scheduled|published|rejected
+    platform: str = ""
+    approval_required: bool = True
+
+
 class PublishTarget(BaseModel):
     """Per-target status returned by the publish API."""
 
@@ -221,6 +241,50 @@ class SocialMediaClient:
         response.raise_for_status()
         data: dict[str, Any] = response.json()
         return data
+
+    @retry(
+        retry=retry_if_exception_type(httpx.HTTPStatusError),
+        wait=wait_exponential(multiplier=1, min=4, max=60),
+        stop=stop_after_attempt(3),
+        reraise=True,
+    )
+    async def schedule_post(
+        self,
+        request: ScheduleRequest,
+    ) -> ScheduleResult:
+        """Schedule content for publishing with an approval gate.
+
+        Calls POST /api/v1/schedule on the social-media-automatization server.
+        Posts with approval_required=True wait for human approval before publishing.
+
+        Raises:
+            ValueError: If content violates platform character limits.
+            httpx.HTTPError: If the API request fails.
+        """
+        violations = self.validate_content(request.content, [request.platform])
+        if violations:
+            raise ValueError(f"Content validation failed: {violations}")
+
+        payload: dict[str, Any] = {
+            "content": request.content,
+            "platform": request.platform,
+            "approval_required": request.approval_required,
+        }
+        if request.scheduled_at:
+            payload["scheduled_at"] = request.scheduled_at
+        if request.media_url:
+            payload["media_url"] = request.media_url
+        if request.media_type:
+            payload["media_type"] = request.media_type
+
+        response = await self.client.post("/api/v1/schedule", json=payload)
+        response.raise_for_status()
+        data = response.json()
+
+        if isinstance(data, dict) and "data" in data:
+            data = data["data"]
+
+        return ScheduleResult.model_validate(data)
 
     async def close(self) -> None:
         """Close the HTTP client."""

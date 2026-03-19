@@ -93,6 +93,49 @@ class TestLinkedInPipelineE2E:
         assert hasattr(SocialMediaClient, "get_analytics")
         assert hasattr(SocialMediaClient, "get_top_posts")
         assert hasattr(SocialMediaClient, "publish")
+        assert hasattr(SocialMediaClient, "schedule_post")
+
+    def test_schedule_post_has_approval_required(self):
+        """schedule_post accepts approval_required parameter (SPEC-031)."""
+        import inspect
+
+        from holus.integrations.social_media.client import SocialMediaClient
+
+        sig = inspect.signature(SocialMediaClient.schedule_post)
+        assert "request" in sig.parameters
+
+        # Verify ScheduleRequest has approval_required field
+        from holus.integrations.social_media.client import ScheduleRequest
+
+        req = ScheduleRequest(
+            content="Test post",
+            platform="linkedin",
+            approval_required=True,
+        )
+        assert req.approval_required is True
+
+    def test_schedule_request_validates_fields(self):
+        """ScheduleRequest and ScheduleResult models are well-formed."""
+        from holus.integrations.social_media.client import ScheduleRequest, ScheduleResult
+
+        req = ScheduleRequest(
+            content="How I built a production audio ML pipeline...",
+            platform="linkedin",
+            approval_required=True,
+            scheduled_at="2026-03-20T10:00:00Z",
+        )
+        assert req.platform == "linkedin"
+        assert req.approval_required is True
+        assert req.scheduled_at == "2026-03-20T10:00:00Z"
+
+        result = ScheduleResult(
+            schedule_id="sched-001",
+            status="pending_approval",
+            platform="linkedin",
+            approval_required=True,
+        )
+        assert result.schedule_id == "sched-001"
+        assert result.status == "pending_approval"
 
     def test_content_decision_has_linkedin_platform(self):
         """ContentDecision model defaults to LinkedIn platform."""

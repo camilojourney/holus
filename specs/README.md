@@ -70,6 +70,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | --- | ---------------------------------------------------------------- | ------- | ------- |
 | 030 | [Agent Registry & Self-Improvement Wiring](030-agent-registry-self-improvement.md) | Backend | Implemented |
 
+## LinkedIn Content Pipeline
+
+| #   | Spec                                                             | Type    | Status      |
+| --- | ---------------------------------------------------------------- | ------- | ----------- |
+| 031 | [LinkedIn Content Pipeline](031-linkedin-content-pipeline.md)    | Backend | Implemented |
+
 ---
 
 ## Spec Status Legend

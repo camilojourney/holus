@@ -5,6 +5,8 @@ from .client import (
     PublishRequest,
     PublishResult,
     PublishTarget,
+    ScheduleRequest,
+    ScheduleResult,
     SocialMediaClient,
 )
 
@@ -13,5 +15,7 @@ __all__ = [
     "PublishRequest",
     "PublishResult",
     "PublishTarget",
+    "ScheduleRequest",
+    "ScheduleResult",
     "SocialMediaClient",
 ]

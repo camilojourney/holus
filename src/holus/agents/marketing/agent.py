@@ -50,7 +50,7 @@ from holus.core.cycle_state import CycleContext, CycleState, write_trajectory_en
 from holus.core.health import run_preflight_checks
 from holus.core.watchdog import consecutive_failure_check
 from holus.integrations.claude_api.client import CachedPrompt
-from holus.integrations.social_media import SocialMediaClient
+from holus.integrations.social_media import ScheduleRequest, SocialMediaClient
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
 logger = logging.getLogger(__name__)
@@ -497,6 +497,34 @@ class MarketingAgent(BaseAgent):
                 "top_posts": top_posts,
             }
 
+    # -- Schedule for approval --------------------------------------------------
+
+    async def _schedule_for_approval(self, piece: GeneratedPiece) -> str | None:
+        """Register a generated piece with the social-media API for approval.
+
+        Returns the schedule_id from the API, or None if scheduling fails.
+        The local content queue remains the source of truth — this is a
+        secondary registration so the social-media server can track pending posts.
+        """
+        async with SocialMediaClient(
+            base_url=self.config.social_media_api_base_url,
+            api_key=self.config.posting_api_key,
+        ) as client:
+            request = ScheduleRequest(
+                content=piece.text,
+                platform=piece.platform.value,
+                approval_required=True,
+                media_url=piece.visual_attachment_path,
+                media_type=piece.visual_format,
+            )
+            result = await client.schedule_post(request)
+            logger.info(
+                "Scheduled %s for approval: schedule_id=%s",
+                piece.piece_id,
+                result.schedule_id,
+            )
+            return result.schedule_id
+
     # -- Niche research sub-step -----------------------------------------------
 
     _NICHE_QUERIES_PATH = Path(".self-improvement/knowledge/current/niche-research-queries.md")
@@ -908,12 +936,26 @@ class MarketingAgent(BaseAgent):
 
                 queue_path = self._write_queue_item(piece, queue_dir)
                 generated_content.append(piece.model_dump(mode="json"))
+
+                # Register with social-media API for approval tracking
+                schedule_id = None
+                if self.config.posting_api_key:
+                    try:
+                        schedule_id = await self._schedule_for_approval(piece)
+                    except Exception as sched_exc:
+                        logger.warning(
+                            "schedule_post failed for %s (local queue still valid): %s",
+                            piece.piece_id,
+                            sched_exc,
+                        )
+
                 post_results.append(
                     {
                         "piece_id": piece.piece_id,
                         "status": "pending_review",
                         "quality_score": quality.score,
                         "queue_path": str(queue_path),
+                        "schedule_id": schedule_id,
                         "platform": decision.platform.value,
                         "product": decision.product,
                     }

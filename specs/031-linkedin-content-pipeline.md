@@ -1,6 +1,6 @@
 # Spec 031: LinkedIn Content Pipeline — Stage 1
 
-**Status:** planned
+**Status:** implemented
 **Phase:** Phase 1
 **Author:** Juan
 **Created:** 2026-03-19
