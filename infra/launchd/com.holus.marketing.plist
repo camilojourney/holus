@@ -12,7 +12,7 @@
         <string>cd /Users/mini/.openclaw/workspace/github/holus &amp;&amp; /opt/homebrew/bin/uv run python -m holus run marketing --once &gt;&gt; logs/marketing.log 2&gt;&amp;1</string>
     </array>
     <key>StartInterval</key>
-    <integer>21600</integer>
+    <integer>1800</integer>
     <key>RunAtLoad</key>
     <true/>
     <key>StandardOutPath</key>
