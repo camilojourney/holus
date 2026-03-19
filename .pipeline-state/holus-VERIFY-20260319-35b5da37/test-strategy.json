@@ -1,0 +1,1 @@
+{"strategy": "api", "runner": "uv run pytest", "test_format": "pytest"}

@@ -1,0 +1,36 @@
+{
+  "piece_id": "b35b59810d5c4130",
+  "platform": "threads",
+  "content_type": "instagram_caption",
+  "content_pillar": "building_in_public",
+  "topic": "RAG vs Grep for Code",
+  "text": "RAG isn't dead, but using it for code search usually is. Exact matches through grep beat semantic approximations every time. I've stopped embedding repositories and started prioritizing keyword precision. Save the vectors for documentation. How are you balancing regex vs embeddings?\n\n#AI #SoftwareEngineering #LLMs",
+  "hashtags": [
+    "#AI",
+    "#SoftwareEngineering",
+    "#LLMs"
+  ],
+  "char_count": 315,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T23:31:57.811095+00:00",
+  "scheduled_at": "2026-03-28T23:31:57.811095+00:00",
+  "idea_source": "RAGs are dead \u2014 that's what a colleague said the other day. It stuck with me because RAG is one of the pillars of data engineering. But he was right, in a specific context. He was explaining how Cursor works vs Claude Code: Cursor uses permanent embeddings so the agent always knows where everything is, updated constantly as new code is generated. Fast, efficient. But pricey and creates noise in the data. Claude Code, on the other hand, uses grep and glob \u2014 regex-based search to find exactly what's needed. No wasted tokens embedding things you never query. Exact matches, not approximations. Approximations can mislead. The deeper insight: RAGs were born out of necessity \u2014 to give LLMs better context. But they lack direction. New tools fill the gaps where RAGs are inefficient and costly. Today I use grep and glob for specific code navigation, BM25 for keyword search, and I only embed what actually needs semantic search \u2014 large documentation, not everything. The question engineers should ask: what kind of data are you dealing with? That determines the tool. RAG is not dead. It's just finally being used correctly.",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-14T23:31:57.811095+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated instagram_caption for threads",
+      "at": "2026-03-14T23:31:57.811095+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

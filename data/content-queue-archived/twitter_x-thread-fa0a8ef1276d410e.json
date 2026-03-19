@@ -1,0 +1,36 @@
+{
+  "piece_id": "fa0a8ef1276d410e",
+  "platform": "twitter_x",
+  "content_type": "thread",
+  "content_pillar": "systems_thinking",
+  "topic": "Prompt Evolution via Deterministic Metrics",
+  "text": "I watched my agent optimize itself into a polite, useless idiot.\nUsing an LLM to judge an LLM's prompt evolution is circular logic.\nIt creates a feedback loop of garbage.\nYour system needs an anchor that doesn't hallucinate.\n---\nLLM-as-a-Judge is a lazy shortcut.\nIt tells you the prompt \"looks better\" because the tone changed.\nThe agent swapped a `filter` for a `map` because the LLM judge thought it \"read better\".\nYour agent gets more polite but less accurate.\nYou're optimizing for aesthetics while the core logic rots.\n---\nVibes don't scale.\nI replaced subjective grading with four deterministic anchors.\nThese don't guess.\nThey measure the delta between the instruction and the execution reality.\nIf the pass rate stays at 82%, the prompt dies.\n---\nFirst is structural integrity.\nThe output must match the required schema every single time.\nSecond is token-to-signal ratio.\nShorter prompts that produce the same result win.\n---\nThird is redundant loops.\nI track the number of redundant steps the agent takes to reach a conclusion.\nFourth is edge case pass rate.\nThe evolution engine must prove it handled the failures the previous version couldn't.\n---\nThe system generates ten variations per cycle.\nIt runs them through the automated test suite.\nIt only keeps the version that beats the baseline on all four metrics.\nIt's Darwinism for code.\n---\nStop trusting models to grade their own homework.\nAn agent that can't measure itself is just a stochastic parrot on a treadmill.\nEngineering is about building systems that fail predictably.\nReal progress is measured in bits and schemas, not adjectives.\n---\nAre you still using vibes to grade your prompts or have you moved to deterministic testing?\n\n#AIEngineering #LLM #PromptEngineering",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLM",
+    "#PromptEngineering"
+  ],
+  "char_count": 1742,
+  "status": "pending_review",
+  "generated_at": "2026-03-17T19:37:06.055086+00:00",
+  "scheduled_at": "2026-03-20T19:37:06.055086+00:00",
+  "idea_source": "How I built a self-improving AI agent that evolves its own prompts",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-17T19:37:06.055086+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated thread for twitter_x",
+      "at": "2026-03-17T19:37:06.055086+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

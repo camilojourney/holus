@@ -1,0 +1,37 @@
+{
+  "piece_id": "14bf3dc30e134cad",
+  "platform": "linkedin",
+  "content_type": "carousel_outline",
+  "content_pillar": "ai_engineering",
+  "topic": "MCP vs Skills: The Architect's Choice",
+  "text": "Slide 1: Most agent architectures are just API wrappers disguised as intelligence. | Access to data isn't the same as knowing what to do with it. You need to choose between standardized protocols and native cognitive logic.\n\nSlide 2: MCP is a protocol, not a brain. | Model Context Protocol is about interoperability. It's how your agent talks to the world. Use it when you need a standardized bridge to external data sources.\n\nSlide 3: Skills are internal cognitive logic. | A skill is how your agent thinks through a specific problem. It's native, stateful, and context-aware. It's the difference between having a wrench and knowing how to fix the engine.\n\nSlide 4: Use MCP for generic data access. | If the task is fetching a file, querying a database, or searching the web, use MCP. Don't reinvent the wheel for standard plumbing. Keep it decoupled and reusable.\n\nSlide 5: Build Skills for domain-specific workflows. | When the agent needs to follow a precise engineering doctrine or a multi-step reasoning chain, build a skill. Protocols are too rigid for high-level decision-making.\n\nSlide 6: The Scaling Trap. | Don't build an entire MCP server for a one-off custom task. You'll bury yourself in boilerplate. If it's unique to your agent's personality, keep it as a native skill.\n\nSlide 7: The Flexibility Trap. | Stop hardcoding logic that should be a standard tool. If three different agents need to read the same API, that's an MCP candidate. Standardize the access, keep the logic local.\n\nSlide 8: Access without intent is useless. | A well-equipped agent that can't think is just a bloated script. Use MCP to give it hands; use Skills to give it a plan.\n\nSlide 9: Stop building wrappers. Start building systems. | The best architectures use MCP for the 'what' and Skills for the 'how.' How are you drawing the line between tools and cognitive logic in your stack?\n\n#AIEngineering #LLMs #SoftwareArchitecture #MCP",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMs",
+    "#SoftwareArchitecture",
+    "#MCP"
+  ],
+  "char_count": 1924,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T22:01:00.213462+00:00",
+  "scheduled_at": "2026-03-21T22:01:00.213462+00:00",
+  "idea_source": "MCP vs SKILLS \u2014 two paradigms for extending AI agents",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-14T22:01:00.213462+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated carousel_outline for linkedin",
+      "at": "2026-03-14T22:01:00.213462+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

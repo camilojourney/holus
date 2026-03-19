@@ -61,9 +61,9 @@ def _normalize_outline(outline: dict[str, Any]) -> dict[str, Any]:
         slide_type = slide.get("type", "body")
         variables = dict(slide.get("variables", {}))
 
-        # Inject author name into hook and footer slides
+        # Inject author name into hook and CTA slides for brand attribution
         if slide_type in ("hook", "cta") and "author_name" not in variables:
-            variables["author_name"] = ""
+            variables["author_name"] = "Juan Camilo Martinez"
 
         # Merge design decisions (slide-level overrides win)
         for key, value in design_vars.items():

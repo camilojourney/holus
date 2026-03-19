@@ -1,0 +1,132 @@
+{
+  "piece_id": "74584ec2c26847c0",
+  "platform": "linkedin",
+  "content_type": "carousel_outline",
+  "content_pillar": "systems_thinking",
+  "topic": "How I built a self-improving AI agent that evolves its own prompts",
+  "text": "Manual prompt engineering is a bottleneck that kills agentic scaling. This is how I built a system that evolves its own logic. Swipe \u2192",
+  "hashtags": [],
+  "char_count": 134,
+  "status": "pending_review",
+  "generated_at": "2026-03-17T19:31:43.375008+00:00",
+  "scheduled_at": "2026-03-24T19:31:43.375008+00:00",
+  "idea_source": "How I built a self-improving AI agent that evolves its own prompts",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-17T19:31:43.375008+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated carousel_outline for linkedin",
+      "at": "2026-03-17T19:31:43.375008+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  },
+  "slides": [
+    {
+      "type": "hook",
+      "variables": {
+        "headline": "Static prompts are the ceiling of agent performance",
+        "subheadline": "Stop manually tuning your instructions. Build a system that evolves itself."
+      }
+    },
+    {
+      "type": "body",
+      "variables": {
+        "title": "Manual engineering doesn't scale",
+        "body": "Hardcoding logic for every edge case is a losing game. The agent must learn from its own failures.",
+        "bullet_points": [
+          "\u2192 Prompts become brittle",
+          "\u2192 Debugging is guesswork",
+          "\u2192 Performance plateaus early"
+        ]
+      }
+    },
+    {
+      "type": "comparison",
+      "variables": {
+        "left_title": "Static Agents",
+        "left_items": [
+          "Manual prompt tweaks",
+          "Hardcoded edge cases",
+          "Slow deployment cycles"
+        ],
+        "right_title": "Self-Improving",
+        "right_items": [
+          "Automated trace audits",
+          "Dynamic instruction updates",
+          "Continuous logic evolution"
+        ]
+      }
+    },
+    {
+      "type": "body",
+      "variables": {
+        "title": "Step 1: The Execution Trace",
+        "body": "Log every reasoning step. Capture the raw input, the thought process, and the final output for every run.",
+        "bullet_points": [
+          "\u2192 Identify logic breaks",
+          "\u2192 Map failure patterns"
+        ]
+      }
+    },
+    {
+      "type": "body",
+      "variables": {
+        "title": "Step 2: The Critic Agent",
+        "body": "Deploy a separate model to audit the logs. Its only job is to find the gap between instruction and output.",
+        "bullet_points": [
+          "\u2192 Isolate the specific failure",
+          "\u2192 Generate a logic critique"
+        ]
+      }
+    },
+    {
+      "type": "body",
+      "variables": {
+        "title": "Step 3: The Optimizer Agent",
+        "body": "Feed the critique into a meta-prompt. The agent rewrites its own system instructions to solve the identified gap.",
+        "bullet_points": [
+          "\u2192 Rewrite for clarity",
+          "\u2192 Add specific constraints"
+        ]
+      }
+    },
+    {
+      "type": "body",
+      "variables": {
+        "title": "Step 4: The Regression Guard",
+        "body": "Never ship an evolved prompt blindly. Test the new version against a golden dataset of previous successes.",
+        "bullet_points": [
+          "\u2192 Prevent logic drift",
+          "\u2192 Ensure backwards stability"
+        ]
+      }
+    },
+    {
+      "type": "summary",
+      "variables": {
+        "title": "Architecture of Evolution",
+        "items": [
+          "Log reasoning traces to find failures.",
+          "Audit logic with a dedicated Critic agent.",
+          "Rewrite instructions via meta-optimization.",
+          "Validate updates against regression sets."
+        ]
+      }
+    },
+    {
+      "type": "cta",
+      "variables": {
+        "headline": "Why are you still manually tuning prompts?"
+      }
+    }
+  ]
+}

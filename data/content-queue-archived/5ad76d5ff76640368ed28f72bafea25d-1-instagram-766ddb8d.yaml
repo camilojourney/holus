@@ -1,0 +1,27 @@
+piece_id: 5ad76d5ff76640368ed28f72bafea25d-1-instagram-766ddb8d
+product: genpeli
+platform: instagram
+content_type: case_study
+topic: Automating video production with a custom ML pipeline (genpeli architecture)
+text: "Most \"AI video\" tools are just wrappers. I spent 140 hours building an ML\
+  \ pipeline that actually handles the architecture.\n\nI was losing 5 hours per video\
+  \ to \"the chores.\" Trimming silences, syncing captions, and normalizing audio\
+  \ levels\u2014it\u2019s not creative work. It\u2019s just an algorithm performed\
+  \ by a human.\n\nI decided to stop being the CPU.\n\nI built genpeli to handle the\
+  \ heavy lifting of video post-production. It\u2019s a Python-based pipeline that\
+  \ treats video like data, not just a timeline.\n\n\u2192 Whisper for millisecond-synced\
+  \ timestamps\n\u2192 Custom FFmpeg filters for smart silence-stripping\n\u2192 LUFS-based\
+  \ audio normalization for consistency\n\nThe irony? The more I automate the mechanical\
+  \ process, the more human the output actually feels.\n\nAutomation doesn\u2019t\
+  \ replace the creator. It replaces the friction that stops the creator from creating.\
+  \ \U0001F6E0\uFE0F\n\nWhich part of your creative process is actually just an algorithm\
+  \ you're performing manually? I'm curious where you'd spend those 5 hours if the\
+  \ machine took over the chores.\n\nLink in bio.\n\n#machinelearning #python #videoediting\
+  \ #automation #ai #buildinpublic #softwareengineering #creatoreconomy #workflow\
+  \ #productivity #ffmpeg #whisperai #videoproduction #ml #developer"
+reasoning: This post demonstrates high-value automation and production ML expertise.
+  It uses genpeli as a proof point to show technical leaders how internal bottlenecks
+  can be solved with custom AI systems, positioning Camilo as an implementation expert
+  rather than a theorist.
+generated_at: '2026-03-13T21:55:16.121929+00:00'
+status: pending_review

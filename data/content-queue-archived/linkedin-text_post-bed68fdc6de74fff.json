@@ -1,0 +1,36 @@
+{
+  "piece_id": "bed68fdc6de74fff",
+  "platform": "linkedin",
+  "content_type": "text_post",
+  "content_pillar": "ai_engineering",
+  "topic": "MCP vs Skills Architecture",
+  "text": "Scaling an AI agent isn't a discovery problem. It's an interface problem.\n\nI've spent the last month benchmarking Model Context Protocol (MCP) against custom, encapsulated Skills.\n\nMCP is the USB-C of the agent world. It\u2019s clean. It\u2019s standardized. It lets models talk to any data source without writing custom glue code for every project.\n\nBut standardization has a ceiling.\n\nWhen you need an agent to actually perform complex engineering\u2014like migrating a legacy repo or self-healing a CI pipeline\u2014standardized tool definitions aren't enough.\n\nYou need Skills.\n\nMCP gives the model a map. A Skill gives the model a manual.\n\nOne defines the \"what\" (the API endpoint). The other defines the \"how\" (the multi-step cognitive workflow).\n\nThe mistake I see most teams making is choosing one and calling it an architecture.\n\nA stack full of MCP servers is just a well-equipped library. Without specialized logic, the model still has to invent a strategy from scratch every time.\n\nThat's where the cost spikes and the reliability drops.\n\nBuild with MCP for breadth. Build Skills for depth.\n\nAccess without intent is just a powerful engine without a driver!\\n\nHow are you drawing the line between generic tool calling and hard-coded cognitive logic in your stack?\n\n#AIEngineering #LLMs #MCP",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMs",
+    "#MCP"
+  ],
+  "char_count": 1282,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T22:00:25.840773+00:00",
+  "scheduled_at": "2026-03-14T22:00:25.840773+00:00",
+  "idea_source": "MCP vs SKILLS \u2014 two paradigms for extending AI agents",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-14T22:00:25.840773+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated text_post for linkedin",
+      "at": "2026-03-14T22:00:25.840773+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

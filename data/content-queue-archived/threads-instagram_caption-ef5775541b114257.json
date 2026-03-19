@@ -1,0 +1,36 @@
+{
+  "piece_id": "ef5775541b114257",
+  "platform": "threads",
+  "content_type": "instagram_caption",
+  "content_pillar": "bilingual_ai",
+  "topic": "MCP vs Skills: Connectivity over Knowledge",
+  "text": "Skills are internal logic. MCP is the nervous system.\n\nI've learned that teaching agents is a bottleneck; connecting them is the scale.\n\nNo se trata de lo que el modelo sabe, sino de lo que puede alcanzar.\n\nThe bridge matters more than the library.\n\n\u00bfEst\u00e1s construyendo cerebros o puentes?\n\n#AIEngineering #MCP #LLMs",
+  "hashtags": [
+    "#AIEngineering",
+    "#MCP",
+    "#LLMs"
+  ],
+  "char_count": 316,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T22:01:20.157814+00:00",
+  "scheduled_at": "2026-03-28T22:01:20.157814+00:00",
+  "idea_source": "MCP vs SKILLS \u2014 two paradigms for extending AI agents",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-14T22:01:20.157814+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated instagram_caption for threads",
+      "at": "2026-03-14T22:01:20.157814+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "piece_id": "836bf320a04a4dc1",
+  "platform": "linkedin",
+  "content_type": "text_post",
+  "content_pillar": "ai_engineering",
+  "topic": "Self-improving Prompts & Meta-optimization",
+  "text": "Most agents fail at scale because their instructions are static artifacts.\n\nScaling an agent with manual prompt engineering is like manually tuning a carburetor in a Tesla. It works for a hobby project. It breaks the moment you hit real-world complexity.\n\nI built a system where the agent tracks its own failures. It doesn't just log them. It analyzes the delta between the expected outcome and the actual result. Then it rewrites its own system prompt to prevent that error from repeating.\n\nThe breakthrough isn't the model's intelligence. It's the meta-optimization. When an agent evolves its own logic, you stop being a prompt engineer and start being a systems architect. You're building the environment for the agent to learn, not the specific rules it must follow.\n\nThe failure mode is recursive drift. An agent might fix one edge case but degrade its performance on the core task. This is where most self-improving systems collapse. You need a separate validation layer to ensure the evolution is actually progress, not just change.\n\nPrompt engineering is a temporary bridge. The next generation of systems won't be defined by how well you can talk to a model. They'll be defined by how well the model can talk to itself.\n\nHow are you handling logic evolution in your production agents?\n\n#AIEngineering #LLMOps #AgenticWorkflows",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMOps",
+    "#AgenticWorkflows"
+  ],
+  "char_count": 1335,
+  "status": "pending_review",
+  "generated_at": "2026-03-17T19:30:40.211699+00:00",
+  "scheduled_at": "2026-03-17T19:30:40.211699+00:00",
+  "idea_source": "How I built a self-improving AI agent that evolves its own prompts",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-17T19:30:40.211699+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated text_post for linkedin",
+      "at": "2026-03-17T19:30:40.211699+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

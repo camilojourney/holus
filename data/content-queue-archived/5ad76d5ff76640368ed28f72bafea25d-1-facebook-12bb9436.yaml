@@ -1,0 +1,53 @@
+piece_id: 5ad76d5ff76640368ed28f72bafea25d-1-facebook-12bb9436
+product: genpeli
+platform: facebook
+content_type: case_study
+topic: Automating video production with a custom ML pipeline (genpeli architecture)
+text: "Most people are playing with AI. A few are building with it.\n\nI spent 140\
+  \ hours building an ML pipeline to do my video editing for me. Most \"AI video\"\
+  \ tools are just wrappers\u2014genpeli handles the actual architecture.\n\nI was\
+  \ losing 5 hours per video to \"the chores.\" Trimming silences, syncing captions,\
+  \ and normalizing audio levels\u2014it\u2019s not creative work. It\u2019s just\
+  \ an algorithm performed by a human.\n\nI decided to stop being the CPU. I wanted\
+  \ more time for the parts of storytelling I actually love.\n\nI built genpeli to\
+  \ handle the heavy lifting of video post-production. It\u2019s a Python-based pipeline\
+  \ that treats video like data, not just a timeline.\n\n\u2192 Whisper for word-level\
+  \ timestamps (synced to the millisecond).\n\u2192 Custom FFmpeg filters for smart\
+  \ silence-stripping.\n\u2192 LUFS-based audio normalization for platform consistency.\n\
+  \nThe technical challenge wasn't the AI\u2014it was the orchestration. Most \"AI\
+  \ video\" tools fail because they try to generate the art. Genpeli succeeds because\
+  \ it automates the labor.\n\nThe irony? The more I automate the creative process,\
+  \ the more human the output actually feels.\n\nWhat I\u2019m learning\u2014and this\
+  \ is the real payoff\u2014is that automation doesn\u2019t replace the creator. It\
+  \ replaces the friction that stops the creator from creating.\n\nWhich part of your\
+  \ creative process is actually just an algorithm you're performing manually? I'm\
+  \ curious where you'd spend those 5 hours if the machine took over the chores.\n\
+  \nComment if this resonates.\n\n***\n\nLa mayor\xEDa de la gente est\xE1 jugando\
+  \ con la IA. Unos pocos estamos construyendo con ella.\n\nPas\xE9 140 horas construyendo\
+  \ un pipeline de ML para que haga mi edici\xF3n de video por m\xED. La mayor\xED\
+  a de las herramientas de \"video IA\" son solo envoltorios\u2014genpeli se encarga\
+  \ de la arquitectura real.\n\nEstaba perdiendo 5 horas por video en \"los quehaceres\"\
+  . Recortar silencios, sincronizar subt\xEDtulos y normalizar niveles de audio\u2014\
+  no es trabajo creativo. Es solo un algoritmo ejecutado por un humano.\n\nDecid\xED\
+  \ dejar de ser la CPU. Quer\xEDa m\xE1s tiempo para las partes de la narrativa que\
+  \ realmente amo.\n\nConstru\xED genpeli para manejar el trabajo pesado de la posproducci\xF3\
+  n de video. Es un pipeline basado en Python que trata el video como datos, no solo\
+  \ como una l\xEDnea de tiempo.\n\n\u2192 Whisper para marcas de tiempo por palabra\
+  \ (sincronizadas al milisegundo).\n\u2192 Filtros personalizados de FFmpeg para\
+  \ recorte inteligente de silencios.\n\u2192 Normalizaci\xF3n de audio basada en\
+  \ LUFS para consistencia en plataformas.\n\nEl desaf\xEDo t\xE9cnico no fue la IA\u2014\
+  fue la orquestaci\xF3n. La mayor\xEDa de las herramientas de \"video IA\" fallan\
+  \ porque intentan generar el arte. Genpeli tiene \xE9xito porque automatiza la mano\
+  \ de obra.\n\n\xBFLa iron\xEDa? Cuanto m\xE1s automatizo el proceso creativo, m\xE1\
+  s humano se siente el resultado final.\n\nLo que estoy aprendiendo\u2014y este es\
+  \ el verdadero beneficio\u2014es que la automatizaci\xF3n no reemplaza al creador.\
+  \ Reemplaza la fricci\xF3n que impide que el creador cree.\n\n\xBFQu\xE9 parte de\
+  \ tu proceso creativo es en realidad solo un algoritmo que est\xE1s ejecutando manualmente?\
+  \ Tengo curiosidad por saber en qu\xE9 gastar\xEDas esas 5 horas si la m\xE1quina\
+  \ se encargara de los quehaceres.\n\nComenta si esto resuena contigo."
+reasoning: This post demonstrates high-value automation and production ML expertise.
+  It uses genpeli as a proof point to show technical leaders how internal bottlenecks
+  can be solved with custom AI systems, positioning Camilo as an implementation expert
+  rather than a theorist.
+generated_at: '2026-03-13T21:56:20.877827+00:00'
+status: pending_review

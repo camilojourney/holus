@@ -1,0 +1,28 @@
+{
+  "piece_id": "64fd08aae46b4cb8",
+  "platform": "linkedin",
+  "content_type": "text_post",
+  "topic": "MCP vs SKILLS \u2014 Two Paradigms for Extending AI Agents",
+  "headline": "MCP vs Skills Architecture",
+  "text": "Most agent architectures are just collections of API wrappers disguised as intelligence.\nEngineers keep treating Model Context Protocol (MCP) and Skills as interchangeable parts.\nThey aren't.\nMCP handles the technical plumbing\u2014how I connect my agents to Slack, Jira, or a production database.\nIt's the access layer that gives the model hands to touch the data.\nSkills represent the cognitive blueprint for a complex task.\nA Slack MCP tool is just a door my agent can open.\nA 'daily triage' skill is the logic that decides when to open it, what to look for, and how to prioritize the noise.\nAccess allows the agent to see; skills allow the agent to solve.\nI've seen teams ship forty MCP integrations only to find their agents sitting idle.\nIt's a perfectly equipped workshop for an apprentice who doesn't know how to build a chair.\nWithout a skills framework, your agent just waits for a prompt instead of executing a mission.\nMCP is about where the agent can go; Skills are about what the agent can actually do once it gets there.\nHow are you drawing the line between tools and cognitive logic in your stack?\n\n#AIEngineering #AgentArchitecture #MCP",
+  "hashtags": [
+    "#AIEngineering",
+    "#AgentArchitecture",
+    "#MCP"
+  ],
+  "char_count": 1148,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T21:54:24.538686+00:00",
+  "idea_source": null,
+  "agent_trace": [
+    {
+      "agent_id": "generate_linkedin_post.py",
+      "model": "anthropic/claude-sonnet-4-6",
+      "generated_at": "2026-03-14T21:54:24.538686+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

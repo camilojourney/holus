@@ -1,0 +1,13 @@
+piece_id: cdd13afa12e2474aada65002dee11d1c-2-twitter-e46179cd
+product: genpeli
+platform: twitter
+content_type: case_study
+topic: "From raw footage to polished reel in 90 seconds \u2014 the Genpeli pipeline"
+text: "Most creators lose 4 hours to a single reel.\n\nI built Genpeli to take raw\
+  \ footage to polished export in 90 seconds.\n\nThe bottleneck isn\u2019t vision\u2014\
+  it\u2019s the 400 micro-edits required to keep a viewer from scrolling past.\n\n\
+  I built the pipeline to handle the mechanical heavy lifting..."
+reasoning: 'Instagram test: visual storytelling about video editing pipeline.'
+model_used: claude-sonnet-4-6
+generated_at: '2026-03-13T22:32:45.889587+00:00'
+status: pending_review

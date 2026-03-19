@@ -1,0 +1,37 @@
+{
+  "piece_id": "2d24fb5518c9448d",
+  "platform": "linkedin",
+  "content_type": "text_post",
+  "content_pillar": "ai_engineering",
+  "topic": "RAG Precision vs. Approximation",
+  "text": "\"RAG is dead\" is the latest industry hyperbole that misses the technical point.\n\nA colleague dropped this during a deep dive into agent architectures last week.\nHe was wrong about the death of the pillar, but right about the shift in strategy.\nWe're moving from \"embed everything\" to surgical precision.\n\nCompare the architecture of Cursor with Claude Code.\nCursor relies on permanent embeddings so the agent maps your entire codebase.\nIt's fast and fluid, but it creates significant data noise and consumes tokens at a high rate.\nClaude Code takes a different path using grep and glob.\nIt uses regex-based search to find exactly what's needed for the specific task.\n\nThere's no wasted effort embedding files you'll never query.\nYou get exact matches instead of semantic approximations.\nIn software engineering, an approximation is often just a bug waiting to happen.\nPrecision beats proximity when you're looking for a specific function signature.\n\nRAG was born out of necessity to give LLMs context they didn't have.\nThe failure mode is assuming every retrieval task requires a vector database.\nEmbeddings lack inherent direction.\nThey're a blunt instrument for high-precision tasks like code navigation.\n\nMy stack follows the data type, not the trend.\nI use grep and glob for specific navigation within the file system.\nI use BM25 for keyword-heavy search requirements.\nI only embed what actually requires semantic understanding, like sprawling documentation.\n\nRAG isn't dead.\nIt's just finally being used correctly by engineers who value efficiency over easy abstractions.\n\nHow are you balancing exact matching against semantic search in your current retrieval pipeline?\n\n#AIEngineering #RAG #LLMs #SoftwareArchitecture",
+  "hashtags": [
+    "#AIEngineering",
+    "#RAG",
+    "#LLMs",
+    "#SoftwareArchitecture"
+  ],
+  "char_count": 1723,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T23:30:46.109626+00:00",
+  "scheduled_at": "2026-03-14T23:30:46.109626+00:00",
+  "idea_source": "RAGs are dead \u2014 that's what a colleague said the other day. It stuck with me because RAG is one of the pillars of data engineering. But he was right, in a specific context. He was explaining how Cursor works vs Claude Code: Cursor uses permanent embeddings so the agent always knows where everything is, updated constantly as new code is generated. Fast, efficient. But pricey and creates noise in the data. Claude Code, on the other hand, uses grep and glob \u2014 regex-based search to find exactly what's needed. No wasted tokens embedding things you never query. Exact matches, not approximations. Approximations can mislead. The deeper insight: RAGs were born out of necessity \u2014 to give LLMs better context. But they lack direction. New tools fill the gaps where RAGs are inefficient and costly. Today I use grep and glob for specific code navigation, BM25 for keyword search, and I only embed what actually needs semantic search \u2014 large documentation, not everything. The question engineers should ask: what kind of data are you dealing with? That determines the tool. RAG is not dead. It's just finally being used correctly.",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-14T23:30:46.109626+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated text_post for linkedin",
+      "at": "2026-03-14T23:30:46.109626+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

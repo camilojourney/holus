@@ -1,0 +1,36 @@
+{
+  "piece_id": "d68c80420f4d4cd9",
+  "platform": "linkedin",
+  "content_type": "text_post",
+  "content_pillar": "ai_engineering",
+  "topic": "Prompt Evolution Evaluation Gap",
+  "text": "Self-evolving prompts are the biggest engineering trap in the agent space right now.\n\nEveryone wants a system that tunes itself. \nI spent 40 hours building a self-tuning cold-outreach agent to see exactly where the logic breaks. \n\nThe bottleneck is the evaluation gap, not the LLM's writing skill.\n\nMost developers let the LLM grade its own work or use another LLM as a judge. \nThis creates a circular hallucination engine. \nThe model starts optimizing for what it thinks looks correct. \nIt's a feedback loop of pure vibes. \nThe system prompt tripled in size while accuracy flatlined at 62%.\n\nYou can't trust an LLM to grade its own evolution without a ground-truth feedback loop. \nTrue self-improvement requires an external anchor. \nDid the code actually compile, or did the LLM just say it looked 'clean'?\nHard database state changes. \nVerified golden sets that the model can't argue with.\n\nAccess to a meta-agent without a rigid metric is just a well-equipped system that can't think. \nStop optimizing for LLM-perceived quality. \nBuild the evaluation harness before you build the evolution logic.\n\nHow do you anchor your agent's evaluation when the output isn't binary?\n\n#AIEngineering #LLMOps #AIagents",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMOps",
+    "#AIagents"
+  ],
+  "char_count": 1206,
+  "status": "pending_review",
+  "generated_at": "2026-03-17T19:35:23.023623+00:00",
+  "scheduled_at": "2026-03-17T19:35:23.023623+00:00",
+  "idea_source": "How I built a self-improving AI agent that evolves its own prompts",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-17T19:35:23.023623+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated text_post for linkedin",
+      "at": "2026-03-17T19:35:23.023623+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

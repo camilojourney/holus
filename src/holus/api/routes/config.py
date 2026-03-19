@@ -71,8 +71,8 @@ async def get_platforms() -> list[dict[str, Any]]:
     """Get all platform configs with effective risk tiers."""
     from holus.agents.marketing.platform_config import (
         get_effective_risk_tier,
-        list_platforms,
         get_platform_config,
+        list_platforms,
     )
 
     result = []

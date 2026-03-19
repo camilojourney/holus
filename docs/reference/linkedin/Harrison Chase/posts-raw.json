@@ -1,0 +1,705 @@
+[
+  {
+    "text": "We are very excited about this partnership and bringing reliable and trusted agents to Europe with our friends at Orange Business!",
+    "timestamp": "10h",
+    "dateAbsolute": "2026-03-18",
+    "reactions": "19",
+    "comments": "",
+    "reposts": "1",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4D22AQETcLN9x06_bg/feedshare-shrink_800/B4DZz8SFgoIkAc-/0/1773759125871?e=1775692800&v=beta&t=GnZF0taw9W6FzRJkYPhZz7hiB46XAYdxaQJMGdmC_Gc"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7439745591422873600",
+    "index": 1,
+    "screenshot": "screenshots/001-we-are-very-excited-about-this-partnersh.png",
+    "category": "Sponsored / Partnership"
+  },
+  {
+    "text": "Our great Orange Business CEO Aliette Mousnier-Lompré just launched the first trusted AI agents in Europe in our groundbreaking partnership with LangChain. LangChain and LangGraph agents will run on our hashtag #LiveIntelligence platform with on-premise LangSmith observation all running on GPUs hosted entirely in our latest sovereign Orange data center in France. Excited for this state of the art solution for our customers requiring trusted AI solutions in France and beyond. Thanks to the brilliant LangChain CEO Harrison Chase and amazing team including Alain W. Darren Moffett and Julia Schottenstein as well as the core Orange Trusted AI team including Usman Javaid, PhD, Miguel Ángel Alvarez Bernardo, Mathieu Ducrot, Julien Sicart, Cyril CAMBIEN, Ana Bildea, PhD Eric Clavier Vincent N. and of course ‘The Father of Dinootoo’ Joachim Fléchaire and our exec sponsors Bruno Zerbib and Aliette. Bravo ! hashtag #TrustTheFuture hashtag #TrustOrange Press release with LangChain here: https://lnkd.in/dQs-Ambs …more",
+    "timestamp": "14h",
+    "dateAbsolute": "2026-03-18",
+    "reactions": "166",
+    "comments": "11",
+    "reposts": "13",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4D22AQETcLN9x06_bg/feedshare-shrink_800/B4DZz8SFgoIkAc-/0/1773759125871?e=1775692800&v=beta&t=GnZF0taw9W6FzRJkYPhZz7hiB46XAYdxaQJMGdmC_Gc"
+    ],
+    "hashtags": [
+      "LiveIntelligence",
+      "TrustTheFuture",
+      "TrustOrange"
+    ],
+    "urn": "urn:li:activity:7439745461693034496",
+    "index": 2,
+    "screenshot": "screenshots/002-our-great-orange-business-ceo-aliette-mo.png",
+    "category": "Industry Commentary"
+  },
+  {
+    "text": "more and more agents will write and execute code we're launching sandboxes (waitlist to start) to make that easier sign up or dm me for access! …more",
+    "timestamp": "11h",
+    "dateAbsolute": "2026-03-18",
+    "reactions": "72",
+    "comments": "1",
+    "reposts": "3",
+    "postType": "video",
+    "images": [],
+    "hashtags": [],
+    "urn": "urn:li:activity:7439716537948860417",
+    "index": 3,
+    "screenshot": "screenshots/003-more-and-more-agents-will-write-and-exec.png",
+    "category": "Industry Commentary"
+  },
+  {
+    "text": "🚀 Today we're launching LangSmith Sandboxes Agents get a lot more useful when they can run code: analyze data, call APIs, build entire applications. Sandboxes give them a safe place to do it with ephemeral, locked-down environments you control. Now in Private Preview. Learn more: https://lnkd.in/gXmMkbPG Join the waitlist: https://lnkd.in/g3HxVsym …more",
+    "timestamp": "12h",
+    "dateAbsolute": "2026-03-18",
+    "reactions": "158",
+    "comments": "4",
+    "reposts": "21",
+    "postType": "video",
+    "images": [],
+    "hashtags": [],
+    "urn": "urn:li:activity:7439716386228252672",
+    "index": 4,
+    "screenshot": "screenshots/004-today-we-re-launching-langsmith-sandb.png",
+    "category": "Industry Commentary"
+  },
+  {
+    "text": "🚀 Announcing Skilgen — open source. After spending the past few months thinking deeply about how AI coding agents actually work in practice, I kept coming back to one thing: 👉 It’s not just about agents 👉 It’s about the skills behind them Most of the time, we try to improve outputs with better prompts. But the real limitation is that agents lack structured, reusable understanding of your project. That’s exactly what Skilgen is built to solve. 🔗 https://lnkd.in/gdUXtGHc In the AI coding space, we’ve been focusing heavily on agents. But the real bottleneck I kept running into was this: 👉 Agents are only as good as the skills and context they operate with. Skilgen changes that. It turns your codebase and requirements into a living skills system for AI coding agents. Instead of manually crafting prompts or repeating context, it generates structured understanding and reusable skills like: --> FEATURES.md --> REPORT.md --> TRACEABILITY.md --> skills/MANIFEST.md --> domain-specific skills/**/SKILL.md So your agents don’t start from scratch every time, they operate with real project awareness. The result: <> More consistent, high-quality code output <> Alignment with enterprise-grade engineering standards <> Better architectural decisions (not just code generation) <> Reduced prompt engineering overhead <> Reusable knowledge across teams and projects <> Improved traceability between requirements and implementation <> Faster onboarding for new developers and agents <> Less “hallucination-driven” coding, more grounded execution And getting started is simple: !pip install skilgen This is my contribution to the open-source community, and I’m really curious how others think about this shift from prompts → skills. If you’re working with AI coding agents, I’d love your feedback 🙏 hashtag #opensource hashtag #ai hashtag #codingagents hashtag #developertools hashtag #genai hashtag #buildinpublic LangChain Anthropic OpenAI Cursor …more",
+    "timestamp": "1d",
+    "dateAbsolute": "2026-03-17",
+    "reactions": "117",
+    "comments": "7",
+    "reposts": "9",
+    "postType": "article/link",
+    "images": [],
+    "hashtags": [
+      "opensource",
+      "ai",
+      "codingagents",
+      "developertools",
+      "genai",
+      "buildinpublic"
+    ],
+    "urn": "urn:li:activity:7439663909793533952",
+    "index": 5,
+    "screenshot": "screenshots/005-announcing-skilgen-open-source-aft.png",
+    "category": "Tool Review / Comparison"
+  },
+  {
+    "text": "LangChain just changed the game by open-sourcing Deep Agents. For months, Claude Code has been the gold standard for terminal-based engineering, but it came with a catch: you were locked into one provider and one proprietary ecosystem. 🛠️ Why \"Deep Agents\" is a Production Game-Changer It’s a full-stack orchestration layer that brings the best of agentic reasoning to any model you choose (Claude, GPT-5, Gemini, or even local Llama instances). Here is what’s under the hood: Explicit Planning: The agent uses a write_todos tool to break down complex objectives before it touches your code. This transparency is the difference between a \"hallucination loop\" and a successful PR. Native Filesystem Access: Full navigation capabilities (read, write, grep, glob). It understands your directory structure as a human engineer would. Sandboxed Shell Execution: You can run builds, tests, and deployments directly from the agent in an isolated environment. Sub-Agent Delegation: This is the most critical feature for 2026. You can spawn isolated workers for sub-tasks, preventing the \"context rot\" that happens when a single agent tries to do too much at once. Context Management: It natively handles conversation compression and large output offloading—the \"boring\" parts of agent engineering that usually take weeks to get right. Deep Agents is built on LangGraph, which means you get all the enterprise-grade perks—streaming, persistence, and human-in-the-loop checkpoints—out of the box, but without the \"Anthropic-only\" handcuffs. pip install deepagents 📌 The Repo in comments Stay Data-Driven, Ilya hashtag #AIEngineering hashtag #LangChain hashtag #DeepAgents hashtag #OpenSource hashtag #MLOps hashtag #SoftwareArchitecture hashtag #LangGraph hashtag #AIAgents hashtag #Python …more",
+    "timestamp": "6d",
+    "dateAbsolute": "2026-03-12",
+    "reactions": "355",
+    "comments": "18",
+    "reposts": "36",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4D22AQEst_9MzmNSWw/feedshare-shrink_800/B4DZzeOwYXIAAc-/0/1773254936781?e=1775692800&v=beta&t=Vw_7PlE0aoSo_HOzSY7vYRLxY3gNXOEnjYZC2QtGHPQ"
+    ],
+    "hashtags": [
+      "AIEngineering",
+      "LangChain",
+      "DeepAgents",
+      "OpenSource",
+      "MLOps",
+      "SoftwareArchitecture",
+      "LangGraph",
+      "AIAgents",
+      "Python"
+    ],
+    "urn": "post-5",
+    "index": 6,
+    "screenshot": "screenshots/006-langchain-just-changed-the-game-by-open.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "🚀 LangChain just released Deep Agents and it might be the simplest way to build production-grade AI agents yet. I've been digging through the docs and the GitHub repo and here's what makes it genuinely interesting: What is it? Deep Agents is the easiest way to start building agents powered by LLMs, with built-in capabilities for task planning, file systems for context management, subagent-spawning, and long-term memory. Think of it as a fully wired agent \"harness\": you get a working agent in seconds, and customize only what you actually need. What's included out of the box: Planning via write_todos/read_todos for task breakdown, full filesystem access (read, write, edit, ls, glob, grep), shell execution with sandboxing support, sub-agents for delegating work with isolated context windows, and smart context management with auto-summarization when conversations get long. Why it stands out: The virtual filesystem is powered by pluggable backends, you can swap from in-memory state, local disk, LangGraph store for cross-thread persistence, or sandboxes like Modal, Daytona, or Deno for isolated code execution. It's 100% open source under MIT, fully provider-agnostic (Claude, OpenAI, Google, or any LangChain-compatible model), and built on LangGraph for production-ready streaming, persistence, and checkpointing. There's also a CLI tool for a terminal-based coding agent , pipe tasks, run interactively, teach it your preferences over time. If you're building with LLMs in 2026, this one's worth 10 minutes of your time. 👉 GitHub: https://lnkd.in/eeX9ada7 📖 Docs: https://lnkd.in/eYbcNEkw hashtag #LangChain hashtag #AI hashtag #Agents hashtag #LLM hashtag #OpenSource hashtag #DeepAgents hashtag #LangGraph hashtag #Python hashtag #GenerativeAI …more",
+    "timestamp": "3d",
+    "dateAbsolute": "2026-03-15",
+    "reactions": "626",
+    "comments": "18",
+    "reposts": "48",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQFWWo-7zRyb1g/feedshare-shrink_800/B4EZzuKyIZJEAc-/0/1773522330439?e=1775692800&v=beta&t=hGJSETnzgDU-xylagZ93gj8TMbQUkV0tivRYvrWXrH4"
+    ],
+    "hashtags": [
+      "LangChain",
+      "AI",
+      "Agents",
+      "LLM",
+      "OpenSource",
+      "DeepAgents",
+      "LangGraph",
+      "Python",
+      "GenerativeAI"
+    ],
+    "urn": "post-6",
+    "index": 7,
+    "screenshot": "screenshots/007-langchain-just-released-deep-agents-a.png",
+    "category": "Industry Commentary"
+  },
+  {
+    "text": "After almost 6 years in venture, I've moved to the other side of the table! Thrilled to be joining LangChain to build out our Startups program. If you're building agents and want to chat through how you're thinking about agent harnesses, observability, and evals - shoot me a note at sofia.montoya@langchain.dev …more",
+    "timestamp": "4d",
+    "dateAbsolute": "2026-03-14",
+    "reactions": "248",
+    "comments": "36",
+    "reposts": "1",
+    "postType": "text",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-7",
+    "index": 8,
+    "screenshot": "screenshots/008-after-almost-6-years-in-venture-i-ve-mo.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "New blog: how coding agents are reshaping engineering, product, and design The changing process: PRDs are dead The bottleneck shifts from implementation to review Long live PRDs Impact on roles: Generalists are more valuable than ever Coding agents are a requirement Good PMs are great, bad PMs are terrible Everyone needs product sense The bar for specialization is higher You're either a builder or a reviewer Everyone thinks their role is most advantaged by coding agents - and they are right Link: https://lnkd.in/gbgNpuca …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "438",
+    "comments": "33",
+    "reposts": "43",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQFYmrG9dIG0rQ/feedshare-shrink_800/B56Zzamu53KsAc-/0/1773194112871?e=1775692800&v=beta&t=8LMEn6o4g_w2Mc_RWaV69HHvtMPuimGLFl8o9Dm70JU"
+    ],
+    "hashtags": [],
+    "urn": "post-8",
+    "index": 9,
+    "screenshot": "screenshots/009-new-blog-how-coding-agents-are-reshapin.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "🚀 LangGraph 1.1 is out! This release is all about making LangGraph outputs type safe and easier to work with. Here's what's new: 1. Type-safe streaming — stream() now yields unified StreamPart typed dicts with consistent shape across every stream mode and subgraph depth, with full editor and type-checker narrowing. 2. Type-safe invoke — invoke() returns a GraphOutput object with typed output and interrupt access. 3. Pydantic and dataclass coercion — if your state/output schema is a Pydantic model or dataclass, outputs are automatically coerced to the right type. All fully opt-in, with no breaking changes. Full release notes: https://lnkd.in/gARBv-_p …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "507",
+    "comments": "13",
+    "reposts": "44",
+    "postType": "article/link",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-9",
+    "index": 10,
+    "screenshot": "screenshots/010-langgraph-1-1-is-out-this-release-is.png",
+    "category": "Industry Commentary"
+  },
+  {
+    "text": "LangChain just open-sourced their answer to Claude Code. 9.9K GitHub stars. 5 hours old. Deep Agents: the batteries-included agent harness. MIT licensed. FREE. Here's why this is a big deal: Claude Code is amazing but closed-source and locked to Anthropic. Deep Agents gives you the same architecture. Any model. Any provider. What's included out of the box: 1️⃣ Planning write_todos for task breakdown and progress tracking. The agent plans before it codes. 2️⃣ Filesystem access read_file, write_file, edit_file, ls, glob, grep. Full codebase navigation. 3️⃣ Shell execution Run commands with sandboxing. Build, test, deploy from the agent. 4️⃣ Sub-agents Spawn isolated workers with their own context windows. Parallel work without context pollution. 5️⃣ Context management Auto-summarization when conversations get long. Large outputs saved to files. The problem Claude Code solved, now OPEN SOURCE. Two lines to start: pip install deepagents agent = create_deep_agent() Works with Claude, OpenAI, Google, or any LangChain-compatible model. Swap providers without rebuilding. Built on LangGraph. Streaming, persistence, checkpointing: all production-ready. The CLI adds web search, remote sandboxes, persistent memory, custom skills, and human-in-the-loop approval. From their README: \"This project was primarily inspired by Claude Code.\" They're not hiding it. They're DEMOCRATIZING it. Are you still locked into a single AI coding provider? 👇 ♻️ Repost for someone who wants Claude Code capabilities without the lock-in …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "3,190",
+    "comments": "401",
+    "reposts": "476",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHV7TPxZPeZHg/feedshare-shrink_800/B4EZzVjjw4JAAc-/0/1773109394839?e=1775692800&v=beta&t=CsJxd00snw2d0lazZl62OGjJ1uIp7nK30GeqdLW3UjY"
+    ],
+    "hashtags": [],
+    "urn": "post-10",
+    "index": 11,
+    "screenshot": "screenshots/011-langchain-just-open-sourced-their-answer.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "I'm hiring Applied AI engineers in SF & NYC! If you've been building with LLMs in production for at least a year, and want to work on cutting edge agents for both our internal teams, and customer facing products, apply here. We work on a wide range of projects on the Applied AI team, anything from coding to GTM to prompt optimization and more. If this is something you're interested in and have worked on in the past, you're probably a good fit! Apply here: https://lnkd.in/gZjzGUBm …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "308",
+    "comments": "17",
+    "reposts": "41",
+    "postType": "text",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-11",
+    "index": 12,
+    "screenshot": "screenshots/012-i-m-hiring-applied-ai-engineers-in-sf.png",
+    "category": "Career Advice"
+  },
+  {
+    "text": "Our applied research team earned the top spot on DeepResearch Bench I & II This collective of Kaggle Grandmasters and brilliant researchers are helping ensure AI agents can perform complex, multi-step research across many domains with world class accuracy. Our amazing engineering team is codifying these techniques into NVIDIA AI blueprints, open references for our ecosystem and AI agents to leverage. At NVIDIA we often say, “we stand on the shoulders of giants.” Moments like today remind me why. Congrats David Austin, Raja Biswas, Divyansh J., Ivan Sorokin, Alessio Devoto, Jean-Francois Puget, Chantal D Gama Rose! …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "236",
+    "comments": "9",
+    "reposts": "15",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQGel_H3FBsk5A/feedshare-shrink_1280/B4EZzUidcnGYAY-/0/1773092329958?e=1775692800&v=beta&t=szOJvYz3zEPr8f8ZPl1mu5x88FmFQRF7aXDoGhamsU4"
+    ],
+    "hashtags": [],
+    "urn": "post-12",
+    "index": 13,
+    "screenshot": "screenshots/013-our-applied-research-team-earned-the-top.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "You don’t know what your agent will do until it’s in production. Agents are different from traditional software. Instead of defined paths and tests that can cover most major flows, agents take unbounded natural language input. That means even small prompt changes can cause big shifts in an agent’s behavior. They take unbounded natural language input, behave differently with small prompt changes, and make decisions across multi-step reasoning, retrieval, and tool calls. So when something goes wrong, it’s not enough to monitor latency, uptime, or error rates. You need to see: - what the user actually asked - how the agent reasoned - which tools it called - where it failed - and whether the outcome was actually useful This is why production monitoring for AI agents is fundamentally different from traditional observability. If you’re building agents, the real challenge isn’t just shipping them. It’s understanding what they do once real users start using them. Read more on what teams need to monitor in production, what breaks most often, and how leading companies are improving agent quality over time. https://lnkd.in/gdyhBD2E …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "229",
+    "comments": "26",
+    "reposts": "19",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQFNR7KJgwe5NQ/feedshare-shrink_800/B56ZzAEXaGIYAk-/0/1772748896130?e=1775692800&v=beta&t=0wfYi39q5WQa5_UTJLAwHvfphTE_VQd5C4jIUVBWRgw"
+    ],
+    "hashtags": [],
+    "urn": "post-13",
+    "index": 14,
+    "screenshot": "screenshots/014-you-don-t-know-what-your-agent-will-do-u.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "We're heading to NVIDIA GTC 2026 in San Jose (March 16–19) — and we're bringing the whole crew. Our CEO Harrison Chase will be taking the stage for two sessions: 🎤 Session: \"Open, Trusted, and Observable: Deploying AI Agents at Enterprise Scale\" on March 16th at 4PM PST. https://lnkd.in/gmGxGVyS 🎤 Panel: \"Open Models: Where We Are and Where We're Headed\" on March 18th at 12:30 pm PST. https://lnkd.in/gsArXxBs The broader LangChain team will be at the NVIDIA booth showcasing our latest collaboration on building enterprise AI agents. If you're at GTC, come find us — we'd love to connect. …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "335",
+    "comments": "7",
+    "reposts": "49",
+    "postType": "video",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-14",
+    "index": 15,
+    "screenshot": "screenshots/015-we-re-heading-to-nvidia-gtc-2026-in-san.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "Open models are important. Very excited to be supporting and joining this discussion",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "77",
+    "comments": "2",
+    "reposts": "4",
+    "postType": "video",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-15",
+    "index": 16,
+    "screenshot": "screenshots/016-open-models-are-important-very-excited.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "Open models are at the center of one of the most important shifts in AI. At hashtag #NVIDIAGTC, NVIDIA founder and CEO Jensen Huang is bringing together leaders from some of the most exciting AI companies to discuss what comes next. Join us online or in person to hear where we are and where we’re headed: https://nvda.ws/3OH7Lgv Featuring leaders from: Ai2, Black Forest Labs, Cursor, LangChain, Mistral AI, OpenEvidence, Perplexity, Reflection AI, Thinking Machines Lab, and University of Washington. …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "1,420",
+    "comments": "83",
+    "reposts": "186",
+    "postType": "video",
+    "images": [],
+    "hashtags": [
+      "NVIDIAGTC"
+    ],
+    "urn": "post-16",
+    "index": 17,
+    "screenshot": "screenshots/017-open-models-are-at-the-center-of-one-of.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "We’re hiring across the LangSmith team at LangChain 🦜 🛠️ LangSmith is the observability, evaluation, and debugging platform for LLM applications — powering teams to build and ship reliable AI systems in production. We’re looking for BE/FE Engineers and Engineering Managers in both Bay area and New York. See my profile for job links and feel free to reach out directly. …more",
+    "timestamp": "2w",
+    "dateAbsolute": "2026-03-04",
+    "reactions": "125",
+    "comments": "8",
+    "reposts": "13",
+    "postType": "text",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-17",
+    "index": 18,
+    "screenshot": "screenshots/018-we-re-hiring-across-the-langsmith-team-a.png",
+    "category": "Career Advice"
+  },
+  {
+    "text": "🌉 San Francisco LangChain Meetup: Join us next Wednesday for a fireside chat on deep agents. 🚀 In this deep dive, Sydney Runkle, Python OSS Engineer at LangChain, will share insights from the front lines of open-source development. 🛠️ The evening will be moderated by Jake Broekhuizen, Deployed Engineer at LangChain. 🎙️ Deep agents are a powerful way to build LLM-based agents and applications, with built-in task planning, contextual file systems, subagent spawning, and long-term memory. 🧠🤖 👉 RSVP here: https://luma.com/8r33l2o4 …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "126",
+    "comments": "5",
+    "reposts": "16",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQGpOVtOcvfsnQ/feedshare-shrink_800/B4EZyRksYUJ0Ak-/0/1771968842099?e=1775692800&v=beta&t=PBwarcrDWLMBpNhp-SwzbgAIxgNcihKy79nktG27fTg"
+    ],
+    "hashtags": [],
+    "urn": "post-18",
+    "index": 19,
+    "screenshot": "screenshots/019-san-francisco-langchain-meetup-join.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "LangChain Deep Agents are great for building long-running agents. They provide built-in: - planning / to‐do behavior - delegation of work via sub-agents - memory (files, context) and also manage context by offloading large tool payloads to the filesystem and only summarizing when needed. But how can you bring them to your users? CopilotKit bridges that gap by connecting Deep Agents to a real frontend runtime, in just a few lines of code. You get Agent-UI sync so that users can follow progress and interact while the agent runs. Explore more to build an interactive UI for your Deep Agent 👇https://lnkd.in/gKGB5JGH …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "106",
+    "comments": "6",
+    "reposts": "14",
+    "postType": "video",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-19",
+    "index": 20,
+    "screenshot": "screenshots/020-langchain-deep-agents-are-great-for-buil.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "🤖 Agent Builder now supports queuing messages ⏰ Started a task in Agent Builder but forgot to include extra instructions? Now, you can submit as many followups as you'd like, and they'll be automatically added to a queue. Try it out for free today: https://lnkd.in/g_7c9pRs …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "66",
+    "comments": "3",
+    "reposts": "5",
+    "postType": "video",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-20",
+    "index": 21,
+    "screenshot": "screenshots/021-agent-builder-now-supports-queuing-me.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "I’m hiring a highly technical PM to work with directly with me on special projects for LangSmith! Requirements - Strong engineering background (have written production code) - Experience working on developer tools, infra, or platform teams - Very strong organizational and communication skills - Comfortable leading efforts that span multiple teams - Strong desire to get things done under aggressive timelines Please feel free to DM me directly! …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "170",
+    "comments": "5",
+    "reposts": "22",
+    "postType": "text",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-21",
+    "index": 22,
+    "screenshot": "screenshots/022-i-m-hiring-a-highly-technical-pm-to-work.png",
+    "category": "Career Advice"
+  },
+  {
+    "text": "Many teams treat evals as a last-mile check. monday.com Service made them a Day 0 requirement for their AI service agents. Using LangSmith, the monday service team has been able to: Achieve 8.7x faster evaluation feedback loops (from 162 seconds to 18 seconds). Get comprehensive testing across hundreds of examples in minutes instead of hours Gain agent observability with real-time, end-to-end quality monitoring on production traces Read more on their eval-driven development here: https://lnkd.in/g27yxEGr …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "182",
+    "comments": "13",
+    "reposts": "15",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHooK5auW2B6Q/feedshare-shrink_800/B56ZyNGPBOHYAg-/0/1771893748069?e=1775692800&v=beta&t=MVcYL3YjjuJib1C5TPdyioQ8t_IGOEcRpzuue4lUynk"
+    ],
+    "hashtags": [],
+    "urn": "post-22",
+    "index": 23,
+    "screenshot": "screenshots/023-many-teams-treat-evals-as-a-last-mile-ch.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "A few days ago I decided to build my own customized version of OpenClaw, driven by curiosity and a desire for more control over privacy and security. I built it on top of DeepAgents, and the result is CianaParrot 🦜 , self-hosted assistant with multi-channel chat, autonomous scheduling, MCP integration, and extensible skills, all running in Docker. Huge thanks to the LangChain and Harrison Chase for the feedback and support! 🔗 https://lnkd.in/dhcG59mt …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "56",
+    "comments": "3",
+    "reposts": "7",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHMmN8_pXOH_w/feedshare-shrink_800/B56ZyGS0UgIgAg-/0/1771779607014?e=1775692800&v=beta&t=vjilJtMUD-iS5ANasnzFISLoZ5ACfdlEJPwPdBYT_NA"
+    ],
+    "hashtags": [],
+    "urn": "post-23",
+    "index": 24,
+    "screenshot": "screenshots/024-a-few-days-ago-i-decided-to-build-my-own.png",
+    "category": "Personal Story / Journey"
+  },
+  {
+    "text": "I'm hosting a small dinner with Jason Yuan next week focused on the intersection of design and ML In SF, very limited spots. If you are a designer interested in AI, or an ML engineer who cares deeply about design - we'd love to host you! sign up: https://luma.com/d5dw9vzf …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "128",
+    "comments": "8",
+    "reposts": "7",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEScLdWPiEnow/feedshare-shrink_1280/B4EZx7sSW4HkAo-/0/1771601733473?e=1775692800&v=beta&t=Tr1lwo9UJO6QCOhc0OY_r-lpSg5YJwbDhSTNltuYHQ0"
+    ],
+    "hashtags": [],
+    "urn": "post-24",
+    "index": 25,
+    "screenshot": "screenshots/025-i-m-hosting-a-small-dinner-with-jason-yu.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "Margaret (MJ) Jastrebski -- challenge accepted, my friend!",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "23",
+    "comments": "3",
+    "reposts": "4",
+    "postType": "video",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-25",
+    "index": 26,
+    "screenshot": "screenshots/026-margaret-mj-jastrebski-challenge-ac.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "🚀 Introducing: LangSmith for Startups We are launching LangSmith for Startups to give early-stage teams the tooling and community they need to iterate faster and win bigger. Observe, evaluate, and deploy your agents — now with free credits to help you get started. 💸 Our Scale program offers: ✅ $10,000 in LangSmith credits ✅ Exclusive programming: Technical sessions directly with the LangChain team ✅ Community: High-level networking with peer founders ✅ Visibility: Product feature and recruiting spotlights on our social platforms We’re proud to partner with the world’s leading investors to bring this to life: Sequoia Capital, Y Combinator, Amplify Partners, South Park Commons, Mayfield, New Enterprise Associates (NEA), Bessemer Venture Partners, First Round Capital, Basis Set, Lux Capital, Kleiner Perkins, Afore Capital, Accel, Khosla Ventures, and Audacious Ventures. How to join: If you're a startup backed by one of our partner VCs and Series A or earlier stage, you qualify! Join today 👉 https://lnkd.in/e8SktdJ5 …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "372",
+    "comments": "12",
+    "reposts": "43",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQFajQ_6tLidJQ/feedshare-shrink_800/B4EZx28R5_H8Ag-/0/1771522040292?e=1775692800&v=beta&t=iJFy122AIN81du8eu9aFf1L5yCrR98Hu8DU9rcGAfXo"
+    ],
+    "hashtags": [],
+    "urn": "post-26",
+    "index": 27,
+    "screenshot": "screenshots/027-introducing-langsmith-for-startups-w.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "the power of evals!",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "89",
+    "comments": "3",
+    "reposts": "",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHc8IilK41Vag/feedshare-shrink_800/B56Zxv0_nDKkAg-/0/1771402689246?e=1775692800&v=beta&t=ZstPbtUYq5tNMwuj2vDEPjGgaSsJrKdzaopf1p2PRHI"
+    ],
+    "hashtags": [],
+    "urn": "post-27",
+    "index": 28,
+    "screenshot": "screenshots/028-the-power-of-evals.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "New Blog Alert on Agent Harness Engineering 📜 At LangChain, we improved our Coding Agent from Top 30 to Top 5 across all agents on Terminal Bench 2.0 (a popular agentic coding benchmark) The catch: we didn't change the model, we just changed the agent harness. We share our research, recipes, and practical advice on things like: - Mining Tracing data to improve agents - Self-verification so agents to catch their own errors - Context Engineering on behalf of the agent https://lnkd.in/eP-N6Ce8 …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "243",
+    "comments": "2",
+    "reposts": "24",
+    "postType": "article/link",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-28",
+    "index": 29,
+    "screenshot": "screenshots/029-new-blog-alert-on-agent-harness-engineer.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "I am thrilled to share that I have joined LangChain as the Founding GTM lead - U.S. Federal Government We are at a pivotal moment where Generative AI is shifting from \"experimentation\" to \"infrastructure.\" At LangChain, our mission is clear: 🔮 Define what the autonomous agents of the future look like. 🛠️ Build the tooling to make constructing them intuitive and scalable. ⚡ Execute better and faster than anyone else in the industry. My focus in this new role is simple but ambitious: 🎯 Mission Success: Guiding federal agencies across the chasm from \"prototype\" to mission-critical production. 📈 Standard of Excellence: Raising the quality bar for the industry while we scale. 🔍 Trust & Visibility: Establishing hashtag #langsmith Evals and Observability as the gold standard for compliant, auditable AI. 🤝 Culture: Helping make hashtag #langchain the absolute best place to work in the ecosystem. To my partners in the public sector: The tools to build secure, agentic workflows are here. Let’s get to work. 🇺🇸 🦜🔗 hashtag #LangChain hashtag #builder hashtag #agenticai hashtag #LangSmith hashtag #Interrupt …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "283",
+    "comments": "44",
+    "reposts": "2",
+    "postType": "video",
+    "images": [],
+    "hashtags": [
+      "langsmith",
+      "langchain",
+      "LangChain",
+      "builder",
+      "agenticai",
+      "LangSmith",
+      "Interrupt"
+    ],
+    "urn": "post-29",
+    "index": 30,
+    "screenshot": "screenshots/030-i-am-thrilled-to-share-that-i-have-joine.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "As a pat leave side project 👶 I built my own ACP client to replace my Claude Code usage! Lately, I've gotten super excited about Zed Industries's open-source Agent Client Protocol. It's a fantastic way to pass a coding agent the exact context you're looking at in an IDE. It's a few hundred lines of Python hooked up to a LangChain Deep Agent with filesystem and shell access. It works great out of the box, but the real power comes from customizing the internal agent to use whatever prompts, models, tools, skills etc. you want. Plus, you get full observability via LangSmith! I've been using it the past few weeks to great effect. See the links in the replies to try it yourself ⤵️ …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "134",
+    "comments": "8",
+    "reposts": "9",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQGrxPtXFl8C_A/feedshare-shrink_800/B56ZxsswCIHoAg-/0/1771350209349?e=1775692800&v=beta&t=ZF-lkTEousmzmkibXoVnIxPnvGIRNlBi4AT0pFnzwbQ"
+    ],
+    "hashtags": [],
+    "urn": "post-30",
+    "index": 31,
+    "screenshot": "screenshots/031-as-a-pat-leave-side-project-i-built-m.png",
+    "category": "Personal Story / Journey"
+  },
+  {
+    "text": "Came across an interesting concept from Harrison Chase at LangChain that reframes the Agent stack. 💡 I’ve been reading up on the term \"𝐀𝐠𝐞𝐧𝐭 𝐇𝐚𝐫𝐧𝐞𝐬𝐬,\" and the 𝐈𝐫𝐨𝐧 𝐌𝐚𝐧 analogy helps make sense of where the industry might be heading. Here is the mental model: 🧠 The LLM is Tony Stark (raw intelligence). 🛠️ The 𝐅𝐫𝐚𝐦𝐞𝐰𝐨𝐫𝐤 (LangChain, LlamaIndex) is the Blueprint. You get the components: LLM wrappers, prompt templates, tool abstraction but you assemble everything yourself. To make the agent work, you have to build: • Tool invocation logic and routing • Memory and context management • Code execution sandbox • Error handling and retry logic • State persistence and checkpointing 🚀 The 𝐇𝐚𝐫𝐧𝐞𝐬𝐬 ( hashtag #Claude Code SDK, DeepAgents) is the Assembled Suit. The infrastructure is built and running out of the box. The \"boring\" but critical systems are already active: • Code execution sandbox • File system operations (read/write with permissions) • Memory management (context window handling) • Error recovery (retry logic, state restoration) • State persistence (conversation history) 𝑾𝒊𝒕𝒉 𝒂 𝑯𝒂𝒓𝒏𝒆𝒔𝒔, 𝒚𝒐𝒖 𝒔𝒕𝒐𝒑 𝒃𝒖𝒊𝒍𝒅𝒊𝒏𝒈 𝒕𝒉𝒆 𝒑𝒍𝒖𝒎𝒃𝒊𝒏𝒈. 𝒀𝒐𝒖 𝒋𝒖𝒔𝒕 𝒂𝒅𝒅 𝒚𝒐𝒖𝒓 𝒄𝒖𝒔𝒕𝒐𝒎 𝒕𝒐𝒐𝒍𝒔 (𝒌𝒖𝒃𝒆𝒄𝒕𝒍, 𝑨𝑷𝑰𝒔, 𝒅𝒂𝒕𝒂𝒃𝒂𝒔𝒆𝒔) 𝒂𝒏𝒅 𝒄𝒖𝒔𝒕𝒐𝒎𝒊𝒛𝒆 𝒕𝒉𝒆 𝒔𝒚𝒔𝒕𝒆𝒎 𝒑𝒓𝒐𝒎𝒑𝒕. The Shift: - With a 𝐅𝐫𝐚𝐦𝐞𝐰𝐨𝐫𝐤, you spend time building the infrastructure. - With a 𝐇𝐚𝐫𝐧𝐞𝐬𝐬, you start with a functional runtime on Day 1. The langchain blog link is in the comments 👇 hashtag #AI hashtag #AgenticAI hashtag #LangChain hashtag #SoftwareEngineering hashtag #LLMs hashtag #HaaS hashtag #iwork4dell hashtag #ClaudeCode …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "49",
+    "comments": "3",
+    "reposts": "6",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQEttHYnnsq2Ug/feedshare-shrink_800/B56Zxp1_96GsAk-/0/1771302289491?e=1775692800&v=beta&t=HXjmHYlXMP57FB2IeodGtqTfgY6lPKN0-NXbhp5B_6E"
+    ],
+    "hashtags": [
+      "Claude",
+      "AI",
+      "AgenticAI",
+      "LangChain",
+      "SoftwareEngineering",
+      "LLMs",
+      "HaaS",
+      "iwork4dell",
+      "ClaudeCode"
+    ],
+    "urn": "post-31",
+    "index": 32,
+    "screenshot": "screenshots/032-came-across-an-interesting-concept-from.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "“In software, the code documents the app. In AI, the traces do.\" - Harrison Chase Getting those \"traces\" right is the difference between a prototype and a production-ready agent. Back in 2022, Harrison was part of our early SF meetups while working at Robust Intelligence. Since then, he’s gone on to build LangChain - one of the most influential frameworks in the generative AI space. We’re excited to have him talk at our Coding Agents conference on March 3rd and hear his perspective on where the tooling is headed next. Join us at the Computer History Museum (https://lnkd.in/giDNa7fG) From our early San Francisco meetups in 2022 to the stage at the Computer History Museum. Harrison Chase, CEO of LangChain, is joining us at Coding Agents: AI-Driven Dev Conference on March 3. Harrison has seen agent tooling evolve from simple experiments to systems teams are trying to run in production, and we’re looking forward to hearing his perspective in person. There are only ~ 330 tickets left! Get your tickets here (https://lnkd.in/giDNa7fG) …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "59",
+    "comments": "4",
+    "reposts": "8",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQFtTmIiWsgfsw/feedshare-shrink_800/B56Zwt43lcH0Ak-/0/1770296408707?e=1775692800&v=beta&t=nnR3VlCeCgouONmr6Ugq4YSZzWihQFZbsMGgrm-stHE"
+    ],
+    "hashtags": [],
+    "urn": "post-32",
+    "index": 33,
+    "screenshot": "screenshots/033-in-software-the-code-documents-the-app.png",
+    "category": "Thought Leadership"
+  },
+  {
+    "text": "AI Coding Agents are changing the SDLC. On March 3rd, we are hosting a full-day conference at the Computer History Museum. We realized its not just the agentic coding piece. It's everything around the code from reviewing PRs, creating docs, shipping securely, and optimizing the stack. Join us to hear directly from the founding engineers of Claude Code and Graphite - Sid Bidasaria and Tomas Reimers We are running hands on workshops with Mihail Eric and Shrivu Shankar on shipping production - grade code 2x faster. Check out the whole speaker list here: https://lnkd.in/giDNa7fG Less than 300 tickets left! …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "41",
+    "comments": "2",
+    "reposts": "12",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHH97qKSyuA6w/feedshare-shrink_800/B56ZxDVj6yHQAo-/0/1770656251837?e=1775692800&v=beta&t=tZ9RtdT7UzSNuhF7UzcPZ3NkX__Qg4YcK0jPvRQwKz0"
+    ],
+    "hashtags": [],
+    "urn": "post-33",
+    "index": 34,
+    "screenshot": "screenshots/034-ai-coding-agents-are-changing-the-sdlc.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "see you at LangChain Interrupt '26 Rick Garcia Eden Marco Colin McNamara Andres Torres Nir Diamant Marlene Mhangami Tom Spencer …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "31",
+    "comments": "5",
+    "reposts": "1",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEaB-EZYxqxVw/feedshare-shrink_800/B4EZxTDyPaK0Ag-/0/1770920027635?e=1775692800&v=beta&t=bZ7FP5uwBNk63yDp7wVY1CB_lEiaj8CGB4bWC-L6r80"
+    ],
+    "hashtags": [],
+    "urn": "post-34",
+    "index": 35,
+    "screenshot": "screenshots/035-see-you-at-langchain-interrupt-26-rick.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "deepagents 0.4 shipped with support for BYO sandbox! We offer prebuilt integrations for Daytona, Modal, and Runloop AI! Your agent can then use this sandbox to execute code and perform file ops in your environment of choice! …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "275",
+    "comments": "5",
+    "reposts": "22",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHze8Lka6gQKg/feedshare-shrink_800/B4EZxOJNzMLEAg-/0/1770837565233?e=1775692800&v=beta&t=Hl0CJECIwAl4WujWeYcFHOmlhrYf_f3xbs-zajprNz4"
+    ],
+    "hashtags": [],
+    "urn": "post-35",
+    "index": 36,
+    "screenshot": "screenshots/036-deepagents-0-4-shipped-with-support-for.png",
+    "category": "Career Advice"
+  },
+  {
+    "text": "Great conversation with Sam Partee (Arcade.dev) and Harrison Chase (LangChain) on the AI-native infrastructure revolution. Key insights: 1. Models are finally reliable enough to run in loops and call tools autonomously 2. AI-native infrastructure is fundamentally different from cloud-native – it requires new patterns for observability, security, and tool composition 3. The biggest blocker? Application quality. Better context engineering and observability are critical. 4. Security model shift: Assume agents have the same permissions as whoever they're exposed to (prompt injection is real) The \"plumbing\" layer for agents is being built right now – MCP, sandboxes, audit logs, and proper auth pass-through are becoming table stakes. We're witnessing a generational shift in how software gets built. Not replacing cloud-native, but layering on top with entirely new requirements. Full Mixture of Experts Session Here - https://lnkd.in/eDhzKQCH NYSE Wired & theCUBE - Mixture of Experts Series - https://lnkd.in/eqsAfSYQ John Furrier - Gemma Allen - David Vellante hashtag #AI hashtag #AgenticAI hashtag #Infrastructure hashtag #LangChain hashtag #Arcade hashtag #NYSEWired hashtag #theCUBE …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "113",
+    "comments": "2",
+    "reposts": "11",
+    "postType": "video",
+    "images": [],
+    "hashtags": [
+      "AI",
+      "AgenticAI",
+      "Infrastructure",
+      "LangChain",
+      "Arcade",
+      "NYSEWired",
+      "theCUBE"
+    ],
+    "urn": "post-36",
+    "index": 37,
+    "screenshot": "screenshots/037-great-conversation-with-sam-partee-arca.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "BIG month for langchain pypi downloads! langchain is now downloaded more often than the OpenAI SDK. Imagine that 🤯",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "256",
+    "comments": "7",
+    "reposts": "35",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHr--gzvz07Xw/feedshare-shrink_800/B56ZxPXFWPJ0As-/0/1770857977795?e=1775692800&v=beta&t=Qnb2RKjO8Tl9AhA1TpsNYHD7VG2MaiJYLt1AoX1_9Ww"
+    ],
+    "hashtags": [],
+    "urn": "post-37",
+    "index": 38,
+    "screenshot": "screenshots/038-big-month-for-langchain-pypi-downloads.png",
+    "category": "Cheat Sheet / Resource List"
+  },
+  {
+    "text": "this is not a drill -- interrupt tickets are on sale now!! WE ARE RUNNING IT BACK!!! https://lnkd.in/g8yhqhh6 …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "169",
+    "comments": "4",
+    "reposts": "5",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQF7sRz04KEeiw/feedshare-shrink_800/B56ZxTDVWEJAAg-/0/1770919909789?e=1775692800&v=beta&t=gBc9qbWt5x10qxCvXY-8jZ1WB0-jIY4C1QVaoGlBITM"
+    ],
+    "hashtags": [],
+    "urn": "post-38",
+    "index": 39,
+    "screenshot": "screenshots/039-this-is-not-a-drill-interrupt-tickets.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "Interrupt is back May 13-14 in San Francisco. Tickets on sale now. Interrupt is where builders come to learn what's actually working in production. Here's what to expect: → 1,000+ developers, product leaders, researchers, and founders. → Keynotes from Harrison Chase + Andrew Ng on what's next for agents → Real production lessons from AI teams at Clay, Rippling, Workday + more → Hands-on workshops with LangChain product experts → First look at new LangChain products Seats are limited. Get your tickets: https://lnkd.in/gEaFpWgU …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "115",
+    "comments": "8",
+    "reposts": "50",
+    "postType": "video",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-39",
+    "index": 40,
+    "screenshot": "screenshots/040-interrupt-is-back-may-13-14-in-san-franc.png",
+    "category": "General / Uncategorized"
+  }
+]

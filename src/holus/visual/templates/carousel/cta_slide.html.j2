@@ -1,5 +1,9 @@
 {% extends "base.html.j2" %}
 
+{% block head %}
+<style>body { background: linear-gradient(145deg, #0A0F1E 0%, #1e1b4b 100%) !important; }</style>
+{% endblock %}
+
 {% block body %}
 <div class="slide-container slide-cta {{ effect_class | default('') }}" {% if background_gradient %}style="background: {{ background_gradient | safe }};"{% endif %}>
   <div class="slide-content">

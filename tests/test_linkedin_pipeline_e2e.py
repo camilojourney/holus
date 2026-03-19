@@ -7,12 +7,10 @@ quality gate, content queuing, trajectory logging.
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Any
-from unittest.mock import AsyncMock, patch
+from typing import TYPE_CHECKING, Any
 
-import pytest
-
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # -- Fixtures ----------------------------------------------------------------
 

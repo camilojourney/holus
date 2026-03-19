@@ -42,6 +42,8 @@ dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
     "sse-starlette>=2.1.0",
+    "pypdf>=6.9.1",
+    "pip-audit>=2.10.0",
 ]
 
 [project.optional-dependencies]

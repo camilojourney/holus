@@ -14,7 +14,7 @@
     {% if bullet_points %}
     <ul class="slide-bullets">
       {% for point in bullet_points %}
-      <li>{{ point }}</li>
+      <li>{{ point | replace("→ ", "") | replace("→", "") }}</li>
       {% endfor %}
     </ul>
     {% endif %}

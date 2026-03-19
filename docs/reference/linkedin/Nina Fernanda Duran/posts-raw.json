@@ -1,0 +1,842 @@
+[
+  {
+    "text": "Clone this Claude Code repo if you want to stop burning through tokens like crazy. It transforms your raw CLI into a high-performance system that scales with your code: ↳ Token Optimization: Smart model selection and system prompt slimming to keep costs low. ↳ Memory Persistence: Custom hooks that automatically save and load your context across sessions. ↳ Continuous Learning It extracts patterns from your work and turns them into reusable skills. ↳ Verification Loops Built-in checkpoints and evals to make sure the code actually works. ↳ Subagent Orchestration Handles the context problem using iterative retrieval patterns. It’s the only way to stop Claude from losing the thread as soon as the codebase gets complex. 80k stars, 0$ cost Github link → https://lnkd.in/eqPTkPe5 ◼︎ Save for your AI stack …more",
+    "timestamp": "1d",
+    "dateAbsolute": "2026-03-17",
+    "reactions": "1,944",
+    "comments": "76",
+    "reposts": "222",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQFZFHtK9EmDEg/feedshare-shrink_800/B4EZz4vqt8IsAc-/0/1773699771581?e=1775692800&v=beta&t=hhhOPb15wdMuERPT6hVeCrJgOTfNyn1OVJ6fZQlkYdI"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7439558896618328064",
+    "index": 1,
+    "screenshot": "screenshots/001-clone-this-claude-code-repo-if-you-want.png",
+    "category": "Sponsored / Partnership"
+  },
+  {
+    "text": "Become a Claude Certified Architect, here's how: This certification validates expertise in building production-grade apps with Claude. It is free for the first 5,000 partner employees before moving to a $99 general availability fee. ↳ Covers a 120-minute exam with 60 multiple-choice questions ↳ Handles Agentic Architecture (27%) ↳ Runs through Tool Design & MCP (18%) ↳ Covers Claude Code (20%) and Prompt Engineering (20%) ↳ Maps out Context Management & Reliability (15%) The path to officially joining the community of builders who truly master Claude. Link to request access → https://lnkd.in/e5mttNM8 ◼︎ Save for your certification prep …more",
+    "timestamp": "2d",
+    "dateAbsolute": "2026-03-16",
+    "reactions": "214",
+    "comments": "25",
+    "reposts": "20",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQE-xs9EcgC5nQ/feedshare-shrink_800/B4EZzywnMMIIAc-/0/1773599355922?e=1775692800&v=beta&t=ytQQCL0KbgeaSfOQ0wt_q8A5eB9ltcUaOD6L68g4rrU"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7439150957608890368",
+    "index": 2,
+    "screenshot": "screenshots/002-become-a-claude-certified-architect-her.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "Get this repo if you’re on Claude Code. It’s the best set of patterns for agentic workflows. ↳ Command → Agent → Skill orchestration pattern ↳ Parallel development with Agent Teams and Git Worktrees ↳ Debugging with /doctor and MCP (Playwright, Chrome DevTools) ↳ Context management for CLAUDE·md files Includes deterministic hooks, sub-agents with persistent identity, and custom status lines to monitor cost and session info. Github link → https://lnkd.in/eDXXN6wt ◼︎ Save for your AI stack. …more",
+    "timestamp": "5d",
+    "dateAbsolute": "2026-03-13",
+    "reactions": "0",
+    "comments": "59",
+    "reposts": "185",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQGC1geqZ9SDyQ/feedshare-shrink_800/B4EZzkX072HQAc-/0/1773357977648?e=1775692800&v=beta&t=yN7W94_3LvjEAkJoj7JWC6VhXjPVRg54WJ1K5txlqtY"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7438111215869952000",
+    "index": 3,
+    "screenshot": "screenshots/003-get-this-repo-if-you-re-on-claude-code.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "This is how you find the exact \"sweet spot\" for your specific RAM and GPU in 3 seconds. Most people download local LLMs based on Hugging Face trending lists. They see a model with 40k stars, ... wait 20 minutes for the download, and then observe their system crash. Or worse: the model runs, but at 0.4 tokens per second. No, local AI is not \"broken\" on your machine. You are just guessing. Guessing leads to friction, and friction stops you from actually building. Here is why your local setup fails: ● You ignore the quantization penalty and go for Q8 because you want \"quality.\" ● You don't account for the KV cache memory overhead at high context. ● You assume 70B models are impossible on a laptop because you don't understand MoE offloading. ● You are treating your hardware like a black box. Stop. This is how you find the exact \"sweet spot\" for your specific RAM and GPU in 3 seconds. The system is called llmfit. It is a terminal tool that probes your hardware (NVIDIA, Apple Silicon, AMD, or even Intel Arc) and scores every major model against your actual specs. It doesn't tell you what is \"best.\" It tells you what runs. How to get results now: 1️⃣ Install the tool quickly. Mac/Linux: brew install llmfit Windows: scoop install llmfit 2️⃣ Run the command: llmfit 3️⃣ Observe the terminal It lists models by a composite score of Quality, Speed, and Fit. 4️⃣ Filter for your reality. Press f to cycle through the \"Fit\" filter. Look for \"Perfect\" or \"Good.\" The goal is to hit 50–80% memory utilization. Anything more and your system swaps to disk. Anything less and you are wasting capacity. Use the \"Plan Mode\" to save money on future upgrades. Instead of asking \"What fits my PC?\", press p on a model you want to run (like DeepSeek-R1). The tool inverts the logic. It tells you exactly how much VRAM or which specific GPU you need to hit 25 tokens per second with that specific configuration. The \"Truth Machine\" cheatsheet for local LLMs: ◼️ GPU Fit ➔ Always choose a model that fits entirely in VRAM if you want speed. ◼️ MoE Logic ➔ Use models like Mixtral or DeepSeek-V3. They have high total params but low active params. llmfit calculates the active memory delta for you. ◼️ Context Cap ➔ Use -max-context 8192 to see how much RAM you actually have left for the model weights. Stop acting like a spectator in the AI hardware race. Start measuring. Github link in the first comment - - - - - - - - - - 𖤂 Repost to help your network build with AI. I’m Nina. I build with AI and share how it’s done weekly …more",
+    "timestamp": "1w",
+    "dateAbsolute": "2026-03-11",
+    "reactions": "201",
+    "comments": "26",
+    "reposts": "27",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHJ8HdmIkevAg/feedshare-shrink_800/B4EZzUp4yRIEAk-/0/1773094276594?e=1775692800&v=beta&t=ekAQonQS9rnFWO6DIBXqkujz6sGx0HrPBV_o6epQ05Q"
+    ],
+    "hashtags": [],
+    "urn": "post-3",
+    "index": 4,
+    "screenshot": "screenshots/004-this-is-how-you-find-the-exact-sweet-sp.png",
+    "category": "Cheat Sheet / Resource List"
+  },
+  {
+    "text": "The secret to better AI code generation is a single file: 𝗖𝗟𝗔𝗨𝗗𝗘·md This community-built prompt inspired by Boris Cherny (creator of Claude Code) solves that with a \"Self-Improvement Loop.\" By instructing Claude to update a lessons.md file after every correction, you move from a static assistant to a codebase that literally learns from its errors. Why this workflow is different: 𝗠𝗮𝗻𝗱𝗮𝘁𝗼𝗿𝘆 𝗦𝗽𝗲𝗰𝘀 It requires a detailed plan for any task over three steps. 𝗦𝘂𝗯𝗮𝗴𝗲𝗻𝘁 𝗦𝘁𝗿𝗮𝘁𝗲𝗴𝘆 It offloads research and exploration to keep the main context clean. 𝗔𝘂𝘁𝗼𝗻𝗼𝗺𝗼𝘂𝘀 𝗙𝗶𝘅𝗲𝘀 It independently handles failing CI tests and verifies results before calling a task \"done.\" 𝗧𝗵𝗲 \"𝗦𝘁𝗮𝗳𝗳 𝗘𝗻𝗴𝗶𝗻𝗲𝗲𝗿\" 𝗙𝗶𝗹𝘁𝗲𝗿 With a \"Demand Elegance\" clause and a \"No Laziness\" rule, the AI must ask itself: \"Would a staff engineer approve this?\" before presenting its work. Stop managing your AI. Start orchestrating it. - - - - - - - - - 𖤂 Repost to help your network build with AI. I’m Nina. I build with AI and share how it’s done weekly …more",
+    "timestamp": "2w",
+    "dateAbsolute": "2026-03-04",
+    "reactions": "455",
+    "comments": "40",
+    "reposts": "41",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEwl74cdyqdbQ/feedshare-shrink_800/B4EZyrjaFPIEAk-/0/1772404712267?e=1775692800&v=beta&t=begFs503C57gZUKboaoB-OgP2vl3K92f1D4xTDPF82U"
+    ],
+    "hashtags": [],
+    "urn": "post-4",
+    "index": 5,
+    "screenshot": "screenshots/005-the-secret-to-better-ai-code-generation.png",
+    "category": "Tool Review / Comparison"
+  },
+  {
+    "text": "930+ Agentic Skills - Free on Github 15k ⭐ Claude, Gemini CLI, Cursor, OpenCode, Antigravity ... How to start: ■ Install once: npx antigravity-awesome-skills ■ Pick your role bundle ■ Trigger skills on demand ■ Integrate outputs into workflows Do more: ■ Automate coding ■ Research faster ■ Test & deploy ■ Save hours, focus on results Sample skills: ■ oss-hunter → discover open-source contributions ■ youtube-summarizer → videos → text ■ audio-transcriber → audio → Markdown ■ context-auto-research → fetch docs fast ■ prompt-optimiser → smarter outputs Install → trigger → scale. Automate workflows. Maximise productivity. Make AI fast. Smart. Reliable. Github link in comments - - - - - - - - 𖤂 Repost to help your network build with AI. I’m Nina. I build with AI and share how it’s done weekly …more",
+    "timestamp": "2w",
+    "dateAbsolute": "2026-03-04",
+    "reactions": "407",
+    "comments": "26",
+    "reposts": "60",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHPyT7BD_ohgA/feedshare-shrink_800/B4EZyRJkqrIsAg-/0/1771961732262?e=1775692800&v=beta&t=9pMunp0-K3l_X5N4X_W1lBopVwNybPgW0Fshd3lAzmM"
+    ],
+    "hashtags": [],
+    "urn": "post-5",
+    "index": 6,
+    "screenshot": "screenshots/006-930-agentic-skills-free-on-github-15k.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "If your LLM can't connect facts across documents, you are losing context between chunks. Stop retrieving text. Start mapping relationships. Build GraphRAG to link the dots across your data with 3 commands: 𝗧𝗵𝗲 𝗜𝗺𝗽𝗹𝗲𝗺𝗲𝗻𝘁𝗮𝘁𝗶𝗼𝗻 Most tools overcomplicate the stack. This framework keeps it lean. ◼︎ Install the engine: pip install cognee ◼︎ Set your environment keys and run the core pipeline: 1️⃣ Ingest your unstructured data await cognee.add(\"data_source\") 2️⃣ Build the knowledge graph await cognee.cognify() 3️⃣ Query the persistent memory results = await cognee·search(\"How do these concepts relate?\")` 𝗪𝗵𝘆 𝘁𝗵𝗶𝘀 𝗯𝗲𝗮𝘁𝘀 𝘀𝘁𝗮𝗻𝗱𝗮𝗿𝗱 𝗩𝗲𝗰𝘁𝗼𝗿 𝗦𝗲𝗮𝗿𝗰𝗵 Standard RAG treats your data like a pile of shredded paper. You search for a fragment ➨ you get a fragment. This implements an ECL ➨ Extract ➨ Cognify ➨ Load pipeline. It doesn't just store embeddings; it maps relationships. 𝗧𝗵𝗲 𝗧𝗲𝗰𝗵𝗻𝗶𝗰𝗮𝗹 𝗘𝗱𝗴𝗲: ◼︎ Vector Similarity ↳ Finds the \"what\" using semantic proximity. ◼︎ Graph Traversal ↳ Finds the \"why\" and \"how\" by following entity edges. ◼︎ Hybrid Reasoning ↳ Combines both to answer queries that span multiple documents. The magic happens during the .cognify() step. It isn't just indexing; it's engineering a memory layer. 1️⃣ Entity Extraction ➨ Identifying the \"actors\" in your text. 2️⃣ Relationship Mapping ➨ Defining how those actors interact. 3️⃣ Semantic Embedding➨ Placing everything in a HD vector space. The API is designed for high-velocity development: .add() The entry point ↳ Handles documents, audio, and text ➨ Prepares the raw buffer. .cognify() The heavy lifter ↳ Generates the Knowledge Graph ➨ Creates the persistent intelligence layer. .search() The retrieval head. ↳ Merges vector search with graph paths. ➨ Delivers high-context results to your Agent. .memify() (Incoming) ↳ Deep semantic enrichment. ➨ Self-evolving memory nodes. Stop building basic search. Start building cognitive memory. ❱❱ Try yourself ❱❱ GitHub link in comments - - - - - 𖤂 Repost to help your network build with AI. I’m Nina. I build with AI and share how it’s done weekly …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "136",
+    "comments": "19",
+    "reposts": "20",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEwYOHDfIy1Jw/feedshare-shrink_800/B4EZx4EJk9JoAo-/0/1771540880147?e=1775692800&v=beta&t=rugR7hFb2FnO6MVXNmAVHBSeyJeP-6LC6xmy7zArRBo"
+    ],
+    "hashtags": [],
+    "urn": "post-6",
+    "index": 7,
+    "screenshot": "screenshots/007-if-your-llm-can-t-connect-facts-across-d.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "LLM accuracy depends on input order. Repeat the prompt: better results, same speed. ◼︎ 𝗧𝗵𝗲 𝗦𝘁𝗿𝗮𝘁𝗲𝗴𝘆 ↳ Transform <QUERY> into <QUERY><QUERY>. ↳ Mechanism: All tokens can now attend to each other. Focus: This works best when not using reasoning. ◼︎ 𝗞𝗲𝘆 𝗣𝗲𝗿𝗳𝗼𝗿𝗺𝗮𝗻𝗰𝗲 𝗚𝗮𝗶𝗻𝘀 ↳ Total Wins: 47 out of 70 tests showed improvement. ↳ Losses: Zero losses recorded across all tested models. ↳ Top Task: NameIndex accuracy jumped from 21% to 97%. ◼︎ 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆 𝗕𝗲𝗻𝗲𝗳𝗶𝘁𝘀 ❱❱ Speed: Latency remains identical to the baseline. ❱❱ Cost: Generated output length does not increase. Models: Validated on Gemini, GPT, Claude, and DeepSeek. ◼︎ 𝗕𝗲𝘀𝘁 𝗣𝗿𝗮𝗰𝘁𝗶𝗰𝗲𝘀 ⭢ Use Cases: Ideal for multiple-choice and data extraction. ⭢ Setup: Use the parallelizable prefill stage for efficiency. Note: Results are neutral when \"Think step by step\" is active. Simple LLM hack: order matters, repetition corrects. Performance up, latency unchanged. Paper link in first comment - - - - - - - - - - - - - - 𖤂 Repost to help your network build with AI. I'm Nina. I build real AI systems and share the blueprints …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "87",
+    "comments": "27",
+    "reposts": "10",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQGXoQPtrnblwQ/feedshare-shrink_800/B4EZxzHw8KIEAg-/0/1771457941809?e=1775692800&v=beta&t=EURNXP4_ICadQPCPpsvWxaDEVPqIqCdxYuheGYh9WEA"
+    ],
+    "hashtags": [],
+    "urn": "post-7",
+    "index": 8,
+    "screenshot": "screenshots/008-llm-accuracy-depends-on-input-order-rep.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "The architecture of AI is often oversimplified. It is not a single tool. It is a cumulative stack of distinct technologies. To understand the future, you have to look at the hierarchy. 1️⃣ Classical AI The foundation of the field. It relies on hardcoded rules and logic. ◼️ Symbolic reasoning and expert systems. ◼️ Solving problems with predefined parameters. 2️⃣ Machine Learning (ML) Systems that learn from data instead of following manual instructions. ◼️Patterns and statistical models. ◼️Prediction and classification. 3️⃣ Neural Networks Inspired by the human brain. This layer introduces interconnected nodes. ◼️Weights, biases, and activation functions. ◼️Processing complex data relationships. 4️⃣ Deep Learning Neural networks with many hidden layers. This allows for high-level abstraction. ◼️Transformers, CNNs, and RNNs. ◼️Analyzing images, speech, and complex sequences. 5️⃣ Generative AI The layer that creates new content. It uses previous layers to produce text, audio, and video. ◼️LLMs, Diffusion models, and VAEs. ◼️Synthesis and creativity. 6️⃣ Agentic AI The current frontier. These systems do not just answer questions; they perform tasks. ◼️Planning, tool use, and autonomous execution. ◼️Goal-oriented action. We have moved from systems that follow rules to systems that pursue goals. The shift from Generative to Agentic AI changes everything. - - - - - ♻️ Repost to help your network build with AI ➕ I'm Nina. I build real AI systems and share the blueprints Artwork by unknown / source not found …more",
+    "timestamp": "3w",
+    "dateAbsolute": "2026-02-25",
+    "reactions": "160",
+    "comments": "19",
+    "reposts": "13",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQG0WzD3_ssYyA/feedshare-shrink_800/B4EZxtqE4ZJ0Ag-/0/1771366273039?e=1775692800&v=beta&t=KSiU3Hfink5WJhdtM_PLkswkv8oThljQ7iRAjduXxKM"
+    ],
+    "hashtags": [],
+    "urn": "post-8",
+    "index": 9,
+    "screenshot": "screenshots/009-the-architecture-of-ai-is-often-oversimp.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "Most AI tutorials stop at \"Hello World.\" Production systems require a different DNA. This repository targets the implementation layer. The space where models actually scale. Architectural Focus 1️⃣ Resource Optimization ■ Quantization (bitsandbytes) ■ KV Cache management ■ Context window scaling ■ Local inference workflows 2️⃣ Data Retrieval ■ Advanced RAG pipelines ■ Vector DB orchestration ■ Chunking strategies ■ Semantic re-ranking 3️⃣ Model Control ■ Fine-tuning (PEFT/LoRA) ■ Alignment (RLHF/DPO) ■ LLM-as-a-judge evaluation ■ Agentic loop design Move from prompting to architecting. Move from demos to reliability. Stop following high-level overviews. Start building the infrastructure. Link in the first comment. Repost ♻️ if you are building the future of AI. I’m Nina, building real AI systems & sharing, so you can too hashtag #llm hashtag #ai hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "381",
+    "comments": "23",
+    "reposts": "36",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEMPLSlGJX3VQ/feedshare-shrink_800/B4EZxeaYLQGwAg-/0/1771110499442?e=1775692800&v=beta&t=e7j-jEtXTDkGb87CQ-2F_FUOh28rW_LXywVFfJWv9gE"
+    ],
+    "hashtags": [
+      "llm",
+      "ai",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-9",
+    "index": 10,
+    "screenshot": "screenshots/010-most-ai-tutorials-stop-at-hello-world.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "8 Trends Reshaping Software Development in 2026 The \"how\" of implementation is becoming a commodity. The \"what\" of problem-solving is now your only competitive advantage 1️⃣ The SDLC Collapses ↳ Traditional cycles take weeks. ↳ Agentic cycles take hours. Feedback loops tighten ⭢ Iteration becomes instant. 2️⃣ From Solos to Squads ↳ Single agents are out. ↳ Coordinated multi-agent teams are in. Orchestrators now manage specialized agents for testing, coding, and design. 3️⃣ Long-Running Autonomy Agents shift from 5-minute tasks to multi-day workflows. They build, test, and refine entire systems with minimal human intervention. 4️⃣ The Orchestrator Era Engineers stop writing every line. They direct the system. Focus shifts: Syntax ⭢ Architecture & Strategy. 5️⃣ Universal Access ⭢ Agents unlock legacy languages like COBOL and Fortran. ⭢ Barriers vanish. ⭢ Development expands beyond the IDE. 6️⃣ New Economics ↳ Productivity isn't just speed. ↳ It's volume and viability. Projects previously deemed \"too expensive\" are now feasible. 7️⃣ Democratization ↳ Sales, Legal, and Marketing teams build their own tools. Domain experts solve problems directly without waiting for engineering tickets. 8️⃣ Security Dual-Use ⭢ Defenders use agents to harden systems instantly. ⭢ Attackers use agents to scale threats. ⭢ Architecture must be security-first. The gap is widening. •❱❱ You are no longer just a coder. •❱❱ You are an orchestrator of intelligence. The era of Assistance is over. The era of Collaboration has begun. Link to the Anthropic report below 𖤂 Repost to help your network prepare for a year where strategy matters more than syntax I’m Nina, building real AI systems and sharing weekly so you can too hashtag #aiagent hashtag #llm hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "105",
+    "comments": "20",
+    "reposts": "14",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQF78uezNGA6Tw/feedshare-shrink_800/B4EZxOPmHTH4Ak-/0/1770839237798?e=1775692800&v=beta&t=1vdYVFyhVFzNCWUSP3-dJo-_Z3613rDExuqe90-T5Bc"
+    ],
+    "hashtags": [
+      "aiagent",
+      "llm",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-10",
+    "index": 11,
+    "screenshot": "screenshots/011-8-trends-reshaping-software-development.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "The way we knew how to write code stopped working a long time ago. Stop typing syntax. Start orchestrating agents. Claude Code is not a chatbot. It is an extension of your operating system. Here's why: 1️⃣ Total System Authority The AI lives inside your files now. ↳ Execution: It runs shell commands natively. ↳ Control: It manages Git, installs packages, and fixes bugs. ↳ Access: It reads, writes, and restructures your local directories. 2️⃣ The MCP Ecosystem Connect your entire stack to one command line. ➜ GitHub ➜ Manage PRs. ➜ Slack ➜ Update teams. ➜ Jira ➜ Sync tickets. ➜ Notion ➜ Link docs. 3️⃣ Precision Shortcuts Speed defines the top 1%. /compact ➜ Save tokens instantly. /model ➜ Swap between power and speed. Esc ➜ Kill any running process. Esc + Esc ➜ Rewind to the last safe state 4️⃣ Permanent Memory: CLAUDE md Context is the bottleneck. Solve it with a single file. ↳ Scripts: Define build and test rules. ↳ Patterns: Hard-code your style guide. ↳ Context: Map out data and deployment. 5️⃣ Tactical Prompting Constraints: \"Clean this CSV. Remove empty rows. Standardize dates.\" Chains: \"Analyze logs ➜ Identify leak ➜ Fix it.\" Checkpoints: \"Plan first ➜ Get approval ➜ Execute in stages.\" 6️⃣ The New Reality Software engineering has shifted. ↳ Past: Writing syntax and fixing typos. ↳ Future: Orchestrating agents to do it for you. 7️⃣ Core Strengths ➜ Multi-Agent: Parallel sub-tasks. ➜ Persistence: No session timeouts. ➜ Action: Teammate, not assistant. The terminal is no longer for humans alone. It is for your agents. Stop chatting. Start building 𖤂 Repost to help your network Credit image: skool/ai-automation-founders -------------------------- I’m Nina, building real AI systems & sharing step-by-step weekly so you can too. hashtag #claudecode hashtag #aiagent hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "0",
+    "comments": "52",
+    "reposts": "154",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQF_FEWVMdAVOA/feedshare-shrink_800/B4EZxJIDmnGcAg-/0/1770753375175?e=1775692800&v=beta&t=9-_JPBhU6RacGwHJJra_lKHvCvtfFzYELE8DRI8B38w"
+    ],
+    "hashtags": [
+      "claudecode",
+      "aiagent",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-11",
+    "index": 12,
+    "screenshot": "screenshots/012-the-way-we-knew-how-to-write-code-stoppe.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "Agentic AI is an architectural stack, not a single tool. Most developers stop at the LLM. Enterprise leaders build the layers. If you are missing a level, your system will fail at scale. The 9 Agentic AI Layers -------------------------- [𝟭] 𝗧𝗵𝗲 𝗥𝗲𝗮𝘀𝗼𝗻𝗶𝗻𝗴 𝗖𝗼𝗿𝗲 ❱❱ 𝗟𝗟𝗠 The engine for logic. Great for thought, but dangerous without a filter. [𝟮] 𝗧𝗵𝗲 𝗚𝗿𝗼𝘂𝗻𝗱𝗶𝗻𝗴 𝗙𝗶𝗹𝘁𝗲𝗿 ❱❱ 𝗥𝗔𝗚 Where retrieval kills hallucinations. This connects the model to live facts. [𝟯] 𝗧𝗵𝗲 𝗦𝗲𝗺𝗮𝗻𝘁𝗶𝗰 𝗟𝗮𝘆𝗲𝗿 ❱❱ 𝗞𝗻𝗼𝘄𝗹𝗲𝗱𝗴𝗲 𝗕𝗮𝘀𝗲 The \"brain\" that provides context, structured data, and governance. [𝟰] 𝗧𝗵𝗲 𝗣𝗿𝗼𝘁𝗲𝗰𝘁𝗶𝗼𝗻 𝗟𝗮𝘆𝗲𝗿 ❱❱ 𝗦𝗮𝗳𝗲𝘁𝘆 PII redaction, policy enforcement, and hard guardrails. This is the \"Insurance\" layer. [𝟱] 𝗧𝗵𝗲 𝗠𝗲𝗺𝗼𝗿𝘆 𝗟𝗮𝘆𝗲𝗿 ❱❱ 𝗨𝗫/𝗜𝗻𝘁𝗲𝗿𝗳𝗮𝗰𝗲 Managing state, prompts, and intent. It bridges human command and machine action. [𝟲] 𝗧𝗵𝗲 𝗧𝗼𝗼𝗹𝗶𝗻𝗴 𝗟𝗮𝘆𝗲𝗿 ❱❱ 𝗔𝗣𝗜𝘀 The \"hands\" of the agent. This is where it finally touches external workflows. [𝟳] 𝗧𝗵𝗲 𝗗𝗲𝗰𝗶𝘀𝗶𝗼𝗻 𝗟𝗮𝘆𝗲𝗿 ❱❱ 𝗔𝘂𝘁𝗼𝗻𝗼𝗺𝘆 The transition from script to agent. The system sequences its own tasks. [𝟴] 𝗧𝗵𝗲 𝗧𝗿𝘂𝘀𝘁 𝗟𝗮𝘆𝗲𝗿 ❱❱ 𝗔𝘂𝗱𝗶𝘁𝗮𝗯𝗶𝗹𝗶𝘁𝘆 Full lineage and traceability. If you can't audit it, you can't deploy it. [𝟵] 𝗧𝗵𝗲 𝗖𝗼𝗺𝗽𝗹𝗶𝗮𝗻𝗰𝗲 𝗟𝗮𝘆𝗲𝗿 ❱❱ 𝗥𝗲𝗴𝘂𝗹𝗮𝘁𝗲𝗱 𝗔𝗜 Legal alignment and transparency. This is what makes it enterprise-ready. 𝗧𝗵𝗲 𝗥𝗲𝗮𝗹𝗶𝘁𝘆 If you only have an LLM and some APIs, you have a Workflow. If you have all 9 layers, you have an Agent. Stop building demos. Build architecture. ----------------- I’m Nina, building real AI systems & sharing step-by-step weekly so you can too. hashtag #agenticai hashtag #llm hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "88",
+    "comments": "16",
+    "reposts": "7",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEWUyBZW_Pm7A/feedshare-shrink_800/B4EZxEL3rcKAAg-/0/1770670489027?e=1775692800&v=beta&t=hi7JcFd8g3Ylqhvynbo32NPbwEEMB4vvGuJ5sJ710II"
+    ],
+    "hashtags": [
+      "agenticai",
+      "llm",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-12",
+    "index": 13,
+    "screenshot": "screenshots/013-agentic-ai-is-an-architectural-stack-no.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "Tools expire. Fundamentals persist. If you chase every new framework release, you remain a consumer of AI. To become an engineer of AI, you must invert your learning process. Stop starting with the interface. Start with the architecture. This is one of the best resources to learn the fundamentals of Transformers and Large Language Models (LLMs). Free. 0$ Cost Stanford CME295: Transformers and Large Language Models 𝗟𝟭 ⏹︎ 𝗧𝗿𝗮𝗻𝘀𝗳𝗼𝗿𝗺𝗲𝗿𝘀 https://lnkd.in/eYR8nb-7 ✅ • Background on NLP and tasks • Tokenization • Embeddings • Word2vec, RNN, LSTM • Attention mechanism • Transformer architecture 𝗟𝟮 ⏹︎ 𝗧𝗿𝗮𝗻𝘀𝗳𝗼𝗿𝗺𝗲𝗿-𝗕𝗮𝘀𝗲𝗱 𝗠𝗼𝗱𝗲𝗹𝘀 & 𝗧𝗿𝗶𝗰𝗸𝘀 https://lnkd.in/eNNaWRGC ✅ • Attention approximation • MHA, MQA, GQA • Position embeddings (regular, learned) • RoPE and applications • Transformer-based architectures • BERT and its derivatives 𝗟𝟯 ⏹︎ 𝗧𝗿𝗮𝗻𝗳𝗼𝗿𝗺𝗲𝗿𝘀 & 𝗟𝗮𝗿𝗴𝗲 𝗟𝗮𝗻𝗴𝘂𝗮𝗴𝗲 𝗠𝗼𝗱𝗲𝗹𝘀 https://lnkd.in/exyTd_Vt ✅ • Definition and architecture • Mixture of experts • Context length, temperature • Sampling strategies • Prompting, in-context learning • Chain of thought • Self-consistency 𝗟𝟰 ⏹︎ 𝗟𝗟𝗠 𝗧𝗿𝗮𝗶𝗻𝗶𝗻𝗴 https://lnkd.in/e-4m9NnC ✅ • Pretraining • Quantization • Hardware optimization • Supervised finetuning (SFT) • Parameter-efficient finetuning (LoRA) 𝗟𝟱 ⏹︎ 𝗟𝗟𝗠 𝘁𝘂𝗻𝗶𝗻𝗴 https://lnkd.in/epvaG_3U ✅ • Preference tuning • RLHF overview • Reward modeling • RL approaches (PPO and variants) • DPO 𝗟𝟲 ⏹︎ 𝗟𝗟𝗠 𝗥𝗲𝗮𝘀𝗼𝗻𝗶𝗻𝗴 https://lnkd.in/edn3kr-W ✅ • Reasoning models • RL for reasoning • GRPO • Scaling 𝗟𝟳 ⏹︎ 𝗔𝗴𝗲𝗻𝘁𝗶𝗰 𝗟𝗟𝗠𝘀 https://lnkd.in/eMCH6Q2t ✅ • Retrieval-augmented generation • Advanced RAG techniques • Function calling • Agents • ReAct framework 𝗟𝟴 ⏹︎ 𝗟𝗟𝗠 𝗘𝘃𝗮𝗹𝘂𝗮𝘁𝗶𝗼𝗻 https://lnkd.in/eANEfrMY ✅ • LLM-as-a-judge overview • Best practices and benefits • Biases and pitfalls 𝗟𝟵 ⏹︎ 𝗥𝗲𝗰𝗮𝗽 & 𝗖𝘂𝗿𝗿𝗲𝗻𝘁 𝗧𝗿𝗲𝗻𝗱𝘀 https://lnkd.in/ecPCKnqG ✅ • Recap • Trending topics • Closing thoughts Whether you are just starting out or looking for a deep dive, this course is one of the best free resources available right now. It is highly recommended to watch it in order, take notes, and supplement the material with the classic papers mentioned, such as Vaswani (2017), Devlin (BERT), and Ouyang (RLHF). Innovation favors those who understand the mechanics. Start here. Build smarter. 𖤂 𝗥𝗲𝗽𝗼𝘀𝘁 𝘁𝗼 𝗵𝗲𝗹𝗽 𝘆𝗼𝘂𝗿 𝗻𝗲𝘁𝘄𝗼𝗿𝗸 𝗱𝗶𝘀𝗰𝗼𝘃𝗲𝗿 𝗼𝗻𝗲 𝗼𝗳 𝘁𝗵𝗲 𝗯𝗲𝘀𝘁 𝗳𝗿𝗲𝗲 𝗟𝗟𝗠 𝗰𝗼𝘂𝗿𝘀𝗲𝘀 𝗼𝘂𝘁 𝘁𝗵𝗲𝗿𝗲 ---------------------- I’m Nina, building real AI systems → sharing step-by-step weekly so you can too. hashtag #stanford hashtag #freecourse hashtag #llm hashtag #ai hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "180",
+    "comments": "19",
+    "reposts": "31",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEg85ckMcGxHA/feedshare-shrink_800/B4EZw_JSS9GwAk-/0/1770585925309?e=1775692800&v=beta&t=eFvY3-iXRJXdGhEtiDqrsBNfGRKaovbjZVx6Pq30wak"
+    ],
+    "hashtags": [
+      "stanford",
+      "freecourse",
+      "llm",
+      "ai",
+      "technology"
+    ],
+    "urn": "post-13",
+    "index": 14,
+    "screenshot": "screenshots/014-tools-expire-fundamentals-persist-if-y.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "Get Sh*t Done is not a mantra it is a technical architecture. Context drift is the silent killer of autonomous agent performance. This framework replaces conversational ambiguity with rigorous state management. The workflow: ◼︎ Meta-Prompting Forced structural constraints via XML formatting. ◼︎ Context Engineering Spawning fresh 200k sub-agent windows per task. ◼︎ Spec-Driven Dev Automated requirements traceability from CONTEXT·md ◼︎ Parallel Research Multi-agent domain investigation before logic execution. ◼︎ Goal-Backward Verification Success validation against atomic phase goals. ◼︎ Atomic Commits State management and rollback safety for every task. Logic beats luck when the context window is clean. GSD Github 12.1k ❱❱ link in comments 𖤂 Repost to help your network get sh*t done --------------------------- I’m Nina. I build with AI and share how it’s done weekly. hashtag #prompts hashtag #aiagents hashtag #llm hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "479",
+    "comments": "43",
+    "reposts": "56",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEabKlDzyVT0w/feedshare-shrink_800/B4EZw6QeqWJoAg-/0/1770503924799?e=1775692800&v=beta&t=BkvOvxY8PXwD1i-Fp3F5RPQCyXCKlbhPea_gBJfxMVE"
+    ],
+    "hashtags": [
+      "prompts",
+      "aiagents",
+      "llm",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-14",
+    "index": 15,
+    "screenshot": "screenshots/015-get-sh-t-done-is-not-a-mantra-it-is-a-te.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "5 terminals. 10 tabs. 1 CLAUDE·md This is how Boris Cherny (Claude's creator) actually builds. Here is a list of the best tips he shared for his setup: 𝟭/ 𝗥𝘂𝗻 𝟭𝟱 𝘀𝗲𝘀𝘀𝗶𝗼𝗻𝘀 𝗶𝗻 𝗽𝗮𝗿𝗮𝗹𝗹𝗲𝗹 ◼︎ Run 5 terminal instances and 10 web instances simultaneously. ◼︎ Treat them as asynchronous workers and use system notifications to manage the queue. 𝟮/ 𝗔𝗹𝘄𝗮𝘆𝘀 𝘂𝘀𝗲 𝗢𝗽𝘂𝘀 𝟰.𝟱 with thinking for everything. ◼︎ It is slower than Sonnet, but it requires less steering and is better at tool use. The total time-to-merge is faster. 𝟯/ 𝗚𝗶𝘁-𝗯𝗮𝘀𝗲𝗱 𝗰𝗼𝗻𝘁𝗲𝘅𝘁 𝗺𝗲𝗺𝗼𝗿𝘆 ◼︎ Share a single CLAUDE·md file checked into the repo. ◼︎ When Claude makes a mistake, update this file via a PR. ◼︎ The model learns permanently from every error. 𝟰/ 𝗣𝗹𝗮𝗻 𝗠𝗼𝗱𝗲 𝗳𝗶𝗿𝘀𝘁 ◼︎ Start complex tasks in Plan Mode (Shift+Tab twice). ◼︎ Iterate until the architecture is solid. ◼︎ Only switch to auto-accept mode once the plan is verified. 𝟱/ 𝗖𝗵𝗲𝗰𝗸 𝗶𝗻 𝘆𝗼𝘂𝗿 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀 ◼︎ Don't re-prompt for standard workflows. ◼︎ Use custom slash commands (like /commit-push-pr) located in .claude/commands/. ◼︎ Use inline bash to pre-compute git status. 𝟲/ 𝗣𝗿𝗲-𝗮𝗹𝗹𝗼𝘄 𝗽𝗲𝗿𝗺𝗶𝘀𝘀𝗶𝗼𝗻𝘀 ◼︎ Use /permissions to whitelist safe bash commands in .claude/settings.json. ◼︎ This prevents the \"dangerously-skip-permissions\" risk while removing blocking prompts. 𝟳/ 𝗧𝗵𝗲 𝟯𝘅 𝗤𝘂𝗮𝗹𝗶𝘁𝘆 𝗠𝘂𝗹𝘁𝗶𝗽𝗹𝗶𝗲𝗿 ◼︎ Give Claude a feedback loop. ◼︎ Whether it is running a test suite or checking a UI in the browser, if Claude can verify its own work, the output quality increases by 2-3x. Guide in the comments --------------------------- 𖤂 Repost to help your network code like the mind behind Claude ---------------------------- I’m Nina. I build with AI and share how it’s done weekly. hashtag #claudecode hashtag #tips hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "179",
+    "comments": "29",
+    "reposts": "28",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQFhCWLROTTYEg/feedshare-shrink_800/B4EZwu13QZIMAg-/0/1770312398540?e=1775692800&v=beta&t=hyig4ykBgkpuN6_xySH-N7aiI-9Sd7g5OqwY9S02M50"
+    ],
+    "hashtags": [
+      "claudecode",
+      "tips",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-15",
+    "index": 16,
+    "screenshot": "screenshots/016-5-terminals-10-tabs-1-claude-md-this-i.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "If Shodan sees your Clawdbot, you are already compromised. You are exactly one JSON packet away from losing your entire infrastructure to a script kiddie. The default mDNS configuration does not just leak your IP; it broadcasts a \"Welcome\" signal to the public web. Automated scanners are picking up these beacons faster than you can patch them. Once indexed, the attack path is trivial: ◼︎ 𝗡𝗼 𝗔𝘂𝘁𝗵: Port 18789 requires zero credentials. ◼︎ 𝗡𝗼 𝗘𝘅𝗽𝗹𝗼𝗶𝘁: Attackers do not need complex code. They just need a WebSocket client. ◼︎ 𝗙𝘂𝗹𝗹 𝗔𝗰𝗰𝗲𝘀𝘀: A single JSON packet grants root-level control. This is full Remote Code Execution (RCE). Stop checking your logs for attempts and assume the system is compromised. If Port 18789 is open, the attackers are likely already root. 𝗜𝗳 𝘆𝗼𝘂 𝗿𝘂𝗻 𝗖𝗹𝗮𝘄𝗱𝗯𝗼𝘁 𝗼𝘂𝘁 𝗼𝗳 𝘁𝗵𝗲 𝗯𝗼𝘅, 𝘆𝗼𝘂 𝗮𝗿𝗲 𝘃𝘂𝗹𝗻𝗲𝗿𝗮𝗯𝗹𝗲 ------------- 𝗤𝘂𝗶𝗰𝗸 𝗙𝗶𝘅𝗲𝘀 ------------- ◼︎ Bind gateway to 127 0 0 1 (not 0 0 0 0) ◼︎ Enable strong authentication (--auth) ◼︎ Disable mDNS (CLAWDBOT_DISABLE_BONJOUR=1) ◼︎ Change the default port and use a firewall ◼︎ Run in Docker with network isolation --------------- 𝗥𝘂𝗻 𝗿𝗲𝗴𝘂𝗹𝗮𝗿𝗹𝘆 --------------- openclaw security audit openclaw security audit --deep openclaw security audit --fix ❱❱❱ Check Clawdbot docs security in comments. 𖤂 Repost to help your network stay safe. - - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #clawdbot hashtag #openclaw hashtag #aiagent hashtag #leak hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "325",
+    "comments": "19",
+    "reposts": "62",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHUcKd2ggWmNg/feedshare-shrink_800/B4EZwqWJeeJAAo-/0/1770236975327?e=1775692800&v=beta&t=3cd_BPsF4nrMT13z_sT5Fvi4-LkQoZrqavdoKxC81SU"
+    ],
+    "hashtags": [
+      "clawdbot",
+      "openclaw",
+      "aiagent",
+      "leak",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-16",
+    "index": 17,
+    "screenshot": "screenshots/017-if-shodan-sees-your-clawdbot-you-are-al.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "A 1-Trillion parameter model. Running locally. No API. Kimi K2.5 just left the cloud. The massive 600GB footprint has been crushed down to 240GB using Dynamic 1-bit quantization. We are officially in the era of owning SOTA reasoning. 𝗧𝗵𝗲 𝗛𝗮𝗿𝗱𝘄𝗮𝗿𝗲 𝗥𝗲𝗮𝗹𝗶𝘁𝘆 This isn’t for your average laptop. \"Local\" now means heavy-duty workstations: ◼︎ The Goal: Combined RAM + VRAM ≥ 240GB. ◼︎ Mac Studio (256GB): Hits a smooth 10+ tokens/s. ◼︎ High-end GPUs: Can reach >40 tokens/s. ◼︎ Small Rigs: It will run via llama.cpp offloading, but expect a crawl (<2 tok/s). 𝗧𝗲𝗰𝗵𝗻𝗶𝗰𝗮𝗹 𝗦𝗽𝗲𝗰𝘀 ◼︎ Architecture: Hybrid Reasoning MoE. ◼︎ Sweet Spot: Use 2-bit (UD-Q2_K_XL). It is the best balance of size and logic accuracy. ◼︎ Context: Massive 256K token support. 𝗣𝗿𝗼 𝗖𝗼𝗻𝗳𝗶𝗴𝘂𝗿𝗮𝘁𝗶𝗼𝗻 To keep the logic sharp and avoid loops, use Thinking Mode: ◼︎ Temperature: 1.0 ◼︎ Min_P: 0.01 Frontier AI is shifting from proprietary servers to private hardware. If you have the RAM, you now own the engine. Links in the comments. 𖤂 Repost to help your network own their reasoning - - - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #kimi hashtag #opensource hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "351",
+    "comments": "41",
+    "reposts": "46",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQG9dDcEewIK3w/feedshare-shrink_800/B4EZwgHrZzH8Ak-/0/1770065410112?e=1775692800&v=beta&t=SE_sDSD5TlKG7z1dCeX_1hv3k5uwmbmdTEF88Kehpbk"
+    ],
+    "hashtags": [
+      "kimi",
+      "opensource",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-17",
+    "index": 18,
+    "screenshot": "screenshots/018-a-1-trillion-parameter-model-running-lo.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "China just opened the AI world no one else could touch. They released fully playable, interactive AI worlds, code and weights opened 𝗤𝘂𝗶𝗰𝗸 𝗙𝗮𝗰𝘁𝘀 ◼︎ Open Source: Apache 2.0 ◼︎ Real-Time: ~16 FPS, <1 s latency ◼︎ Persistent Memory: Landmarks stay for 10+ min ◼︎ 28B MoE + Wan2.2 ◼︎ Action-Conditioned: Keyboard + mouse navigation ◼︎ Zero-Shot: One photo → playable sandbox ◼︎ Dynamic Worlds: Terrain, objects, NPCs generated live Step in and explore what AI just built. GitHub + HuggingFace in comments. 𖤂 Repost to let your network explore and build AI worlds for free ------------------------------------- I’m Nina. I build with AI and share how it’s done weekly. hashtag #genie3 hashtag #opensource hashtag #AI hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "258",
+    "comments": "40",
+    "reposts": "39",
+    "postType": "video",
+    "images": [],
+    "hashtags": [
+      "genie3",
+      "opensource",
+      "AI",
+      "technology"
+    ],
+    "urn": "post-18",
+    "index": 19,
+    "screenshot": "screenshots/019-china-just-opened-the-ai-world-no-one-el.png",
+    "category": "Industry Commentary"
+  },
+  {
+    "text": "The best way to use Claude Code is to treat it like an engineer instead of a chatbot. Here are the 5 Claude Code Best Practices to professionalize your workflow. 𝟭. 𝗧𝗵𝗲 𝗚𝗼𝗹𝗱𝗲𝗻 𝗥𝘂𝗹𝗲: 𝗚𝗶𝘃𝗲 𝗖𝗹𝗮𝘂𝗱𝗲 𝗮 𝗪𝗮𝘆 𝘁𝗼 𝗙𝗮𝗶𝗹 Claude performs 10x better when it has a feedback loop. Without a success criterion, you are the only one catching bugs. ◼️ 𝗕𝗮𝗱: \"Implement email validation.\" ◼️ 𝗚𝗼𝗼𝗱: \"Implement email validation. Here are the test cases: [list]. Run the tests and don't stop until they pass.\" ◼️ 𝗦𝘁𝗿𝗮𝘁𝗲𝗴𝘆: Use tests, linters, or even screenshots. If Claude can verify its own work, you don't have to. 𝟮. 𝗦𝗲𝗽𝗮𝗿𝗮𝘁𝗲 𝗧𝗵𝗶𝗻𝗸𝗶𝗻𝗴 𝗳𝗿𝗼𝗺 𝗗𝗼𝗶𝗻𝗴 Don't let Claude jump straight into your source code. Use Plan Mode for anything complex. ◼️ 𝗘𝘅𝗽𝗹𝗼𝗿𝗲: Use Plan Mode to let Claude read files and answer questions without changing anything. ◼️ 𝗣𝗹𝗮𝗻: Ask for a detailed implementation plan. Pro tip: Press Ctrl+G to edit that plan before it starts. ◼️ 𝗜𝗺𝗽𝗹𝗲𝗺𝗲𝗻𝘁: Switch to Normal Mode only once the strategy is solid. ◼️ 𝗖𝗼𝗺𝗺𝗶𝘁: Let Claude write the message and open the PR. 𝟯. 𝗠𝗮𝘀𝘁𝗲𝗿 𝘁𝗵𝗲 𝗖𝗼𝗻𝘁𝗲𝘅𝘁 𝗪𝗶𝗻𝗱𝗼𝘄 Context is your most expensive resource. As it fills, Claude gets \"dumber\" and forgets early instructions. ◼️ 𝗔𝗴𝗴𝗿𝗲𝘀𝘀𝗶𝘃𝗲 𝗛𝘆𝗴𝗶𝗲𝗻𝗲: Use /clear between unrelated tasks. If you’ve corrected Claude twice on the same bug, the context is toxic. Clear it and start fresh with a better prompt. ◼️ 𝗦𝘂𝗯𝗮𝗴𝗲𝗻𝘁𝘀: Use \"use a subagent to investigate X\". Subagents research in a separate window, keeping your main conversation clean and focused. 𝟰. 𝗧𝗵𝗲 𝗖𝗟𝗔𝗨𝗗𝗘·𝗺𝗱 𝗣𝗼𝘄𝗲𝗿 𝗠𝗼𝘃𝗲 Run /init to generate a CLAUDE·md. This is the \"onboarding manual\" Claude reads every time it starts. ◼️ 𝗜𝗻𝗰𝗹𝘂𝗱𝗲: Non-obvious bash commands, specific linting rules, and project-specific architecture quirks. ◼️ 𝗘𝘅𝗰𝗹𝘂𝗱𝗲: Standard language conventions. Claude already knows how to write clean Python; tell it why your Python is different. ◼️ 𝗧𝗶𝗽: Treat this file like code. If Claude keeps making the same mistake, your CLAUDE·md is either too vague or too bloated. 𝟱. 𝗔𝘂𝘁𝗼𝗺𝗮𝘁𝗲 𝘁𝗵𝗲 𝗧𝗲𝗱𝗶𝘂𝗺 If you find yourself clicking \"Approve\" ten times a session, fix your environment: ◼️ 𝗣𝗲𝗿𝗺𝗶𝘀𝘀𝗶𝗼𝗻𝘀: Use /permissions to allowlist safe commands like npm test or git commit. ◼️ 𝗛𝗲𝗮𝗱𝗹𝗲𝘀𝘀 𝗠𝗼𝗱𝗲: Run claude -p \"Your prompt\" in CI pipelines or scripts for batch processing. ◼️ 𝗠𝗖𝗣 𝗦𝗲𝗿𝘃𝗲𝗿𝘀: Connect your database, Jira, or Slack via MCP to give Claude real-world tools. 𖤂 Repost to help your network use Claude Code like a Senior Engineer - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #claudecode hashtag #bestpractices hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "170",
+    "comments": "37",
+    "reposts": "25",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHrnGQu9D8GFA/feedshare-shrink_800/B4EZwGbIVMHkAg-/0/1769634302143?e=1775692800&v=beta&t=1ztVWZ-eOBdypJoSnkocmCN7clRUcGF-hSsBoMQ55x4"
+    ],
+    "hashtags": [
+      "claudecode",
+      "bestpractices",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-19",
+    "index": 20,
+    "screenshot": "screenshots/020-the-best-way-to-use-claude-code-is-to-tr.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "Most AI Agent “memory” systems are just expensive amnesia. They dump raw chat logs into a database, burn tokens and hope the model figures it out. It doesn’t. This actually implements 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝘁 𝗟𝗶𝗳𝗲𝗹𝗼𝗻𝗴 𝗠𝗲𝗺𝗼𝗿𝘆. Available on PyPI and GitHub ( + 2 300 ⭐). Free under MIT License. 𝗛𝗼𝘄 𝗶𝘁 𝘄𝗼𝗿𝗸𝘀 ⏹︎ It cleans history before storing it, converting messy dialogue into timestamped atomic facts. ⏹︎ Real continuity: “that bug” actually refers to yesterday’s null pointer. ⏹︎ Token efficiency: retrieves dense facts, not walls of text. ⏹︎ Zero friction: MCP server, works out of the box with Claude Desktop and Cursor. 🔥 𝗣𝗲𝗿𝗳𝗼𝗿𝗺𝗮𝗻𝗰𝗲 It completes tasks in ~481s with an 𝗙𝟭 𝘀𝗰𝗼𝗿𝗲 𝗼𝗳 𝟰𝟯.𝟮𝟰% , outperforming Mem0 (34.2%), A-Mem (32.58%) and LightMem (24.63%) This is the long-term memory layer LLM agents should have had from day one. Try it yourself ❱❱❱ Link to Github in comments 𖤂 Repost to help your network make AI agents remember better - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #agentic hashtag #llm hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "242",
+    "comments": "26",
+    "reposts": "40",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQFOGeLA2aIuaA/feedshare-shrink_800/B4EZv77rMbJAAk-/0/1769458283810?e=1775692800&v=beta&t=40tOvMo8Ayxe6ScBwYy8Yhowaj-A2U7SCRRQNP6gmEU"
+    ],
+    "hashtags": [
+      "agentic",
+      "llm",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-20",
+    "index": 21,
+    "screenshot": "screenshots/021-most-ai-agent-memory-systems-are-just.png",
+    "category": "Tool Review / Comparison"
+  },
+  {
+    "text": "Anthropic just became budget-friendly. Just days ago, you can run the Claude Code tool for $0 cost using Ollama and open-source models. Here is how to do it: Until now, using Anthropic's agentic coding tool meant paying for every token via their API. That changed this week. Get it running with this simple 5-step guide: 𝟭] 𝗜𝗻𝘀𝘁𝗮𝗹𝗹 𝗢𝗹𝗹𝗮𝗺𝗮 𝟮] 𝗣𝘂𝗹𝗹 𝗮 𝘀𝘁𝗿𝗼𝗻𝗴 𝗼𝗽𝗲𝗻-𝘀𝗼𝗿𝘂𝗰𝗲 𝗰𝗼𝗱𝗶𝗻𝗴 𝗺𝗼𝗱𝗲𝗹 ollama pull qwen2.5-coder 3. 𝟯] 𝗜𝗻𝘀𝘁𝗮𝗹𝗹 𝗖𝗹𝗮𝘂𝗱𝗲 𝗖𝗼𝗱𝗲 option 1 curl -fsSL https :// claude•ai/install•sh | bash option 2 npm install -g @anthropic-ai/claude-code 4. 𝟰] 𝗖𝗼𝗻𝗻𝗲𝗰𝘁 Point Claude Code to your local server instead of Anthropic's cloud: export ANTHROPIC_AUTH_TOKEN=ollama export ANTHROPIC_BASE_URL=http://localhost:11434 𝟱] 𝗥𝘂𝗻 𝗜𝘁 claude --model qwen2.5-coder The barrier to entry for agentic coding just dropped to zero. 𖤂 Repost to help your network stop burning cash on tokens. - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #agentic hashtag #llm hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "1mo",
+    "dateAbsolute": "2026-02-16",
+    "reactions": "4,056",
+    "comments": "257",
+    "reposts": "574",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQFBGz7Xh9VUHw/feedshare-shrink_800/B4EZvcqM9tHoAg-/0/1768933610018?e=1775692800&v=beta&t=dFVmW95dPBrElnh5gkEU2hjKu_BxLOwG8OaHJYMbzlg"
+    ],
+    "hashtags": [
+      "agentic",
+      "llm",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-21",
+    "index": 22,
+    "screenshot": "screenshots/022-anthropic-just-became-budget-friendly-j.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "If you cannot build an AI agent without a library, you do not understand how it works. Frameworks often act as black boxes that hide the actual engineering behind layers of abstraction. Real agency is not magic; it is simply a system of loops, state management, and structured decisions. This 𝗳𝗿𝗲𝗲, 𝟬$ 𝗰𝗼𝘀𝘁, 𝗼𝗽𝗲𝗻-𝘀𝗼𝘂𝗿𝗰𝗲 repository teaches you 𝗵𝗼𝘄 𝘁𝗼 𝗯𝘂𝗶𝗹𝗱 𝗔𝗜 𝗮𝗴𝗲𝗻𝘁𝘀 𝗳𝗿𝗼𝗺 𝘀𝗰𝗿𝗮𝘁𝗰𝗵 using Python and local LLMs, avoiding frameworks entirely. Here is exactly what the repository teaches, step by step: ⏹︎ 𝟭. 𝗕𝗮𝘀𝗶𝗰 𝗟𝗟𝗠 𝗖𝗵𝗮𝘁: It establishes the fundamental flow of sending prompts to a local model. ⏹︎ 𝟮. 𝗦𝘆𝘀𝘁𝗲𝗺 𝗣𝗿𝗼𝗺𝗽𝘁𝘀: It defines the agent's behavior and constraints using system instructions. ⏹︎ 𝟯. 𝗦𝘁𝗿𝘂𝗰𝘁𝘂𝗿𝗲𝗱 𝗢𝘂𝘁𝗽𝘂𝘁 (𝗝𝗦𝗢𝗡): It forces the model to return reliable, code-parsable data. ⏹︎ 𝟰. 𝗥𝗼𝘂𝘁𝗶𝗻𝗴 𝗟𝗼𝗴𝗶𝗰: It enables the agent to classify user intent and choose specific paths. ⏹︎ 𝟱. 𝗧𝗼𝗼𝗹𝘀 & 𝗖𝗮𝗽𝗮𝗯𝗶𝗹𝗶𝘁𝗶𝗲𝘀: It gives the agent the ability to execute external Python functions. ⏹︎ 𝟲. 𝗧𝗵𝗲 𝗔𝗴𝗲𝗻𝘁 𝗟𝗼𝗼𝗽: It implements the Observe-Decide-Act cycle for autonomous behavior. ⏹︎ 𝟳. 𝗠𝗲𝗺𝗼𝗿𝘆 𝗠𝗮𝗻𝗮𝗴𝗲𝗺𝗲𝗻𝘁: It manages context to remember interactions and maintain history. ⏹︎ 𝟴. 𝗣𝗹𝗮𝗻𝗻𝗶𝗻𝗴: It teaches the agent to break down complex goals into executable steps. ⏹︎ 𝟵. 𝗔𝘁𝗼𝗺𝗶𝗰 𝗔𝗰𝘁𝗶𝗼𝗻𝘀: It ensures robust execution so single tool failures do not crash the system. ⏹︎ 𝟭𝟬. 𝗔𝘁𝗼𝗺 𝗼𝗳 𝗧𝗵𝗼𝘂𝗴𝗵𝘁: It introduces advanced reasoning using dependency graphs for complex tasks. ❱❱❱ Teach yourself. Link to the Github repo in the comments. ❰❰❰ 𖤂 Repost to help your network learn how to build AI Agents. - - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #agentic hashtag #llm hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "2mo",
+    "dateAbsolute": "2026-01-17",
+    "reactions": "1,505",
+    "comments": "76",
+    "reposts": "232",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEqQJd9nff1fA/feedshare-shrink_800/B4EZuu9qstJEAg-/0/1768166961094?e=1775692800&v=beta&t=NbzB-R0Md2NFNTCNZQ8EIi0Cjf_xK7BnuPI_Aea3Xzw"
+    ],
+    "hashtags": [
+      "agentic",
+      "llm",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-22",
+    "index": 23,
+    "screenshot": "screenshots/023-if-you-cannot-build-an-ai-agent-without.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "To move from a weekend AI demo to a AI production-grade application, you need to architect these 4 layers. Most people stop at the prompt. That is a mistake. Here is the technical blueprint for a production-grade system: 𝟭. 𝗧𝗵𝗲 𝗔𝗴𝗲𝗻𝘁𝗶𝗰 𝗖𝗼𝗿𝗲 (𝗧𝗵𝗲 𝗕𝗿𝗮𝗶𝗻) Your LLM needs a loop, not just a prompt. ⏹︎ Execution Loops: Implement a \"Thought > Action > Observation\" cycle. ⏹︎ State Management: Don't rely on model memory. Use Redis or Postgres for persistent context. ⏹︎ Tool Registry: Connect the core to APIs and Python environments using frameworks like LangChain or LlamaIndex. 𝟮. 𝗔𝗱𝘃𝗮𝗻𝗰𝗲𝗱 𝗥𝗔𝗚 (𝗧𝗵𝗲 𝗞𝗻𝗼𝘄𝗹𝗲𝗱𝗴𝗲) Naive RAG fails in production. You need a multi-step pipeline. ⏹︎ Ingestion: Move from fixed chunking to semantic or hierarchical chunking. ⏹︎ Retrieval: Vector search is insufficient. Implement Hybrid Search (Keyword + Semantic) for accuracy. ⏹︎ Refinement: Always apply Reranking Models to filter results from databases like Pinecone or Qdrant. 𝟯. 𝗜𝗻𝗳𝗿𝗮𝘀𝘁𝗿𝘂𝗰𝘁𝘂𝗿𝗲 (𝗧𝗵𝗲 𝗦𝗰𝗮𝗹𝗲) Latency kills user experience. You need high-performance serving. ⏹︎ Orchestration: Containerize with Docker and manage scale via Kubernetes. ⏹︎ Serving Layer: Use Ray Serve and FastAPI to handle concurrent requests. ⏹︎ Model Hosting: Optimize inference using vLLM or TGI. 𝟰. 𝗢𝗯𝘀𝗲𝗿𝘃𝗮𝗯𝗶𝗹𝗶𝘁𝘆 & 𝗢𝗽𝘁𝗶𝗺𝗶𝘇𝗮𝘁𝗶𝗼𝗻 (𝗧𝗵𝗲 𝗛𝗲𝗮𝗹𝘁𝗵) If you cannot measure it, you cannot trust it. ⏹︎ Tracing: Use LangSmith or Arize to debug complex agent chains. ⏹︎ Evaluation: mathematically score your outputs using Ragas or TruLens. ⏹︎ Optimization: Reduce latency with Quantization (GGML/GGUF) or domain-adapt using PEFT techniques like LoRA. 𖤂 Repost to help your network move beyond simple wrappers. I’m Nina. I build with AI and share how it’s done weekly. hashtag #agentic hashtag #llm hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "2mo",
+    "dateAbsolute": "2026-01-17",
+    "reactions": "1,571",
+    "comments": "102",
+    "reposts": "337",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEm7Le-SfaMJg/feedshare-shrink_800/B4EZuVallpHoAk-/0/1767738341404?e=1775692800&v=beta&t=oXv0oi0qSqffjIuKFVhomD74saA8LkdZ5pPCPzZS18k"
+    ],
+    "hashtags": [
+      "agentic",
+      "llm",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-23",
+    "index": 24,
+    "screenshot": "screenshots/024-to-move-from-a-weekend-ai-demo-to-a-ai-p.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "Stop obsessing over which LLM is better. It does not matter if your architecture is weak. A junior dev optimizes prompts. A senior dev optimizes flow control. If you want to move from \"demo\" to \"production\", you need to master these 4 agentic patterns: 𝟭. 𝗖𝗵𝗮𝗶𝗻 𝗼𝗳 𝗧𝗵𝗼𝘂𝗴𝗵𝘁 (𝗖𝗼𝗧) This is your debugging layer for logic. Standard models fail at complex math or reasoning because they predict the answer token immediately. 𝗧𝗵𝗲 𝗜𝗺𝗽𝗹𝗲𝗺𝗲𝗻𝘁𝗮𝘁𝗶𝗼𝗻 Do not just ask for the result. In your System Prompt, explicitly instruct the model to \"think step-by-step\" or output its reasoning inside specific XML tags (e.g., <reasoning>...</reasoning>) before the final answer. You can parse and validate the reasoning steps programmatically before showing the final result to the user. 𝟮. 𝗥𝗔𝗚 (𝗥𝗲𝘁𝗿𝗶𝗲𝘃𝗮𝗹-𝗔𝘂𝗴𝗺𝗲𝗻𝘁𝗲𝗱 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗶𝗼𝗻) This is your dynamic context injection. The context window is finite; your data is not. 𝗧𝗵𝗲 𝗜𝗺𝗽𝗹𝗲𝗺𝗲𝗻𝘁𝗮𝘁𝗶𝗼𝗻 ◼️ Ingest: Chunk your documents and store them as vector embeddings (using Pinecone, Milvus, or pgvector). ◼️ Retrieve: On user query, perform a cosine similarity search to find the top-k chunks. ◼️ Inject: Concatenate these chunks into the context string of your prompt before sending the request to the LLM. 𝟯. 𝗥𝗲𝗔𝗰𝘁 (𝗥𝗲𝗮𝘀𝗼𝗻 + 𝗔𝗰𝘁 𝗟𝗼𝗼𝗽) This is how you break out of the text box. It turns the LLM into a controller for your own functions. 𝗧𝗵𝗲 𝗜𝗺𝗽𝗹𝗲𝗺𝗲𝗻𝘁𝗮𝘁𝗶𝗼𝗻 You need a while loop in your code: 1. Call the LLM with a list of defined tools (JSON Schema). 2. Check if the finish_reason is tool_calls. 3. Execute: Run the requested function locally (e.g., fetch_weather(city)). 4. Observe: Append the function's return value to the message history. 5. Loop: Send the history back to the LLM to generate the final natural language response. 𝟰. 𝗥𝗼𝘂𝘁𝗲𝗿 (𝗧𝗵𝗲 𝗖𝗹𝗮𝘀𝘀𝗶𝗳𝗶𝗲𝗿) This is your switch statement powered by semantic understanding. Using a massive model for every trivial task is inefficient and slow. 𝗧𝗵𝗲 𝗜𝗺𝗽𝗹𝗲𝗺𝗲𝗻𝘁𝗮𝘁𝗶𝗼𝗻 Use a lightweight, fast model (like GPT-4o-mini or a local Llama 3 8B) as the entry point. Its only job is to classify the user intent into a category (\"Coding\", \"General Chat\", \"Database Query\"). Based on this classification, your code routes the request to the appropriate specialized prompt or agent. - - - - - - - - - - - - - - - 𖤂 Save this post, you’ll want to revisit it. - - - - - - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #aiagents hashtag #llm hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "2mo",
+    "dateAbsolute": "2026-01-17",
+    "reactions": "210",
+    "comments": "25",
+    "reposts": "36",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHz2BNkhYq1zg/feedshare-shrink_800/B4EZt70rs6IUAo-/0/1767308968778?e=1775692800&v=beta&t=tFs4YjveeZtLM2VL-Vy2kWutRZp4gDDqawzMo_foyXQ"
+    ],
+    "hashtags": [
+      "aiagents",
+      "llm",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-24",
+    "index": 25,
+    "screenshot": "screenshots/025-stop-obsessing-over-which-llm-is-better.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "Fragmented tutorials are creating a generation of \"Wrapper\" developers. Microsoft provides the antidote: 𝟮𝟭 𝗟𝗲𝘀𝘀𝗼𝗻𝘀 𝘁𝗲𝗮𝗰𝗵𝗶𝗻𝗴 𝗲𝘃𝗲𝗿𝘆𝘁𝗵𝗶𝗻𝗴 𝘆𝗼𝘂 𝗻𝗲𝗲𝗱 𝘁𝗼 𝗸𝗻𝗼𝘄 𝘁𝗼 𝘀𝘁𝗮𝗿𝘁 𝗯𝘂𝗶𝗹𝗱𝗶𝗻𝗴 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗶𝘃𝗲 𝗔𝗜 𝗮𝗽𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻𝘀 Free $0 cost, open-source, and supports both Python and TypeScript. The roadmap from \"API Caller\" to \"AI Engineer\": 𝟭. 𝗙𝗼𝘂𝗻𝗱𝗮𝘁𝗶𝗼𝗻𝘀 (𝗟𝗲𝘀𝘀𝗼𝗻𝘀 𝟭-𝟱) Move beyond basic queries. Master LLM architecture, tokenization limits, and advanced prompt engineering to strictly control output. 𝟮. 𝗔𝗽𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻 𝗟𝗼𝗴𝗶𝗰 (𝗟𝗲𝘀𝘀𝗼𝗻𝘀 𝟲-𝟳) Stop writing scripts; start building software. Construct text generation apps and chat interfaces with persistent memory management. 𝟯. 𝗧𝗵𝗲 𝗗𝗮𝘁𝗮 𝗟𝗮𝘆𝗲𝗿 (𝗟𝗲𝘀𝘀𝗼𝗻𝘀 𝟴) This is where most developers fail. Learn to connect models to your own data using Vector Databases, Embeddings and Cosine Similarity. 𝟰. 𝗠𝘂𝗹𝘁𝗶𝗺𝗼𝗱𝗮𝗹 & 𝗩𝗶𝘀𝗶𝗼𝗻 (𝗟𝗲𝘀𝘀𝗼𝗻𝘀 𝟵-𝟭𝟬-𝟭𝟳) Integrate Computer Vision and image generation directly into your application logic to handle complex inputs. 𝟱. 𝗔𝗱𝘃𝗮𝗻𝗰𝗲𝗱 𝗔𝗿𝗰𝗵𝗶𝘁𝗲𝗰𝘁𝘂𝗿𝗲 (𝗟𝗲𝘀𝘀𝗼𝗻𝘀 𝟭𝟭-𝟭𝟱-𝟭𝟴-𝟭𝟵-𝟮𝟬-𝟮𝟭) The industry standard. Implement RAG (Retrieval Augmented Generation) and build autonomous Agents capable of Function Calling. 𝟲. 𝗣𝗿𝗼𝗱𝘂𝗰𝘁𝗶𝗼𝗻 𝗥𝗲𝗮𝗱𝗶𝗻𝗲𝘀𝘀 (𝗟𝗲𝘀𝘀𝗼𝗻𝘀 𝟭𝟮-𝟭𝟯-𝟭𝟰-𝟭𝟲) The difference between a demo and a product. UX patterns for AI, Responsible AI safety checks, and Fine-Tuning basics. Stop guessing how the stack fits together. Repo: Link in comments 𖤂 Save this post, you’ll want to revisit it. - - - - - - - - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #ai hashtag #freecourse hashtag #microsoft hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "2mo",
+    "dateAbsolute": "2026-01-17",
+    "reactions": "159",
+    "comments": "25",
+    "reposts": "30",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHnlUEmNkl6hA/feedshare-shrink_800/B4EZtnR2h2HUAg-/0/1766964292889?e=1775692800&v=beta&t=YwEp77YsDHCueXS5HAeGi42J_2Qg1tNLhVkjQ1H9HBE"
+    ],
+    "hashtags": [
+      "ai",
+      "freecourse",
+      "microsoft",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-25",
+    "index": 26,
+    "screenshot": "screenshots/026-fragmented-tutorials-are-creating-a-gene.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "You no longer have to beg the LLM to return valid JSON. We have all spent too much time writing instructions just to ensure a model does not forget a curly brace or add conversational filler. 𝗚𝗼𝗼𝗴𝗹𝗲 𝘀𝗼𝗹𝘃𝗲𝗱 𝘁𝗵𝗶𝘀 𝗼𝗻 𝗗𝗲𝗰𝗲𝗺𝗯𝗲𝗿 𝟭𝟴 𝘄𝗶𝘁𝗵 𝗙𝘂𝗻𝗰𝘁𝗶𝗼𝗻𝗚𝗲𝗺𝗺𝗮 𝟮𝟳𝟬𝗠 [𝗡𝗲𝘄!] It is a specialized version of the Gemma 3 270M model, fine-tuned specifically for function calling (generating structured calls to tools/APIs, typically in JSON format). Here is why it is essential for developers. ◼️ 𝗥𝗲𝗹𝗶𝗮𝗯𝗹𝗲 𝗦𝘁𝗿𝘂𝗰𝘁𝘂𝗿𝗲𝗱 𝗢𝘂𝘁𝗽𝘂𝘁 It outputs valid JSON objects by default. You no longer need complex prompts to avoid parsing errors. The code just works. ◼️ 𝗭𝗲𝗿𝗼 𝗜𝗻𝗳𝗲𝗿𝗲𝗻𝗰𝗲 𝗖𝗼𝘀𝘁𝘀 It runs locally on the user device. You stop paying for tokens per request. The cost moves from your cloud bill to the user hardware. ◼️ 𝗟𝗼𝘄 𝗟𝗮𝘁𝗲𝗻𝗰𝘆 𝗮𝗻𝗱 𝗢𝗳𝗳𝗹𝗶𝗻𝗲 𝗨𝘀𝗲 It does not need the internet. The response is immediate. Your app works perfectly even without a signal. ◼️ 𝗦𝗶𝗺𝗽𝗹𝗶𝗳𝗶𝗲𝗱 𝗖𝗼𝗺𝗽𝗹𝗶𝗮𝗻𝗰𝗲 Data processing happens on the phone. Sensitive info never leaves the device. It makes privacy compliance much easier. ◼️ 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝘁 𝗥𝗼𝘂𝘁𝗶𝗻𝗴 You can use it as a gatekeeper. It handles simple tasks locally. It only calls expensive cloud models when absolutely necessary. Official Sources ❱❱❱❱ Google Blog and Hugging Face. Find the links in the comments. 𖤂 Save this post, you’ll want to revisit it. - - - - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #aiagent hashtag #ai hashtag #opensource hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "2mo",
+    "dateAbsolute": "2026-01-17",
+    "reactions": "67",
+    "comments": "11",
+    "reposts": "9",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQG58KzQsKr42g/feedshare-shrink_800/B4EZtNAN5JIMAg-/0/1766523463678?e=1775692800&v=beta&t=AOyOV0tHuFR8BggohLFBW2wYqDIFUciaPY4qeAmNVnw"
+    ],
+    "hashtags": [
+      "aiagent",
+      "ai",
+      "opensource",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-26",
+    "index": 27,
+    "screenshot": "screenshots/027-you-no-longer-have-to-beg-the-llm-to-ret.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "The biggest lie in AI is that \"Prompts\" are enough. Real systems need engineering, not magic. Google open-sourced the engineering layer you are missing. I dug into the code to understand why. It solves the \"Black Box\" problem developers hate. Here is the practical reality of this repository. 𝟭. 𝗧𝗵𝗲 𝗩𝗶𝘀𝘂𝗮𝗹𝗶𝘇𝗮𝘁𝗶𝗼𝗻 𝗗𝗮𝘀𝗵𝗯𝗼𝗮𝗿𝗱 Most agents are invisible scripts. You guess what they are thinking. ADK includes a local web server (google-adk-ui) - You run it. - You see the agent's thought process in real-time. - You see the tool calls visually. - You don't need to parse logs. 𝟮. 𝗦𝘁𝗮𝘁𝗲 𝗠𝗮𝗻𝗮𝗴𝗲𝗺𝗲𝗻𝘁 𝗶𝘀 𝗦𝗼𝗹𝘃𝗲𝗱 In other frameworks, context is a messy string. In ADK, context is a structured object. - You can save the exact state of an agent. - You can load it into a different machine. - You can \"rewind\" the state to retry a failed step. This is essential for debugging complex flows. 𝟯. 𝗦𝘁𝗿𝗶𝗰𝘁 𝗧𝗼𝗼𝗹 𝗗𝗲𝗳𝗶𝗻𝗶𝘁𝗶𝗼𝗻𝘀 Hallucinations happen when tools are vague. ADK forces strict typing on every function. If the agent tries to pass a String instead of an Integer, it fails locally. It catches errors before calling the API. It saves you money on tokens. 𝗧𝗵𝗲 𝘃𝗲𝗿𝗱𝗶𝗰𝘁 This is not for building chatbots. This is for building reliable automation pipelines. And It forces you to write better Python. 𖤂 Save this post, you’ll want to revisit it. Link in the first comment - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #aiagent hashtag #ai hashtag #opensource hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "2mo",
+    "dateAbsolute": "2026-01-17",
+    "reactions": "342",
+    "comments": "36",
+    "reposts": "49",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHFY-m7fFYSIQ/feedshare-shrink_800/B4EZs.I_LHJgAk-/0/1766274103760?e=1775692800&v=beta&t=GKtpLoScqexx25AFglB-aWAUaOiUdiBRzbbHW3GHsc4"
+    ],
+    "hashtags": [
+      "aiagent",
+      "ai",
+      "opensource",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-27",
+    "index": 28,
+    "screenshot": "screenshots/028-the-biggest-lie-in-ai-is-that-prompts.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "If you are a coder moving into AI, you eventually hit a wall. It is easy to find tutorials on how to train a model. It is incredibly hard to find resources on what to do next. Most guides leave you stranded in a Python notebook. They never explain how to turn that code into a living application. This book is the exception because it covers the full engineering cycle, not just the theory. It breaks down the entire stack: ◾The Foundation It translates the math of TensorFlow into readable code, stripping away the academic friction. ◾The Capabilities It moves beyond basic logic into specific, high-demand skills: – Computer Vision for image analysis. – NLP for understanding language and tokenization. – Sequence models for predicting time-series data. ◾The Deployment This is the missing link in most education. It details exactly how to take your models out of the cloud and embed them into Android, iOS, and Web environments. It stops treating AI as a research experiment and treats it as a software component. If you want to build products, not just models, this is the manual. Link in the first comment - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #llm hashtag #ai hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "2mo",
+    "dateAbsolute": "2026-01-17",
+    "reactions": "0",
+    "comments": "36",
+    "reposts": "50",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQGZs4u5TGbGhA/feedshare-shrink_800/B4EZs0FHLXKgAg-/0/1766105316031?e=1775692800&v=beta&t=6QlmiO2mgwYLib60eP7AgSFWFLyFsxNz-CsRth1mJZk"
+    ],
+    "hashtags": [
+      "llm",
+      "ai",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-28",
+    "index": 29,
+    "screenshot": "screenshots/029-if-you-are-a-coder-moving-into-ai-you-e.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "Pure signal from Andrew Ng on how to navigate the next 3 years of AI. If you read one piece of career advice for 2026, make it this one. 𝗔𝗜 𝗖𝗮𝗿𝗲𝗲𝗿 𝗔𝗱𝘃𝗶𝗰𝗲 𝟮𝟬𝟮𝟲 𝗯𝘆 𝗔𝗻𝗱𝗿𝗲𝘄 𝗡𝗴 1/ This is the 𝗯𝗲𝘀𝘁 𝗺𝗼𝗺𝗲𝗻𝘁 in history to build a career in AI. 2/ 𝗚𝗼 𝗮𝗻𝗱 𝗯𝘂𝗶𝗹𝗱 𝘀𝘁𝘂𝗳𝗳. Courses matter, but building real AI products and shipping them matters more. 3/ AI coding makes failure cheap. 𝗙𝗮𝗶𝗹𝗶𝗻𝗴 𝗻𝗼𝘄 𝗰𝗼𝘀𝘁𝘀 𝗵𝗼𝘂𝗿𝘀 or a weekend, not years. Learning compounds. 4/ 𝗗𝗼𝗻’𝘁 𝘄𝗮𝗶𝘁 𝗳𝗼𝗿 𝗽𝗲𝗿𝗺𝗶𝘀𝘀𝗶𝗼𝗻. There are far more AI ideas than people who can execute them. 5/ The bottleneck is no longer coding; it’s deciding what and how to build in AI. 6/ 𝗣𝗿𝗼𝗱𝘂𝗰𝘁 𝘁𝗵𝗶𝗻𝗸𝗶𝗻𝗴 𝗶𝘀 𝗮 𝗰𝗼𝗿𝗲 𝘀𝗸𝗶𝗹𝗹 for AI engineers. Engineers who shape the product move fastest. 7/ Talk to users and get feedback early. Speed comes from 𝗲𝗺𝗽𝗮𝘁𝗵𝘆 and direct understanding in AI solutions. 8/ Surround yourself with smart, curious, hard-working AI peers. This impacts growth more than almost anything else. 9/ 𝗕𝗲 𝗶𝗻𝘁𝗲𝗻𝘁𝗶𝗼𝗻𝗮𝗹 about where you’re placed in a company. Not knowing your AI team upfront is a red flag. 10/ Build responsibly. Do not create software that harms others. Responsible AI is a real advantage. Watch YT here ❱❱❱ Stanford CS230, Autumn 2025. Lecture 9: Career Advice in AI [Link in the first comment] 𖤂 Save this post, you’ll want to revisit it. - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #llm hashtag #ai hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "2mo",
+    "dateAbsolute": "2026-01-17",
+    "reactions": "556",
+    "comments": "43",
+    "reposts": "72",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQGasa0xR1h-qA/feedshare-shrink_800/B4EZszx0jBKkAo-/0/1766100260448?e=1775692800&v=beta&t=e-M1XNr1HTQdMexvj1F1pTw1Ee7MqqSycPmIHfBBKIc"
+    ],
+    "hashtags": [
+      "llm",
+      "ai",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-29",
+    "index": 30,
+    "screenshot": "screenshots/030-pure-signal-from-andrew-ng-on-how-to-nav.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "We solved voice quality years ago. We never fully solved long-form stability. Until today. If you have built voice applications, you know the architectural wall. Current TTS models are brilliant at sentences but fail at paragraphs. After one minute, they hallucinate, lose prosody, or forget the speaker identity. This repository solves it. A fully open-source, lightweight (0.5B params) streaming TTS that: ◾Starts speaking in ~300ms ◾Handles true real-time streaming input ◾Stays rock-solid on long-form (10 minutes+ without degradation) ◾Lets LLMs talk from the very first token, no buffering needed ◾Run it locally, zero cost. ◾MIT License Listen the demos ❱❱ https://lnkd.in/eQMRqi4J Test it immediately on Colab ❱❱ https://lnkd.in/efGm6EAd GitHub ❱❱ https://lnkd.in/eXXna8eK Hugging Face ❱❱ https://lnkd.in/evkvVtSu Paper ❱❱ https://lnkd.in/e9zpBNEN 𖤂 Save this post, you’ll want to revisit it. - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #llm hashtag #ai hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "3mo",
+    "dateAbsolute": "2025-12-18",
+    "reactions": "174",
+    "comments": "27",
+    "reposts": "25",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEKt3duzuqjGw/feedshare-shrink_800/B4EZspZlIAGQAg-/0/1765926131517?e=1775692800&v=beta&t=2YuAyjkPa7iwqtgkvLdQbhTJomdeVuyuOFbX6tbXgEk"
+    ],
+    "hashtags": [
+      "llm",
+      "ai",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-30",
+    "index": 31,
+    "screenshot": "screenshots/031-we-solved-voice-quality-years-ago-we-ne.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "If your architecture doesn't account for token windows, RAG and model routing, you are building legacy software. Full-stack engineers won’t be replaced by AI. They’ll be replaced by full-stack engineers who learned AI. Here’s how to pivot effectively in 2026: 𝟭/ 𝗙𝗼𝘂𝗻𝗱𝗮𝘁𝗶𝗼𝗻: 𝗣𝗿𝗼𝗱𝘂𝗰𝘁𝗶𝗼𝗻‑𝗥𝗲𝗮𝗱𝘆 𝗣𝘆𝘁𝗵𝗼𝗻 & 𝗔𝗣𝗜𝘀 ◼️Deep Python for engineer workflows (clean, modular, testable code). ◼️Build REST APIs with FastAPI or similar for model serving. ◼️Work with external AI model APIs (OpenAI, Hugging Face, others). Why first: This is the engineering substrate: every AI system you ship will rely on stable, maintainable code and clear API contracts. 𝟮/ 𝗦𝗲𝗺𝗮𝗻𝘁𝗶𝗰 𝗜𝗻𝘁𝗲𝗹𝗹𝗶𝗴𝗲𝗻𝗰𝗲: 𝗘𝗺𝗯𝗲𝗱𝗱𝗶𝗻𝗴𝘀 & 𝗩𝗲𝗰𝘁𝗼𝗿 𝗦𝗲𝗮𝗿𝗰𝗵 ◼️Preprocess and chunk data for retrieval. ◼️Generate embeddings reliably from models. ◼️Vector databases + semantic search: Qdrant, Pinecone, Weaviate, FAISS, Milvus Outcome: You can ground AI in real data, not just prompts. 𝟯/ 𝗥𝗔𝗚 𝗦𝘆𝘀𝘁𝗲𝗺𝘀: 𝗚𝗿𝗼𝘂𝗻𝗱𝗲𝗱 𝗔𝗜 𝗢𝘂𝘁𝗽𝘂𝘁𝘀 ◼️Build Retrieval‑Augmented Generation pipelines. ◼️Memory, retrievers, and contextual workflows. ◼️Evaluation loops to measure quality & trust. Focus: Move from one‑off AI calls to contextual intelligence. 𝟰/ 𝗔𝗴𝗲𝗻𝘁𝘀 & 𝗢𝗿𝗰𝗵𝗲𝘀𝘁𝗿𝗮𝘁𝗶𝗼𝗻: 𝗔𝘂𝘁𝗼𝗻𝗼𝗺𝗼𝘂𝘀 𝗪𝗼𝗿𝗸𝗳𝗹𝗼𝘄𝘀 ◼️Learn to orchestrate tooling, actions, and logic. ◼️Implement agents that trigger tasks, fetch data, act on systems. ◼️Use frameworks/framework‑agnostic orchestrations (LangChain, LangGraph, AutoGen). Goal: Not just “chat”; real action chains and task automation. 𝟱/ 𝗠𝗟𝗢𝗽𝘀 & 𝗣𝗿𝗼𝗱𝘂𝗰𝘁𝗶𝗼𝗻 𝗘𝗻𝗴𝗶𝗻𝗲𝗲𝗿𝗶𝗻𝗴 ◼️Containerize services with Docker. ◼️CI/CD for AI applications. ◼️Model versioning, experiment tracking. ◼️Cloud deployment & scaling. Why: Models are part of a service: you must deploy, monitor, update. 𝟲/ 𝗘𝘃𝗮𝗹𝘂𝗮𝘁𝗶𝗼𝗻, 𝗠𝗼𝗻𝗶𝘁𝗼𝗿𝗶𝗻𝗴 & 𝗦𝗮𝗳𝗲𝘁𝘆 ◼️Automated evaluation metrics for accuracy & drift. ◼️Logging, alerting, and performance monitoring. ◼️Mitigations for misuse, hallucinations, bias checks. Outcome: Production systems that are reliable and trustworthy. 𝟳/ 𝗔𝗱𝘃𝗮𝗻𝗰𝗲𝗱 𝗜𝗻𝗳𝗲𝗿𝗲𝗻𝗰𝗲 & 𝗖𝗼𝘀𝘁 𝗢𝗽𝘁𝗶𝗺𝗶𝘇𝗮𝘁𝗶𝗼𝗻 ◼️Latency reduction (caching, efficient pipelines). ◼️Smart routing between open‑source and API models. ◼️Token management and cost control. Focus: Systems that perform at scale with controlled cost. 𝟴/ 𝗣𝗼𝗿𝘁𝗳𝗼𝗹𝗶𝗼 & 𝗥𝗲𝗮𝗹 𝗣𝗿𝗼𝗷𝗲𝗰𝘁𝘀 ◼️Build at least three high‑impact, tangible systems: ◼️RAG‑powered assistant over real datasets. ◼️AI agent that integrates tools and databases. ◼️Production‑deployed service with monitoring and CI/CD. Why: Recruiters don’t hire knowledge, they hire ship‑ready evidence. 𖤂 Save this post, you’ll want to revisit it. - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #llm hashtag #ai hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "3mo",
+    "dateAbsolute": "2025-12-18",
+    "reactions": "1,135",
+    "comments": "56",
+    "reposts": "228",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQFZjXJIH5qgwA/feedshare-shrink_800/B4EZsfXI.JKoAg-/0/1765757727943?e=1775692800&v=beta&t=rhyACGcelGNjfguFJaKgaGkSikHMbhoPQLpCpMDCSto"
+    ],
+    "hashtags": [
+      "llm",
+      "ai",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-31",
+    "index": 32,
+    "screenshot": "screenshots/032-if-your-architecture-doesn-t-account-for.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "Dear future AI Engineer, in 2026 you don't need more resources; you need more focus. Here is a great roadmap to go from “experimenting” to “AI engineering production systems”: 1️⃣ Running LLMs ◼️ LLM APIs ◼️ Open-source LLMs ◼️ Prompt engineering ◼️ Structuring outputs 2️⃣ Building a Vector Storage ◼️ Ingesting documents ◼️ Splitting documents ◼️ Embedding models ◼️ Vector databases 3️⃣ Retrieval Augmented Generation (RAG) ◼️ Orchestrators ◼️ Retrievers ◼️ Memory ◼️ Evaluation 4️⃣ Advanced RAG ◼️ Query construction ◼️ Agents and tools ◼️ Post-processing ◼️ Program LLMs 5️⃣ Agents ◼️ Agent fundamentals ◼️ Agent frameworks ◼️ Multi-agents 6️⃣ Inference optimization ◼️ Flash Attention ◼️ Key-value cache ◼️ Speculative decoding 7️⃣ Deploying LLMs ◼️ Local deployment ◼️ Demo deployment ◼️ Server deployment ◼️ Edge deployment 8️⃣ Securing LLMs ◼️ Prompt hacking ◼️ Backdoors ◼️ Defensive measures Consistency is the only shortcut you need. Roadmap based on LLM Engineer's Handbook 🏅 - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #llm hashtag #aiengineer hashtag #roadmap hashtag #technology …more",
+    "timestamp": "3mo",
+    "dateAbsolute": "2025-12-18",
+    "reactions": "313",
+    "comments": "40",
+    "reposts": "69",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQENO18qWnU9MQ/feedshare-shrink_800/B4EZsKB3iyHEAk-/0/1765399823285?e=1775692800&v=beta&t=JDsfBse6PkbDmS__FD0vFdNFqchYl47DVydDDw2C7GI"
+    ],
+    "hashtags": [
+      "llm",
+      "aiengineer",
+      "roadmap",
+      "technology"
+    ],
+    "urn": "post-32",
+    "index": 33,
+    "screenshot": "screenshots/033-dear-future-ai-engineer-in-2026-you-don.png",
+    "category": "Thought Leadership"
+  },
+  {
+    "text": "Stop calling it AI app if it just echoes ChatGPT. If your app simply hands users raw LLM outputs, you’re doing it wrong. Real AI is about reasoning. Patterns. Orchestrated decision-making. Without that, it’s unreliable. This free GitHub repo shows, with real code, how today’s most advanced AI agents are built. 17+ architectures. Step-by-step. Ready to run: ■ Agents that plan, reason, and use tools ■ Reflection loops that improve results ■ Multiple agents collaborating under a controller ■ Memory layers for long-term reasoning ■ Safety checks to prevent bad actions ■ Agents that self-improve I see AI projects ‘in production’ that are just glorified copy-paste machines. Users click. Model answers. That’s it. That’s not AI. That’s lazy engineering. And it’s unreliable. Don’t be that engineer. ❱❱ Github link in first comment ❱❱ All Agentic Architectures ⭐ - - - - - - - - - - - - - - - - - I’m Nina. I share how to build Gen AI systems, with best practices and trends. hashtag #aiagents hashtag #architectures hashtag #langgraph hashtag #technology …more",
+    "timestamp": "3mo",
+    "dateAbsolute": "2025-12-18",
+    "reactions": "331",
+    "comments": "23",
+    "reposts": "50",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEHrW8wQu_FqQ/feedshare-shrink_800/B4EZr2DrchGUAo-/0/1765064752487?e=1775692800&v=beta&t=0CljxnWvktSgv0CXSVYFWBIijTJoJIXkrn9icDpyRug"
+    ],
+    "hashtags": [
+      "aiagents",
+      "architectures",
+      "langgraph",
+      "technology"
+    ],
+    "urn": "post-33",
+    "index": 34,
+    "screenshot": "screenshots/034-stop-calling-it-ai-app-if-it-just-echoes.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "Become an AI Developer by 2026: Get Hired in 12 Months Companies don’t need more data scientists. They want AI Developers and Architects who build real systems that solve business problems. You’re not cloning ChatGPT, you’re orchestrating LLMs, connecting company data, automating workflows, managing prompts, and keeping AI reliable. Start here: the essential foundations to launch your AI career: 𝗣𝗵𝗮𝘀𝗲 𝟭 ❱❱ 𝗙𝗼𝘂𝗻𝗱𝗮𝘁𝗶𝗼𝗻𝘀 (𝟬–𝟯 𝗺𝗼𝗻𝘁𝗵𝘀) Skills to Learn: ■ Python Programming: - Data structures & loops - Functions & modules - File handling (especially JSON) - API requests ■Version Control & Collaboration: - GitHub: repositories, commits, branches, pull/merge requests - Collaborative coding best practices Outcome: Able to code, manage, and share projects professionally. 𝗣𝗵𝗮𝘀𝗲 𝟮 ❱❱ 𝗟𝗟𝗠 𝗜𝗻𝘁𝗲𝗿𝗮𝗰𝘁𝗶𝗼𝗻 (𝟯–𝟲 𝗺𝗼𝗻𝘁𝗵𝘀) Skills to Learn: ■ Prompt Engineering: - Communicate effectively with AI models ■ API Integration: - OpenAI API: send prompts, receive responses, manage token costs ■ Open-Source Models: - Hugging Face: explore models, deploy locally - Use pre-trained models to reduce costs and maintain data control Outcome: Build AI applications integrating LLMs and open-source multimodal models. 𝗣𝗵𝗮𝘀𝗲 𝟯 ❱❱ 𝗕𝘂𝗶𝗹𝗱𝗶𝗻𝗴 𝗔𝗜 𝗦𝘆𝘀𝘁𝗲𝗺𝘀 (𝟲–𝟭𝟮 𝗺𝗼𝗻𝘁𝗵𝘀) Skills to Learn: ■ Orchestration & Workflows: - LangGraph: connect models, memory, tools, and business logic ■ RAG (Retrieval-Augmented Generation): - Vector databases & embeddings (Pinecone, Weaviate, Qdrant) - LlamaIndex (advanced indexing, query engines, routers, recursive retrieval, metadata filters, etc.) - Integrate company data with AI models ■ AI Agents: Automate real actions (API calls, database queries, workflow triggers) ■ MCP (Model Context Protocol): - Securely connect AI agents to external systems ■ LLM Ops: - Post-deployment monitoring, CI/CD, prompt tracking - Optimize system performance, cost, and reliability Outcome: Build scalable, secure, real-world AI systems. 𝗣𝗵𝗮𝘀𝗲 𝟰 ❱❱ 𝗣𝗼𝗿𝘁𝗳𝗼𝗹𝗶𝗼 𝗮𝗻𝗱 𝗛𝗶𝗿𝗶𝗻𝗴 (𝗢𝗻𝗴𝗼𝗶𝗻𝗴) Projects to Build: ● Talk to Documents: RAG assistant answering questions from PDFs/files with citations ● Talk to Data: AI agent converts natural language to SQL and visualizes results ● AI Customer Chatbot: AI agent handling customer queries, responses, and escalations automatically. Bonus ⭐ Publish projects on GitHub with documentation, architecture diagrams, and demos AI engineering is not about training models from scratch; it’s about building complete, functional AI systems that businesses can use. - - - - - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #aiengineer hashtag #roadmap #2026 hashtag #jobs …more",
+    "timestamp": "3mo",
+    "dateAbsolute": "2025-12-18",
+    "reactions": "171",
+    "comments": "23",
+    "reposts": "18",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQF7JCJR3gAYEQ/feedshare-shrink_800/B4EZrsAhOjKUAg-/0/1764896159483?e=1775692800&v=beta&t=7JnRM9oQRXz4PsBF0EWmQWlSQFc7uhPwn06jL-C-o_c"
+    ],
+    "hashtags": [
+      "aiengineer",
+      "roadmap",
+      "2026",
+      "jobs"
+    ],
+    "urn": "post-34",
+    "index": 35,
+    "screenshot": "screenshots/035-become-an-ai-developer-by-2026-get-hire.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "Don’t let your AI project die in a notebook. You don’t need more features. You need structure. This is the folder setup that actually ships from day one. 📁 𝗧𝗵𝗲 𝗳𝗼𝗹𝗱𝗲𝗿 𝘀𝘁𝗿𝘂𝗰𝘁𝘂𝗿𝗲 𝘁𝗵𝗮𝘁 𝘄𝗼𝗿𝗸𝘀 Forget monolithic scripts. You need this: /config 🔹YAML files for models, prompts, logs 🔹Config lives outside the code, always /src 🔹Modular logic: llm/, utils/, handlers/ 🔹Clean, testable, scalable from day one /data 🔹Cached outputs, embeddings, prompt responses 🔹Cut latency + save on API costs instantly /notebooks 🔹For testing, analysis, and iteration 🔹Never pollute your main codebase again 𝗪𝗵𝗮𝘁 𝘁𝗵𝗶𝘀 𝘀𝘁𝗿𝘂𝗰𝘁𝘂𝗿𝗲 𝘀𝗼𝗹𝘃𝗲𝘀 ▪️Prompt versioning is built in ▪️Rate limiting and caching come standard ▪️Error handling is modular ▪️Experiments stay reproducible ▪️Deployment is one Dockerfile away 𝗕𝗲𝘀𝘁 𝗽𝗿𝗮𝗰𝘁𝗶𝗰𝗲𝘀 𝗯𝗮𝗸𝗲𝗱 𝗶𝗻 1. Prompts are versioned by default ▪️Stored in prompt_templates.yaml + templates⋅py ▪️Track, test, roll back 2. Rate limiting is pre-integrated ▪️rate_limiter⋅py stops API overloads and surprise bills 3. Caching is plug-and-play ▪️Duplicate calls get stored in /data/cache ▪️Cut costs by 70% on day one 4. Each module does one thing only ▪️Models in llm/, logs in utils/, errors in handlers/ ▪️No sprawl 5. Notebooks are safely isolated ▪️Run tests and explorations in prompt_testing.ipynb ▪️Nothing leaks into production logic ⚙️ Clone the github template below - in first comment This structure ships faster, costs less and scales without rewrites. ------------ ⚡I’m Nina. I build with AI and share how it’s done weekly. hashtag #aiagents hashtag #softwaredevelopment hashtag #MCP hashtag #genai hashtag #promptengineering …more",
+    "timestamp": "3mo",
+    "dateAbsolute": "2025-12-18",
+    "reactions": "1,283",
+    "comments": "61",
+    "reposts": "151",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHPdwmzFOQGjw/feedshare-shrink_800/B4EZrWmj2dHEAg-/0/1764537024654?e=1775692800&v=beta&t=LRkFSjbSMPLH2th0ymF9rkrF-uynVQJaFagv-_iRlxQ"
+    ],
+    "hashtags": [
+      "aiagents",
+      "softwaredevelopment",
+      "MCP",
+      "genai",
+      "promptengineering"
+    ],
+    "urn": "post-35",
+    "index": 36,
+    "screenshot": "screenshots/036-don-t-let-your-ai-project-die-in-a-noteb.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "Without Python, you’re OUTSIDE the AI ecosystem in 2026. If you want to build a real career as an AI Developer next year … … stop writing scripts. Here are the 6 Python skills that separate junior scripters from senior AI Developers in 2026. If you master these, you’re future-proof. 1️⃣ 𝗔𝘀𝘆𝗻𝗰𝗵𝗿𝗼𝗻𝗼𝘂𝘀 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗼𝗿𝘀. Token-by-token streaming is now table stakes. If your app freezes for 4–8 seconds while waiting for the full LLM response, users leave. Skilled in async def + yield. Build backpressure-resistant streaming pipelines that run background logic while yielding tokens. (OpenAI, Anthropic, Grok, all stream this way.) 2️⃣ 𝗣𝘆𝗱𝗮𝗻𝘁𝗶𝗰 𝘃𝟮 + 𝗖𝘂𝘀𝘁𝗼𝗺 𝗩𝗮𝗹𝗶𝗱𝗮𝘁𝗼𝗿𝘀. Raw LLM text is chaos. Pydantic is the firewall. Strict models with Field descriptions that guide the model + custom validators that catch logical errors before they hit production. This is how companies ship reliable agents that don’t hallucinate JSON. 3️⃣ 𝗗𝗲𝗰𝗼𝗿𝗮𝘁𝗼𝗿𝘀 & 𝗗𝘆𝗻𝗮𝗺𝗶𝗰 𝗧𝗼𝗼𝗹 𝗦𝗰𝗵𝗲𝗺𝗮𝘀. Every serious agent framework (LangChain, LlamaIndex, CrewAI, etc.) uses decorators to expose functions as tools. You need to: • Wrap functions • Inspect signatures at runtime • Auto-generate JSON schemas from docstrings That’s how your agent actually knows when and how to call your tools. 4️⃣ 𝗔𝗱𝘃𝗮𝗻𝗰𝗲𝗱 𝗧𝘆𝗽𝗲 𝗛𝗶𝗻𝘁𝘀 = 𝗡𝗲𝘄 𝗣𝗿𝗼𝗺𝗽𝘁 𝗘𝗻𝗴𝗶𝗻𝗲𝗲𝗿𝗶𝗻𝗴 typing.Annotated, Literal, TypedDict are no longer “nice to have”. They are literal instructions to routers, guardrails, and structured-output engines. Static analysis is the new prompt engineering. 5️⃣ 𝗣𝘆𝘁𝗲𝘀𝘁 + 𝗦𝗲𝗺𝗮𝗻𝘁𝗶𝗰 𝗦𝗰𝗼𝗿𝗶𝗻𝗴 Testing non-deterministic AI code with exact string matches is useless. Top teams write parameterized tests + embedding-based scoring in fixtures. You measure semantic correctness, not character matches. 6️⃣ 𝗗𝗲𝗾𝘂𝗲𝘀 & 𝗣𝗿𝗲𝗰𝗶𝘀𝗶𝗼𝗻 𝗖𝗼𝗻𝘁𝗲𝘅𝘁 𝗧𝗿𝘂𝗻𝗰𝗮𝘁𝗶𝗼𝗻 Context windows cost money and have hard limits. collections.deque gives you O(1) sliding windows for conversation history. Smart slicing lets you truncate prompts without corrupting JSON or tool calls. Stop writing throwaway scripts. Start building observable, testable, streaming, structured systems. 𖤂 Save this post, you’ll want to revisit it. Free Python books ❱❱❱ Links in the comments - - - - - - - I’m Nina. I build with AI and share how it’s done weekly. hashtag #python hashtag #roadmap hashtag #aiengineer hashtag #technology …more",
+    "timestamp": "3mo",
+    "dateAbsolute": "2025-12-18",
+    "reactions": "484",
+    "comments": "45",
+    "reposts": "81",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEzR309gwZlnA/feedshare-shrink_800/B4EZrCghpqHMAg-/0/1764199902074?e=1775692800&v=beta&t=RY_mRtrMCRg84x1xj_rkUvfCcZHXXa4Pzp4rKd4mzMc"
+    ],
+    "hashtags": [
+      "python",
+      "roadmap",
+      "aiengineer",
+      "technology"
+    ],
+    "urn": "post-36",
+    "index": 37,
+    "screenshot": "screenshots/037-without-python-you-re-outside-the-ai-ec.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "The era of “I can’t run good RAG locally because I don’t have 1 TB SSD + 64 GB RAM” is officially over. I just deleted 195 GB of stored embeddings from my laptop… and my local RAG got faster + more accurate at the same time. This repo is the new open-source standard for truly private, on-device retrieval. Key highlights: ■ 60 million chunks: 201 GB → 6 GB (97 % storage reduction) ■ On-demand embedding recomputation via pruned high-degree graph ■ 100 % local & private, no data ever leaves your machine ■ Zero GPU required, native Ollama support ■ Index your entire life: emails, chats, PDFs, browser history, codebases 100% open-source (MIT, free forever) Static vector hoarding is now obsolete. Real local RAG is finally here. 𖤂 Links in the comments. I’m Nina. I build with AI and share how it’s done weekly. hashtag #rag hashtag #opensource hashtag #aiengineering hashtag #technology …more",
+    "timestamp": "3mo",
+    "dateAbsolute": "2025-12-18",
+    "reactions": "894",
+    "comments": "77",
+    "reposts": "110",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQEQt_5bDDRJ-g/feedshare-shrink_800/B4EZqy3bdmHUAg-/0/1763937467396?e=1775692800&v=beta&t=5JCHo9FAXDHVwkK5nmvPm5yjRDw3A5QWARwzUndFGhA"
+    ],
+    "hashtags": [
+      "rag",
+      "opensource",
+      "aiengineering",
+      "technology"
+    ],
+    "urn": "post-37",
+    "index": 38,
+    "screenshot": "screenshots/038-the-era-of-i-can-t-run-good-rag-locally.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "Stanford’s CS229 Spring 2022 ML lecture notes by Andrew Ng and updated by Tengyu Ma: open-access and free. 𝗟𝗲𝗮𝗿𝗻 𝘄𝗵𝗮𝘁 𝗦𝘁𝗮𝗻𝗳𝗼𝗿𝗱 𝘀𝘁𝘂𝗱𝗲𝗻𝘁𝘀 𝘀𝘁𝘂𝗱𝘆. 𝗦𝗲𝗲 𝘁𝗵𝗲 𝗺𝗮𝘁𝗵 𝗯𝗲𝗵𝗶𝗻𝗱 𝘁𝗵𝗲 𝗺𝗼𝗱𝗲𝗹𝘀. 𝗨𝗻𝗱𝗲𝗿𝘀𝘁𝗮𝗻𝗱 𝗠𝗟 𝗹𝗶𝗸𝗲 𝗮 𝗿𝗲𝘀𝗲𝗮𝗿𝗰𝗵𝗲𝗿. ◾ Linear & logistic regression, support vector machines ◾ Neural networks, backpropagation ◾ Bias-variance, double descent, model selection ◾ Clustering, Expectation-Maximization, PCA, ICA ◾ Reinforcement learning: MDPs, policy gradients, optimal control Full course. Full depth. Free. Open-access. 𖤂 Link in the first comment. I’m Nina. I build with AI and share how it’s done weekly. hashtag #stanford hashtag #ai hashtag #freecourse …more",
+    "timestamp": "4mo",
+    "dateAbsolute": "2025-11-18",
+    "reactions": "122",
+    "comments": "23",
+    "reposts": "12",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQGjvJqL59aGeQ/feedshare-shrink_800/B4EZqODkr6GUAg-/0/1763319894054?e=1775692800&v=beta&t=H8ZKTURHZGQJkW5VEcaWymJ8eLdpS0zKBwFUaNeL4Sw"
+    ],
+    "hashtags": [
+      "stanford",
+      "ai",
+      "freecourse"
+    ],
+    "urn": "post-38",
+    "index": 39,
+    "screenshot": "screenshots/039-stanford-s-cs229-spring-2022-ml-lecture.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "You’re building agents? Open-source, trending, freshly updated on GitHub → 15 AI agent components across 5 categories, all in one place. 𝗠𝗲𝗺𝗼𝗿𝘆 & 𝗖𝗼𝗻𝘁𝗲𝘅𝘁 mem0 (42.9k ⭐) https://lnkd.in/ePg7Uszi: A universal memory layer for managing the long-term memory and state of agents. cognee (8.3k ⭐) https://lnkd.in/eFn55QX5: A persistent memory system that combines vector search and knowledge graphs. graphiti (20.1k ⭐) https://lnkd.in/eUTBthJH: A tool for building real-time knowledge graphs as context for agents. airweave (5.1k ⭐) https://lnkd.in/eRsx5Pra: A context retrieval layer that unifies data access from multiple applications. 𝗧𝗼𝗼𝗹 𝗜𝗻𝘁𝗲𝗴𝗿𝗮𝘁𝗶𝗼𝗻 klavis (5.4k ⭐) https://lnkd.in/eaRVUYwr: An integration platform to reliably connect agents to real-world tools (MCPs). mcp-agent (7.7k ⭐) https://lnkd.in/em9URPgB: The MCP protocol specification, a standard for agent-tool communication. 𝗩𝗲𝗰𝘁𝗼𝗿 𝗗𝗮𝘁𝗮𝗯𝗮𝘀𝗲𝘀 letta (19.1k ⭐) https://lnkd.in/e-_aUkVj: the platform for building stateful agents: open AI with advanced memory that can learn and self-improve over time 𝗔𝗴𝗲𝗻𝘁𝗢𝗽𝘀 (𝗟𝗟𝗠𝗢𝗽𝘀 / 𝗠𝗟𝗢𝗽𝘀) RagaAI-Catalyst (16k ⭐) https://lnkd.in/ezuq8ziD: An observability and evaluation platform to test the reliability of GenAI/RAG systems. agentops (5k ⭐) https://lnkd.in/eQRuwaMY: Observability and DevTools for monitoring, debugging, and tracking agent costs. agent-lightning (8k ⭐) https://lnkd.in/eJn_z5Sc: A framework for training and optimizing existing agents using Reinforcement Learning. zenml (5k ⭐) https://lnkd.in/ew5RgVqd: One AI Platform from Pipelines to Agents. 𝗘𝗻𝗱-𝗨𝘀𝗲𝗿 𝗔𝗽𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻𝘀 PraisonAI (5.5k ⭐) https://lnkd.in/euKkNkBB: a production-ready Multi AI Agents framework, designed to create AI Agents. khoj (31k ⭐) https://lnkd.in/ejjM2sE2: Self-hostable. Get answers from the web or your docs. pr-agent (9.4k ⭐) https://lnkd.in/e-C3FMXV: A specialized agent application that reviews code pull requests. awesome-ai-apps (7.2k ⭐) https://lnkd.in/e5neqjX6: A collection of projects showcasing RAG, agents, workflows. 𝗕𝗼𝗻𝘂𝘀 Also worth checking: an incredible collection of LLM apps, shared by my friend Shubham → Awesome LLM Apps https://lnkd.in/eQSqpVb4 (77K ⭐) 𖤂 Save this post, you’ll want to revisit it. I’m Nina. I build with AI and share how it’s done weekly. hashtag #llm hashtag #ai hashtag #softwaredevelopment hashtag #technology …more",
+    "timestamp": "4mo",
+    "dateAbsolute": "2025-11-18",
+    "reactions": "153",
+    "comments": "32",
+    "reposts": "25",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D4E22AQHm7rWVqABMgQ/feedshare-shrink_800/B4EZp5w1fBKYAk-/0/1762979439216?e=1775692800&v=beta&t=gjIiHtAPyruHE_Jlu5rBtxcNolfO-nkhxWD6l62AdTA"
+    ],
+    "hashtags": [
+      "llm",
+      "ai",
+      "softwaredevelopment",
+      "technology"
+    ],
+    "urn": "post-39",
+    "index": 40,
+    "screenshot": "screenshots/040-you-re-building-agents-open-source-tre.png",
+    "category": "System Design / Architecture"
+  }
+]

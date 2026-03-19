@@ -1,0 +1,36 @@
+{
+  "piece_id": "cab27918edb74290",
+  "platform": "threads",
+  "content_type": "video_script",
+  "content_pillar": "building_in_public",
+  "topic": "Self-improving prompt agent video script",
+  "text": "[on-screen: STOP WRITING PROMPTS]\nStop writing your own prompts.\nYou're likely the bottleneck in your agent's performance.\n\n[on-screen: THE META-LAYER]\nI spent weeks hand-tuning a complex logic chain for a production system.\nIt was fine.\nThen I built a meta-layer to let the agent optimize its own instructions based on success metrics.\n\n[on-screen: THE RESULT]\nThe output was strange.\nIt used structural anchors and specific token weights I would've never considered.\nIt stripped away the polite prose I thought was helping.\nThe performance jumped by twenty percent.\n\n[on-screen: PROMPT VS MAP]\nEngineers treat prompts like human conversation.\nModels treat them like high-dimensional coordinate maps.\nA self-improving system finds paths through that latent space that human intuition can't see.\nStop trying to be a prompt engineer.\nStart being an AI architect who builds self-evolving systems.\n\n[on-screen: TOOLS VS STRINGS]\nAre you still hand-tuning strings or are you building the logic that tunes them for you.\n\n#AIEngineering #LLMOps #AIArchitecture",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMOps",
+    "#AIArchitecture"
+  ],
+  "char_count": 1054,
+  "status": "pending_review",
+  "generated_at": "2026-03-17T19:37:47.154103+00:00",
+  "scheduled_at": "2026-03-24T19:37:47.154103+00:00",
+  "idea_source": "How I built a self-improving AI agent that evolves its own prompts",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-17T19:37:47.154103+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated video_script for threads",
+      "at": "2026-03-17T19:37:47.154103+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

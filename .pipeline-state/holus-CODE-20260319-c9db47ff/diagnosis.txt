@@ -1,0 +1,5 @@
+Root cause: StartInterval in com.holus.marketing.plist is 21600 (6 hours) instead of 1800 (30 minutes)
+Category: BEHAVIOR
+Affected files: infra/launchd/com.holus.marketing.plist
+Complexity: SIMPLE
+Spec reference: SPEC-013 says "Marketing agent runs automatically every 30 minutes"

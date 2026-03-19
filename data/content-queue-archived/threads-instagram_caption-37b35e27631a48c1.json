@@ -1,0 +1,36 @@
+{
+  "piece_id": "37b35e27631a48c1",
+  "platform": "threads",
+  "content_type": "instagram_caption",
+  "content_pillar": "bilingual_ai",
+  "topic": "Prompt Evolution Ego Check",
+  "text": "Prompt engineering is a dead end for humans.\n\nIt's a search problem better solved by machines.\n\nThe agent I built evolves its own instructions and it just beat my hand-tuned version by 12%.\n\nIt's a tough ego check.\n\nTrust the eval score, not your intuition.\n\nHow much time are you wasting on manual tuning?\n\n#AIEngineering #LLMs #PromptEngineering",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMs",
+    "#PromptEngineering"
+  ],
+  "char_count": 347,
+  "status": "pending_review",
+  "generated_at": "2026-03-17T19:32:09.093878+00:00",
+  "scheduled_at": "2026-03-31T19:32:09.093878+00:00",
+  "idea_source": "How I built a self-improving AI agent that evolves its own prompts",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-17T19:32:09.093878+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated instagram_caption for threads",
+      "at": "2026-03-17T19:32:09.093878+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

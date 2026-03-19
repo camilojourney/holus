@@ -231,17 +231,27 @@ Separate tweets with "---" on its own line.
 """,
     "carousel_outline": """
 <format_instructions>
-LinkedIn carousel (PDF). 8-10 slides. Portrait 1080x1350px.
+LinkedIn carousel (PDF). 7-8 slides. Portrait 1080x1350px.
+
+CRITICAL DENSITY RULES (research-backed — single-sentence slides drop engagement 30%):
+- Every slide MUST have 25-50 words of substantive content.
+- No slide should have fewer than 20 words (except hook headline).
+- Body slides need a heading + 3-4 bullet points OR heading + 2-3 sentences.
+- MINIMUM 3 bullet points per body slide. Two bullets looks empty.
+- Never repeat the same point across multiple slides. Each slide adds NEW information.
+- If a slide can be removed without losing information, remove it.
+- Do NOT use more than 2 body slides in a row. Alternate with stat, comparison, or other types.
+- Bullet text must NOT start with "→" — the template adds arrows automatically.
+
 Return JSON with this exact structure — no prose, no markdown fences:
 {
   "slides": [
-    {"type": "hook", "variables": {"headline": "max 8 words — the scroll stopper", "subheadline": "optional, max 12 words"}},
-    {"type": "body", "variables": {"title": "max 6 words", "body": "max 20 words", "bullet_points": ["→ point one", "→ point two"]}},
-    {"type": "stat", "variables": {"stat_value": "73%", "stat_label": "label", "context": "one sentence", "trend": "up"}},
-    {"type": "quote", "variables": {"quote_text": "the quote", "attribution": "Author Name"}},
-    {"type": "comparison", "variables": {"left_title": "Before", "left_items": ["..."], "right_title": "After", "right_items": ["..."]}},
-    {"type": "summary", "variables": {"title": "The takeaway", "items": ["one-sentence key insight"]}},
-    {"type": "cta",  "variables": {"headline": "the closing question — lightweight, no 'follow me'"}}
+    {"type": "hook", "variables": {"headline": "max 8 words — the scroll stopper", "subheadline": "1-2 sentences that set up the story (15-25 words)"}},
+    {"type": "body", "variables": {"title": "max 6 words", "body": "2-3 sentences (25-40 words)", "bullet_points": ["Substantive point with detail", "Another point with specifics", "Third point — minimum 3 bullets always"]}},
+    {"type": "stat", "variables": {"stat_value": "73%", "stat_label": "label", "context": "2-3 sentences explaining what this number means and why it matters (25-40 words)", "trend": "up (green=good) or down (red=bad) — trend means sentiment, not direction. '0 errors' = up/green because 0 is good."}},
+    {"type": "comparison", "variables": {"left_title": "Before", "left_items": ["descriptive point (5-10 words each)", "..."], "right_title": "After", "right_items": ["descriptive point (5-10 words each)", "..."]}},
+    {"type": "body", "variables": {"title": "The takeaway", "body": "2-3 sentences with actionable insight (25-40 words)", "bullet_points": ["Specific action or lesson", "Second takeaway point", "Third actionable insight"]}},
+    {"type": "cta",  "variables": {"headline": "the closing question — specific, not generic (10-20 words)"}}
   ],
   "design": {
     "theme": "dark",
@@ -253,24 +263,23 @@ Return JSON with this exact structure — no prose, no markdown fences:
   "hook_score": "1-10",
   "voice_check": "PASS or FAIL"
 }
-Slide types (pick the right mix — not all types needed):
-- hook (slide 1 only): headline ≤8 words. Optional subheadline ≤12 words. No bullets.
-- body (slides 2+): title + body OR bullets — max 30 words total per slide. One idea only.
-- stat: big number with label and context. Use for data-driven claims.
-- quote: quote text + attribution. Use for authority/social proof.
-- comparison: two columns with items. Use for before/after, old/new, X vs Y.
-- split_left / split_right: text on one side, graphic_svg placeholder on the other.
-- centered: single bold statement, no title bar.
-- data: title + chart_svg placeholder + source_label.
-- summary (second-to-last): title + items list (2-4 key takeaways).
-- cta (last slide): headline = the CTA question. No buttons. No "follow me".
+Slide types (pick the right mix — use 5-6 types max, not all):
+- hook (slide 1 only): headline ≤8 words. Subheadline 15-25 words that set up the story.
+- body: title + body (25-40 words) + optional bullets. Each bullet is a real point, not a label.
+- stat: big number + 2-3 sentence context explaining significance. Never a number alone.
+- comparison: two columns, 4-5 items each. Each item is a descriptive phrase (5-10 words), not a single word.
+- cta (last slide): specific question (10-20 words). No "follow me". No generic "what do you think?"
+
+DO NOT USE these filler slide types:
+- "centered" with a single quote — this is a wasted slide
+- "summary" that just repeats earlier slides
+- "quote" unless it's from a named authority with real attribution
 
 Design block — pick one of each:
 - theme: dark | light | warm | cool | bold
 - font_pairing: tech (dev content) | editorial (thought leadership) | modern (SaaS) | bold (punchy stats)
 - gradient: dark_navy | indigo_mesh | warm_sunset | cool_ocean | bold_fire | frosted_glass | aurora | minimal_light
 - effect: none | glass | neubrutalism | depth | glow | grain
-Match design to content tone. Data-heavy → tech+dark_navy. Thought leadership → editorial+aurora. Punchy → bold+bold_fire+neubrutalism.
 </format_instructions>
 """,
     "video_script": """
@@ -337,6 +346,18 @@ Write the {fmt} for this idea. Return JSON only.
         result = json.loads(cleaned)
     except (json.JSONDecodeError, TypeError):
         result = {"text": raw, "headline": raw_idea[:60], "hashtags": [], "hook_score": "?", "voice_check": "?"}
+
+    # Strip word count annotations the LLM sometimes includes (e.g., "(24 words)")
+    import re
+    def _strip_word_counts(obj: object) -> object:
+        if isinstance(obj, str):
+            return re.sub(r'\s*\(\d+\s*words?\)', '', obj).strip()
+        if isinstance(obj, list):
+            return [_strip_word_counts(item) for item in obj]
+        if isinstance(obj, dict):
+            return {k: _strip_word_counts(v) for k, v in obj.items()}
+        return obj
+    result = _strip_word_counts(result)
 
     # Optional: Constitutional AI revision for text content
     if fmt in ("text_post", "thread", "instagram_caption") and result.get("text"):

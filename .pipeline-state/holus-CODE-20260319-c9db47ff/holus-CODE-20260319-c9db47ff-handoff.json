@@ -1,0 +1,36 @@
+{
+  "cid": "holus-CODE-20260319-c9db47ff",
+  "repo": "holus",
+  "timestamp": "2026-03-19T15:00:00Z",
+  "mode": "FIX",
+  "status": "COMPLETED",
+  "diagnosis": {
+    "root_cause": "Marketing plist StartInterval was 21600 (6h) instead of 1800 (30min)",
+    "category": "BEHAVIOR",
+    "complexity": "SIMPLE"
+  },
+  "implementation": {
+    "files_changed": ["infra/launchd/com.holus.marketing.plist"],
+    "lines_changed": 1,
+    "approach": "Changed StartInterval integer from 21600 to 1800"
+  },
+  "tests": {
+    "regression_test_added": true,
+    "test_file": "tests/unit/infra/test_launchd_plists.py",
+    "tests_passed": 5,
+    "tests_total": 5,
+    "test_exit_code": 0
+  },
+  "review": {
+    "reviewer": "self",
+    "critical_findings": 0,
+    "high_findings": 0,
+    "fixes_applied": 0
+  },
+  "commit_sha": "bc6fea4",
+  "prompt_versions": {
+    "code-implementer": {"layer": 3, "version": "inline"},
+    "code-tester": {"layer": 3, "version": "inline"},
+    "code-reviewer": {"layer": 3, "version": "inline"}
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "piece_id": "f5d155ba88464ae2",
+  "platform": "twitter_x",
+  "content_type": "thread",
+  "content_pillar": "systems_thinking",
+  "topic": "MCP vs Skills: Interoperability vs Optimization",
+  "text": "Most agent architectures are just API wrappers disguised as intelligence.\n\n---\n\nWe're currently split between two worlds. MCP for interoperability. Skills for optimization.\n\nOne lets your agent talk to anything. The other ensures it actually gets the job done right.\n\n---\n\nMCP is the USB port for LLMs. It's great for horizontal scale. \n\nYou can plug in a database, a file system, or a CRM without writing custom code. But generality always comes with a latency and precision tax.\n\n---\n\nSkills are different. They're hard-coded, domain-specific logic.\n\nWhen I build a 'Vision' or 'Verify' skill, I'm not just giving the agent a tool. I'm giving it a deterministic workflow. It's vertical depth over horizontal reach.\n\n---\n\nThe mistake is thinking MCP replaces the need for deep engineering. \n\nA well-connected agent that can't reason through a complex multi-step process is just a faster way to make mistakes at scale.\n\n---\n\nTrue agentic power lives in the handoff. \n\nUse MCP to ingest the world. Use Skills to execute with the precision of a senior engineer. Access without intent is just noise.\n\n---\n\nStop building generalist bots that kind of do everything. \n\nBuild specialized agents that use standardized protocols to fetch data and optimized skills to transform it. Engineering is about where you draw that line.\n\n---\n\nWhere are you drawing the line between standardized tools and custom cognitive logic in your stack?\n\n#AIEngineering #LLMs #MCP",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMs",
+    "#MCP"
+  ],
+  "char_count": 1451,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T22:00:43.693497+00:00",
+  "scheduled_at": "2026-03-17T22:00:43.693497+00:00",
+  "idea_source": "MCP vs SKILLS \u2014 two paradigms for extending AI agents",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-14T22:00:43.693497+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated thread for twitter_x",
+      "at": "2026-03-14T22:00:43.693497+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

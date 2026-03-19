@@ -1,0 +1,25 @@
+piece_id: cdd13afa12e2474aada65002dee11d1c-2-f41e9d94
+product: genpeli
+platform: instagram
+content_type: case_study
+topic: "From raw footage to polished reel in 90 seconds \u2014 the Genpeli pipeline"
+text: "Most creators lose 4 hours to a single reel.\nI built Genpeli to take raw footage\
+  \ to polished export in 90 seconds.\n\nThe bottleneck wasn't the creative vision.\
+  \ It was the 400 micro-edits required to keep a viewer from scrolling past.\n\n\
+  I built the Genpeli pipeline to handle the mechanical heavy lifting. It\u2019s not\
+  \ just a wrapper around an API; it\u2019s a decision-making engine for video.\n\n\
+  \u2192 Smart-cuts: Finding the 0.3s of dead air that kills retention.\n\u2192 Transcription:\
+  \ Mapping Whisper timestamps to stylized, word-by-word overlays.\n\u2192 Normalization:\
+  \ Leveling the audio via FFmpeg so every word lands.\n\nMost tools focus on the\
+  \ \"filter.\"\nI focused on the flow.\n\nThe math is simple:\nCreator ROI = (Content\
+  \ Impact \xD7 Frequency) - (Time to Edit)\xB2\n\nBy collapsing the edit from hours\
+  \ to 90 seconds, the \"cost\" of posting disappears. When the friction is gone,\
+  \ the only thing left is the story you want to tell.\n\n#buildinpublic #automation\
+  \ #videoproduction #ai #python #creatoreconomy #solopreneur #softwareengineering\
+  \ #workflow #genpeli #instagramgrowth #videoediting #ml\n\nHow much of your creative\
+  \ energy is currently trapped in the 0.3s gaps between sentences? Once you automate\
+  \ the mechanics, the vision is all that's left."
+reasoning: 'Instagram test: visual storytelling about video editing pipeline.'
+model_used: specialist-chain/claude-sonnet-4-6
+generated_at: '2026-03-13T22:32:10.331425+00:00'
+status: pending_review

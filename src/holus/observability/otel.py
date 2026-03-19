@@ -178,7 +178,7 @@ def propagate_context_env() -> dict[str, str]:
     passed as env vars to Codex/Gemini CLI subprocesses.
     """
     try:
-        from opentelemetry import context, trace
+        from opentelemetry import context
         from opentelemetry.trace.propagation.tracecontext import (
             TraceContextTextMapPropagator,
         )

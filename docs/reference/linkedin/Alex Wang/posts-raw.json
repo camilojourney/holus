@@ -1,0 +1,160 @@
+[
+  {
+    "text": "The loudest AI trends online aren't the ones companies are investing in. Most of the AI conversation right now revolves around things like prompt engineering building agents AI-native applications But I recently came across some enterprise learning data that tells a different story: One of the fastest-growing AI skills in enterprises right now is actually 𝐆𝐢𝐭𝐇𝐮𝐛 𝐂𝐨𝐩𝐢𝐥𝐨𝐭. Not prompting. Not agent frameworks. Just developers learning how to work alongside AI inside their existing workflow. When you think about how AI spreads inside companies, this actually makes a lot of sense. Most organizations aren’t trying to turn themselves into AI-native startups overnight. They’re trying to make the teams they already have more productive. And AI-assisted development is often the easiest place to start. Another signal that caught my attention: 𝐀𝐈 𝐞𝐭𝐡𝐢𝐜𝐬 𝐚𝐧𝐝 𝐠𝐨𝐯𝐞𝐫𝐧𝐚𝐧𝐜𝐞 appears both in the fastest-growing and most in-demand skills. Which suggests the enterprise AI maturity curve may be moving faster than many people expected. A lot of the public AI conversation is still about what’s possible. Inside companies, the focus is already shifting toward what actually improves performance. 𝐔𝐝𝐞𝐦𝐲 𝐁𝐮𝐬𝐢𝐧𝐞𝐬𝐬 analyzed learning data from 17,000+ organizations to map how AI skills are evolving inside teams. The report is worth a look: https://lnkd.in/gVFeM-DA Curious what you're seeing inside your teams. …more",
+    "timestamp": "1d",
+    "reactions": "211",
+    "comments": "47",
+    "reposts": "14",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQH0Iuml92G_QA/feedshare-shrink_800/B56Zz0eYMDHIAc-/0/1773628130325?e=1775692800&v=beta&t=gV3OgIM6NeVWCP53OMYVXxNv_ZMDDaH2DY2d_zGjAQg"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7439252890965151744",
+    "index": 1,
+    "screenshot": "screenshots/001-the-loudest-ai-trends-online-aren-t-the.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "LangChain just open-sourced a replica of Claude Code. It’s an MIT-licensed framework that recreates the core workflow behind coding agents like Claude Code - but in an open system developers can inspect and modify. It is called Deep Agents. I spent a bit of time looking through the repo and it’s actually a pretty helpful reference if you’re trying to understand how these coding agents are structured. Inside you’ll see pieces like: • planning / todo tools for managing tasks • file system reading and editing • running shell commands • tool-calling loops • sub-agents for more complex tasks • long-running context management Another useful aspect is that it’s 𝐦𝐨𝐝𝐞𝐥-𝐚𝐠𝐧𝐨𝐬𝐭𝐢𝐜, so you can plug in different LLMs and experiment with building your own coding agents on top of the same structure. If you’re exploring agent frameworks or just curious how tools like Claude Code work under the hood, this is a pretty good repo to bookmark. Link in the comments. Also, if you are into AI, join our AI Academy here: https://lnkd.in/g3aXnMT3 …more",
+    "timestamp": "2d",
+    "reactions": "0",
+    "comments": "95",
+    "reposts": "357",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHihjDUjsnnJQ/feedshare-shrink_800/B56Zzx5itrJkAc-/0/1773584919636?e=1775692800&v=beta&t=Zyzni2DigjEBHNGE6t8uhiOyQF0aCGFKlhCpQHmO6G4"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7438954328469520384",
+    "index": 2,
+    "screenshot": "screenshots/002-langchain-just-open-sourced-a-replica-of.png",
+    "category": "Technical Tutorial"
+  },
+  {
+    "text": "The boundary between design and development is starting to disappear. We’re starting to see more AI tools where design and building happen at the same time, instead of as separate steps. Replit’s latest update, Agent 4, is one of my favorite examples of that direction: 1- They introduced what they call an infinite design canvas A place you can explore UI ideas visually while the agent builds parts of the application in the background. So instead of finishing a design first and then translating it into code, the two processes start happening together. 2- Another interesting piece is how the system handles execution. Multi-agent ideas aren’t new, but it’s interesting to see parallel workflows built directly into the product experience. Different parts of a project can run at the same time. In other words, while you're designing in the UI, 𝐭𝐡𝐢𝐧𝐤𝐢𝐧𝐠, 𝐝𝐞𝐬𝐢𝐠𝐧𝐢𝐧𝐠, 𝐚𝐧𝐝 𝐛𝐮𝐢𝐥𝐝𝐢𝐧𝐠 𝐜𝐚𝐧 𝐚𝐥𝐥 𝐡𝐚𝐩𝐩𝐞𝐧 𝐚𝐭 𝐭𝐡𝐞 𝐬𝐚𝐦𝐞 𝐭𝐢𝐦𝐞. 3- The scope of a “project” is expanding. Inside one workspace you can generate things like: * web apps * mobile apps * slide decks * data apps * animations So the development environment starts to look more like a creative workspace than a traditional IDE. Explore Agent 4 here: https://lnkd.in/gT5veH2Y Curious to see how far this direction goes. …more",
+    "timestamp": "4d",
+    "reactions": "127",
+    "comments": "21",
+    "reposts": "8",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHBXQsYKNbRpg/feedshare-shrink_800/B56ZzlRvvAJIAc-/0/1773373160627?e=1775692800&v=beta&t=T8v_PCuusuSLn7hNkL6ehqoWQv2C_K4zuLzXpjra7OE"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7438184613447086080",
+    "index": 3,
+    "screenshot": "screenshots/003-the-boundary-between-design-and-developm.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "The modern AI stack is collapsing into fewer layers. Traditionally, building an AI application meant stitching together multiple systems. It works. But the architecture quickly becomes complicated. Data has to stay in sync across systems. Queries travel through multiple layers. Latency and operational overhead start to add up. But something interesting is happening in AI infrastructure: More infrastructure platforms are starting to combine these capabilities instead of keeping them separate. 𝐕𝐞𝐜𝐭𝐨𝐫 𝐬𝐞𝐚𝐫𝐜𝐡, 𝐨𝐩𝐞𝐫𝐚𝐭𝐢𝐨𝐧𝐚𝐥 𝐝𝐚𝐭𝐚, 𝐚𝐧𝐝 𝐬𝐞𝐚𝐫𝐜𝐡 𝐚𝐫𝐞 𝐛𝐞𝐠𝐢𝐧𝐧𝐢𝐧𝐠 𝐭𝐨 𝐥𝐢𝐯𝐞 𝐢𝐧𝐬𝐢𝐝𝐞 𝐭𝐡𝐞 𝐬𝐚𝐦𝐞 𝐬𝐲𝐬𝐭𝐞𝐦. It’s a relatively small architectural change, but it simplifies a lot when you're actually running AI products in production. I was reminded of this while looking at some of the things MongoDB has been building recently. They’ve integrated vector search directly into the database, so 𝐨𝐩𝐞𝐫𝐚𝐭𝐢𝐨𝐧𝐚𝐥 𝐝𝐚𝐭𝐚, 𝐞𝐦𝐛𝐞𝐝𝐝𝐢𝐧𝐠𝐬, 𝐚𝐧𝐝 𝐫𝐞𝐭𝐫𝐢𝐞𝐯𝐚𝐥 can live in the same system instead of being split across multiple tools. For teams building AI systems, that kind of convergence is interesting, fewer moving pieces in the stack, and less infrastructure to manage. It also feels like part of a broader pattern in the AI ecosystem right now. As models keep improving, more attention is shifting to how the surrounding systems are designed - data layers, retrieval, observability, memory. And sometimes the biggest improvements don’t come from a new model at all, but from simplifying the architecture around it. PS. If you want to go a bit deeper into how databases actually power AI systems, MongoDB’s Learning Hub is actually a pretty useful place to explore: https://lnkd.in/gDAZi8Gs …more",
+    "timestamp": "4d",
+    "reactions": "0",
+    "comments": "29",
+    "reposts": "5",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQGYxhDCaZoZZQ/feedshare-shrink_800/B56ZzlGfeUKYAc-/0/1773370210588?e=1775692800&v=beta&t=Py-poZAS6r0-EbCF_3vhTfEN-yXQuFHqk3stB3Zilho"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7438101548213202944",
+    "index": 4,
+    "screenshot": "screenshots/004-the-modern-ai-stack-is-collapsing-into-f.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "NVIDIA isn’t just powering AI anymore. It’s building the models in the open too. The company recently introduced 𝐍𝐞𝐦𝐨𝐭𝐫𝐨𝐧 𝟑 𝐒𝐮𝐩𝐞𝐫, part of its open Nemotron model family. What makes this model interesting isn’t just the benchmark numbers. It’s the design tradeoff it’s trying to solve. 1️⃣ Nemotron 3 Super is a large reasoning model with 120B parameters, but during inference it only uses 12B active parameters) instead of the full network. That architectural choice matters in practice. It can reduce memory requirements while improving 𝐥𝐚𝐭𝐞𝐧𝐜𝐲 𝐚𝐧𝐝 𝐭𝐡𝐫𝐨𝐮𝐠𝐡𝐩𝐮𝐭, making large models much more practical to run in production environments. For many teams, the real challenge isn’t capability anymore. It’s whether the model can run efficiently at scale. 2️⃣The benchmark numbers are still great though - 5x higher throughput and 2x higher accuracy than the previous Llama Nemotron Super model. Plus a 1M token context window with latent MoE architecture allows Nemotron 3 Super to provide true long term memory. 3️⃣ Another angle I find fascinating is what this says about NVIDIA’s broader strategy. For years, NVIDIA dominated the 𝐜𝐨𝐦𝐩𝐮𝐭𝐞 𝐥𝐚𝐲𝐞𝐫 of AI through GPUs. Now it’s increasingly moving further up the stack: compute → open models → AI factories. In some ways, it almost feels like NVIDIA may be trying to recreate its 𝐂𝐔𝐃𝐀 𝐦𝐨𝐦𝐞𝐧𝐭, but this time at the model layer. Jensen recently posted that AI is a five layer cake, spanning energy, chips, infrastructure, models, and applications - we’re seeing the model layer being democratized overall with NVIDIA Nemotron. 📍Hugging Face link https://nvda.ws/3Pvzn8o Curious how others see this. Do you think the next generation of models will compete more on raw capability, or on efficiency and deployability? NVIDIA Data Center …more",
+    "timestamp": "5d",
+    "reactions": "257",
+    "comments": "20",
+    "reposts": "13",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHxnAB6_dIZFQ/feedshare-shrink_800/B56Zzk4anIH8Ac-/0/1773366520686?e=1775692800&v=beta&t=BHPqZylJjjH3NmTkbQnou572H1B5Ulg_f_LFskxSYCg"
+    ],
+    "hashtags": [],
+    "urn": "urn:li:activity:7438038297324498945",
+    "index": 5,
+    "screenshot": "screenshots/005-nvidia-isn-t-just-powering-ai-anymore-i.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "As models get better and context windows keep expanding… do we still need RAG? Just one year ago, RAG was still a relatively new term in many discussions. Now with stronger reasoning, memory systems, and new approaches emerging, the picture is starting to look more interesting... …more",
+    "timestamp": "5d",
+    "reactions": "678",
+    "comments": "128",
+    "reposts": "13",
+    "postType": "text",
+    "images": [],
+    "hashtags": [],
+    "urn": "post-5",
+    "index": 6,
+    "screenshot": "screenshots/006-as-models-get-better-and-context-windows.png",
+    "category": "Tool Review / Comparison"
+  },
+  {
+    "text": "Yann LeCun just raised $1.03 billion to bet that today’s AI is built on the wrong idea. This is Europe’s largest ever seed round, and he did it in just four months. The $3.5B valuation puts his new company, AMI, in frontier-AI territory before it has shipped a single product. 𝐖𝐡𝐚𝐭 𝐢𝐬 𝐀𝐌𝐈 𝐭𝐫𝐲𝐢𝐧𝐠 𝐭𝐨 𝐛𝐮𝐢𝐥𝐝? Instead of pushing language models further, LeCun is betting on world models. The idea is simple to describe, but very ambitious: train AI systems to learn how the world works - objects, environments, and cause-and-effect - instead of just predicting the next word. I’ve shared the concept of world models before and have been watching this space for a while. But what I find even more interesting is that the field now seems to be splitting into several different ideas about how AI should progress. 𝐒𝐨 𝐰𝐡𝐚𝐭 𝐝𝐢𝐟𝐟𝐞𝐫𝐞𝐧𝐭 𝐩𝐚𝐭𝐡𝐬 𝐢𝐬 𝐭𝐡𝐞 𝐀𝐈 𝐟𝐢𝐞𝐥𝐝 𝐞𝐱𝐩𝐥𝐨𝐫𝐢𝐧𝐠 𝐫𝐢𝐠𝐡𝐭 𝐧𝐨𝐰? --- One path is still scaling language models. Labs like OpenAI, Anthropic, and xAI continue to push larger models and more reasoning compute. --- Another direction focuses on system-level intelligence - combining models with tools, planning, and structured reasoning. You can see this in work coming out of DeepMind and NVIDIA. --- Then there’s the growing push toward agent systems, where models orchestrate tools, memory, and workflows rather than acting alone. --- And finally, the direction LeCun is betting on: 𝐰𝐨𝐫𝐥𝐝 𝐦𝐨𝐝𝐞𝐥𝐬. Researchers like Fei-Fei Li are exploring similar ideas through 𝐬𝐩𝐚𝐭𝐢𝐚𝐥 𝐢𝐧𝐭𝐞𝐥𝐥𝐢𝐠𝐞𝐧𝐜𝐞 and 3D world understanding at World Labs. The promise is compelling. But the risks are just as clear. World models likely require massive multimodal data - video, interaction, simulations - which is far more complex than training on internet text. So this could take years to prove out. But who knows, technology is moving much faster these days than we ever imagined. Also, if you are into AI, join our AI Academy here: https://lnkd.in/g3aXnMT3 …more",
+    "timestamp": "6d",
+    "reactions": "0",
+    "comments": "122",
+    "reposts": "56",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQHyLYUKodYmvg/feedshare-shrink_800/B56ZzbHqHHJgAc-/0/1773202744047?e=1775692800&v=beta&t=K-G96KkjkzmELMq5w_Ql9Kqv0pcsBZypxh6qtwP_Zuo"
+    ],
+    "hashtags": [],
+    "urn": "post-6",
+    "index": 7,
+    "screenshot": "screenshots/007-yann-lecun-just-raised-1-03-billion-to.png",
+    "category": "General / Uncategorized"
+  },
+  {
+    "text": "You’re not really building AI systems until you start caring about the data pipeline. A bit absolute, but you get the idea - models are only part of the story. Real AI applications usually need fresh information, from the web, search engines, marketplaces, news sites, and many other sources. And that’s where research APIs come in. 𝐑𝐞𝐬𝐞𝐚𝐫𝐜𝐡 𝐀𝐏𝐈𝐬 allow AI systems to automatically retrieve information from across the web and feed it directly into the AI workflow. This is how many AI tools stay connected to real-world, up-to-date data. What’s interesting is that the ecosystem around research APIs is starting to split into different roles. Some focus on AI-native search designed for LLM workflows. Some specialize in SERP data used for search analytics. And others focus on large-scale web data access and structured datasets. Platforms like 𝐁𝐫𝐢𝐠𝐡𝐭 𝐃𝐚𝐭𝐚, for example, are often used when teams need to retrieve and structure large amounts of web data for research or AI applications. I recently came across this comparison of several research APIs, which I thought was a useful snapshot of how this ecosystem is evolving. Also, this guide from Bright Data walks through several of the leading research APIs used today: https://lnkd.in/gMCuvvHP Curious to hear from people building AI products, what research APIs or data sources are you using today? …more",
+    "timestamp": "1w",
+    "reactions": "687",
+    "comments": "52",
+    "reposts": "54",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQFy9EZB3dUpFQ/feedshare-shrink_800/B56ZzahWS4J8Ac-/0/1773192701381?e=1775692800&v=beta&t=i6J-Cvw7FxFQcEjdseXpehP6_Sugv4i2XPIlCchj8vA"
+    ],
+    "hashtags": [],
+    "urn": "post-7",
+    "index": 8,
+    "screenshot": "screenshots/008-you-re-not-really-building-ai-systems-un.png",
+    "category": "System Design / Architecture"
+  },
+  {
+    "text": "Cursor changed how developers write code. I’m starting to see a similar idea show up in video editing. Most AI video tools today still sit on top of traditional timelines - auto captions, smart trimming, filler word removal. Helpful, but in most cases, you're still doing the editing yourself. One AI tool I’ve been watching in this direction is 𝐂𝐡𝐚𝐭𝐂𝐮𝐭. Their approach is quite interesting. Instead of mainly assisting the editor, their AI agent can actually execute parts of the editing process. You upload footage. It transcribes the content. Then you can either: ---→ Edit the transcript like a Google Doc (delete text = delete video) ---→ Prompt the AI in natural language (“organize this by topic,” “cut the first 5 minutes into a 60-second highlight”) ---→ Or switch to a traditional timeline if you want more precise control One feature that stood out was the 𝐦𝐨𝐭𝐢𝐨𝐧 𝐠𝐫𝐚𝐩𝐡𝐢𝐜𝐬 𝐠𝐞𝐧𝐞𝐫𝐚𝐭𝐢𝐨𝐧. I asked it to create a title card and a simple flow chart overlay, and the result looked closer to custom motion design than the usual template-based output. They also have early access to Kling 3.0 Pro for AI video generation. For example, you can paste a product link, and the agent pulls visual assets from the page and uses them to generate a video. *It’s still early and currently in closed beta, but the direction is interesting, an editing workflow where the AI executes parts of the process rather than just suggesting edits. If you’re curious to explore it, they’re sharing early access with this invite code: 𝐕𝐓𝐒𝐒𝐅𝐅 (100 redemptions) https://lnkd.in/gp2b9-Bb Curious what AI tools have changed your content workflow recently. …more",
+    "timestamp": "1w",
+    "reactions": "165",
+    "comments": "29",
+    "reposts": "7",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQFVWeriSPqi8w/feedshare-shrink_800/B56ZzWIYNZGgAc-/0/1773119046751?e=1775692800&v=beta&t=mhSy1ylD0NRIyETG0BNKhJ_evJ60HzzW2SXJXmn5Wq0"
+    ],
+    "hashtags": [],
+    "urn": "post-8",
+    "index": 9,
+    "screenshot": "screenshots/009-cursor-changed-how-developers-write-code.png",
+    "category": "Sponsored / Partnership"
+  },
+  {
+    "text": "Gemini vs Claude vs ChatGPT Awesome visual - good excuse to share my experience using these three over the past year! 𝐂𝐡𝐚𝐭𝐆𝐏𝐓 - Still the most versatile everyday assistant for me. Writing, quick analysis, brainstorming, generating images, small coding tasks, it’s usually the fastest place to start. And… I was very attached to the 4o version. I literally used it until the very last day before it was retired. Now I’m slowly getting used to the newer models, and it’s actually becoming an even better assistant for me now. 𝐂𝐥𝐚𝐮𝐝𝐞 - on the other hand, often feels like the colleague who actually reads the entire document before replying. When I paste a long research doc, contract, or messy notes, it tends to stay thoughtful and structured. Many developers also say Claude is especially strong at reasoning and code review tasks. 𝐆𝐞𝐦𝐢𝐧𝐢 is interesting for a different reason. If your work already lives inside Gmail, Docs, Drive, or Sheets, it can feel surprisingly natural, because the AI is basically sitting inside the tools you’re already using. But I also remind myself that it’s becoming less and less important which model we pick - they’re all quite capable now. What matters more is how we work with them, and how we integrate them into our workflow. Also, Outskill is hosting a live 2-day AI Mastermind this weekend, live event | free to join https://lnkd.in/gEpvSwFG It's a good one to attend if you are trying to integrate AI into your work. …more",
+    "timestamp": "1w",
+    "reactions": "0",
+    "comments": "136",
+    "reposts": "431",
+    "postType": "image+text",
+    "images": [
+      "https://media.licdn.com/dms/image/v2/D5622AQES86tFYf97mg/feedshare-shrink_1280/B56ZzV84.aKcAM-/0/1773116035248?e=1775692800&v=beta&t=_TahFc0_8Mgg-xZtcaqA7Mhm8kowoGD30FXT-F7QnAI"
+    ],
+    "hashtags": [],
+    "urn": "post-9",
+    "index": 10,
+    "screenshot": "screenshots/010-gemini-vs-claude-vs-chatgpt-awesome-visu.png",
+    "category": "Tool Review / Comparison"
+  }
+]

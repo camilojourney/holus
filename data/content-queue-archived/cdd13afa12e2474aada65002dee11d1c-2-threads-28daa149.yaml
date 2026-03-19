@@ -1,0 +1,16 @@
+piece_id: cdd13afa12e2474aada65002dee11d1c-2-threads-28daa149
+product: genpeli
+platform: threads
+content_type: case_study
+topic: "From raw footage to polished reel in 90 seconds \u2014 the Genpeli pipeline"
+text: "Most creators lose 4 hours to a single reel. I built Genpeli to take raw footage\
+  \ to polished export in 90 seconds.\n\nHonestly, the bottleneck wasn't the vision\u2014\
+  it was the 400 micro-edits required to stop the scroll. I built a decision-making\
+  \ engine to handle the mechanical heavy lifting.\n\n\u2192 Smart-cuts: Killing the\
+  \ 0.3s of dead air\n\u2192 Transcription: Word-by-word overlays via Whisper\n\u2192\
+  \ Normalization: FFmpeg audio leveling\n\nMost tools focus on the \"filter\"\u2014\
+  I focused on the flow. When the friction..."
+reasoning: 'Instagram test: visual storytelling about video editing pipeline.'
+model_used: claude-sonnet-4-6
+generated_at: '2026-03-13T22:33:23.784421+00:00'
+status: pending_review

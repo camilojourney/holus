@@ -1,0 +1,215 @@
+RESEARCH FINDINGS: Optimal LinkedIn Posting Frequency for B2B AI Tool Companies
+Agent: claude-1
+Gathered: 2026-03-19
+Query: LinkedIn posting frequency, content mix, and strategy for B2B AI/SaaS companies
+Sources searched: 14
+
+
+================================================================================
+SUB-QUESTION 1: What posting frequency maximizes LinkedIn engagement for B2B AI/SaaS content?
+================================================================================
+
+FINDING 1
+- Claim: Accounts posting 2-5 times per week see +1,182 additional impressions per post and a 0.23 percentage point lift in engagement rate compared to posting once per week. Accounts posting 11+ times weekly see nearly 3x the engagements per post compared to once-a-week posters.
+- Source URL: https://buffer.com/resources/how-often-to-post-on-linkedin/
+- Source Date: 2026 (current year)
+- Source Tier: PRIMARY
+- Numbers: 2M+ posts analyzed from 94,000+ accounts; 2-5 posts/week = +1,182 impressions/post; 11+ posts/week = ~3x engagements/post; 0.23pp engagement rate lift at 2-5/week
+
+FINDING 2
+- Claim: Data from 247 B2B company pages shows the sweet spot is 8-12 posts monthly (roughly 2-3/week) that maximizes ROI without burning out teams. Posting frequency matters less than consistency.
+- Source URL: https://ligosocial.com/blog/linkedin-company-page-posting-frequency-what-actually-works-in-2025
+- Source Date: 2025
+- Source Tier: SECONDARY
+- Numbers: 247 B2B company pages analyzed; 8-12 posts/month optimal
+
+FINDING 3
+- Claim: LinkedIn's own product management data states that members who post just twice weekly see up to 5x more profile views compared to those who do not post consistently.
+- Source URL: https://blog.linkboost.co/linkedin-posting-frequency-2026/
+- Source Date: 2026
+- Source Tier: SECONDARY (citing LinkedIn official data)
+- Numbers: 2 posts/week = up to 5x profile views
+
+FINDING 4
+- Claim: The Algorithm Insights Report 2025 (1.8M posts analyzed) found that posting multiple times in under 24 hours causes reduced reach on the newest post ("content cannibalization"). Organic reach has dropped ~50% year-over-year. Consistency of 3x/week sustained for months is the recommended approach.
+- Source URL: https://www.linkedin.com/posts/richardvanderblom_chapter-1-algorithm-insights-report-2025-activity-7322514599126130688-Q895
+- Source Date: 2025
+- Source Tier: PRIMARY
+- Numbers: 1.8M posts analyzed; ~50% YoY reach decline; posting <24h apart penalized; 3x/week sustained = optimal
+
+FINDING 5
+- Claim: Accounts posting 2+ times daily see a median drop in reach per post of over 40%. The algorithm penalizes over-posting with content cannibalization where the second post halts distribution of the first.
+- Source URL: https://blog.linkboost.co/linkedin-posting-frequency-best-practices-2026/
+- Source Date: 2026
+- Source Tier: SECONDARY
+- Numbers: 2+ posts/day = >40% median reach drop per post
+
+FINDING 6
+- Claim: A great LinkedIn post can generate organic engagement for 48-72 hours. Publishing a new post while the previous one is still gaining traction actively sabotages reach by triggering content cannibalization.
+- Source URL: https://brixongroup.com/en/linkedin-algorithm-dos-donts-for-organic-visibility-in-the-b2b-sector
+- Source Date: 2026
+- Source Tier: SECONDARY
+- Numbers: 48-72 hour content lifespan per post
+
+FINDING 7
+- Claim: Organic reach for company pages specifically plummeted 60-66% from 2024 to early 2026. Company visibility increasingly depends on employee advocacy (personal profiles) rather than company page posting volume alone.
+- Source URL: https://www.tryordinal.com/blog/the-declining-reach-of-linkedin-company-pages
+- Source Date: 2026 (January)
+- Source Tier: SECONDARY
+- Numbers: 60-66% company page reach decline from 2024 to early 2026
+
+
+================================================================================
+SUB-QUESTION 2: What do top AI companies post -- frequency and content types?
+================================================================================
+
+FINDING 8
+- Claim: Anthropic has 2,395,573 LinkedIn followers. Their content focuses on product launches, safety research findings, and company announcements. They post regularly but specific cadence data is not publicly documented.
+- Source URL: https://www.linkedin.com/company/anthropicresearch
+- Source Date: 2026 (current)
+- Source Tier: PRIMARY (direct observation)
+- Numbers: 2,395,573 followers
+
+FINDING 9
+- Claim: OpenAI has 10,353,544 LinkedIn followers, making it one of the most followed AI company pages. Content focuses on product announcements, research, and developer ecosystem updates.
+- Source URL: https://www.linkedin.com/company/openai
+- Source Date: 2026 (current)
+- Source Tier: PRIMARY (direct observation)
+- Numbers: 10,353,544 followers
+
+FINDING 10
+- Claim: Cursor (valued at $29.3B) posts regularly about product updates, features, and announcements like Cursor Automations. They achieved 1,000% year-over-year growth. Content focuses on product capability demonstrations and developer workflow improvements.
+- Source URL: https://www.linkedin.com/company/cursorai
+- Source Date: 2026 (current)
+- Source Tier: PRIMARY (direct observation)
+- Numbers: $29.3B valuation; 1,000% YoY growth
+
+FINDING 11
+- Claim: Replit (millions of users, 500,000+ business users) posts about product launches, partnerships, and agent capabilities (e.g., Replit Agent 4). Content emphasizes developer creativity and natural language coding.
+- Source URL: https://www.linkedin.com/company/repl-it
+- Source Date: 2026 (current)
+- Source Tier: PRIMARY (direct observation)
+- Numbers: 500,000+ business users
+
+FINDING 12
+- Claim: For AI company pages specifically, the recommendation is 2-3 posts per week on the company page focusing on employer branding, company culture, and major product updates, supplemented by employee advocacy from founders and team members posting 3-5x/week on personal profiles.
+- Source URL: https://postiv.ai/blog/linkedin-company-page-best-practices
+- Source Date: 2025-2026
+- Source Tier: SECONDARY
+- Numbers: 2-3 company page posts/week + 3-5 employee posts/week
+
+
+================================================================================
+SUB-QUESTION 3: What is the optimal content type mix?
+================================================================================
+
+FINDING 13
+- Claim: Native document posts (PDF carousels) lead all formats with a 7.00% average engagement rate in 2026, a 14% year-over-year increase. Overall LinkedIn engagement rate averages 5.20% (up 8% YoY).
+- Source URL: https://www.socialinsider.io/social-media-benchmarks/linkedin
+- Source Date: 2026
+- Source Tier: PRIMARY
+- Numbers: Documents = 7.00% engagement rate (+14% YoY); Platform average = 5.20% (+8% YoY)
+
+FINDING 14
+- Claim: Document posts (PDF carousels) hit 6.60% engagement rates, the highest of any format, while standard text posts struggle to break 2%. Carousel posts generate 11.2x more impressions than text-only updates.
+- Source URL: https://www.dataslayer.ai/blog/linkedin-algorithm-february-2026-whats-working-now
+- Source Date: February 2026
+- Source Tier: SECONDARY
+- Numbers: Carousels = 6.60% engagement, 11.2x impressions vs. text; Text posts <2% engagement
+
+FINDING 15
+- Claim: The classic B2B content mix formula is 70% educational content, 20% curated content, 10% promotional content. Alternatively described as 80/20: 80% educational/insightful/entertaining, 20% promotional.
+- Source URL: https://digitallybugged.com/linkedin-content-strategy-for-b2b-and-personal-branding/
+- Source Date: 2025
+- Source Tier: SECONDARY
+- Numbers: 70/20/10 or 80/20 educational-to-promotional ratio
+
+FINDING 16
+- Claim: Thought-leadership posts see 2-3x higher engagement than standard brand posts and attract higher-intent leads, especially for niche or high-ticket markets like SaaS. Thought Leader Ads achieve 2-5x higher engagement rates than traditional LinkedIn ads.
+- Source URL: https://impactable.com/linkedin-thought-leader-ads-the-b2b-secret-weapon-in-2025/
+- Source Date: 2025
+- Source Tier: SECONDARY
+- Numbers: Thought leadership = 2-3x engagement vs. brand posts; Thought Leader Ads = 2-5x vs. traditional ads
+
+FINDING 17
+- Claim: The 2025 Edelman-LinkedIn B2B Thought Leadership Impact Report (7th year, ~2,000 global professionals surveyed) found: 64% of target buyers and 63% of hidden buyers spend 1+ hour/week consuming thought leadership. 71% of hidden buyers say thought leadership is more effective than conventional marketing materials. 79% of hidden buyers are more likely to support proposals from vendors with regular strong thought leadership. 91% say quality thought leadership helps uncover unrecognized challenges. 40%+ of deals stall from buying-group misalignment that thought leadership can address.
+- Source URL: https://www.edelman.com/expertise/Business-Marketing/2025-b2b-thought-leadership-report
+- Source Date: 2025
+- Source Tier: PRIMARY
+- Numbers: ~2,000 professionals surveyed; 64% spend 1+ hr/week on thought leadership; 71% say it beats conventional marketing; 79% more likely to support vendors with strong thought leadership; 91% say it reveals unrecognized challenges; 40%+ deals stall from misalignment
+
+FINDING 18
+- Claim: Best-performing content calendar for B2B SaaS: anchor content (multi-image carousels, videos) 2-3x/week, engagement drivers (polls, discussion prompts) 1-2x/week, quick value (text posts with insights) 1-2x/week. Video reach plummeted in 2025 with LinkedIn deprioritizing video; focus on carousels and PDFs instead.
+- Source URL: https://www.averi.ai/how-to/linkedin-marketing-for-b2b-saas-the-complete-strategy-guide-for-2026
+- Source Date: 2026
+- Source Tier: SECONDARY
+- Numbers: Carousels 2-3x/week; Engagement posts 1-2x/week; Text insights 1-2x/week; Video reach declining
+
+FINDING 19
+- Claim: LinkedIn is the #2 most-cited domain in AI search (ChatGPT Search, Google AI Mode, Perplexity) based on 325,000 prompts and 89,000 LinkedIn URLs analyzed. LinkedIn articles (500-2,000 words) account for 50-66% of cited content. ~95% of cited posts are original content. 54-65% of cited content is knowledge/advice-driven.
+- Source URL: https://www.semrush.com/blog/linkedin-ai-visibility-study/
+- Source Date: 2026
+- Source Tier: PRIMARY
+- Numbers: #2 most-cited domain in AI search; 325,000 prompts; 89,000 URLs; Articles = 50-66% of citations; 95% original; 54-65% knowledge-driven
+
+FINDING 20
+- Claim: Posts with recognizable AI-generated patterns achieve 47% less organic reach on average. The most effective approach is a hybrid: AI for research and initial drafts, human expertise for refinement and authentic perspectives.
+- Source URL: https://brixongroup.com/en/linkedin-algorithm-dos-donts-for-organic-visibility-in-the-b2b-sector
+- Source Date: 2026
+- Source Tier: SECONDARY
+- Numbers: AI-pattern posts = 47% less organic reach
+
+
+================================================================================
+SYNTHESIS: KEY RECOMMENDATIONS FOR B2B AI TOOL COMPANIES
+================================================================================
+
+FREQUENCY:
+- Company page: 2-3 posts/week (8-12/month). Do NOT exceed 1 post per 24 hours.
+- Founder/team personal profiles: 3-5 posts/week each for employee advocacy.
+- Consistency over months matters more than raw frequency.
+- Content has a 48-72 hour lifespan; spacing posts preserves reach.
+
+CONTENT MIX (recommended weekly for company page at 3 posts/week):
+- 1x PDF carousel / document post (technical tutorial, case study, product walkthrough) -- highest engagement at 6.6-7.0%
+- 1x Thought leadership post (industry insight, founder perspective, bold take) -- 2-3x engagement vs. standard brand posts
+- 1x Product/company update (launch, milestone, team highlight) -- keeps page active
+
+RATIO: 70-80% educational/insightful, 10-20% curated/community, 10-15% promotional
+
+FORMAT RANKINGS (by engagement rate, 2026):
+1. Native documents / PDF carousels: 6.60-7.00% engagement
+2. Multi-image posts: Strong likes/engagement
+3. Text + image posts: Moderate
+4. Text-only posts: <2% engagement
+5. Video: Declining reach (deprioritized by algorithm in 2025-2026)
+6. Polls: Best for pages with 50k+ followers
+
+CRITICAL INSIGHT FOR AI COMPANIES:
+- Employee advocacy (personal profiles) is now the primary distribution channel because company page organic reach dropped 60-66% since 2024.
+- AI-generated content is penalized (-47% reach); use AI for drafts but humanize before publishing.
+- LinkedIn is #2 most-cited source in AI search engines -- original, knowledge-driven articles (500-2000 words) get cited most.
+- 79% of hidden B2B buyers prefer vendors with strong thought leadership.
+
+
+================================================================================
+SOURCE LIST (14 distinct sources, by tier)
+================================================================================
+
+PRIMARY SOURCES:
+1. Buffer - "How Often Should You Post on LinkedIn in 2026?" - 2M+ posts, 94K accounts - https://buffer.com/resources/how-often-to-post-on-linkedin/
+2. Richard van der Blom / Just Connecting - Algorithm Insights Report 2025 - 1.8M posts - https://www.linkedin.com/posts/richardvanderblom_chapter-1-algorithm-insights-report-2025-activity-7322514599126130688-Q895
+3. Socialinsider - LinkedIn Benchmarks 2026 - https://www.socialinsider.io/social-media-benchmarks/linkedin
+4. Edelman + LinkedIn - 2025 B2B Thought Leadership Impact Report - ~2,000 professionals - https://www.edelman.com/expertise/Business-Marketing/2025-b2b-thought-leadership-report
+5. Semrush - LinkedIn AI Visibility Study - 89,000 URLs, 325,000 prompts - https://www.semrush.com/blog/linkedin-ai-visibility-study/
+6. LinkedIn company pages (direct): Anthropic, OpenAI, Cursor, Replit
+
+SECONDARY SOURCES:
+7. LiGo Social - Company Page Posting Frequency 2025 - 247 B2B pages - https://ligosocial.com/blog/linkedin-company-page-posting-frequency-what-actually-works-in-2025
+8. LinkBoost - LinkedIn Posting Frequency 2026 - https://blog.linkboost.co/linkedin-posting-frequency-2026/
+9. Brixon Group - LinkedIn Algorithm 2026 B2B Dos and Don'ts - https://brixongroup.com/en/linkedin-algorithm-dos-donts-for-organic-visibility-in-the-b2b-sector
+10. Dataslayer - LinkedIn Algorithm Feb 2026 - https://www.dataslayer.ai/blog/linkedin-algorithm-february-2026-whats-working-now
+11. Averi AI - LinkedIn for B2B SaaS Playbook 2026 - https://www.averi.ai/how-to/linkedin-marketing-for-b2b-saas-the-complete-strategy-guide-for-2026
+12. Impactable - Thought Leader Ads B2B 2025 - https://impactable.com/linkedin-thought-leader-ads-the-b2b-secret-weapon-in-2025/
+13. Ordinal - LinkedIn Company Page Reach Jan 2026 - https://www.tryordinal.com/blog/the-declining-reach-of-linkedin-company-pages
+14. Postiv AI - LinkedIn Content Strategy 2025-2026 - https://postiv.ai/blog/linkedin-content-strategy-2025

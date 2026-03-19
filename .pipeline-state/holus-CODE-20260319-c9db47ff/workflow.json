@@ -1,0 +1,12 @@
+{
+  "mode": "FIX",
+  "cid": "holus-CODE-20260319-c9db47ff",
+  "repo": "holus",
+  "timestamp": "2026-03-19T15:00:00Z",
+  "prompt_versions": {
+    "code-implementer": {"layer": 3, "version": "inline"},
+    "code-tester": {"layer": 3, "version": "inline"},
+    "code-reviewer": {"layer": 3, "version": "inline"}
+  },
+  "failure_reason": null
+}

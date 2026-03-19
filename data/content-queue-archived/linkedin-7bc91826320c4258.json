@@ -1,0 +1,28 @@
+{
+  "piece_id": "7bc91826320c4258",
+  "platform": "linkedin",
+  "content_type": "text_post",
+  "topic": "MCP vs SKILLS \u2014 Two Paradigms for Extending AI Agents",
+  "headline": "MCP vs Skills Architecture",
+  "text": "Most teams treat MCP and Skills as interchangeable parts. They're not!\nI've watched engineers ship dozens of MCP integrations and wonder why their agents are still stuck.\nAccess isn't the same thing as agency.\n\nMCP provides the door. Skills provide the cognitive blueprint for knowing when to walk through it.\nA Slack MCP tool gives an agent a mailbox.\nA 'daily triage' skill is the logic that decides which threads matter, which need a reply, and what the tone should be.\nOne is a pipe. The other is a process.\n\nBuilding 40 MCP connections without a skills framework creates a well-equipped agent that can't think.\nIt just sits there asking 'what would you like me to do next' because it has the tools but no plan.\nIt's the difference between having a hammer and knowing how to frame a house.\n\nThinking without acting is a ghost. Acting without thinking is just another brittle bot.\nYou need both access and intent to move from a chat interface to a teammate.\nCapability is the sum of access plus intent.\n\nHow are you structuring the 'brain' vs the 'hands' in your agent stack?\n\n#AIEngineering #AgentArchitecture #MCP",
+  "hashtags": [
+    "#AIEngineering",
+    "#AgentArchitecture",
+    "#MCP"
+  ],
+  "char_count": 1118,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T21:53:34.530993+00:00",
+  "idea_source": null,
+  "agent_trace": [
+    {
+      "agent_id": "generate_linkedin_post.py",
+      "model": "anthropic/claude-sonnet-4-6",
+      "generated_at": "2026-03-14T21:53:34.530993+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "8",
+    "voice_check": "PASS"
+  }
+}

@@ -255,8 +255,10 @@ class PlaywrightEngine:
 
         started = time.perf_counter()
         try:
-            # Render each slide to HTML
-            html_pages: list[str] = []
+            # Render each slide individually to a PDF page, then merge.
+            # Playwright's CSS page-break support is unreliable with
+            # full-document slide templates, so we render one page at a time.
+            slide_pdfs: list[bytes] = []
             for slide in spec.slides:
                 slide_vars = {
                     **slide.variables,
@@ -264,36 +266,33 @@ class PlaywrightEngine:
                     "total_slides": len(spec.slides),
                 }
                 html = self._template_engine.render(slide.template, slide_vars)
-                html_pages.append(html)
 
-            # Combine into a single multi-page PDF
-            combined_html = self._combine_carousel_html(
-                html_pages,
-                width=spec.viewport_width,
-                height=spec.viewport_height,
+                page = await self._browser.new_page()  # type: ignore[union-attr]
+                try:
+                    await page.set_content(
+                        html,
+                        wait_until="networkidle",
+                        timeout=spec.timeout_ms,
+                    )
+                    pdf_bytes = await page.pdf(
+                        width=f"{spec.viewport_width}px",
+                        height=f"{spec.viewport_height}px",
+                        print_background=True,
+                        prefer_css_page_size=True,
+                    )
+                    slide_pdfs.append(pdf_bytes)
+                finally:
+                    await page.close()
+
+            # Merge individual slide PDFs into one multi-page PDF
+            merged = self._merge_pdfs(slide_pdfs)
+            duration_ms = int((time.perf_counter() - started) * 1000)
+            return RenderResult(
+                success=True,
+                output_bytes=merged,
+                duration_ms=duration_ms,
+                format=OutputFormat.PDF,
             )
-
-            page = await self._browser.new_page()  # type: ignore[union-attr]
-            try:
-                await page.set_content(
-                    combined_html,
-                    wait_until="networkidle",
-                    timeout=spec.timeout_ms,
-                )
-                pdf_bytes = await page.pdf(
-                    width=f"{spec.viewport_width}px",
-                    height=f"{spec.viewport_height}px",
-                    print_background=True,
-                )
-                duration_ms = int((time.perf_counter() - started) * 1000)
-                return RenderResult(
-                    success=True,
-                    output_bytes=pdf_bytes,
-                    duration_ms=duration_ms,
-                    format=OutputFormat.PDF,
-                )
-            finally:
-                await page.close()
         except Exception as exc:
             duration_ms = int((time.perf_counter() - started) * 1000)
             return RenderResult(
@@ -304,6 +303,58 @@ class PlaywrightEngine:
             )
 
     @staticmethod
+    def _merge_pdfs(pdf_list: list[bytes]) -> bytes:
+        """Merge multiple single-page PDFs into one multi-page PDF.
+
+        Uses pypdf if available, otherwise falls back to a simple
+        concatenation approach using the PDF spec.
+        """
+        if len(pdf_list) == 1:
+            return pdf_list[0]
+
+        try:
+            from pypdf import PdfReader, PdfWriter
+        except ImportError:
+            try:
+                from PyPDF2 import PdfReader, PdfWriter  # type: ignore[no-redef]
+            except ImportError:
+                # Last resort: just return the first page
+                import logging
+                logging.getLogger(__name__).warning("No PDF merge library available (pypdf/PyPDF2). Returning first slide only.")
+                return pdf_list[0]
+
+        import io
+
+        writer = PdfWriter()
+        for pdf_bytes in pdf_list:
+            reader = PdfReader(io.BytesIO(pdf_bytes))
+            for page in reader.pages:
+                writer.add_page(page)
+
+        output = io.BytesIO()
+        writer.write(output)
+        return output.getvalue()
+
+    @staticmethod
+    def _extract_body(html: str) -> tuple[str, str]:
+        """Extract <head> styles and <body> content from a full HTML document.
+
+        Returns (head_content, body_content). If no <body> found, returns
+        empty head and the original HTML.
+        """
+        import re
+
+        # Extract everything between <head> and </head>
+        head_match = re.search(r"<head[^>]*>(.*?)</head>", html, re.DOTALL | re.IGNORECASE)
+        head_content = head_match.group(1) if head_match else ""
+
+        # Extract everything between <body> and </body>
+        body_match = re.search(r"<body[^>]*>(.*?)</body>", html, re.DOTALL | re.IGNORECASE)
+        body_content = body_match.group(1) if body_match else html
+
+        return head_content, body_content
+
+    @staticmethod
     def _combine_carousel_html(
         pages: list[str],
         width: int = 1080,
@@ -311,38 +362,72 @@ class PlaywrightEngine:
     ) -> str:
         """Combine multiple carousel slide HTML pages for PDF rendering.
 
-        Each page is wrapped in a fixed-dimension div with CSS page-break rules
-        so the PDF renderer produces one page per slide at the correct dimensions.
+        Each slide template renders a full HTML document. We extract the <body>
+        content from each and combine them into a single document with CSS
+        page-break rules so Playwright produces one PDF page per slide.
         """
+        # Collect all unique styles from slide heads, and body content from each
+        all_styles: list[str] = []
         sections: list[str] = []
+        seen_styles: set[str] = set()
+
         for i, page_html in enumerate(pages):
+            head_content, body_content = PlaywrightEngine._extract_body(page_html)
+
+            # Collect unique <style> blocks from head
+            import re
+            for style_match in re.finditer(r"<style[^>]*>(.*?)</style>", head_content, re.DOTALL):
+                style_text = style_match.group(1).strip()
+                style_hash = hash(style_text)
+                if style_hash not in seen_styles:
+                    seen_styles.add(style_hash)
+                    all_styles.append(style_text)
+
+            # Collect <link> tags (fonts etc) — deduplicate by href
+            for link_match in re.finditer(r'<link[^>]+href="([^"]+)"[^>]*>', head_content):
+                href = link_match.group(1)
+                if href not in seen_styles:
+                    seen_styles.add(href)
+                    all_styles.append(f"/* link: {href} */")
+                    sections.insert(0, "")  # placeholder, links go in head below
+
             break_style = "page-break-before: always;" if i > 0 else ""
             sections.append(
                 f'<div class="carousel-pdf-page" style="'
                 f"width: {width}px; height: {height}px; "
-                f"overflow: hidden; {break_style}"
-                f'">{page_html}</div>'
+                f"overflow: hidden; position: relative; {break_style}"
+                f'">{body_content}</div>'
             )
+
+        # Extract link tags from first page for fonts
+        link_tags = ""
+        import re
+        if pages:
+            link_tags = "\n".join(re.findall(r'<link[^>]+>', pages[0]))
 
         return f"""<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+{link_tags}
 <style>
 @page {{
   size: {width}px {height}px;
   margin: 0;
 }}
-body {{
+html, body {{
   margin: 0;
   padding: 0;
+  width: {width}px;
 }}
 .carousel-pdf-page {{
   page-break-after: always;
+  box-sizing: border-box;
 }}
 .carousel-pdf-page:last-child {{
   page-break-after: auto;
 }}
+{chr(10).join(all_styles)}
 </style>
 </head>
 <body>

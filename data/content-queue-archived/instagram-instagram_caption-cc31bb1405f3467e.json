@@ -1,0 +1,36 @@
+{
+  "piece_id": "cc31bb1405f3467e",
+  "platform": "instagram",
+  "content_type": "instagram_caption",
+  "content_pillar": "bilingual_ai",
+  "topic": "Bilingual Prompt Evolution",
+  "text": "Prompt optimization isn't language agnostic.\n\nMy self-improving agent treats English as a logic gate and Spanish as a context layer.\n\nEl razonamiento biling\u00fce no es solo traducci\u00f3n.\n\nMost builders fail the 600M Spanish market because they ignore the nuance.\n\nAre you optimizing or just translating?\n\n#AIEngineering #LLMs #BilingualAI",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMs",
+    "#BilingualAI"
+  ],
+  "char_count": 333,
+  "status": "pending_review",
+  "generated_at": "2026-03-17T19:38:34.303063+00:00",
+  "scheduled_at": "2026-03-31T19:38:34.303063+00:00",
+  "idea_source": "How I built a self-improving AI agent that evolves its own prompts",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-17T19:38:34.303063+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated instagram_caption for instagram",
+      "at": "2026-03-17T19:38:34.303063+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

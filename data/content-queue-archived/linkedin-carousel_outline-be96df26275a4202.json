@@ -1,0 +1,37 @@
+{
+  "piece_id": "be96df26275a4202",
+  "platform": "linkedin",
+  "content_type": "carousel_outline",
+  "content_pillar": "ai_engineering",
+  "topic": "The 3-Tier Retrieval Framework: Beyond Basic RAG",
+  "text": "Slide 1: RAG isn't dead. Your architecture is just lazy. | Stop embedding everything by default. Most teams use vector databases as a magic pill, but they're often the wrong tool for the job.\n\nSlide 2: Vector search is an approximation. | It's great for finding concepts. It's terrible for finding specific code symbols. If your agent needs a precise class definition, a \"similar\" result is a failure.\n\nSlide 3: Cursor vs. Claude Code. | Cursor uses permanent embeddings for speed and global awareness. Claude Code uses grep and glob for precision. One prioritizes the map, the other prioritizes the territory.\n\nSlide 4: Grep doesn't guess. | Use regex-based search for code navigation. It finds exact matches without the noise of semantic retrieval. No wasted tokens embedding files you'll never query.\n\nSlide 5: The three-tier retrieval framework. | You need more than just a vector DB. Modern AI engineering requires a mix of Grep/Glob, BM25, and Semantic Search based on the data type.\n\nSlide 6: Tier 1: Grep and Glob. | Best for code navigation and exact symbol lookups. Use this when the query intent is structural. It's fast, free, and 100% accurate.\n\nSlide 7: Tier 2: BM25. | Use this for keyword-heavy data. It's the middle ground between raw text and vectors. Better than grep for natural language, cheaper than embeddings.\n\nSlide 8: Tier 3: Semantic Search. | Save the embeddings for documentation and conceptual queries. This is where RAG actually shines\u2014connecting high-level intent to relevant context.\n\nSlide 9: Architecture over hype. | RAG is finally being used correctly. It's not the entire stack; it's a component. Engineering is about choosing the right tool for the specific data type.\n\nSlide 10: Stop embedding by default. | Start building targeted retrieval layers. How are you drawing the line between tools and cognitive logic in your stack?\n\n#AIEngineering #LLMOps #SoftwareArchitecture #RAG",
+  "hashtags": [
+    "#AIEngineering",
+    "#LLMOps",
+    "#SoftwareArchitecture",
+    "#RAG"
+  ],
+  "char_count": 1918,
+  "status": "pending_review",
+  "generated_at": "2026-03-14T22:31:28.068952+00:00",
+  "scheduled_at": "2026-03-21T22:31:28.068952+00:00",
+  "idea_source": "RAGs are dead \u2014 that's what a colleague said the other day. It stuck with me because RAG is one of the pillars of data engineering. But he was right, in a specific context. He was explaining how Cursor works vs Claude Code: Cursor uses permanent embeddings so the agent always knows where everything is, updated constantly as new code is generated. Fast, efficient. But pricey and creates noise in the data. Claude Code, on the other hand, uses grep and glob \u2014 regex-based search to find exactly what's needed. No wasted tokens embedding things you never query. Exact matches, not approximations. Approximations can mislead. The deeper insight: RAGs were born out of necessity \u2014 to give LLMs better context. But they lack direction. New tools fill the gaps where RAGs are inefficient and costly. Today I use grep and glob for specific code navigation, BM25 for keyword search, and I only embed what actually needs semantic search \u2014 large documentation, not everything. The question engineers should ask: what kind of data are you dealing with? That determines the tool. RAG is not dead. It's just finally being used correctly.",
+  "agent_trace": [
+    {
+      "agent_id": "idea-planner",
+      "model": "anthropic/claude-opus-4-6",
+      "role": "planned formats from raw idea",
+      "at": "2026-03-14T22:31:28.068952+00:00"
+    },
+    {
+      "agent_id": "idea-generator",
+      "model": "anthropic/claude-sonnet-4-6",
+      "role": "generated carousel_outline for linkedin",
+      "at": "2026-03-14T22:31:28.068952+00:00"
+    }
+  ],
+  "quality": {
+    "hook_score": "9",
+    "voice_check": "PASS"
+  }
+}

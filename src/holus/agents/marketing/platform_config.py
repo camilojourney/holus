@@ -229,8 +229,9 @@ def load_content_config() -> dict:
       languages.primary, languages.additional,
       platform_risk_overrides, approval, translation.
     """
-    import yaml
     from pathlib import Path
+
+    import yaml
 
     config_path = Path("config/content.yaml")
     if not config_path.exists():
