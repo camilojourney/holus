@@ -1,0 +1,43 @@
+# Prometheus alerting rules for Holus
+groups:
+  - name: holus_cost
+    rules:
+      - alert: DailySpendHigh
+        expr: sum(increase(holus_llm_cost_usd_total[24h])) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Daily LLM spend exceeds $10"
+          description: "Total spend in last 24h: {{ $value | humanize }}USD"
+
+  - name: holus_quality
+    rules:
+      - alert: EvalScoreDrop
+        expr: holus_eval_score < (holus_eval_score_avg_7d - 10)
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Eval score dropped >10pts below 7-day average"
+          description: "{{ $labels.skill }}: score {{ $value }} vs avg {{ $labels.avg }}"
+
+      - alert: ConsecutiveStalls
+        expr: holus_consecutive_stalls >= 3
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "3+ consecutive stalls detected"
+          description: "{{ $labels.agent }}: {{ $value }} consecutive zero-score runs"
+
+  - name: holus_latency
+    rules:
+      - alert: SlowTTFT
+        expr: holus_ttft_seconds > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Time to first token exceeds 800ms"
+          description: "{{ $labels.agent }}: TTFT {{ $value | humanize }}s"
