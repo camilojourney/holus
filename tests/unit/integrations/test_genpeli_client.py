@@ -94,16 +94,16 @@ class TestProcessVideo:
     @pytest.mark.asyncio
     async def test_process_video_http_error(self, client, mock_httpx_client):
         """process_video raises on HTTP error."""
-        mock_response = MagicMock()
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+        mock_httpx_client.post.side_effect = httpx.HTTPStatusError(
             "Server Error",
-            request=MagicMock(),
-            response=MagicMock(status_code=500),
+            request=httpx.Request("POST", "http://localhost:8100/api/v1/process"),
+            response=httpx.Response(500),
         )
-        mock_httpx_client.post.return_value = mock_response
 
         with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
-            await client.process_video(
+            # Use __wrapped__ to bypass tenacity retry waits
+            await GenpeliClient.process_video.__wrapped__(
+                client,
                 video_urls=["https://example.com/video.mp4"],
                 instruction="Edit",
             )
@@ -283,6 +283,114 @@ class TestHealth:
             assert result["status"] == "healthy"
             assert result["ffmpeg"] is True
             mock_httpx_client.get.assert_called_once_with("/api/v1/health")
+
+
+class TestErrorHandling:
+    """Test error handling across all methods."""
+
+    @pytest.mark.asyncio
+    async def test_check_status_raises_on_timeout(self, client, mock_httpx_client):
+        """check_status raises on connection timeout."""
+        mock_httpx_client.get.side_effect = httpx.TimeoutException(
+            "Connection timed out"
+        )
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(
+            httpx.TimeoutException
+        ):
+            await GenpeliClient.check_status.__wrapped__(client, "job_timeout")
+
+    @pytest.mark.asyncio
+    async def test_get_preview_raises_on_404(self, client, mock_httpx_client):
+        """get_preview raises on 404 Not Found."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Not Found",
+            request=httpx.Request(
+                "GET", "http://localhost:8100/api/v1/jobs/missing/preview"
+            ),
+            response=httpx.Response(404),
+        )
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(
+            httpx.HTTPStatusError
+        ):
+            await GenpeliClient.get_preview.__wrapped__(client, "missing")
+
+    @pytest.mark.asyncio
+    async def test_approve_raises_on_5xx(self, client, mock_httpx_client):
+        """approve raises on server error."""
+        mock_httpx_client.post.side_effect = httpx.HTTPStatusError(
+            "Service Unavailable",
+            request=httpx.Request(
+                "POST", "http://localhost:8100/api/v1/jobs/job_001/approve"
+            ),
+            response=httpx.Response(503),
+        )
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(
+            httpx.HTTPStatusError
+        ):
+            await GenpeliClient.approve.__wrapped__(client, "job_001")
+
+    @pytest.mark.asyncio
+    async def test_reject_raises_on_4xx(self, client, mock_httpx_client):
+        """reject raises on 4xx client error."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Bad Request",
+            request=httpx.Request(
+                "POST", "http://localhost:8100/api/v1/jobs/job_001/reject"
+            ),
+            response=httpx.Response(400),
+        )
+        mock_httpx_client.post.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(
+            httpx.HTTPStatusError
+        ):
+            await GenpeliClient.reject.__wrapped__(
+                client, "job_001", reason="Bad audio"
+            )
+
+    @pytest.mark.asyncio
+    async def test_health_raises_on_connection_error(self, client, mock_httpx_client):
+        """Health check raises on connection error."""
+        mock_httpx_client.get.side_effect = httpx.ConnectError("Connection refused")
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(
+            httpx.ConnectError
+        ):
+            await client.health()
+
+    @pytest.mark.asyncio
+    async def test_process_video_raises_on_timeout(self, client, mock_httpx_client):
+        """process_video raises on timeout."""
+        mock_httpx_client.post.side_effect = httpx.TimeoutException("Read timed out")
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(
+            httpx.TimeoutException
+        ):
+            await GenpeliClient.process_video.__wrapped__(
+                client,
+                video_urls=["https://example.com/v.mp4"],
+                instruction="Edit",
+            )
+
+    @pytest.mark.asyncio
+    async def test_check_status_raises_on_connection_error(
+        self, client, mock_httpx_client
+    ):
+        """check_status raises on connection refused."""
+        mock_httpx_client.get.side_effect = httpx.ConnectError(
+            "Connection refused"
+        )
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(
+            httpx.ConnectError
+        ):
+            await GenpeliClient.check_status.__wrapped__(client, "job_001")
 
 
 class TestRetryBehavior:
