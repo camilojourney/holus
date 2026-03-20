@@ -2,8 +2,8 @@
 
 Accumulated knowledge from agent operations. Updated by the manager agent after each cycle.
 
-**Last updated:** 2026-03-02
-**Updated by:** Builder (cycle 37 — Sprint 2 complete)
+**Last updated:** 2026-03-20
+**Updated by:** Builder (cycle 56 — Sprint 4 P0 complete)
 
 ---
 
@@ -123,17 +123,101 @@ go-to AI transition consultant?"
 
 ---
 
+## Sprint 3 Summary (2026-03-02 to 2026-03-20, cycles 38-54)
+
+**First Real Content Cycle — COMPLETE.** 31/31 tasks done (3 blocked, carried forward).
+
+### What Was Built
+
+**System Runability (P0):**
+- `just preflight` — validates environment (API key, brand.yaml, knowledge files, data dirs)
+- Replaced Late API publishing with social-media MCP — `publish_approved.py` now uses local API
+- Spec 017 marked Implemented, specs/README.md updated
+
+**Content Generation (P1):**
+- `just generate` — runs ONE marketing agent cycle in generate-only mode
+- Idea-injection pipeline (`idea_runner.py`): Opus plans formats, Sonnet generates, Judge evaluates
+- Specialist dispatcher (`specialist_dispatch.py`): hook-architect → storyteller → cta-strategist → voice-guardian
+- 3-layer prompt loader: optimizer variants > canonical .md > Python fallback
+- Thompson Sampling strategy bandit for (product, content_type, platform) optimization
+
+**Review & Publishing (P2):**
+- `just publish --dry-run` — shows what would be posted without actually posting
+- E2e publish pipeline: 8 integration tests (enqueue → humanize → approve → publish_all)
+- Humanization gate (SPEC-032): content must be humanized before approval, edit distance limits
+- Brand.yaml review brief prepared at `data/brand-review-brief.md`
+
+**Quality & Automation (P3-P4):**
+- Analytics feedback in observe stage — fetches 7-day summary + top 5 posts from social-media API
+- `just calendar` — content pipeline status view (pending, approved, published, rejected)
+- Content quality scoring (`quality_score.py`, 270 LOC): char limits, anti-patterns, hook quality
+- Quality score display in `just review-content --show <id>`
+- Removed Late API client and all references — social-media MCP is sole path
+- Sprint 2 module quality review — fixed 3 dead code issues
+
+**Visual Content:**
+- Animated infographics (SPEC-033): data_viz, poll, insight templates with Playwright rendering
+- Carousel builder with PDF rendering
+- A/B visual variant generation for text posts (Sonnet designs, Playwright renders)
+- Visual spec converter: data_viz_to_spec, insight_to_spec
+
+**Observatory:**
+- FastAPI dashboard (localhost:8000) reading trajectory, AGENTS.yaml, content-queue
+- Frontend at localhost:3000
+
+**Agent Intelligence (SPEC-030):**
+- Agent registry (32 agents in AGENTS.yaml with .md prompts + YAML frontmatter)
+- Evaluator routing: domain-specific judges per content type
+- Gap detector + prompt evolution pipeline
+
+**LinkedIn Content Pipeline (SPEC-031):**
+- Full pipeline: idea → plan → generate → evaluate → queue → humanize → approve → publish
+- Constitutional AI revision loop (critique + revise before queueing)
+- Topic index for deduplication (prevents repeating recently published topics)
+
+### Key Stats
+- **1170 tests** passing (330 → 1170, +840 new tests)
+- **~24,000 LOC** source code (9,800 → 24,000)
+- **6 new specs** implemented (027-033)
+- **Blocked:** First real run (API key expired), prompt tuning, brand.yaml TODOs
+
+---
+
+## Sprint 4 Summary (2026-03-20, cycles 55-56, in progress)
+
+**Content Quality & Pipeline Hardening.**
+
+### What Was Done
+- Instagram video_script hashtag fix — platform-aware post-processing (16 tests)
+- Judge retry with backoff — transient errors retried once with 2s backoff (13 tests)
+- Spec status hygiene — SPEC-032/033 marked Implemented
+- Gitignore cleanup — .failed, data/rendered/, data/examples/, .pipeline-state/
+
+### Current Stats
+- **1198 tests** collected (1170 → 1198, +28 new tests)
+- **~25,000 LOC** source code
+
+---
+
 ## Key Files Reference
 
 ### Agent Code
 | File | Purpose |
 |------|---------|
 | `src/holus/agents/marketing/agent.py` | Main ReAct loop (observe → reason → act → evaluate) |
+| `src/holus/agents/marketing/idea_runner.py` | Idea-injection pipeline (Opus plans, Sonnet generates, Judge evaluates) |
+| `src/holus/agents/marketing/specialist_dispatch.py` | Specialist pipeline with platform-aware post-processing |
 | `src/holus/agents/marketing/prompts.py` | Authority-building prompt templates |
 | `src/holus/agents/marketing/models.py` | ContentDecision, BrandIdentity, NicheInsight, etc. |
 | `src/holus/agents/marketing/repurpose.py` | LinkedIn → 4 platform adaptation |
-| `src/holus/agents/marketing/content_queue.py` | Content review queue |
+| `src/holus/agents/marketing/content_queue.py` | Content review queue + humanization gate |
 | `src/holus/agents/marketing/review.py` | Human review CLI |
+| `src/holus/agents/marketing/quality_score.py` | Content quality scoring (anti-patterns, char limits, hooks) |
+| `src/holus/agents/marketing/strategy_bandit.py` | Thompson Sampling for content strategy optimization |
+| `src/holus/agents/marketing/platform_config.py` | Per-platform judge rubrics, char limits, risk tiers |
+| `src/holus/agents/marketing/topic_index.py` | Topic deduplication (prevents repeating recent topics) |
+| `src/holus/self_improvement/judge.py` | JudgeAgent with retry logic + domain-specific routing |
+| `src/holus/agents/registry.py` | Agent registry (32 agents) + evaluator routing |
 
 ### Config
 | File | Purpose |
@@ -180,14 +264,17 @@ Holus reads it via MCP — never stores it.
 
 ---
 
-## What's Next (Sprint 3 candidates)
+## What's Next (Blocked Items)
 
-**Not yet prioritized. Sprint 3 should focus on:**
-1. **First real content cycle** — Run the agent end-to-end with real MCP calls, produce content Camilo approves
-2. **MCP server connections** — genpeli MCP (not built), pilaster MCP (not e2e tested), social-media MCP (not e2e tested)
-3. **Camilo brand.yaml review** — 6 TODO blocks need his input
-4. **Scheduling activation** — launchd plists exist but aren't activated (Spec 013)
-5. **Finance agent** — Simple weekly P&L report (Phase 1.5 in ARCHITECTURE.md)
+**Carried from Sprint 3 — all blocked on external input:**
+1. **First real agent run** — BLOCKED: ANTHROPIC_API_KEY in .env is expired (401). Camilo must update.
+2. **Prompt tuning** — BLOCKED: depends on first real run output for voice/hook calibration.
+3. **Brand.yaml completion** — BLOCKED: 6 TODO sections need Camilo session. Review brief at `data/brand-review-brief.md`.
+
+**When unblocked, next priorities:**
+4. **MCP e2e testing** — genpeli MCP (not built), pilaster/social-media MCP (not e2e tested with real calls)
+5. **Scheduling activation** — launchd plists validated but not activated (Spec 013)
+6. **Finance agent** — Simple weekly P&L report (Phase 1.5 in ARCHITECTURE.md)
 
 ---
 
