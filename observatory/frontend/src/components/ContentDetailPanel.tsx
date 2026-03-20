@@ -108,6 +108,10 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-end"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Content detail: ${d.title ?? d.id}`}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="absolute inset-0 bg-black/30 dark:bg-black/50" onClick={onClose} />

@@ -217,7 +217,8 @@ export async function fetchCosts(): Promise<CostBreakdown[]> {
 
 // SSE stream URL (used directly by EventSource)
 export function trajectoryStreamUrl(): string {
-  return `${API_BASE}/api/v1/trajectory/stream`;
+  const base = typeof window === 'undefined' ? API_BASE_SERVER : '';
+  return `${base}/api/v1/trajectory/stream`;
 }
 
 // Results / Growth

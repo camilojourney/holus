@@ -47,8 +47,8 @@ function QualityBadge({ score, check }: { score?: number; check?: string }) {
           ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
           : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
       : check === 'PASS'
-        ? 'bg-green-100 text-green-700'
-        : 'bg-red-100 text-red-700';
+        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+        : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
   return (
     <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${color}`}>
       {score !== undefined ? score : check}
