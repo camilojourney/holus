@@ -148,7 +148,7 @@ and clean up accumulated tech debt. The content pipeline (idea-runner) is produc
 ### P0 — Content Quality Fixes
 
 - [x] [BUILD] Fix Instagram video_script missing hashtags — Added `_enrich_for_platform()` to `specialist_dispatch.py` and `_get_format_instructions()` to `idea_runner.py`. Both content generation paths now append hashtag blocks + caption instructions for Instagram/TikTok/Facebook video_scripts. LinkedIn unchanged. 16 new tests. (Cycle 56)
-- [ ] [BUILD] Add judge retry with backoff — When judge evaluation fails with timeout or invalid JSON, retry once with exponential backoff (2s) before returning FAIL. Currently, a single timeout marks content as FAIL with score 0.0, losing valid content.
+- [x] [BUILD] Add judge retry with backoff — Refactored `judge.py`: `evaluate()` now retries on transient errors (timeout, connection, invalid JSON) with exponential backoff (2s base, max 2 attempts). Non-transient errors fail immediately. HTTP 5xx treated as transient. 13 new tests. (Cycle 56)
 
 ### P1 — Spec & Status Hygiene
 
