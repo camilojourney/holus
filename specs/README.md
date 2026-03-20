@@ -78,6 +78,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | 032 | [Humanization Gate](032-humanization-gate.md)                    | Full-Stack | Implemented |
 | 033 | [Animated Infographics](033-animated-infographics.md)            | Backend    | Implemented |
 
+## Visual Pipeline
+
+| #   | Spec                                                             | Type    | Status      |
+| --- | ---------------------------------------------------------------- | ------- | ----------- |
+| 034 | [Creative Tool Registry](034-creative-tool-registry.md)          | Backend | Not Started |
+
 ---
 
 ## Spec Status Legend
