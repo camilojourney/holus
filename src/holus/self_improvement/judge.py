@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -168,6 +169,24 @@ class JudgeAgent:
         else:
             self._client = None
 
+    # Exceptions worth retrying — transient network / LLM issues.
+    # Includes both built-in and requests-specific exception types.
+    try:
+        import requests as _req_exc
+        _TRANSIENT_EXCEPTIONS: tuple[type[Exception], ...] = (
+            ConnectionError,
+            TimeoutError,
+            json.JSONDecodeError,
+            _req_exc.exceptions.Timeout,
+            _req_exc.exceptions.ConnectionError,
+        )
+    except ImportError:
+        _TRANSIENT_EXCEPTIONS: tuple[type[Exception], ...] = (  # type: ignore[no-redef]
+            ConnectionError,
+            TimeoutError,
+            json.JSONDecodeError,
+        )
+
     def evaluate(
         self,
         task: str,
@@ -175,14 +194,18 @@ class JudgeAgent:
         output: str,
         *,
         custom_rubric: str | None = None,
+        max_retries: int = 2,
+        retry_delay: float = 2.0,
     ) -> JudgeEvaluation:
-        """Evaluate an agent's output.
+        """Evaluate an agent's output, retrying on transient failures.
 
         Args:
             task: The original task description.
             task_type: Category (``"trade_signal"``, ``"content"``, etc.).
             output: The agent's output to evaluate.
             custom_rubric: Override the default rubric for this task type.
+            max_retries: Total attempts (default 2 = 1 initial + 1 retry).
+            retry_delay: Base delay in seconds before retry (doubles each time).
 
         Returns:
             A ``JudgeEvaluation`` with verdict, score, and feedback.
@@ -197,75 +220,106 @@ class JudgeAgent:
             f"Evaluate this output. Respond with JSON only."
         )
 
-        try:
-            if self._use_proxy:
-                import requests as _requests
+        last_exc: Exception | None = None
 
-                payload = {
-                    "model": self._model,
-                    "messages": [
-                        {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
-                        {"role": "user", "content": user_message},
-                    ],
-                    "max_tokens": 1024,
-                    "temperature": 0.0,
-                }
-                resp = _requests.post(
-                    self._proxy_url,
-                    json=payload,
-                    headers={"Content-Type": "application/json", "Authorization": "Bearer local"},
-                    timeout=120,
+        for attempt in range(max_retries):
+            try:
+                response_text = self._call_llm(user_message)
+                return self._parse_response(response_text)
+
+            except self._TRANSIENT_EXCEPTIONS as exc:
+                last_exc = exc
+                if attempt < max_retries - 1:
+                    delay = retry_delay * (2 ** attempt)
+                    logger.warning(
+                        "Judge transient error (attempt %d/%d), retrying in %.1fs: %s",
+                        attempt + 1, max_retries, delay, exc,
+                    )
+                    time.sleep(delay)
+                else:
+                    logger.warning(
+                        "Judge failed after %d attempts: %s", max_retries, exc,
+                    )
+
+            except Exception as exc:
+                # Non-transient errors (e.g. auth failures) — don't retry
+                logger.exception("Judge evaluation error (non-transient)")
+                return JudgeEvaluation(
+                    verdict=JudgeVerdict.FAIL,
+                    score=0.0,
+                    dimension_scores={},
+                    feedback=f"Judge evaluation error: {exc}",
+                    pass_threshold_met=False,
                 )
-                resp.raise_for_status()
-                response_text = resp.json()["choices"][0]["message"]["content"]
-            else:
-                response = self._client.messages.create(
-                    model=self._model,
-                    max_tokens=1024,
-                    temperature=0.0,
-                    system=JUDGE_SYSTEM_PROMPT,
-                    messages=[{"role": "user", "content": user_message}],
-                )
-                response_text = ""
-                for block in response.content:
-                    if hasattr(block, "text"):
-                        response_text += block.text
 
-            evaluation = json.loads(response_text)
+        # All retries exhausted
+        feedback = f"Judge evaluation failed after {max_retries} attempts: {last_exc}"
+        return JudgeEvaluation(
+            verdict=JudgeVerdict.FAIL,
+            score=0.0,
+            dimension_scores={},
+            feedback=feedback,
+            pass_threshold_met=False,
+        )
 
-            verdict_str = evaluation.get("verdict", "FAIL").upper()
-            verdict = (
-                JudgeVerdict(verdict_str)
-                if verdict_str in JudgeVerdict.__members__
-                else JudgeVerdict.FAIL
-            )
+    def _call_llm(self, user_message: str) -> str:
+        """Make the LLM call for judge evaluation. Raises on network/HTTP errors."""
+        if self._use_proxy:
+            import requests as _requests
 
-            return JudgeEvaluation(
-                verdict=verdict,
-                score=float(evaluation.get("score", 0.0)),
-                dimension_scores=evaluation.get("dimension_scores", {}),
-                feedback=evaluation.get("feedback", "No feedback provided"),
-                pass_threshold_met=evaluation.get("pass_threshold_met", False),
+            payload = {
+                "model": self._model,
+                "messages": [
+                    {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_message},
+                ],
+                "max_tokens": 1024,
+                "temperature": 0.0,
+            }
+            resp = _requests.post(
+                self._proxy_url,
+                json=payload,
+                headers={"Content-Type": "application/json", "Authorization": "Bearer local"},
+                timeout=120,
             )
+            # Treat HTTP 5xx as transient (raises ConnectionError via raise_for_status)
+            if resp.status_code >= 500:
+                raise ConnectionError(f"HTTP {resp.status_code}: {resp.text[:200]}")
+            resp.raise_for_status()
+            return resp.json()["choices"][0]["message"]["content"]
+        else:
+            response = self._client.messages.create(
+                model=self._model,
+                max_tokens=1024,
+                temperature=0.0,
+                system=JUDGE_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": user_message}],
+            )
+            response_text = ""
+            for block in response.content:
+                if hasattr(block, "text"):
+                    response_text += block.text
+            return response_text
 
-        except json.JSONDecodeError:
-            logger.warning("Judge produced invalid JSON")
-            return JudgeEvaluation(
-                verdict=JudgeVerdict.FAIL,
-                score=0.0,
-                dimension_scores={},
-                feedback="Judge evaluation failed: invalid JSON response",
-                pass_threshold_met=False,
-            )
-        except Exception as exc:
-            logger.exception("Judge evaluation error")
-            return JudgeEvaluation(
-                verdict=JudgeVerdict.FAIL,
-                score=0.0,
-                dimension_scores={},
-                feedback=f"Judge evaluation error: {exc}",
-                pass_threshold_met=False,
-            )
+    @staticmethod
+    def _parse_response(response_text: str) -> JudgeEvaluation:
+        """Parse LLM response into JudgeEvaluation. Raises JSONDecodeError on bad JSON."""
+        evaluation = json.loads(response_text)
+
+        verdict_str = evaluation.get("verdict", "FAIL").upper()
+        verdict = (
+            JudgeVerdict(verdict_str)
+            if verdict_str in JudgeVerdict.__members__
+            else JudgeVerdict.FAIL
+        )
+
+        return JudgeEvaluation(
+            verdict=verdict,
+            score=float(evaluation.get("score", 0.0)),
+            dimension_scores=evaluation.get("dimension_scores", {}),
+            feedback=evaluation.get("feedback", "No feedback provided"),
+            pass_threshold_met=evaluation.get("pass_threshold_met", False),
+        )
 
     def batch_evaluate(
         self,
