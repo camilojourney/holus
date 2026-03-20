@@ -17,8 +17,9 @@ import logging
 import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
-import requests
+import requests  # type: ignore[import-untyped]
 
 from holus.core.llm_proxy import get_proxy_headers, get_proxy_url
 
@@ -43,7 +44,8 @@ def _call(model: str, system: str, user: str, temperature: float = 0.3) -> str:
     }
     resp = requests.post(PROXY_URL, json=payload, headers=PROXY_HEADERS, timeout=120)
     resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"]
+    result: str = resp.json()["choices"][0]["message"]["content"]
+    return result
 
 
 def _strip_fences(raw: str) -> str:
@@ -118,7 +120,7 @@ def _load_prompt(agent_id: str, fallback: str) -> tuple[str, str]:
         return fallback, "layer3:fallback"
 
 
-def plan_formats(raw_idea: str) -> list[dict]:
+def plan_formats(raw_idea: str) -> list[dict[str, Any]]:
     # Inject recently published topics to prevent repetition
     from holus.agents.marketing.topic_index import TopicIndex
     topic_context = TopicIndex().as_prompt_context(days=30)
@@ -344,7 +346,7 @@ and niche tags. Example: #AI #BuildInPublic #AgentArchitecture #TechFounder
     return base
 
 
-def generate_piece(raw_idea: str, decision: dict) -> dict:
+def generate_piece(raw_idea: str, decision: dict[str, Any]) -> dict[str, Any]:
     fmt = decision.get("format", "text_post")
     platform = decision.get("platform", "linkedin")
     angle = decision.get("angle", raw_idea)
@@ -377,7 +379,7 @@ Write the {fmt} for this idea. Return JSON only.
 
     # Strip word count annotations the LLM sometimes includes (e.g., "(24 words)")
     import re
-    def _strip_word_counts(obj: object) -> object:
+    def _strip_word_counts(obj: Any) -> Any:
         if isinstance(obj, str):
             return re.sub(r'\s*\(\d+\s*words?\)', '', obj).strip()
         if isinstance(obj, list):
@@ -386,6 +388,7 @@ Write the {fmt} for this idea. Return JSON only.
             return {k: _strip_word_counts(v) for k, v in obj.items()}
         return obj
     result = _strip_word_counts(result)
+    assert isinstance(result, dict)
 
     # Optional: Constitutional AI revision for text content
     if fmt in ("text_post", "thread", "instagram_caption") and result.get("text"):
@@ -448,7 +451,7 @@ Return ONLY the JSON object. No markdown fences, no explanation."""
 
 def _generate_visual_spec(
     post_text: str, fmt: str, platform: str, *, temperature: float = 0.3,
-) -> dict | None:
+) -> dict[str, Any] | None:
     """Have Sonnet design a visual spec for the post. Returns spec dict or None."""
     if fmt not in ("text_post", "thread", "instagram_caption"):
         return None  # Carousels and video scripts don't need companion images
@@ -461,13 +464,14 @@ def _generate_visual_spec(
 Return JSON only."""
         raw = _call("anthropic/claude-sonnet-4-6", VISUAL_DESIGNER_SYSTEM, user_msg, temperature=temperature)
         cleaned = _strip_fences(raw)
-        return json.loads(cleaned)
+        spec: dict[str, Any] = json.loads(cleaned)
+        return spec
     except Exception as exc:
         logger.debug("Visual spec generation failed: %s", exc)
         return None
 
 
-def _render_visual(visual_spec: dict, output_path: Path) -> bool:
+def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
     """Render a visual spec to PNG using PlaywrightEngine. Returns True on success."""
     import asyncio
 
@@ -520,7 +524,7 @@ def _render_visual(visual_spec: dict, output_path: Path) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def _evaluate_piece(raw_idea: str, fmt: str, platform: str, generated: dict) -> dict | None:
+def _evaluate_piece(raw_idea: str, fmt: str, platform: str, generated: dict[str, Any]) -> dict[str, Any] | None:
     """Evaluate a generated piece with JudgeAgent. Non-blocking on failure."""
     try:
         from holus.self_improvement.judge import JudgeAgent
@@ -600,8 +604,8 @@ def _evaluate_piece(raw_idea: str, fmt: str, platform: str, generated: dict) -> 
 
 def save_piece(
     raw_idea: str,
-    decision: dict,
-    generated: dict,
+    decision: dict[str, Any],
+    generated: dict[str, Any],
     queue_dir: Path,
 ) -> Path:
     piece_id = uuid.uuid4().hex[:16]
@@ -624,7 +628,7 @@ def save_piece(
         else:
             full_text = text
 
-    data: dict = {
+    data: dict[str, Any] = {
         "piece_id": piece_id,
         "platform": decision.get("platform", "linkedin"),
         "content_type": decision.get("format", "text_post"),
@@ -713,7 +717,7 @@ def save_piece(
 # ---------------------------------------------------------------------------
 
 
-def run_from_idea(raw_idea: str) -> list[dict]:
+def run_from_idea(raw_idea: str) -> list[dict[str, Any]]:
     """Process a raw idea into multiple content formats.
 
     Returns a list of results with piece_id, platform, format, and queue_path.
@@ -768,7 +772,7 @@ def run_from_idea(raw_idea: str) -> list[dict]:
     return results
 
 
-def run_from_bandit(raw_idea: str, *, platform: str | None = None) -> list[dict]:
+def run_from_bandit(raw_idea: str, *, platform: str | None = None) -> list[dict[str, Any]]:
     """Like run_from_idea but uses Thompson Sampling to guide strategy.
 
     The bandit suggests which (product, content_type, platform) to create.
