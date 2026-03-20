@@ -468,11 +468,18 @@ def research_card_to_spec(
 
     chart_svg = ""
     if agent_output.get("chart_type") and agent_output.get("data_points"):
+        raw_points = agent_output["data_points"]
+        labels = [str(dp.get("label", "-")) for dp in raw_points]
+        values = [str(dp.get("value", 0)) for dp in raw_points]
+        svg_labels = [lbl if lbl.strip() else "-" for lbl in labels]
+        highlight_index = agent_output.get("highlight_index")
+        color_scheme = agent_output.get("color_scheme")
         chart_svg = generate_svg(
-            agent_output["chart_type"],
-            agent_output["data_points"],
-            highlight_index=agent_output.get("highlight_index"),
-            color=agent_output.get("color_scheme", "#6366f1"),
+            chart_type=str(agent_output["chart_type"]),
+            labels=svg_labels,
+            values=values,
+            highlight_index=int(highlight_index) if highlight_index is not None else None,
+            color_accent=str(color_scheme or "#6366f1"),
         )
 
     return RenderSpec(

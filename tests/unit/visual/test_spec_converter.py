@@ -13,6 +13,7 @@ from holus.visual.spec_converter import (
     before_after_to_spec,
     data_viz_to_spec,
     insight_to_spec,
+    research_card_to_spec,
 )
 
 # ---------------------------------------------------------------------------
@@ -360,3 +361,129 @@ class TestSpecConverterIntegration:
         """All specs get the default 30s timeout."""
         spec = insight_to_spec("test")
         assert spec.timeout_ms == 30_000
+
+
+# ---------------------------------------------------------------------------
+# research_card_to_spec
+# ---------------------------------------------------------------------------
+
+
+class TestResearchCardToSpec:
+    """Test research_card_to_spec converter."""
+
+    def _minimal_input(self) -> dict:
+        return {"title": "AI Adoption Trends"}
+
+    def test_minimal_valid_input(self):
+        spec = research_card_to_spec(self._minimal_input())
+        assert isinstance(spec, RenderSpec)
+        assert spec.template == "single_image/research_card"
+        assert spec.variables["title"] == "AI Adoption Trends"
+
+    def test_optional_fields_default_empty(self):
+        spec = research_card_to_spec(self._minimal_input())
+        assert spec.variables["subtitle"] == ""
+        assert spec.variables["key_stat"] == ""
+        assert spec.variables["key_stat_label"] == ""
+        assert spec.variables["chart_svg"] == ""
+        assert spec.variables["callout_text"] == ""
+        assert spec.variables["source_citation"] == ""
+        assert spec.variables["author_name"] == ""
+
+    def test_all_optional_fields(self):
+        data = {
+            "title": "Market Report",
+            "subtitle": "Q1 2026",
+            "key_stat": "4.2x",
+            "key_stat_label": "Growth Rate",
+            "callout_text": "Fastest growth since 2020",
+            "source_citation": "Gartner 2026",
+            "author_name": "Juan Camilo Martinez",
+        }
+        spec = research_card_to_spec(data)
+        assert spec.variables["subtitle"] == "Q1 2026"
+        assert spec.variables["key_stat"] == "4.2x"
+        assert spec.variables["key_stat_label"] == "Growth Rate"
+        assert spec.variables["callout_text"] == "Fastest growth since 2020"
+        assert spec.variables["source_citation"] == "Gartner 2026"
+        assert spec.variables["author_name"] == "Juan Camilo Martinez"
+
+    def test_with_chart_data_points(self):
+        """Chart SVG is generated when chart_type + data_points are present."""
+        data = {
+            "title": "Downloads",
+            "chart_type": "bar",
+            "data_points": [
+                {"label": "Mon", "value": 100},
+                {"label": "Tue", "value": 250},
+                {"label": "Wed", "value": 180},
+            ],
+        }
+        spec = research_card_to_spec(data)
+        assert "<svg" in spec.variables["chart_svg"]
+        assert "Mon" in spec.variables["chart_svg"]
+
+    def test_chart_with_highlight_index(self):
+        data = {
+            "title": "Performance",
+            "chart_type": "bar",
+            "data_points": [
+                {"label": "A", "value": 10},
+                {"label": "B", "value": 30},
+            ],
+            "highlight_index": 1,
+        }
+        spec = research_card_to_spec(data)
+        assert "<svg" in spec.variables["chart_svg"]
+
+    def test_chart_with_color_scheme(self):
+        data = {
+            "title": "Revenue",
+            "chart_type": "line",
+            "data_points": [
+                {"label": "Jan", "value": 5},
+                {"label": "Feb", "value": 8},
+            ],
+            "color_scheme": "#ff6347",
+        }
+        spec = research_card_to_spec(data)
+        assert "<svg" in spec.variables["chart_svg"]
+        assert "#ff6347" in spec.variables["chart_svg"]
+
+    def test_no_chart_without_chart_type(self):
+        data = {
+            "title": "No Chart",
+            "data_points": [{"label": "A", "value": 1}],
+        }
+        spec = research_card_to_spec(data)
+        assert spec.variables["chart_svg"] == ""
+
+    def test_no_chart_without_data_points(self):
+        data = {"title": "No Chart", "chart_type": "bar"}
+        spec = research_card_to_spec(data)
+        assert spec.variables["chart_svg"] == ""
+
+    def test_missing_title_raises(self):
+        with pytest.raises(ValueError, match="title"):
+            research_card_to_spec({})
+
+    def test_default_viewport(self):
+        spec = research_card_to_spec(self._minimal_input())
+        assert spec.viewport_width == 1080
+        assert spec.viewport_height == 1080
+
+    def test_custom_viewport(self):
+        spec = research_card_to_spec(
+            self._minimal_input(),
+            viewport_width=1200,
+            viewport_height=628,
+        )
+        assert spec.viewport_width == 1200
+        assert spec.viewport_height == 628
+
+    def test_pdf_format(self):
+        spec = research_card_to_spec(
+            self._minimal_input(),
+            output_format=OutputFormat.PDF,
+        )
+        assert spec.output_format == OutputFormat.PDF
