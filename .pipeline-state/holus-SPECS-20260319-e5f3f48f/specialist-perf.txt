@@ -1,0 +1,99 @@
+SPECIALIST CRITIQUE: PERFORMANCE
+Topic: Async scheduling and queue strategy for humanization step
+Reviewer: Performance Specialist
+Date: 2026-03-19
+
+---
+
+THE ASYNC DELAY PROBLEM
+
+The current pipeline is near-synchronous within a single agent cycle: generate -> judge
+-> enqueue -> done. The human reviews later via CLI or Observatory. Adding humanization
+does NOT change this fundamental pattern -- it extends the "pending" window.
+
+However, the timing matters for LinkedIn. Research (linkedin-posting-frequency.md) says
+optimal posting is Tue-Wed-Thu 8-10 AM, with 48h minimum spacing. Content generated
+Monday night must be humanized and published by Tuesday morning. If the humanization
+queue backs up, the scheduling window closes and content becomes stale.
+
+Current content_queue.py status flow: pending_review -> approved -> published.
+New flow: pending_review -> pending_humanization -> approved -> published.
+
+The delay between pending_humanization and approved is unbounded -- it depends on when
+the human gets to it. This is the critical path.
+
+HANDLING THE DELAY
+
+Three mechanisms are needed:
+
+1. NOTIFICATION: When content enters pending_humanization, fire a Telegram notification
+   (the infrastructure exists -- SPEC-013 mentions Telegram triggers). Include the piece_id,
+   topic, and a direct link to Observatory's content review page.
+
+2. EXPIRY: Content has a LinkedIn-relevant shelf life. A post about "Pilaster shipped
+   workflow diff view" is stale after 5 days. The queue needs a `expires_at` field.
+   Default: 72 hours from generation (matches LinkedIn content lifespan from research).
+   Expired content transitions to `expired` status and is never published.
+
+3. PRIORITY ORDERING: The queue should surface highest-judge-score content first for
+   humanization. If the human has 15 minutes, they should humanize the 0.96-scoring post
+   before the 0.72-scoring one.
+
+QUEUE PERSISTENCE STRATEGY
+
+Current state: content_queue.py uses YAML files in data/content-queue/. One file per piece.
+The newer pipeline (idea_runner) uses JSON files. Both are file-based, persistent across
+restarts. This is already the de facto queue.
+
+The question is whether the humanization queue needs different infrastructure.
+
+THROUGHPUT ANALYSIS: At 3 posts/week (research recommendation), the queue processes
+~12-15 pieces/month (some rejected). At peak, maybe 5-8 pieces are pending humanization
+simultaneously. This is not a scale problem. This is a "does Juan check his phone" problem.
+
+QUERY PATTERNS: The Observatory API (SPEC-028) already reads data/content-queue/*.json
+and serves it via /api/v1/content. Adding a status filter for pending_humanization is
+trivial. No new query engine needed.
+
+RESTART SAFETY: File-based queue survives restarts. The agent (launchd-triggered every
+30 min per SPEC-013) reads the queue on every cycle. No state is lost.
+
+---
+
+DECISION_POINT: queue_strategy
+
+A) In-memory queue (lost on restart)
+   - Fast but volatile. Content disappears on crash. Unacceptable for a pipeline that
+     generates 3 posts/week -- losing even one is costly.
+
+B) YAML file queue (persistent)
+   - Already the existing pattern (content_queue.py uses YAML). Consistent with current
+     codebase. Human-readable. Observatory API already reads these files.
+   - Weakness: no atomic status transitions. Two concurrent processes could both read
+     "pending_humanization" and cause a conflict. Mitigated by run_lock.py which ensures
+     single agent execution.
+
+C) SQLite queue (queryable)
+   - Powerful but violates SPEC-028's explicit non-goal: "Zero new databases." Also
+     contradicts the Observatory design which reads JSONL/YAML/MD directly.
+   - At 15 items/month, SQL queries are solving a problem that does not exist.
+
+VOTE: B
+
+Rationale: The codebase already uses file-based queues for content. The Observatory API
+already reads them. The throughput is 3 posts/week -- no database is justified. YAML is
+human-editable, which matters for a humanization step where the human might want to edit
+the file directly in their editor rather than through Observatory. The run_lock.py pattern
+prevents concurrent access issues. Adding SQLite would require migrating existing content
+queue data, updating the Observatory API, and adding a dependency -- all for a queue that
+holds single-digit items.
+
+One refinement: use JSON instead of YAML for new pieces (the pipeline already moved to
+JSON in idea_runner.py). JSON is faster to parse, and the Observatory API already handles
+both formats. The humanization metadata (original_text, humanized_text, humanized_at,
+humanized_by) adds ~2KB per piece. At 15 pieces/month, storage is negligible.
+
+TIMEOUT RECOMMENDATION: 72 hours from generation. Configurable in config/base.yaml as
+`content.humanization_timeout_hours: 72`. A daily cron job (or the agent's OBSERVE phase)
+scans for expired content and transitions it to `expired` status with a log entry in
+trajectory.jsonl explaining why.

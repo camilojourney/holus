@@ -1,0 +1,109 @@
+SPECIALIST CRITIQUE: SECURITY
+Topic: Approval pathway, notification channels, and rate limiting
+Reviewer: Security Specialist
+Date: 2026-03-19
+
+---
+
+WHO CAN APPROVE
+
+The current approval pathway has no authentication. content_queue.py's approve() function
+takes a piece_id and flips the status -- no caller identity, no authorization check. The
+review.py CLI and Observatory API (SPEC-028 explicitly states "no authentication -- Phase
+1 is localhost-only") both operate without credentials.
+
+For humanization, the threat model is:
+
+1. ACCIDENTAL APPROVAL: Someone approves content without humanizing it. The 47% reach
+   penalty applies. Mitigation: the status machine must enforce
+   pending_humanization -> humanized -> approved. Skipping humanization is a code-level
+   impossibility, not a policy request.
+
+2. UNAUTHORIZED EDITING: Someone modifies content maliciously. Current risk is low --
+   localhost-only, single operator (Juan). But if Telegram bot is added, the attack surface
+   expands to anyone who compromises the Telegram bot token.
+
+3. CONTENT INJECTION: A humanization step that accepts arbitrary text input could be used
+   to inject content that bypasses the JudgeAgent. The humanized text must be stored
+   alongside the original, and the diff must be bounded (e.g., Levenshtein distance < 40%
+   of original length). If the human rewrites more than 40%, it should be flagged as a
+   "rewrite" not a "humanization" and optionally re-scored.
+
+RECOMMENDATION: For Phase 1 (single operator, localhost), the existing no-auth model is
+acceptable. Add a `humanized_by` field to the content JSON that records the approval
+channel (cli, telegram, observatory). This creates an audit trail without adding auth
+overhead. Phase 2 should add Telegram bot token scoping and Observatory session cookies.
+
+TELEGRAM/WEBHOOK NOTIFICATION
+
+Telegram notifications are already in the architecture (SPEC-013 mentions Telegram for
+manual triggers, AGENTS.md mentions Telegram bot for approval gates). Adding a
+notification when content enters pending_humanization is straightforward.
+
+Security considerations:
+- The Telegram bot token is already in .env (per reference_secrets_location.md).
+- Notification messages must NOT include full post text -- only piece_id, topic, and a
+  link to Observatory. Reason: Telegram messages are stored on Telegram servers. Content
+  pre-publication should not leak to third-party infrastructure.
+- The notification link should be a localhost URL (http://localhost:3000/content/{piece_id}).
+  This only works when the user is on the same machine. Acceptable for Phase 1.
+
+RATE LIMITING ON APPROVAL
+
+The approval endpoint (content_queue.approve) has no rate limiting. Current risk: a script
+or misclick could approve all pending content in a loop. With humanization, the risk is
+approving un-humanized content at scale.
+
+Mitigations:
+1. STATUS MACHINE ENFORCEMENT: approve() should reject any piece not in `humanized` status.
+   This is the primary control. Even if someone calls approve 100 times, it only succeeds
+   on humanized pieces.
+
+2. COOLDOWN: Add a 5-second cooldown between approvals from the same channel. This prevents
+   accidental rapid-fire approval but does not block intentional batch operations.
+
+3. BATCH LIMIT: Maximum 3 approvals per 10-minute window via Telegram. CLI has no limit
+   (localhost, trusted). Observatory has a confirmation dialog.
+
+4. AUDIT LOG: Every approve/reject/humanize action appends to a content-audit.jsonl file
+   with timestamp, piece_id, action, channel, and the text diff (for humanize actions).
+   This feeds into the EVALUATE phase for learning.
+
+---
+
+DECISION_POINT: approval_channel
+
+A) CLI only
+   - Most secure. Localhost only. No network exposure. But requires Juan to be at the
+     terminal, which conflicts with the 72-hour humanization window.
+
+B) Telegram bot
+   - Convenient for mobile review. But full humanization (text editing) on Telegram is
+     painful. Good for notification + quick approve/reject, bad for the actual editing step.
+
+C) Observatory web UI
+   - Best UX for humanization: inline text editor, side-by-side diff, quality score
+     visible. Already partially built (SPEC-029, status=Partial). But requires the dev
+     server running (localhost:3000).
+
+D) All three
+   - Maximum flexibility but triples the attack surface and maintenance burden. Three
+     channels means three places to enforce the status machine, three rate limiters,
+     three sets of bugs.
+
+VOTE: C (Observatory web UI) as primary, with B (Telegram) for notification-only
+
+Rationale: Humanization is an editing task. Editing text on a CLI is painful (you would
+need to open $EDITOR). Editing on Telegram is worse. Observatory already has a content
+review page (docs/playbooks/linkedin-content.md confirms "Review + approve: Observatory
+localhost:3000/content -- Built"). Adding an inline editor with diff view is a natural
+extension.
+
+Telegram serves as the notification channel: "New content ready for humanization --
+[View in Observatory]". It does NOT serve as an approval channel. This eliminates the
+Telegram bot attack surface for content modification while keeping the convenience of
+push notifications.
+
+CLI remains available as a fallback (it already works via review.py) but is not the
+primary workflow. The status machine enforcement in content_queue.py protects all channels
+equally -- no channel can skip the humanization step regardless of how approve() is called.

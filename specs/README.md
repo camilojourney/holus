@@ -75,6 +75,7 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | #   | Spec                                                             | Type    | Status      |
 | --- | ---------------------------------------------------------------- | ------- | ----------- |
 | 031 | [LinkedIn Content Pipeline](031-linkedin-content-pipeline.md)    | Backend | Implemented |
+| 032 | [Humanization Gate](032-humanization-gate.md)                    | Full-Stack | Not Started |
 
 ---
 

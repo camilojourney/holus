@@ -1,0 +1,89 @@
+SPECIALIST CRITIQUE: ARCHITECTURE
+Topic: Humanization step placement in the LinkedIn content pipeline
+Reviewer: Architecture Specialist
+Date: 2026-03-19
+
+---
+
+WHERE IT FITS IN THE LOOP
+
+The OBSERVE->REASON->ACT->EVALUATE loop (ARCHITECTURE.md, SPEC-031) currently has this
+flow inside ACT:
+
+  generate_linkedin_post() -> RevisionLoop (constitutional AI) -> JudgeAgent quality gate -> schedule_post(approval_required=true)
+
+The humanization step is fundamentally an ACT-phase concern. It transforms machine output
+into human-publishable text. It does NOT belong in OBSERVE (no new data), REASON (no
+strategy change), or EVALUATE (no scoring). It is a post-generation transformation within
+ACT, analogous to how genpeli edits raw video before publishing.
+
+BEFORE VS AFTER THE QUALITY GATE
+
+The existing pipeline already has a two-stage quality flow: RevisionLoop (proactive,
+constitutional AI self-critique) runs BEFORE JudgeAgent, then JudgeAgent scores the
+revised output. The humanization step should slot AFTER JudgeAgent, not before.
+
+Rationale: JudgeAgent evaluates content quality on dimensions like hook power, authority,
+specificity, and voice (see revision_loop.py CONTENT_CONSTITUTION). These are structural
+qualities that should be evaluated on the AI-generated draft. If humanization happens
+first, the judge evaluates human-edited text -- defeating the purpose of automated quality
+gating. Worse, a human might introduce violations that the judge would catch.
+
+The correct flow becomes:
+
+  generate -> RevisionLoop -> JudgeAgent (score >= 0.7) -> HUMANIZATION -> schedule_post
+
+This means humanization operates on content that has already passed quality. The human
+reviewer is not fixing bad content -- they are removing AI tells from good content.
+
+INTERACTION WITH approval_required=true
+
+Currently, approval_required=true creates a single gate: human reviews and clicks approve
+or reject via CLI/Observatory. The humanization step transforms this single gate into a
+two-phase gate:
+
+  Phase 1: Humanize (edit the text to sound natural, remove AI patterns)
+  Phase 2: Approve (confirm the humanized version is ready to publish)
+
+These can be collapsed into a single UI interaction in Observatory: the reviewer sees the
+generated text, edits it inline, and the save action is both "humanized" and "approved."
+But the data model must track them as distinct status transitions:
+  pending_review -> pending_humanization -> humanized -> approved -> published
+
+This preserves the diff between AI-generated and human-edited versions in the content
+queue JSON -- critical for the EVALUATE phase to learn which AI patterns humans
+consistently remove.
+
+IMPACT ON auto_publish.py
+
+The auto_publish gate (score >= 0.8 auto-approves) MUST be disabled for content that
+has not been humanized. Given the 47% reach penalty for AI content, auto-publishing
+unhumanized content destroys the value of high judge scores. The auto_publish threshold
+should only apply to content that has passed through humanization, or auto_publish should
+be gated behind a `humanization_completed=true` flag.
+
+---
+
+DECISION_POINT: humanization_placement
+
+A) Before quality gate (JudgeAgent)
+   - Human edits before scoring. Judge evaluates human work. Defeats automation.
+
+B) After quality gate, before scheduling
+   - Judge validates structural quality. Human removes AI tells from passing content.
+   - Preserves AI->human diff for learning. Auto-publish disabled until humanized.
+
+C) Replace quality gate entirely
+   - Human does all quality work. Eliminates automated filtering. Defeats the purpose
+     of having 7 evaluator agents. Scales to zero.
+
+VOTE: B
+
+Rationale: Option B preserves the automated quality filtering that rejects bad content
+(hard fail < 4, soft fail < 7) while adding the human touch that avoids LinkedIn's
+AI detection penalty. The JudgeAgent still serves as a gatekeeper -- humans only spend
+time humanizing content worth publishing. Option A wastes human effort on content that
+might fail the gate. Option C throws away the entire evaluator infrastructure built in
+SPEC-030. The diff tracking between AI and humanized versions feeds directly into the
+self-improvement loop, teaching the authority engine to generate more human-sounding
+content over time.
