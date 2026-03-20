@@ -19,7 +19,7 @@ Usage::
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -47,7 +47,7 @@ def _load_font(name: str, size: int) -> ImageFont.FreeTypeFont | ImageFont.Image
     """Try to load a TrueType font, falling back to Pillow's default."""
     try:
         return ImageFont.truetype(name, size)
-    except (OSError, IOError):
+    except OSError:
         # Try common system paths
         for path in (
             f"/System/Library/Fonts/{name}.ttc",
@@ -56,7 +56,7 @@ def _load_font(name: str, size: int) -> ImageFont.FreeTypeFont | ImageFont.Image
         ):
             try:
                 return ImageFont.truetype(path, size)
-            except (OSError, IOError):
+            except OSError:
                 continue
         return ImageFont.load_default()
 
@@ -108,7 +108,7 @@ class InfographicRenderer:
         return frames
 
     # Row border colors — cycle through these for each row (like the reference image)
-    _ROW_BORDER_COLORS = [
+    _ROW_BORDER_COLORS: ClassVar[list[str]] = [
         "#22C55E",  # green
         "#3B82F6",  # blue
         "#F59E0B",  # amber
@@ -130,7 +130,6 @@ class InfographicRenderer:
 
         # Draw category labels and items for each row — match layout constants
         title_area_height = 130
-        margin = 30
         gap = 14
         bottom_margin = 30
         num_rows = len(layout.rows)

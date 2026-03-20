@@ -20,6 +20,8 @@ from holus.core.run_lock import acquire_run_lock as acquire_agent_run_lock
 from holus.core.watchdog import WatchdogResult, check_watchdog, consecutive_failure_check
 
 __all__ = [
+    "PROXY_HEADERS",
+    "PROXY_URL",
     "AgentConfig",
     "AgentProcess",
     "AgentStatus",
@@ -33,8 +35,6 @@ __all__ = [
     "HolusEvent",
     "KillSwitch",
     "KillSwitchScope",
-    "PROXY_HEADERS",
-    "PROXY_URL",
     "ProcessManager",
     "QualityResult",
     "WatchdogResult",

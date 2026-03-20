@@ -10,10 +10,12 @@ External APIs (httpx, Redis) are mocked throughout.
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
-from pathlib import Path
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 import pytest
 
@@ -164,13 +166,13 @@ class TestSpec012KnowledgeLearning:
         logger = TrajectoryLogger(traj_file)
 
         # Write 3 marketing-agent entries and 2 code-improver entries
-        for i in range(3):
+        for _i in range(3):
             logger.append(TrajectoryEntry(
                 agent_id="marketing-agent",
                 task_type="content_creation",
                 status="success",
             ))
-        for i in range(2):
+        for _i in range(2):
             logger.append(TrajectoryEntry(
                 agent_id="code-improver",
                 task_type="code_review",
@@ -194,14 +196,14 @@ class TestSpec012KnowledgeLearning:
 
         # 7 success, 2 failure, 1 error = 10 entries total
         # Total cost = 1.50: 7*0.10 + 2*0.20 + 1*0.40 = 0.70+0.40+0.40 = 1.50
-        for i in range(7):
+        for _i in range(7):
             logger.append(TrajectoryEntry(
                 agent_id="marketing-agent",
                 task_type="content_creation",
                 status="success",
                 cost_usd=0.10,
             ))
-        for i in range(2):
+        for _i in range(2):
             logger.append(TrajectoryEntry(
                 agent_id="marketing-agent",
                 task_type="content_creation",
@@ -259,7 +261,7 @@ class TestSpec027ResilientAgentLoop:
 
     def test_ac012_kill_switch_blocks_when_global_active(self):
         """AC-012: KillSwitch.is_active returns True when global key is set."""
-        from holus.core.kill_switch import KillSwitch, KillSwitchState
+        from holus.core.kill_switch import KillSwitch
 
         mock_redis = MagicMock()
         ks = KillSwitch(mock_redis)
@@ -584,8 +586,8 @@ class TestSpec031LinkedInPipeline:
             SocialMediaClient,
         )
 
-        # Create client with mock API key
-        client = SocialMediaClient(base_url="http://localhost:9999", api_key="test-key")
+        # Verify client can be instantiated with mock API key
+        SocialMediaClient(base_url="http://localhost:9999", api_key="test-key")
 
         req = ScheduleRequest(
             content="Production ML pipeline tutorial",
@@ -611,7 +613,12 @@ class TestSpec031LinkedInPipeline:
     def test_ac021_quality_score_module_rejects_antipattern(self):
         """AC-021 supporting: score_content detects anti-pattern phrases
         and penalizes accordingly."""
-        from holus.agents.marketing.models import ContentDecision, ContentType, GeneratedPiece, Platform
+        from holus.agents.marketing.models import (
+            ContentDecision,
+            ContentType,
+            GeneratedPiece,
+            Platform,
+        )
         from holus.agents.marketing.quality_score import score_content
 
         decision = ContentDecision(
@@ -642,7 +649,12 @@ class TestSpec031LinkedInPipeline:
 
     def test_ac022_quality_score_module_passes_good_content(self):
         """AC-022 supporting: score_content passes content without violations."""
-        from holus.agents.marketing.models import ContentDecision, ContentType, GeneratedPiece, Platform
+        from holus.agents.marketing.models import (
+            ContentDecision,
+            ContentType,
+            GeneratedPiece,
+            Platform,
+        )
         from holus.agents.marketing.quality_score import score_content
 
         decision = ContentDecision(

@@ -1,6 +1,6 @@
 # NEXT.md — Holus Task Priority Queue
 
-Last updated: 2026-03-02
+Last updated: 2026-03-20
 
 ## Priority Guide
 - **P0** — Blocking. Nothing else works until this is fixed.
@@ -160,6 +160,81 @@ and clean up accumulated tech debt. The content pipeline (idea-runner) is produc
 
 - [x] [BUILD] Update MEMORY.md with Sprint 3 summary — Added Sprint 3 + Sprint 4 summaries, updated key files reference (14 modules), updated "What's Next" with blocked items, stats: 1198 tests, ~25,000 LOC. (Cycle 56)
 - [x] [BUILD] Update sprint-state.json — Set cycle=56, added sprint=4 and sprint_name. (Cycle 56)
+
+### P3 — Carry-Forward (Blocked)
+
+- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY needed.** Carried from Sprint 3.
+- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real run.** Carried from Sprint 3.
+- [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
+
+---
+
+## Sprint 5: Config Consolidation & Test Coverage
+
+Goal: Eliminate the PROXY_URL duplication across 8 files, add test coverage for critical untested modules
+(MCP clients, API routes), and improve content quality for underperforming platforms.
+
+**Key context:**
+- PROXY_URL (`http://localhost:8080/v1/chat/completions`) duplicated in 8 files — config.py already has `anthropic_base_url`
+- PROXY_HEADERS (`Authorization: Bearer local`) duplicated in 5 files alongside PROXY_URL
+- 37 source files have zero test coverage — critical gaps in MCP clients, API routes, core agents
+- Trajectory pass rate: 60.7% (17/28). Instagram caption: 20%, video_script: 25%
+- Threads content scored low on `native_feel` — agent produces LinkedIn "broetry" style on Threads
+- Prompt adherence: agent rewrites provided hooks instead of using them (Twitter thread scored 0.82)
+- Sprint 4 fixed hashtags + judge retry — those issues should not recur in new trajectory entries
+- 3 blocked items carry forward (API key, prompt tuning, brand.yaml)
+
+### P0 — PROXY_URL Consolidation
+
+- [x] [BUILD] Create shared LLM proxy helper — New module `src/holus/core/llm_proxy.py` with `get_proxy_url()`, `get_proxy_headers()`, `get_proxy_api_base()`, `get_proxy_api_key()`. Reads `ANTHROPIC_BASE_URL` + `LLM_PROXY_AUTH_TOKEN` env vars. Also provides module-level `PROXY_URL`/`PROXY_HEADERS` constants. 11 tests. (Cycle 58)
+- [x] [BUILD] Replace PROXY_URL in marketing modules — Updated `idea_runner.py`, `quality_compounding.py`, `revision_loop.py`, `platform_adapter.py` to import from `core.llm_proxy`. `specialist_dispatch.py` had no PROXY_URL to replace. (Cycle 59)
+- [x] [BUILD] Replace PROXY_URL in infrastructure modules — Updated `core/resilience.py`, `self_improvement/judge.py`, `self_improvement/dspy_optimizer.py`, and `specialist_dispatch.py` (bonus catch) to use `core.llm_proxy`. Zero hardcoded proxy URLs remain in source outside canonical modules. (Cycle 60)
+
+### P1 — MCP Client Test Coverage
+
+- [x] [BUILD] Add social-media client unit tests — 15 new tests: `schedule_post()` (5), `get_post_analytics()` (2), error handling (7: 5xx, 4xx, timeout, connection error across methods), data envelope unwrapping (1). 38 total tests, all mocked HTTP. (Cycle 61)
+- [x] [BUILD] Add genpeli client unit tests — 24 total tests (14 new): `process_video()`, `check_status()`, `get_preview()`, `approve()`, `reject()`, `health()`. Error handling (7: timeout, 404, 5xx, 4xx, connection errors), retry behavior (1), client lifecycle (2), Pydantic models (4). All mocked HTTP. (Cycle 62)
+- [x] [BUILD] Add pilaster client unit tests — 28 total tests (7 new error handling): timeout on generate_image, connection error on generate_image, 404 on get_characters, 5xx on get_templates, 4xx on query_experiments, timeout on get_successful_prompts, connection error on health. Uses `__wrapped__` to bypass tenacity retry. All mocked HTTP. (Cycle 63)
+
+### P2 — API Route Test Coverage
+
+- [x] [BUILD] Add Observatory API route tests — 33 new tests covering content detail/PATCH/calendar, alerts (regression/stalls/filter), improvement (score-trends/bandit-arms/gaps/drift/summary), results, config (GET/PUT), knowledge (memory/lessons). 66 total Observatory API tests. (Cycle 64)
+
+### P3 — Carry-Forward (Blocked)
+
+- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY needed.** Carried from Sprint 3.
+- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real run.** Carried from Sprint 3.
+- [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
+
+---
+
+## Sprint 6: Code Quality & Critical Test Coverage
+
+Goal: Fix all lint errors, add tests for the most critical untested modules (Claude API client, agent base class,
+events system), and reduce mypy error count. Clean codebase = faster future development.
+
+**Key context:**
+- 1272 tests passing, 27 lint errors (10 auto-fixable), 135 mypy errors
+- 31 source files with zero test coverage — 4 critical (claude_api/client, agents/base, core/events, core/process_manager)
+- 3 blocked items carry forward (API key, prompt tuning, brand.yaml)
+
+### P0 — Lint Cleanup
+
+- [x] [BUILD] Auto-fix lint errors — `ruff check --fix` fixed 10 errors (F401, I001, UP024, RUF022). (Cycle 65)
+- [x] [BUILD] Fix manual lint errors — Fixed 17 errors: N802 (7 test names lowercased), B007 (4 `_i` renames), F841 (2 unused vars removed), RUF012 (2 ClassVar annotations), SIM108 (1 ternary), TC003 (1 TYPE_CHECKING). Zero lint errors remain. (Cycle 65)
+
+### P1 — Critical Module Tests
+
+- [x] [BUILD] Add Claude API client unit tests — 34 new tests: CachedPrompt (6), client init/routing (4), tool handling (2), extended thinking (2), cost tracking (5), cost math (3), batch API (3), define_tool (2), tool loop (5), pricing table (3). All mocked. (Cycle 65)
+- [ ] [BUILD] Add agent base class unit tests — `src/holus/agents/base.py` (371 LOC). Test lifecycle methods, config loading, error handling patterns.
+- [ ] [BUILD] Add events system unit tests — `src/holus/core/events.py` (253 LOC). Test pub/sub, event routing, Redis fallback.
+- [ ] [BUILD] Add process manager unit tests — `src/holus/core/process_manager.py` (248 LOC). Test process lifecycle, timeout handling, cleanup.
+
+### P2 — Mypy Error Reduction
+
+- [ ] [BUILD] Fix idea_runner.py type errors — 20 mypy errors: add dict type params, fix untyped object access.
+- [ ] [BUILD] Fix agent.py type errors — 30 mypy errors: return type annotations, Any-return issues.
+- [ ] [BUILD] Fix prompt_evolution.py type errors — 2 mypy errors: missing `agenerate` method.
 
 ### P3 — Carry-Forward (Blocked)
 

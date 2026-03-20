@@ -7,6 +7,8 @@ icon is a colored rounded rectangle with its display name as a text label.
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 
 class IconRegistry:
     """Registry of known icon names with display names and colors.
@@ -20,7 +22,7 @@ class IconRegistry:
 
     _DEFAULT_COLOR = "#9CA3AF"
 
-    _ICONS: dict[str, tuple[str, str]] = {
+    _ICONS: ClassVar[dict[str, tuple[str, str]]] = {
         # AI models & companies
         "claude": ("Claude", "#D97706"),
         "openai": ("OpenAI", "#10A37F"),

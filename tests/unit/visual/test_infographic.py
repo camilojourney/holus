@@ -9,10 +9,9 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-import pytest
 from PIL import Image
 
-from holus.agents.marketing.models import BrandVisualIdentity, ColorPalette
+from holus.agents.marketing.models import BrandVisualIdentity
 from holus.visual.gif_encoder import encode_gif
 from holus.visual.icon_registry import IconRegistry
 from holus.visual.infographic import InfographicRenderer
@@ -66,7 +65,7 @@ def _make_layout(
 class TestInfographicRendering:
     """Tests for InfographicRenderer."""
 
-    def test_SPEC033_001_render_produces_frames(self) -> None:
+    def test_spec033_001_render_produces_frames(self) -> None:
         """AC-033-001: render produces correct number of 1080x1080 frames."""
         layout = _make_layout()
         renderer = InfographicRenderer(BrandVisualIdentity())
@@ -78,7 +77,7 @@ class TestInfographicRendering:
             assert isinstance(frame, Image.Image)
             assert frame.size == (1080, 1080)
 
-    def test_SPEC033_002_encode_gif_under_5mb(self) -> None:
+    def test_spec033_002_encode_gif_under_5mb(self) -> None:
         """AC-033-002: encoded GIF is < 5MB."""
         layout = _make_layout()
         renderer = InfographicRenderer(BrandVisualIdentity())
@@ -97,7 +96,7 @@ class TestInfographicRendering:
 class TestIconRegistry:
     """Tests for IconRegistry."""
 
-    def test_SPEC033_003_icon_registry_known(self) -> None:
+    def test_spec033_003_icon_registry_known(self) -> None:
         """AC-033-006: known icons return valid entries."""
         registry = IconRegistry()
         display_name, hex_color = registry.get_icon("claude")
@@ -106,7 +105,7 @@ class TestIconRegistry:
         assert hex_color.startswith("#")
         assert len(hex_color) == 7
 
-    def test_SPEC033_004_icon_registry_unknown(self) -> None:
+    def test_spec033_004_icon_registry_unknown(self) -> None:
         """Unknown icons return the raw name with default gray color."""
         registry = IconRegistry()
         display_name, hex_color = registry.get_icon("totally_unknown_icon_xyz")
@@ -118,7 +117,7 @@ class TestIconRegistry:
 class TestLayoutComputation:
     """Tests for InfographicLayout.compute_positions()."""
 
-    def test_SPEC033_005_layout_compute_positions(self) -> None:
+    def test_spec033_005_layout_compute_positions(self) -> None:
         """All items get valid x,y positions after compute_positions()."""
         layout = _make_layout()
 
@@ -134,7 +133,7 @@ class TestLayoutComputation:
                 assert w > 0, f"Item '{item.name}' has non-positive width"
                 assert h > 0, f"Item '{item.name}' has non-positive height"
 
-    def test_SPEC033_006_brand_colors_applied(self) -> None:
+    def test_spec033_006_brand_colors_applied(self) -> None:
         """AC-033-005: brand background color is used in rendered frames."""
         bg_color = "#2D1B69"
         layout = _make_layout(background_color=bg_color)
@@ -149,7 +148,7 @@ class TestLayoutComputation:
         expected_rgb = (0x2D, 0x1B, 0x69)
         assert pixel[:3] == expected_rgb, f"Background pixel {pixel[:3]} != expected {expected_rgb}"
 
-    def test_SPEC033_007_sequential_animation(self) -> None:
+    def test_spec033_007_sequential_animation(self) -> None:
         """Sequential animation: earlier items have lower appear_at times."""
         layout = _make_layout(animation=AnimationType.SEQUENTIAL)
 

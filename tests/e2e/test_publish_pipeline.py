@@ -63,11 +63,7 @@ def _read_yaml(path: Path) -> dict:
 def _humanize_and_approve(piece_id: str, text: str = "I built an AI image platform with memory. Here is what I learned.") -> None:
     """SPEC-032: content must be humanized before approval."""
     # Humanized text must differ slightly but stay within 40% edit distance
-    if len(text) < 40:
-        # For short texts, just change a word to stay within edit distance
-        humanized = text.rstrip(".") + "!"
-    else:
-        humanized = text.rstrip(".") + " — edited."
+    humanized = text.rstrip(".") + "!" if len(text) < 40 else text.rstrip(".") + " — edited."
     humanize(piece_id, humanized)
     approve(piece_id)
 
