@@ -335,6 +335,88 @@ class TestHealth:
             mock_httpx_client.get.assert_called_once_with("/api/v1/health")
 
 
+class TestErrorHandling:
+    """Test error handling across client methods."""
+
+    @pytest.mark.asyncio
+    async def test_timeout_on_generate_image(
+        self, client, mock_httpx_client, sample_recipe
+    ):
+        """generate_image raises on timeout."""
+        mock_httpx_client.post.side_effect = httpx.ReadTimeout("Timed out")
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.ReadTimeout):
+            await client.generate_image.__wrapped__(client, backend="comfyui", recipe=sample_recipe)
+
+    @pytest.mark.asyncio
+    async def test_connection_error_on_generate_image(
+        self, client, mock_httpx_client, sample_recipe
+    ):
+        """generate_image raises on connection error."""
+        mock_httpx_client.post.side_effect = httpx.ConnectError("Connection refused")
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.ConnectError):
+            await client.generate_image.__wrapped__(client, backend="comfyui", recipe=sample_recipe)
+
+    @pytest.mark.asyncio
+    async def test_404_on_get_characters(self, client, mock_httpx_client):
+        """get_characters raises on 404."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Not Found",
+            request=MagicMock(),
+            response=MagicMock(status_code=404),
+        )
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+            await client.get_characters.__wrapped__(client)
+
+    @pytest.mark.asyncio
+    async def test_5xx_on_get_templates(self, client, mock_httpx_client):
+        """get_templates raises on 500 server error."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Internal Server Error",
+            request=MagicMock(),
+            response=MagicMock(status_code=500),
+        )
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+            await client.get_templates.__wrapped__(client, style="anime")
+
+    @pytest.mark.asyncio
+    async def test_4xx_on_query_experiments(self, client, mock_httpx_client):
+        """query_experiments raises on 422 validation error."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Unprocessable Entity",
+            request=MagicMock(),
+            response=MagicMock(status_code=422),
+        )
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+            await client.query_experiments.__wrapped__(client, query="test")
+
+    @pytest.mark.asyncio
+    async def test_timeout_on_get_successful_prompts(self, client, mock_httpx_client):
+        """get_successful_prompts raises on timeout."""
+        mock_httpx_client.get.side_effect = httpx.ReadTimeout("Timed out")
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.ReadTimeout):
+            await client.get_successful_prompts.__wrapped__(client, style="photorealistic")
+
+    @pytest.mark.asyncio
+    async def test_connection_error_on_health(self, client, mock_httpx_client):
+        """health raises on connection error (server down)."""
+        mock_httpx_client.get.side_effect = httpx.ConnectError("Connection refused")
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.ConnectError):
+            await client.health()
+
+
 class TestRetryBehavior:
     """Test tenacity retry on transient errors."""
 
