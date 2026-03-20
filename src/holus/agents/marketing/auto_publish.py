@@ -76,7 +76,8 @@ def _get_judge_score(item: dict[str, Any]) -> float | None:
 
 def _get_judge_verdict(item: dict[str, Any]) -> str | None:
     """Extract judge verdict from queue item."""
-    return item.get("judge_verdict") or item.get("quality", {}).get("judge_verdict")
+    verdict: str | None = item.get("judge_verdict") or item.get("quality", {}).get("judge_verdict")
+    return verdict
 
 
 def _update_item(file_path: str, updates: dict[str, Any]) -> None:

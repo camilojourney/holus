@@ -92,7 +92,7 @@ async def bandit_arms() -> dict[str, Any]:
         return {"arms": [], "total_observations": 0}
 
     try:
-        data = json.loads(BANDIT_ARMS_PATH.read_text(encoding="utf-8"))
+        data: dict[str, Any] = json.loads(BANDIT_ARMS_PATH.read_text(encoding="utf-8"))
         return data
     except (json.JSONDecodeError, OSError):
         return {"arms": [], "total_observations": 0, "error": "Failed to load arms"}

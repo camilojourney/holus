@@ -142,7 +142,8 @@ Return ONLY the adapted text.
             }
             resp = requests.post(PROXY_URL, json=payload, headers=PROXY_HEADERS, timeout=120)
             resp.raise_for_status()
-            return resp.json()["choices"][0]["message"]["content"]
+            result: str = resp.json()["choices"][0]["message"]["content"]
+            return result
         except Exception as exc:
             logger.warning("Platform adaptation failed: %s", exc)
             return ""

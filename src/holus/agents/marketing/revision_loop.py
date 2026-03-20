@@ -105,7 +105,8 @@ def _call(model: str, system: str, user: str) -> str:
     try:
         resp = requests.post(PROXY_URL, json=payload, headers=PROXY_HEADERS, timeout=120)
         resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"]
+        result: str = resp.json()["choices"][0]["message"]["content"]
+        return result
     except Exception as exc:
         logger.warning("Revision loop LLM call failed: %s", exc)
         return ""

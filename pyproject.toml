@@ -125,6 +125,10 @@ module = [
     "redis.*",
     "jinja2.*",
     "playwright.*",
+    "requests.*",
+    "opentelemetry.*",
+    "pypdf.*",
+    "PyPDF2.*",
 ]
 ignore_missing_imports = true
 

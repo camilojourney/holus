@@ -43,7 +43,8 @@ def _call_llm(system: str, user: str, model: str = "anthropic/claude-sonnet-4-6"
         }
         resp = requests.post(PROXY_URL, json=payload, headers=PROXY_HEADERS, timeout=120)
         resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"]
+        result: str = resp.json()["choices"][0]["message"]["content"]
+        return result
     except Exception as exc:
         logger.warning("LLM call failed: %s", exc)
         return ""

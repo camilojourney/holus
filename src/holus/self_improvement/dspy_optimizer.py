@@ -80,7 +80,7 @@ class DSPyOptimizer:
             dspy.configure(lm=lm)
 
             # Define the signature
-            class ContentGenerator(dspy.Signature):
+            class ContentGenerator(dspy.Signature):  # type: ignore[misc]
                 """Generate marketing content from an idea."""
                 idea: str = dspy.InputField()
                 content: str = dspy.OutputField()
@@ -101,7 +101,7 @@ class DSPyOptimizer:
             # Run BootstrapFewShot
             optimizer = dspy.BootstrapFewShot(max_bootstrapped_demos=max_bootstraps)
 
-            def metric(example, prediction, trace=None):
+            def metric(example: Any, prediction: Any, trace: Any = None) -> bool:
                 # Simple length + keyword check as proxy metric
                 return len(prediction.content) > 100
 

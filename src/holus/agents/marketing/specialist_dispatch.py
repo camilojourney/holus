@@ -379,7 +379,8 @@ Build on the prior outputs. Do NOT repeat what was already written.
                 timeout=120,
             )
             resp.raise_for_status()
-            return resp.json()["choices"][0]["message"]["content"]
+            result: str = resp.json()["choices"][0]["message"]["content"]
+            return result
         except Exception as exc:
             logger.warning("Specialist %s failed: %s", specialist_id, exc)
             return f"[{specialist_id} unavailable: {exc}]"

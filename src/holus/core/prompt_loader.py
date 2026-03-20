@@ -61,7 +61,8 @@ class PromptLoader:
         prompt_rel = info.get("prompt", "")
         if not prompt_rel:
             return None
-        return self._repo_root / "agents" / prompt_rel
+        result: Path = self._repo_root / "agents" / prompt_rel
+        return result
 
     # -- Public API --------------------------------------------------------
 

@@ -14,6 +14,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from types import TracebackType
 
+    from playwright.async_api import Browser, Playwright
+
 from holus.visual.models import (
     CarouselSpec,
     OutputFormat,
@@ -38,14 +40,14 @@ class PlaywrightEngine:
 
     def __init__(self, template_engine: TemplateEngine | None = None) -> None:
         self._template_engine = template_engine or TemplateEngine()
-        self._playwright: object | None = None
-        self._browser: object | None = None
+        self._playwright: Playwright | None = None
+        self._browser: Browser | None = None
 
     async def __aenter__(self) -> PlaywrightEngine:
         from playwright.async_api import async_playwright
 
         self._playwright = await async_playwright().start()
-        self._browser = await self._playwright.chromium.launch(headless=True)  # type: ignore[union-attr]
+        self._browser = await self._playwright.chromium.launch(headless=True)
         return self
 
     async def __aexit__(
@@ -55,10 +57,10 @@ class PlaywrightEngine:
         exc_tb: TracebackType | None,
     ) -> None:
         if self._browser is not None:
-            await self._browser.close()  # type: ignore[union-attr]
+            await self._browser.close()
             self._browser = None
         if self._playwright is not None:
-            await self._playwright.stop()  # type: ignore[union-attr]
+            await self._playwright.stop()
             self._playwright = None
 
     async def render_png(
@@ -86,7 +88,7 @@ class PlaywrightEngine:
 
         started = time.perf_counter()
         try:
-            page = await self._browser.new_page(  # type: ignore[union-attr]
+            page = await self._browser.new_page(
                 viewport={"width": viewport[0], "height": viewport[1]},
             )
             try:
@@ -150,7 +152,7 @@ class PlaywrightEngine:
             # For multiple pages, combine into one HTML with page breaks
             combined_html = self._combine_html_pages(html_pages)
 
-            page = await self._browser.new_page()  # type: ignore[union-attr]
+            page = await self._browser.new_page()
             try:
                 await page.set_content(combined_html, wait_until="networkidle", timeout=timeout_ms)
                 pdf_bytes = await page.pdf(
@@ -267,7 +269,7 @@ class PlaywrightEngine:
                 }
                 html = self._template_engine.render(slide.template, slide_vars)
 
-                page = await self._browser.new_page()  # type: ignore[union-attr]
+                page = await self._browser.new_page()
                 try:
                     await page.set_content(
                         html,
@@ -369,7 +371,7 @@ class PlaywrightEngine:
         # Collect all unique styles from slide heads, and body content from each
         all_styles: list[str] = []
         sections: list[str] = []
-        seen_styles: set[str] = set()
+        seen_styles: set[str | int] = set()
 
         for i, page_html in enumerate(pages):
             head_content, body_content = PlaywrightEngine._extract_body(page_html)

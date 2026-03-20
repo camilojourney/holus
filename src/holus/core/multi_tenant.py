@@ -78,7 +78,7 @@ class Tenant:
         )
 
     @contextmanager
-    def context(self):
+    def context(self) -> Any:
         """Set environment for tenant-scoped execution.
 
         All data paths resolve to tenant-specific directories:

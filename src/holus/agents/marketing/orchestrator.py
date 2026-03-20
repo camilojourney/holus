@@ -20,11 +20,12 @@ import logging
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-async def content_cycle(idea: str | None = None) -> dict:
+async def content_cycle(idea: str | None = None) -> dict[str, Any]:
     """Generate content, evaluate with judge, auto-publish.
 
     If no idea provided, uses the cold-start calendar or generates
@@ -58,7 +59,7 @@ async def content_cycle(idea: str | None = None) -> dict:
     return summary
 
 
-async def analytics_cycle() -> dict:
+async def analytics_cycle() -> dict[str, Any]:
     """Fetch engagement data for published content."""
     from holus.agents.marketing.analytics_collector import collect_analytics
 
@@ -82,7 +83,7 @@ async def analytics_cycle() -> dict:
     return summary
 
 
-async def improvement_cycle() -> dict:
+async def improvement_cycle() -> dict[str, Any]:
     """Weekly learning + prompt evolution + A/B test evaluation."""
     from holus.self_improvement.learning_loop import WeeklyLearningLoop
 

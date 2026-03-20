@@ -12,6 +12,7 @@ import os
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
@@ -46,7 +47,7 @@ class Alert(BaseModel):
     severity: str  # WARNING, CRITICAL
     skill: str
     message: str
-    details: dict = Field(default_factory=dict)
+    details: dict[str, Any] = Field(default_factory=dict)
 
 
 class SkillTrend(BaseModel):
@@ -58,7 +59,7 @@ class SkillTrend(BaseModel):
     last_score: float
     min_score: float
     max_score: float
-    rolling_7d: list[dict] = Field(default_factory=list)
+    rolling_7d: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class AlertsResponse(BaseModel):
@@ -72,7 +73,7 @@ class AlertsResponse(BaseModel):
 # -- Logic -------------------------------------------------------------------
 
 
-def _load_entries() -> list[dict]:
+def _load_entries() -> list[dict[str, Any]]:
     """Load eval_history.jsonl entries."""
     if not EVAL_HISTORY_PATH.exists():
         return []
@@ -89,11 +90,11 @@ def _load_entries() -> list[dict]:
 
 
 def _check_score_regression(
-    entries: list[dict], skill_filter: str = "",
+    entries: list[dict[str, Any]], skill_filter: str = "",
 ) -> list[Alert]:
     """Score drops > 10 points below 7-day rolling average."""
     alerts: list[Alert] = []
-    by_skill: dict[str, list[dict]] = defaultdict(list)
+    by_skill: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
     for e in entries:
         skill = e.get("phase") or e.get("workflow") or "unknown"
@@ -139,11 +140,11 @@ def _check_score_regression(
 
 
 def _check_consecutive_failures(
-    entries: list[dict], skill_filter: str = "", threshold: float = 70,
+    entries: list[dict[str, Any]], skill_filter: str = "", threshold: float = 70,
 ) -> list[Alert]:
     """3+ consecutive scores below threshold."""
     alerts: list[Alert] = []
-    by_skill: dict[str, list[dict]] = defaultdict(list)
+    by_skill: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
     for e in entries:
         skill = e.get("phase") or e.get("workflow") or "unknown"
@@ -171,7 +172,7 @@ def _check_consecutive_failures(
     return alerts
 
 
-def _check_stalls(entries: list[dict], skill_filter: str = "") -> list[Alert]:
+def _check_stalls(entries: list[dict[str, Any]], skill_filter: str = "") -> list[Alert]:
     """Score 0 = likely stall/empty output."""
     alerts: list[Alert] = []
     for e in reversed(entries[-20:]):
@@ -189,9 +190,9 @@ def _check_stalls(entries: list[dict], skill_filter: str = "") -> list[Alert]:
     return alerts
 
 
-def _compute_trends(entries: list[dict], skill_filter: str = "") -> list[SkillTrend]:
+def _compute_trends(entries: list[dict[str, Any]], skill_filter: str = "") -> list[SkillTrend]:
     """Per-skill score trends with 7-day rolling data."""
-    by_skill: dict[str, list[dict]] = defaultdict(list)
+    by_skill: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for e in entries:
         skill = e.get("phase") or e.get("workflow") or "unknown"
         if skill_filter and skill.lower() != skill_filter.lower():
@@ -207,7 +208,7 @@ def _compute_trends(entries: list[dict], skill_filter: str = "") -> list[SkillTr
             continue
 
         # 7-day rolling data points
-        rolling_7d: list[dict] = []
+        rolling_7d: list[dict[str, Any]] = []
         for i in range(6, -1, -1):
             target_date = (now - timedelta(days=i)).date()
             day_scores: list[float] = []

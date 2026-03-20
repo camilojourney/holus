@@ -47,12 +47,12 @@ def with_retry(
         requests.exceptions.ConnectionError,
         requests.exceptions.HTTPError,
     ),
-):
+) -> Any:
     """Decorator: retry with exponential backoff on transient failures."""
 
-    def decorator(func):
+    def decorator(func: Any) -> Any:
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             last_exc = None
             for attempt in range(max_attempts):
                 try:
@@ -100,7 +100,7 @@ async def with_fallback_chain(
                 PROXY_URL, json=payload, headers=PROXY_HEADERS, timeout=120,
             )
             resp.raise_for_status()
-            result = resp.json()["choices"][0]["message"]["content"]
+            result: str = resp.json()["choices"][0]["message"]["content"]
             logger.info("Fallback chain: %s succeeded", model)
             return result
         except Exception as exc:

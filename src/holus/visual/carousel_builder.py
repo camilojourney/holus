@@ -134,6 +134,10 @@ async def _render(outline: dict[str, Any], output_path: Path) -> Path:
         msg = f"Carousel render failed: {result.error}"
         raise RuntimeError(msg)
 
+    if result.output_bytes is None:
+        msg = "Carousel render returned no output bytes"
+        raise RuntimeError(msg)
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(result.output_bytes)
     logger.info("Carousel PDF saved: %s (%d bytes)", output_path, len(result.output_bytes))

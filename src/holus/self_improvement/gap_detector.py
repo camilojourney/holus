@@ -122,7 +122,7 @@ def detect_gaps(
 
         # Extract common feedback themes
         feedbacks = [e.get("judge_feedback", "") for e in entries if e.get("judge_feedback")]
-        common_words = Counter()
+        common_words: Counter[str] = Counter()
         for fb in feedbacks:
             common_words.update(fb.lower().split())
         top_words = [w for w, _ in common_words.most_common(5) if len(w) > 3]

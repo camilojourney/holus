@@ -83,7 +83,7 @@ def _load_evaluations() -> list[EvaluationResult]:
 async def list_evaluations(
     agent_id: str | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=500),
-) -> EvaluationsResponse:
+) -> EvaluationsResponse | JSONResponse:
     """Return evaluation results, optionally filtered by agent."""
     evals = _load_evaluations()
 

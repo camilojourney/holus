@@ -32,12 +32,12 @@ REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
 CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
 
 
-def _load_raw_files() -> list[tuple[Path, dict]]:
+def _load_raw_files() -> list[tuple[Path, dict[str, Any]]]:
     """Load all YAML and JSON files from data/content-queue/."""
     if not CONTENT_QUEUE_DIR.exists():
         return []
 
-    results: list[tuple[Path, dict]] = []
+    results: list[tuple[Path, dict[str, Any]]] = []
     for path in sorted(CONTENT_QUEUE_DIR.iterdir()):
         if path.suffix not in (".yaml", ".yml", ".json"):
             continue
@@ -64,7 +64,7 @@ def _parse_dt(value: Any) -> datetime | None:
         return None
 
 
-def _parse_quality(raw: dict) -> ContentQuality | None:
+def _parse_quality(raw: dict[str, Any]) -> ContentQuality | None:
     q = raw.get("quality")
     if not q or not isinstance(q, dict):
         return None
@@ -76,7 +76,7 @@ def _parse_quality(raw: dict) -> ContentQuality | None:
     )
 
 
-def _parse_agent_trace(raw: dict) -> list[AgentTraceStep]:
+def _parse_agent_trace(raw: dict[str, Any]) -> list[AgentTraceStep]:
     trace = raw.get("agent_trace", [])
     if not isinstance(trace, list):
         return []
@@ -95,7 +95,7 @@ def _parse_agent_trace(raw: dict) -> list[AgentTraceStep]:
     return steps
 
 
-def _raw_to_item(raw: dict, file_stem: str) -> ContentItem:
+def _raw_to_item(raw: dict[str, Any], file_stem: str) -> ContentItem:
     piece_id = str(raw.get("piece_id", raw.get("id", file_stem)))
     title = raw.get("topic") or raw.get("title") or raw.get("headline")
     status = str(raw.get("status", "draft"))
@@ -118,7 +118,7 @@ def _raw_to_item(raw: dict, file_stem: str) -> ContentItem:
     )
 
 
-def _raw_to_detail(raw: dict, file_stem: str) -> ContentDetail:
+def _raw_to_detail(raw: dict[str, Any], file_stem: str) -> ContentDetail:
     item = _raw_to_item(raw, file_stem)
     piece_id = str(raw.get("piece_id", raw.get("id", file_stem)))
 
@@ -273,7 +273,7 @@ async def update_content_status(piece_id: str, body: ContentPatchRequest) -> Con
     """
     files = _load_raw_files()
     target_path: Path | None = None
-    raw: dict = {}
+    raw: dict[str, Any] = {}
 
     for path, data in files:
         raw_id = str(data.get("piece_id", data.get("id", path.stem)))
@@ -307,7 +307,7 @@ async def update_content_status(piece_id: str, body: ContentPatchRequest) -> Con
     return _raw_to_detail(raw, target_path.stem)
 
 
-def _attempt_post(raw: dict) -> None:
+def _attempt_post(raw: dict[str, Any]) -> None:
     """Fire-and-forget: try to post via social-media-automatization API."""
     try:
         import os

@@ -15,6 +15,10 @@ Usage::
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 # ---------------------------------------------------------------------------
 # Sparkline — tiny line chart for stat slides
@@ -179,11 +183,11 @@ def donut_svg(
 # Decorative SVG — abstract patterns for split slides
 # ---------------------------------------------------------------------------
 
-_PATTERN_REGISTRY: dict[str, str] = {}
+_PATTERN_REGISTRY: dict[str, Any] = {}
 
 
-def _register(name: str):
-    def decorator(fn):
+def _register(name: str) -> Callable[..., Any]:
+    def decorator(fn: Callable[..., str]) -> Callable[..., str]:
         _PATTERN_REGISTRY[name] = name
         _PATTERN_REGISTRY[f"_fn_{name}"] = fn
         return fn
@@ -292,8 +296,10 @@ def decorative_svg(pattern: str = "circles") -> str:
     """
     fn_key = f"_fn_{pattern}"
     if fn_key in _PATTERN_REGISTRY:
-        return _PATTERN_REGISTRY[fn_key]()
-    return _PATTERN_REGISTRY["_fn_circles"]()
+        result: str = _PATTERN_REGISTRY[fn_key]()
+        return result
+    fallback: str = _PATTERN_REGISTRY["_fn_circles"]()
+    return fallback
 
 
 def list_patterns() -> list[str]:

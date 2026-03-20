@@ -216,6 +216,8 @@ class TemplateEngine:
         *,
         default: int,
     ) -> int:
+        if isinstance(value, list) or value is None:
+            return default
         try:
             return max(int(value), 1)
         except (TypeError, ValueError):

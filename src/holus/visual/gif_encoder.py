@@ -71,7 +71,7 @@ def encode_gif(
     # Still too large — reduce dimensions to 720x720
     if output_path.stat().st_size > _MAX_GIF_SIZE:
         logger.warning("GIF still %d bytes, reducing to 720x720", output_path.stat().st_size)
-        resized = [f.resize((720, 720), Image.LANCZOS) for f in frames]
+        resized = [f.resize((720, 720), Image.LANCZOS) for f in frames]  # type: ignore[attr-defined]
         _encode_frames(resized, output_path, min(fps, 8))
         if optimize:
             _optimize_gifsicle(output_path)

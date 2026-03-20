@@ -6,6 +6,7 @@ import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -95,7 +96,7 @@ async def get_recent_lessons(
         return LessonsResponse(lessons=[], total=0)
 
     # lessons.json may be a list or a dict with a "lessons" key
-    entries: list[dict] = []
+    entries: list[dict[str, Any]] = []
     if isinstance(raw, list):
         entries = raw
     elif isinstance(raw, dict) and "lessons" in raw:

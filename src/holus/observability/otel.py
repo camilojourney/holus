@@ -34,7 +34,7 @@ _tracer_provider = None
 _meter_provider = None
 
 
-def _init_otel():
+def _init_otel() -> None:
     """Initialize OTEL tracer and meter providers (lazy, once)."""
     global _tracer_provider, _meter_provider
 
@@ -80,7 +80,7 @@ def _init_otel():
         logger.warning("OTEL init failed — tracing disabled", exc_info=True)
 
 
-def get_tracer(name: str = "holus"):
+def get_tracer(name: str = "holus") -> Any:
     """Get an OTEL tracer. Returns a no-op tracer if OTEL is unavailable."""
     _init_otel()
     try:
@@ -90,7 +90,7 @@ def get_tracer(name: str = "holus"):
         return _NoOpTracer()
 
 
-def get_meter(name: str = "holus"):
+def get_meter(name: str = "holus") -> Any:
     """Get an OTEL meter. Returns a no-op meter if OTEL is unavailable."""
     _init_otel()
     try:
@@ -107,7 +107,7 @@ _llm_duration_histogram = None
 _eval_score_gauge = None
 
 
-def _ensure_instruments():
+def _ensure_instruments() -> None:
     """Lazily create metric instruments."""
     global _llm_cost_counter, _llm_token_counter, _llm_duration_histogram, _eval_score_gauge
 
@@ -153,9 +153,9 @@ def record_llm_metrics(
 
     attrs: dict[str, Any] = {"agent.id": agent_id, "model": model}
     _llm_cost_counter.add(cost_usd, attributes=attrs)
-    _llm_token_counter.add(tokens_input, attributes={**attrs, "direction": "input"})
-    _llm_token_counter.add(tokens_output, attributes={**attrs, "direction": "output"})
-    _llm_duration_histogram.record(duration_sec, attributes=attrs)
+    _llm_token_counter.add(tokens_input, attributes={**attrs, "direction": "input"})  # type: ignore[union-attr]
+    _llm_token_counter.add(tokens_output, attributes={**attrs, "direction": "output"})  # type: ignore[union-attr]
+    _llm_duration_histogram.record(duration_sec, attributes=attrs)  # type: ignore[union-attr]
 
 
 def record_eval_score(
@@ -197,31 +197,31 @@ class _NoOpSpan:
     def set_attribute(self, key: str, value: Any) -> None:
         pass
 
-    def __enter__(self):
+    def __enter__(self) -> _NoOpSpan:
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: Any) -> None:
         pass
 
 
 class _NoOpTracer:
-    def start_as_current_span(self, name: str, **kwargs):
+    def start_as_current_span(self, name: str, **kwargs: Any) -> _NoOpSpan:
         return _NoOpSpan()
 
 
 class _NoOpCounter:
-    def add(self, amount, attributes=None):
+    def add(self, amount: float, attributes: dict[str, Any] | None = None) -> None:
         pass
 
 
 class _NoOpHistogram:
-    def record(self, amount, attributes=None):
+    def record(self, amount: float, attributes: dict[str, Any] | None = None) -> None:
         pass
 
 
 class _NoOpMeter:
-    def create_counter(self, name, **kwargs):
+    def create_counter(self, name: str, **kwargs: Any) -> _NoOpCounter:
         return _NoOpCounter()
 
-    def create_histogram(self, name, **kwargs):
+    def create_histogram(self, name: str, **kwargs: Any) -> _NoOpHistogram:
         return _NoOpHistogram()

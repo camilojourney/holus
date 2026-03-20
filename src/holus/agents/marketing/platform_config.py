@@ -20,6 +20,7 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -91,7 +92,7 @@ PLATFORMS: dict[str, PlatformConfig] = {
         risk_tier="low",
 
     ),
-    "twitter_x": None,  # Alias — resolved below
+    "twitter_x": None,  # type: ignore[dict-item]  # Alias — resolved below
     "instagram": PlatformConfig(
         platform_id="instagram",
         display_name="Instagram",
@@ -222,7 +223,7 @@ def get_reward_weights(platform: str) -> dict[str, float]:
 # Content config (externalized in config/content.yaml)
 # ---------------------------------------------------------------------------
 
-def load_content_config() -> dict:
+def load_content_config() -> dict[str, Any]:
     """Load content configuration from config/content.yaml.
 
     Returns the full config dict. Keys:
@@ -241,13 +242,15 @@ def load_content_config() -> dict:
             "approval": {"require_all": True, "auto_approve_after": 0},
             "translation": {"provider": "none", "quality_check": False},
         }
-    return yaml.safe_load(config_path.read_text()) or {}
+    result: dict[str, Any] = yaml.safe_load(config_path.read_text()) or {}
+    return result
 
 
-def get_languages() -> dict:
+def get_languages() -> dict[str, Any]:
     """Get language configuration: primary + additional languages."""
     cfg = load_content_config()
-    return cfg.get("languages", {"primary": "en", "additional": []})
+    result: dict[str, Any] = cfg.get("languages", {"primary": "en", "additional": []})
+    return result
 
 
 def get_effective_risk_tier(platform: str) -> str:
@@ -255,7 +258,8 @@ def get_effective_risk_tier(platform: str) -> str:
     cfg = load_content_config()
     overrides = cfg.get("platform_risk_overrides", {})
     if platform.lower() in overrides:
-        return overrides[platform.lower()]
+        result: str = overrides[platform.lower()]
+        return result
     return get_platform_config(platform).risk_tier
 
 

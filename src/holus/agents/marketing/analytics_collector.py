@@ -155,7 +155,14 @@ async def collect_analytics(*, max_age_days: int = 8) -> list[dict[str, Any]]:
     tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
     results: list[dict[str, Any]] = []
 
-    async with SocialMediaClient() as client:
+    import os
+
+    api_key = os.environ.get("POSTING_API_KEY", "")
+    if not api_key:
+        logger.error("POSTING_API_KEY not set — cannot collect analytics")
+        return []
+
+    async with SocialMediaClient(api_key=api_key) as client:
         for piece in pieces:
             post_id = piece["post_id"]
             platform = piece.get("platform", "linkedin")

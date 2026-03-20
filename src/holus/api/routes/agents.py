@@ -27,7 +27,8 @@ def _load_agents_yaml() -> dict[str, Any]:
         raise HTTPException(status_code=503, detail="agents registry unavailable")
     try:
         data = yaml.safe_load(AGENTS_YAML.read_text(encoding="utf-8"))
-        return data.get("agents", {})
+        agents: dict[str, Any] = data.get("agents", {})
+        return agents
     except Exception as exc:
         logger.warning("Failed to parse AGENTS.yaml: %s", exc)
         raise HTTPException(status_code=503, detail="agents registry unavailable") from exc
