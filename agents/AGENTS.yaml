@@ -1,6 +1,6 @@
 # Holus Agent Registry — single source of truth
 # Every agent MUST be listed here.
-# Total: 32 agents (1 manager + 22 specialists + 7 evaluators + 2 ops)
+# Total: 35 agents (1 manager + 25 specialists + 7 evaluators + 2 ops)
 
 agents:
   # MANAGERS (1)
@@ -106,6 +106,37 @@ agents:
     prompt: "specialists/visual/brand-designer.md"
     evaluated_by: visual-content-judge
     gate: true
+
+  # SPECIALISTS — Content Pipeline (3) — Idea injection pipeline agents
+  idea-planner:
+    role: "Content strategist — plans which formats to create from a raw idea"
+    type: specialist
+    category: content
+    model_tier: strategic
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/content/idea-planner.md"
+    evaluated_by: written-content-judge
+
+  idea-generator:
+    role: "Content writer — generates text posts, threads, carousels, scripts"
+    type: specialist
+    category: content
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/content/idea-generator.md"
+    evaluated_by: written-content-judge
+
+  visual-designer:
+    role: "Visual spec designer — creates flowcharts, architecture diagrams, comparisons"
+    type: specialist
+    category: visual
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/visual/visual-designer.md"
+    evaluated_by: visual-content-judge
 
   # SPECIALISTS — Video Content (3) — 15% of output
   script-writer:

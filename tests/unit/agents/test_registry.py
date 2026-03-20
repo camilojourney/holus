@@ -99,9 +99,9 @@ def small_registry(tmp_agents_yaml: Path) -> AgentRegistry:
 
 
 class TestRegistryLoad:
-    def test_loads_32_agents(self, registry: AgentRegistry) -> None:
-        """AGENTS.yaml must contain exactly 32 agents."""
-        assert len(registry.list_agents()) == 32
+    def test_loads_35_agents(self, registry: AgentRegistry) -> None:
+        """AGENTS.yaml must contain exactly 35 agents."""
+        assert len(registry.list_agents()) == 35
 
     def test_list_evaluators_returns_7(self, registry: AgentRegistry) -> None:
         evaluators = registry.list_agents(type="evaluator")

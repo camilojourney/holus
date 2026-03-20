@@ -1,0 +1,28 @@
+# Visual type selection weights and variety controls.
+# Higher weight = more likely to be selected.
+# Recency penalty reduces weight for types used recently.
+
+weights:
+  flowchart: 1.0
+  architecture: 1.0
+  comparison: 1.0
+  data_viz: 1.0
+  code_card: 0.8
+  research_card: 0.8
+  insight: 0.5
+
+# Multiplier applied to types used in the last N days
+recency_penalty: 0.5
+recency_window_days: 3
+
+# Topic signal keywords — map post content to visual types
+# When a post contains these keywords, boost the corresponding type
+topic_signals:
+  flowchart: ["pipeline", "workflow", "process", "step by step", "stages", "phases"]
+  architecture: ["stack", "system", "components", "layers", "infrastructure", "architecture"]
+  comparison: ["vs", "versus", "compared to", "difference between", "better than", "alternative"]
+  data_viz: ["percent", "growth", "decline", "metrics", "numbers", "data shows"]
+  code_card: ["code", "function", "implementation", "syntax", "API", "endpoint"]
+  research_card: ["study", "research", "paper", "findings", "according to", "published"]
+  stat_card: ["statistic", "survey", "report", "benchmark"]
+  insight: []  # fallback, no keyword boost
