@@ -157,11 +157,13 @@ class JudgeAgent:
         model: str = "anthropic/claude-haiku-4-5-20251001",
         *,
         use_proxy: bool = True,
-        proxy_url: str = "http://localhost:8080/v1/chat/completions",
+        proxy_url: str | None = None,
     ) -> None:
+        from holus.core.llm_proxy import get_proxy_url
+
         self._model = model
         self._use_proxy = use_proxy
-        self._proxy_url = proxy_url
+        self._proxy_url = proxy_url or get_proxy_url()
 
         if not use_proxy:
             import anthropic
@@ -276,10 +278,12 @@ class JudgeAgent:
                 "max_tokens": 1024,
                 "temperature": 0.0,
             }
+            from holus.core.llm_proxy import get_proxy_headers
+
             resp = _requests.post(
                 self._proxy_url,
                 json=payload,
-                headers={"Content-Type": "application/json", "Authorization": "Bearer local"},
+                headers=get_proxy_headers(),
                 timeout=120,
             )
             # Treat HTTP 5xx as transient (raises ConnectionError via raise_for_status)

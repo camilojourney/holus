@@ -158,8 +158,10 @@ class SpecialistDispatcher:
     best for which (content_type, platform) combination.
     """
 
-    def __init__(self, proxy_url: str = "http://localhost:8080/v1/chat/completions") -> None:
-        self._proxy_url = proxy_url
+    def __init__(self, proxy_url: str | None = None) -> None:
+        from holus.core.llm_proxy import get_proxy_url
+
+        self._proxy_url = proxy_url or get_proxy_url()
         self._specialist_scores: dict[str, list[float]] = {}  # specialist_id → scores
 
     async def dispatch_parallel(

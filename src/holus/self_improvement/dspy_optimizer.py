@@ -69,11 +69,13 @@ class DSPyOptimizer:
         try:
             import dspy
 
+            from holus.core.llm_proxy import get_proxy_api_base, get_proxy_api_key
+
             # Configure DSPy with the local proxy
             lm = dspy.LM(
                 model="anthropic/claude-sonnet-4-6",
-                api_base="http://localhost:8080/v1",
-                api_key="local",
+                api_base=get_proxy_api_base(),
+                api_key=get_proxy_api_key(),
             )
             dspy.configure(lm=lm)
 

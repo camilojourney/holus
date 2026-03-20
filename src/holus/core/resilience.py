@@ -28,12 +28,14 @@ from typing import Any, TypeVar
 
 import requests
 
+from holus.core.llm_proxy import get_proxy_headers, get_proxy_url
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-PROXY_URL = "http://localhost:8080/v1/chat/completions"
-PROXY_HEADERS = {"Content-Type": "application/json", "Authorization": "Bearer local"}
+PROXY_URL = get_proxy_url()
+PROXY_HEADERS = get_proxy_headers()
 
 
 def with_retry(
