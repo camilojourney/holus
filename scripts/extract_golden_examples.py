@@ -70,12 +70,40 @@ def main() -> None:
         }
 
         for i, ex in enumerate(top):
-            # Copy screenshot if it exists
-            screenshot_src = REF_DIR / ex["creator"] / ex.get("screenshot", "")
-            screenshot_dst = type_dir / f"{i+1:02d}-{_slug(ex['creator'])}.png"
-            if screenshot_src.exists():
-                shutil.copy2(screenshot_src, screenshot_dst)
-                log.info("  Copied: %s → %s", screenshot_src.name, screenshot_dst.name)
+            # Try to find the REAL image first (downloaded from LinkedIn CDN)
+            # Fall back to screenshot if no real image exists
+            real_image_src = None
+            screenshot_src = None
+            post_index = ex.get("urn", "").split(":")[-1][:3] if ex.get("urn") else ""
+
+            # Search for real image in creator's images/ dir
+            images_dir = REF_DIR / ex["creator"] / "images"
+            if images_dir.exists():
+                # Match by post index from the screenshot filename
+                ss = ex.get("screenshot", "")
+                if ss:
+                    # screenshot is like "screenshots/001-some-title.png" — extract the index prefix
+                    ss_name = Path(ss).name  # "001-some-title.png"
+                    ss_prefix = ss_name[:3]  # "001"
+                    for img_file in sorted(images_dir.iterdir()):
+                        if img_file.name.startswith(ss_prefix + "-"):
+                            real_image_src = img_file
+                            break
+
+            # Fall back to screenshot
+            if not real_image_src:
+                ss_path = REF_DIR / ex["creator"] / ex.get("screenshot", "")
+                if ss_path.exists():
+                    screenshot_src = ss_path
+
+            # Copy the best available image
+            src = real_image_src or screenshot_src
+            suffix = src.suffix if src else ".png"
+            dst = type_dir / f"{i+1:02d}-{_slug(ex['creator'])}{suffix}"
+            source_type = "image" if real_image_src else "screenshot"
+            if src and src.exists():
+                shutil.copy2(src, dst)
+                log.info("  Copied [%s]: %s → %s", source_type, src.name, dst.name)
 
             golden_entry = {
                 "rank": i + 1,
@@ -87,7 +115,8 @@ def main() -> None:
                 "visual_type_reason": ex.get("visual_type_reason", ""),
                 "key_visual_elements": ex.get("key_visual_elements", []),
                 "text_preview": ex.get("text_preview", "")[:300],
-                "screenshot_file": screenshot_dst.name if screenshot_src.exists() else None,
+                "source_type": source_type,
+                "source_file": dst.name if src and src.exists() else None,
             }
             type_meta["golden_examples"].append(golden_entry)
 
