@@ -22,11 +22,12 @@ from typing import Any
 import requests
 
 from holus.agents.marketing.platform_config import get_platform_config
+from holus.core.llm_proxy import get_proxy_headers, get_proxy_url
 
 logger = logging.getLogger(__name__)
 
-PROXY_URL = "http://localhost:8080/v1/chat/completions"
-PROXY_HEADERS = {"Content-Type": "application/json", "Authorization": "Bearer local"}
+PROXY_URL = get_proxy_url()
+PROXY_HEADERS = get_proxy_headers()
 
 
 REPURPOSE_SYSTEM = """You are a content adapter. You take content written for one platform
