@@ -592,3 +592,451 @@ class TestCORSHeaders:
     def test_openapi_docs_accessible(self, client: TestClient):
         resp = client.get("/docs")
         assert resp.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# /api/v1/content (detail, calendar, PATCH)
+# ---------------------------------------------------------------------------
+
+
+class TestContentDetailEndpoint:
+    def test_get_content_detail_returns_full_piece(self, client: TestClient, sample_content_queue: Path):
+        with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
+            resp = client.get("/api/v1/content/post-001")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["id"] == "post-001"
+        assert data["title"] == "How to use ComfyUI"
+        assert "text" in data
+        assert "hashtags" in data
+        assert "agent_trace" in data
+
+    def test_get_content_detail_not_found(self, client: TestClient, sample_content_queue: Path):
+        with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
+            resp = client.get("/api/v1/content/nonexistent-id")
+        assert resp.status_code == 404
+
+    def test_get_content_calendar_returns_days(self, client: TestClient, sample_content_queue: Path):
+        with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
+            resp = client.get("/api/v1/content/calendar?days=7")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "calendar" in data
+        assert len(data["calendar"]) == 7
+
+    def test_get_content_calendar_empty_queue(self, client: TestClient, tmp_path: Path):
+        empty_dir = tmp_path / "data" / "content-queue"
+        empty_dir.mkdir(parents=True)
+        with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", empty_dir):
+            resp = client.get("/api/v1/content/calendar")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert all(len(day["items"]) == 0 for day in data["calendar"])
+
+    def test_patch_content_status_approve(self, client: TestClient, tmp_path: Path):
+        queue_dir = tmp_path / "data" / "content-queue"
+        queue_dir.mkdir(parents=True)
+        item = {
+            "id": "patch-001",
+            "title": "Test post",
+            "content_type": "tutorial",
+            "status": "draft",
+            "text": "Hello world",
+        }
+        (queue_dir / "patch-001.yaml").write_text(yaml.dump(item), encoding="utf-8")
+
+        with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", queue_dir):
+            resp = client.patch(
+                "/api/v1/content/patch-001",
+                json={"status": "rejected"},
+            )
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "rejected"
+
+    def test_patch_content_not_found(self, client: TestClient, sample_content_queue: Path):
+        with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
+            resp = client.patch(
+                "/api/v1/content/nonexistent",
+                json={"status": "approved"},
+            )
+        assert resp.status_code == 404
+
+    def test_content_normalizes_review_status(self, client: TestClient, sample_content_queue: Path):
+        """Legacy 'review' status gets normalized to 'pending_review'."""
+        with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
+            resp = client.get("/api/v1/content")
+        items = resp.json()["items"]
+        statuses = [i["status"] for i in items]
+        # "review" in sample_content_queue should become "pending_review"
+        assert "pending_review" in statuses
+
+    def test_content_image_not_found_no_visual(self, client: TestClient, sample_content_queue: Path):
+        with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
+            resp = client.get("/api/v1/content/post-001/image")
+        assert resp.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# /api/v1/alerts
+# ---------------------------------------------------------------------------
+
+
+class TestAlertsEndpoint:
+    def test_alerts_empty_file_returns_no_alerts(self, client: TestClient, tmp_path: Path):
+        missing = tmp_path / "eval_history.jsonl"
+        with patch("holus.api.routes.alerts.EVAL_HISTORY_PATH", missing):
+            resp = client.get("/api/v1/alerts")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["alerts"] == []
+        assert data["trends"] == []
+        assert "checked_at" in data
+
+    def test_alerts_detects_consecutive_failures(self, client: TestClient, tmp_path: Path):
+        eval_file = tmp_path / "eval_history.jsonl"
+        entries = [
+            {"timestamp": "2026-03-19T10:00:00Z", "phase": "content", "score": 90},
+            {"timestamp": "2026-03-19T11:00:00Z", "phase": "content", "score": 50},
+            {"timestamp": "2026-03-19T12:00:00Z", "phase": "content", "score": 40},
+            {"timestamp": "2026-03-19T13:00:00Z", "phase": "content", "score": 30},
+        ]
+        eval_file.write_text(
+            "\n".join(json.dumps(e) for e in entries) + "\n",
+            encoding="utf-8",
+        )
+        with patch("holus.api.routes.alerts.EVAL_HISTORY_PATH", eval_file):
+            resp = client.get("/api/v1/alerts")
+        data = resp.json()
+        types = [a["type"] for a in data["alerts"]]
+        assert "CONSECUTIVE_FAILURES" in types
+
+    def test_alerts_detects_stalls(self, client: TestClient, tmp_path: Path):
+        eval_file = tmp_path / "eval_history.jsonl"
+        entries = [
+            {"timestamp": "2026-03-19T10:00:00Z", "phase": "content", "score": 0},
+        ]
+        eval_file.write_text(json.dumps(entries[0]) + "\n", encoding="utf-8")
+        with patch("holus.api.routes.alerts.EVAL_HISTORY_PATH", eval_file):
+            resp = client.get("/api/v1/alerts")
+        data = resp.json()
+        types = [a["type"] for a in data["alerts"]]
+        assert "STALL" in types
+
+    def test_alerts_returns_trends(self, client: TestClient, tmp_path: Path):
+        eval_file = tmp_path / "eval_history.jsonl"
+        entries = [
+            {"timestamp": "2026-03-19T10:00:00Z", "phase": "content", "score": 80},
+            {"timestamp": "2026-03-19T11:00:00Z", "phase": "content", "score": 85},
+        ]
+        eval_file.write_text(
+            "\n".join(json.dumps(e) for e in entries) + "\n",
+            encoding="utf-8",
+        )
+        with patch("holus.api.routes.alerts.EVAL_HISTORY_PATH", eval_file):
+            resp = client.get("/api/v1/alerts")
+        data = resp.json()
+        assert len(data["trends"]) == 1
+        assert data["trends"][0]["skill"] == "content"
+        assert data["trends"][0]["total_runs"] == 2
+
+    def test_alerts_skill_filter(self, client: TestClient, tmp_path: Path):
+        eval_file = tmp_path / "eval_history.jsonl"
+        entries = [
+            {"timestamp": "2026-03-19T10:00:00Z", "phase": "content", "score": 80},
+            {"timestamp": "2026-03-19T11:00:00Z", "phase": "video", "score": 70},
+        ]
+        eval_file.write_text(
+            "\n".join(json.dumps(e) for e in entries) + "\n",
+            encoding="utf-8",
+        )
+        with patch("holus.api.routes.alerts.EVAL_HISTORY_PATH", eval_file):
+            resp = client.get("/api/v1/alerts?skill=content")
+        data = resp.json()
+        skills = [t["skill"] for t in data["trends"]]
+        assert "content" in skills
+        assert "video" not in skills
+
+
+# ---------------------------------------------------------------------------
+# /api/v1/improvement
+# ---------------------------------------------------------------------------
+
+
+class TestImprovementEndpoint:
+    def test_score_trends_empty(self, client: TestClient, tmp_path: Path):
+        missing = tmp_path / "trajectory.jsonl"
+        with patch("holus.api.routes.improvement.TRAJECTORY_PATH", missing):
+            resp = client.get("/api/v1/improvement/score-trends")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["trends"] == []
+        assert data["total_entries"] == 0
+
+    def test_score_trends_with_data(self, client: TestClient, tmp_path: Path):
+        traj_file = tmp_path / "trajectory.jsonl"
+        from datetime import UTC, datetime
+        ts = datetime.now(UTC).isoformat()
+        entries = [
+            {"timestamp": ts, "agent_id": "a", "judge_score": 8.0},
+            {"timestamp": ts, "agent_id": "a", "judge_score": 7.5},
+        ]
+        traj_file.write_text(
+            "\n".join(json.dumps(e) for e in entries) + "\n",
+            encoding="utf-8",
+        )
+        with patch("holus.api.routes.improvement.TRAJECTORY_PATH", traj_file):
+            resp = client.get("/api/v1/improvement/score-trends?days=7")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total_entries"] == 2
+        assert len(data["trends"]) >= 1
+
+    def test_bandit_arms_missing_file(self, client: TestClient, tmp_path: Path):
+        missing = tmp_path / "bandit_arms.json"
+        with patch("holus.api.routes.improvement.BANDIT_ARMS_PATH", missing):
+            resp = client.get("/api/v1/improvement/bandit-arms")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["arms"] == []
+        assert data["total_observations"] == 0
+
+    def test_bandit_arms_with_data(self, client: TestClient, tmp_path: Path):
+        arms_file = tmp_path / "bandit_arms.json"
+        arms_data = {
+            "arms": [{"name": "hook_v1", "alpha": 5, "beta": 2}],
+            "total_observations": 7,
+        }
+        arms_file.write_text(json.dumps(arms_data), encoding="utf-8")
+        with patch("holus.api.routes.improvement.BANDIT_ARMS_PATH", arms_file):
+            resp = client.get("/api/v1/improvement/bandit-arms")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data["arms"]) == 1
+        assert data["total_observations"] == 7
+
+    def test_gaps_empty_dirs(self, client: TestClient, tmp_path: Path):
+        cap_dir = tmp_path / "capability-requests"
+        know_dir = tmp_path / "knowledge-requests"
+        with (
+            patch("holus.api.routes.improvement.CAPABILITY_GAPS_DIR", cap_dir),
+            patch("holus.api.routes.improvement.KNOWLEDGE_GAPS_DIR", know_dir),
+        ):
+            resp = client.get("/api/v1/improvement/gaps")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 0
+
+    def test_gaps_with_files(self, client: TestClient, tmp_path: Path):
+        cap_dir = tmp_path / "capability-requests"
+        cap_dir.mkdir()
+        (cap_dir / "need-video.md").write_text("# Need video capability", encoding="utf-8")
+        know_dir = tmp_path / "knowledge-requests"
+        know_dir.mkdir()
+        (know_dir / "tiktok-algo.md").write_text("# TikTok algorithm", encoding="utf-8")
+        (know_dir / "README.md").write_text("# Ignored", encoding="utf-8")
+
+        with (
+            patch("holus.api.routes.improvement.CAPABILITY_GAPS_DIR", cap_dir),
+            patch("holus.api.routes.improvement.KNOWLEDGE_GAPS_DIR", know_dir),
+        ):
+            resp = client.get("/api/v1/improvement/gaps")
+        data = resp.json()
+        assert data["total"] == 2  # README.md excluded
+        assert len(data["capability_gaps"]) == 1
+        assert len(data["knowledge_gaps"]) == 1
+
+    def test_drift_empty_trajectory(self, client: TestClient, tmp_path: Path):
+        missing = tmp_path / "trajectory.jsonl"
+        with patch("holus.api.routes.improvement.TRAJECTORY_PATH", missing):
+            resp = client.get("/api/v1/improvement/drift")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["alerts"] == []
+        assert data["agents_checked"] == 0
+
+    def test_summary_returns_activation_gates(self, client: TestClient, tmp_path: Path):
+        traj_missing = tmp_path / "trajectory.jsonl"
+        bandit_missing = tmp_path / "bandit_arms.json"
+        with (
+            patch("holus.api.routes.improvement.TRAJECTORY_PATH", traj_missing),
+            patch("holus.api.routes.improvement.BANDIT_ARMS_PATH", bandit_missing),
+        ):
+            resp = client.get("/api/v1/improvement/summary")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "activation_gates" in data
+        assert data["activation_gates"]["thompson_sampling"]["active"] is False
+        assert data["trajectory_entries_30d"] == 0
+
+
+# ---------------------------------------------------------------------------
+# /api/v1/results
+# ---------------------------------------------------------------------------
+
+
+class TestResultsEndpoint:
+    def test_results_missing_file_returns_empty(self, client: TestClient, tmp_path: Path):
+        missing = tmp_path / "growth.json"
+        with patch("holus.api.routes.results.GROWTH_FILE", missing):
+            resp = client.get("/api/v1/results")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["platforms"] == {}
+        assert data["daily_growth"] == []
+        assert data["top_posts"] == []
+
+    def test_results_with_data(self, client: TestClient, tmp_path: Path):
+        growth_file = tmp_path / "growth.json"
+        growth_data = {
+            "snapshot_date": "2026-03-20",
+            "platforms": {
+                "linkedin": {
+                    "followers": 1200,
+                    "followers_30d_ago": 1000,
+                    "posts_30d": 15,
+                    "impressions_30d": 50000,
+                    "engagement_rate": 0.045,
+                    "top_content_type": "tutorial",
+                },
+            },
+            "daily_growth": [],
+            "top_posts": [],
+            "content_by_pillar": {},
+            "content_by_product": {},
+        }
+        growth_file.write_text(json.dumps(growth_data), encoding="utf-8")
+        with patch("holus.api.routes.results.GROWTH_FILE", growth_file):
+            resp = client.get("/api/v1/results")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["snapshot_date"] == "2026-03-20"
+        assert "linkedin" in data["platforms"]
+        assert data["platforms"]["linkedin"]["followers"] == 1200
+
+
+# ---------------------------------------------------------------------------
+# /api/v1/config
+# ---------------------------------------------------------------------------
+
+
+class TestConfigEndpoint:
+    def test_get_content_config(self, client: TestClient, tmp_path: Path):
+        config_dir = tmp_path / "config"
+        config_dir.mkdir()
+        (config_dir / "content.yaml").write_text(
+            yaml.dump({"languages": ["en", "es"], "approval_required": True}),
+            encoding="utf-8",
+        )
+        with patch("holus.api.routes.config.CONFIG_DIR", config_dir):
+            resp = client.get("/api/v1/config/content")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["name"] == "content"
+        assert data["data"]["approval_required"] is True
+
+    def test_get_content_config_missing_returns_404(self, client: TestClient, tmp_path: Path):
+        empty_dir = tmp_path / "config"
+        empty_dir.mkdir()
+        with patch("holus.api.routes.config.CONFIG_DIR", empty_dir):
+            resp = client.get("/api/v1/config/content")
+        assert resp.status_code == 404
+
+    def test_put_content_config(self, client: TestClient, tmp_path: Path):
+        config_dir = tmp_path / "config"
+        config_dir.mkdir()
+        (config_dir / "content.yaml").write_text(
+            yaml.dump({"languages": ["en"]}), encoding="utf-8",
+        )
+        with patch("holus.api.routes.config.CONFIG_DIR", config_dir):
+            resp = client.put(
+                "/api/v1/config/content",
+                json={"data": {"languages": ["en", "es"], "approval_required": False}},
+            )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["data"]["languages"] == ["en", "es"]
+        # Verify file was written
+        written = yaml.safe_load((config_dir / "content.yaml").read_text())
+        assert written["languages"] == ["en", "es"]
+
+    def test_get_products_config(self, client: TestClient, tmp_path: Path):
+        config_dir = tmp_path / "config"
+        config_dir.mkdir()
+        (config_dir / "products.yaml").write_text(
+            yaml.dump({"products": {"pilaster": {"name": "Pilaster"}}}),
+            encoding="utf-8",
+        )
+        with patch("holus.api.routes.config.CONFIG_DIR", config_dir):
+            resp = client.get("/api/v1/config/products")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["name"] == "products"
+        assert "pilaster" in data["data"]["products"]
+
+    def test_get_platforms_config(self, client: TestClient):
+        resp = client.get("/api/v1/config/platforms")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert isinstance(data, list)
+        # Should have at least linkedin
+        platform_ids = [p["id"] for p in data]
+        assert "linkedin" in platform_ids
+
+
+# ---------------------------------------------------------------------------
+# /api/v1/knowledge (memory + lessons)
+# ---------------------------------------------------------------------------
+
+
+class TestKnowledgeMemoryEndpoint:
+    def test_memory_returns_content(self, client: TestClient, tmp_path: Path):
+        memory_file = tmp_path / "MEMORY.md"
+        memory_file.write_text("# System Memory\n\nTutorial posts work best.", encoding="utf-8")
+        with patch("holus.api.routes.knowledge.MEMORY_PATH", memory_file):
+            resp = client.get("/api/v1/knowledge/memory/content")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "Tutorial posts" in data["content"]
+        assert data["size_bytes"] > 0
+
+    def test_memory_missing_returns_404(self, client: TestClient, tmp_path: Path):
+        missing = tmp_path / "MEMORY.md"
+        with patch("holus.api.routes.knowledge.MEMORY_PATH", missing):
+            resp = client.get("/api/v1/knowledge/memory/content")
+        assert resp.status_code == 404
+
+    def test_lessons_returns_entries(self, client: TestClient, tmp_path: Path):
+        lessons_file = tmp_path / "lessons.json"
+        lessons_data = [
+            {"id": "1", "date": "2026-03-19", "lesson": "Hooks matter", "source": "trajectory"},
+            {"id": "2", "date": "2026-03-20", "lesson": "Short posts win", "source": "trajectory"},
+        ]
+        lessons_file.write_text(json.dumps(lessons_data), encoding="utf-8")
+        with patch("holus.api.routes.knowledge.LESSONS_PATH", lessons_file):
+            resp = client.get("/api/v1/knowledge/lessons/recent")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 2
+        assert len(data["lessons"]) == 2
+        # Most recent first
+        assert data["lessons"][0]["id"] == "2"
+
+    def test_lessons_missing_returns_empty(self, client: TestClient, tmp_path: Path):
+        missing = tmp_path / "lessons.json"
+        with patch("holus.api.routes.knowledge.LESSONS_PATH", missing):
+            resp = client.get("/api/v1/knowledge/lessons/recent")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["lessons"] == []
+        assert data["total"] == 0
+
+    def test_lessons_limit_param(self, client: TestClient, tmp_path: Path):
+        lessons_file = tmp_path / "lessons.json"
+        lessons_data = [{"id": str(i), "lesson": f"Lesson {i}"} for i in range(10)]
+        lessons_file.write_text(json.dumps(lessons_data), encoding="utf-8")
+        with patch("holus.api.routes.knowledge.LESSONS_PATH", lessons_file):
+            resp = client.get("/api/v1/knowledge/lessons/recent?limit=3")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 10
+        assert len(data["lessons"]) == 3
