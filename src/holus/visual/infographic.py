@@ -72,14 +72,13 @@ class InfographicRenderer:
         self.brand = brand_config
         self.icon_registry = IconRegistry()
 
-        # Load fonts from brand config
+        # Load fonts — infographics need larger sizes than web content
         primary_font = brand_config.typography.primary_font
-        sizes = brand_config.typography.sizes
 
-        self._title_font = _load_font(primary_font, sizes.get("headline", 48))
-        self._subtitle_font = _load_font(primary_font, sizes.get("subheadline", 32))
-        self._category_font = _load_font(primary_font, sizes.get("body", 18))
-        self._item_font = _load_font(primary_font, max(12, sizes.get("caption", 14)))
+        self._title_font = _load_font(primary_font, 52)
+        self._subtitle_font = _load_font(primary_font, 28)
+        self._category_font = _load_font(primary_font, 22)
+        self._item_font = _load_font(primary_font, 16)
 
     def render(self, layout: InfographicLayout) -> list[Image.Image]:
         """Generate all PIL frames for the animation.
@@ -129,13 +128,14 @@ class InfographicRenderer:
         title_alpha = min(1.0, t / 0.08) if t < 0.08 else 1.0
         self._draw_title(draw, layout, title_alpha)
 
-        # Draw category labels and items for each row
-        title_area_height = 140
+        # Draw category labels and items for each row — match layout constants
+        title_area_height = 130
         margin = 30
-        gap = 12
+        gap = 14
+        bottom_margin = 30
         num_rows = len(layout.rows)
-        content_height = layout.height - title_area_height - margin
-        row_height = min(160, (content_height - gap * (num_rows - 1)) / max(num_rows, 1))
+        content_height = layout.height - title_area_height - bottom_margin
+        row_height = (content_height - gap * (num_rows - 1)) / max(num_rows, 1)
 
         for row_idx, row in enumerate(layout.rows):
             y_pos = title_area_height + row_idx * (row_height + gap)
@@ -174,12 +174,12 @@ class InfographicRenderer:
             radius=8,
             fill=row_bg,
         )
-        # Colored left accent bar
-        bar_a = int(alpha * 200)
+        # Colored left accent bar — thick and visible
+        bar_a = int(alpha * 220)
         bar_color = _hex_to_rgba(border_color, bar_a)
         draw.rounded_rectangle(
-            [20, y_pos - 4, 26, y_pos + row_height + 4],
-            radius=3,
+            [20, y_pos - 4, 28, y_pos + row_height + 4],
+            radius=4,
             fill=bar_color,
         )
 
@@ -209,20 +209,20 @@ class InfographicRenderer:
         if bg_brightness < 128:
             text_color = (255, 255, 255, a)
 
-        # Title
+        # Title — big and bold at top
         draw.text(
-            (layout.width / 2, 50),
+            (layout.width / 2, 30),
             layout.title,
             fill=text_color,
             font=self._title_font,
             anchor="mt",
         )
 
-        # Subtitle
+        # Subtitle — muted, right below title
         if layout.subtitle:
-            muted_color = (*text_color[:3], int(alpha * 180))
+            muted_color = (*text_color[:3], int(alpha * 160))
             draw.text(
-                (layout.width / 2, 110),
+                (layout.width / 2, 88),
                 layout.subtitle,
                 fill=muted_color,
                 font=self._subtitle_font,

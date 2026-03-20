@@ -91,19 +91,20 @@ class InfographicLayout(BaseModel):
         if not self.rows:
             return
 
-        # Layout constants
-        title_area_height = 160  # space reserved for title + subtitle
-        category_label_width = 180  # left column for category names
-        margin = 40
-        gap = 16
+        # Layout constants — fill the canvas, no wasted space
+        title_area_height = 130  # space for title + subtitle
+        category_label_width = 140  # left column for category names
+        margin = 30
+        gap = 14
+        bottom_margin = 30
 
         content_left = category_label_width + margin
         content_top = title_area_height
         content_width = self.width - content_left - margin
-        content_height = self.height - content_top - margin
+        content_height = self.height - content_top - bottom_margin
 
         num_rows = len(self.rows)
-        row_height = min(140, (content_height - gap * (num_rows - 1)) / max(num_rows, 1))
+        row_height = (content_height - gap * (num_rows - 1)) / max(num_rows, 1)
 
         # Collect all items for global indexing (used by sequential animation)
         all_items: list[InfographicItem] = []
@@ -122,8 +123,8 @@ class InfographicLayout(BaseModel):
 
             # Calculate item sizes and positions based on style
             if self.style == LayoutStyle.GRID:
-                item_w = min(120, (content_width - gap * (num_items - 1)) / max(num_items, 1))
-                item_h = min(item_w, row_height)
+                item_w = (content_width - gap * max(num_items - 1, 0)) / max(num_items, 1)
+                item_h = row_height - 20  # leave padding above/below in the row
                 for col_idx, item in enumerate(row.items):
                     x = content_left + col_idx * (item_w + gap)
                     item.position = (x, y)
