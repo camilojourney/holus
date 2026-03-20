@@ -258,7 +258,7 @@ class PromptEvolution:
             from holus.integrations.claude_api.client import HolusClaudeClient
 
             client = HolusClaudeClient()
-            response = await client.agenerate(
+            response = await client.agenerate(  # type: ignore[attr-defined]
                 model_tier="strategic",
                 system="You are a prompt engineer. Rewrite ONE section of this system prompt to improve it. Keep the overall structure. Change the weakest part. Be specific and concrete.",
                 user=f"Current prompt (scoring {current_score:.2f}):\n\n{prompt}\n\nRewrite the weakest section to score higher. Return the complete updated prompt.",
@@ -275,7 +275,7 @@ class PromptEvolution:
             from holus.integrations.claude_api.client import HolusClaudeClient
 
             client = HolusClaudeClient()
-            response = await client.agenerate(
+            response = await client.agenerate(  # type: ignore[attr-defined]
                 model_tier="strategic",
                 system="You are a prompt engineer. Combine the best parts of two system prompts into one improved prompt. Take the strongest sections from each.",
                 user=f"Prompt A:\n{prompt_a}\n\nPrompt B:\n{prompt_b}\n\nCreate a combined prompt taking the best sections from each. Return the complete prompt.",
