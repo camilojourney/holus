@@ -5,6 +5,14 @@ from holus.core.cycle_state import CycleContext, CycleState, HealthResult, write
 from holus.core.events import EventBus, EventType, HolusEvent
 from holus.core.health import HealthCheck, acquire_run_lock, run_preflight_checks
 from holus.core.kill_switch import KillSwitch, KillSwitchScope
+from holus.core.llm_proxy import (
+    PROXY_HEADERS,
+    PROXY_URL,
+    get_proxy_api_base,
+    get_proxy_api_key,
+    get_proxy_headers,
+    get_proxy_url,
+)
 from holus.core.process_manager import AgentProcess, AgentStatus, ProcessManager
 from holus.core.quality_gate import QualityResult, enforce_quality_gate
 from holus.core.retry import retry_with_backoff
@@ -25,6 +33,8 @@ __all__ = [
     "HolusEvent",
     "KillSwitch",
     "KillSwitchScope",
+    "PROXY_HEADERS",
+    "PROXY_URL",
     "ProcessManager",
     "QualityResult",
     "WatchdogResult",
@@ -33,6 +43,10 @@ __all__ = [
     "check_watchdog",
     "consecutive_failure_check",
     "enforce_quality_gate",
+    "get_proxy_api_base",
+    "get_proxy_api_key",
+    "get_proxy_headers",
+    "get_proxy_url",
     "retry_with_backoff",
     "run_preflight_checks",
     "write_trajectory_entry",
