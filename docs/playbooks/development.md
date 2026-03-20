@@ -57,7 +57,6 @@ This starts:
 |---------|------|---------|
 | PostgreSQL + pgvector | 5432 | Primary database, vector embeddings |
 | Redis | 6379 | Event bus, kill switch, caching |
-| n8n | 5678 | Workflow automation, cron replacement |
 | Langfuse | 3000 | Observability, tracing, prompt analytics |
 
 Verify all services are healthy:
@@ -65,7 +64,6 @@ Verify all services are healthy:
 ```bash
 docker compose ps                          # All should show "healthy" or "running"
 redis-cli ping                             # Should return PONG
-curl -s http://localhost:5678/healthz      # n8n health check
 curl -s http://localhost:3000/api/public/health  # Langfuse health check
 ```
 

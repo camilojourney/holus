@@ -13,9 +13,8 @@ Mac Mini M4 (16-24GB RAM)
 ├── OrbStack + Docker containers (~2-3GB)
 │   ├── PostgreSQL + pgvector
 │   ├── Redis
-│   ├── n8n
-│   ├── Temporal.io
 │   └── Langfuse
+├── launchd plists (scheduling — triggers Python agent loops)
 ├── Holus agents (Python processes, ~1-2GB total)
 ├── ComfyUI (native, uses Metal GPU when active, ~4-8GB)
 └── OS + headroom (~4GB)
@@ -60,13 +59,12 @@ python -m holus agent restart all
 
 ## Service Health Checks
 
-Run these periodically (n8n monitors them automatically):
+Run these periodically:
 
 | Service | Check | Expected |
 |---------|-------|----------|
 | PostgreSQL | `pg_isready -h localhost -p 5432` | "accepting connections" |
 | Redis | `redis-cli ping` | "PONG" |
-| n8n | `curl -s http://localhost:5678/healthz` | HTTP 200 |
 | Langfuse | `curl -s http://localhost:3000/api/public/health` | HTTP 200 |
 | Marketing agent | `redis-cli GET holus:agent:marketing:heartbeat` | Timestamp < 5 min ago |
 
@@ -103,7 +101,7 @@ Langfuse runs locally at `http://localhost:3000`.
 ### Automated Daily Backup
 
 ```bash
-# Run via n8n schedule trigger (daily at 2 AM)
+# Run via launchd schedule (daily at 2 AM)
 # Or manually:
 bash infrastructure/scripts/backup.sh
 ```
@@ -202,12 +200,11 @@ top -l 1 -s 0 | head -20
 | Component | Expected RAM |
 |-----------|-------------|
 | OrbStack + Docker | 2-3 GB |
-| PostgreSQL + Redis + n8n | 2-3 GB |
-| Temporal.io | 2-3 GB |
-| Langfuse + Mem0 + pgvector | 2 GB |
+| PostgreSQL + Redis | 1-2 GB |
+| Langfuse + pgvector | 1-2 GB |
 | Holus agents (all) | 1-2 GB |
 | OS + headroom | 4 GB |
-| **Total** | **~13-17 GB** |
+| **Total** | **~9-13 GB** |
 
 ---
 

@@ -47,7 +47,7 @@ Estimated total API cost: $140-210/month for all four agents combined.
 
 ### Negative
 
-- **API dependency:** If Anthropic has an outage, all agents stop reasoning (but Temporal replays trading workflows, n8n queues retry)
+- **API dependency:** If Anthropic has an outage, all agents stop reasoning (launchd will retry on the next scheduled cycle)
 - **Cost floor:** Cannot drop below ~$140/month even with aggressive optimization. Local models would be $0 inference after setup.
 - **Latency:** Cloud API calls add 1-3 seconds per reasoning step vs. ~200ms for local inference
 - **Privacy:** All reasoning data passes through Anthropic's API (mitigated by their enterprise privacy guarantees on API traffic)
@@ -56,7 +56,7 @@ Estimated total API cost: $140-210/month for all four agents combined.
 
 | Risk | Probability | Mitigation |
 |------|-------------|------------|
-| Anthropic API outage | Low | n8n detects errors, queues retry; Temporal handles trading workflow state through outages |
+| Anthropic API outage | Low | launchd retries on next scheduled cycle; Python agent loop handles transient errors with backoff |
 | Significant price increase | Low | Prompt caching and Batch API provide buffer; architecture allows adding Sonnet for more tasks |
 | Model quality regression on update | Very Low | Pin model versions (`claude-opus-4-6`, `claude-sonnet-4-6`); test before migrating |
 
