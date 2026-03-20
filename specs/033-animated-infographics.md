@@ -1,219 +1,219 @@
-# SPEC-033: Animated Infographic Content Generation
+# Spec 033: Animated Infographic GIFs
 
-**Status:** Not Started
-**Priority:** P1 — LinkedIn carousels get 6.6-7.0% engagement; animated content stops the scroll
-**Dependencies:** SPEC-031 (LinkedIn Pipeline), SPEC-032 (Humanization Gate)
-**Research:** `docs/research/domain/linkedin-posting-frequency.md`
-**Spec CID:** holus-SPECS-20260319-d1ecfc56
-**Specialist input:** arch (A), perf (B), sec (B) — see `.pipeline-state/` artifacts
-
----
+**Status:** planned
+**Phase:** Phase 2
+**Author:** Juan (specialist deliberation + research)
+**Created:** 2026-03-19
+**Updated:** 2026-03-19
+**Dependencies:** SPEC-010 (Marketing Agent), SPEC-031 (LinkedIn Pipeline)
+**Research:** `docs/research/domain/animated-gif-generation.md`
 
 ## Problem
 
-Holus currently generates text-only LinkedIn posts. The research shows:
-- PDF carousels get **6.6-7.0% engagement rate** (highest of any format)
-- Animated/video content autoplays in feed, stopping the scroll
-- Static infographics (like the "AI Agent System Guide" grid) are shared heavily
-- But animated versions where elements appear sequentially (lines draw, icons pop in, text fades) perform even better
+LinkedIn content that uses animated visuals (grid infographics, architecture diagrams, taxonomy charts) gets significantly higher engagement than static images. The "AI Agent System Guide" style — icons appearing sequentially, lines drawing in, text fading in — is a proven viral format. Holus currently produces text posts and static carousels. Adding animated GIF generation gives Holus a content type that very few competitors produce programmatically (most use Canva/After Effects manually).
 
-Holus needs to generate structured visual content — animated infographics as short MP4s — not just text.
+Research finding: AI-generated text content gets 47% reach penalty on LinkedIn [VERIFIED]. Visual content, especially carousels (6.6-7.0% engagement rate) and animated infographics, is the highest-performing format.
+
+## Goals
+
+- Generate animated infographic GIFs from structured data (categories, items, icons, labels)
+- Output: 1080x1080px, <5MB, <400 frames, auto-loops on LinkedIn
+- Reuse Holus brand config (`brand-visual.yaml`) for colors, fonts, spacing
+- New `ContentType.ANIMATED_INFOGRAPHIC` in the marketing agent's decision space
+- End-to-end: strategist decides → layout generated → GIF rendered → queued for review → published
+- Render time: <30 seconds per infographic on Mac Mini
+
+## Non-Goals
+
+- Video generation — Genpeli handles video. GIFs are image-class content, not video.
+- Interactive infographics — GIF is non-interactive by design.
+- AI image generation — no Pilaster/diffusion models. These are programmatic renders from structured data.
+- Complex 3D animations — flat 2D design only (matches LinkedIn aesthetic).
+- Custom icon creation — use existing icon libraries (Font Awesome, Lucide, or bundled SVG set).
 
 ## Solution
 
-Add an **animated infographic pipeline** to Holus. The LLM generates a structured JSON spec (grid layout, categories, items, icons). Pre-built HTML/CSS templates with `@keyframes` animations render the visual. Puppeteer captures frames. ffmpeg encodes to MP4.
-
-This lives **in Holus** (not Pilaster or Genpeli) because it's programmatic rendering of structured data, not AI image generation or video editing.
-
-## Pipeline
+### Pipeline
 
 ```
-Holus REASON step decides: "this topic needs an infographic"
-  │
+Strategist REASON stage
+  │  "This topic decomposes into 6+ categories → ANIMATED_INFOGRAPHIC"
   ▼
-LLM generates structured JSON:
-  { "title": "AI Agent System Guide",
-    "categories": [
-      { "name": "Foundation Models", "items": ["Phi-4", "DeepSeek", "Claude", "Gemini"] },
-      { "name": "Agent Frameworks", "items": ["LangGraph", "CrewAI", "AutoGen"] },
+Layout Agent generates structured JSON:
+  {
+    "title": "AI Agent System Guide",
+    "subtitle": "Open vs Closed",
+    "rows": [
+      {"category": "Foundation Models", "items": [
+        {"name": "Llama 4", "icon": "llama"},
+        {"name": "Claude", "icon": "brain"}
+      ]},
       ...
     ],
     "style": "grid",
-    "animation": "sequential-reveal"
+    "animation": "sequential"
   }
   │
   ▼
-Template engine renders HTML/CSS with @keyframes animations
+Infographic Renderer (Python/Pillow):
+  1. Load brand config → colors, fonts, spacing
+  2. Calculate grid layout → positions for each cell
+  3. For each frame (10fps × 8-10 seconds):
+     - Draw background
+     - Draw elements visible at this timestamp
+     - Apply easing (elements fade/slide/scale in)
+  4. Save frames as PIL Images
   │
   ▼
-Puppeteer captures frames (30fps × 5-10 seconds = 150-300 frames)
+GIF Encoder:
+  - gifski stitches frames into high-quality GIF
+  - gifsicle --lossy=80 -O3 compresses to <5MB
+  - If >5MB after compression: reduce frame count or dimensions
   │
   ▼
-ffmpeg encodes to MP4 (H.264, 1080x1080 or 1080x1350)
-  │
-  ▼
-Content queued with media_type="video" + platform="linkedin"
+Content Queue:
+  - Queued as QueuedContent with media_type="gif"
+  - Humanization step (SPEC-032) reviews text overlay
+  - Published via social-media-automatization API
 ```
 
-## Decisions
+### Why Pillow, Not HTML/CSS + Puppeteer
 
-### DECISION 1: Generation Approach
-**Options:** A) HTML/CSS + Puppeteer B) Python animation (manim) C) Pilaster static + Genpeli animate D) New service
-**Decision:** **A — HTML/CSS + Puppeteer frame capture**
-**Rationale (arch):** Reuses existing carousel rendering pipeline (`BrandVisualIdentity.to_css_variables()`). HTML/CSS animations are declarative and easy to template. Puppeteer is already a dependency (Observatory frontend). No new silo needed.
+Research found CSS animations don't capture reliably in headless Puppeteer (the `timecut` library only intercepts JS-driven animations, not CSS `@keyframes`). Pillow gives deterministic, frame-by-frame control with no browser dependency. Brand consistency is maintained by reading `brand-visual.yaml` directly in Python.
 
-### DECISION 2: Output Format
-**Options:** A) Animated GIF B) Short MP4 C) Both
-**Decision:** **B — Short MP4**
-**Rationale (perf):** MP4 is 5-20x smaller than GIF for same quality. LinkedIn autoplays MP4 in feed. No 256-color limitation. Better algorithmic distribution. Store individual frames as PNG for debugging and static fallback.
+### Why GIF, Not MP4
 
-### DECISION 3: Template System
-**Options:** A) Hardcoded Python B) HTML/CSS with Jinja2 autoescape C) LLM generates SVG directly
-**Decision:** **B — HTML/CSS templates with sanitized injection**
-**Rationale (sec):** LLM fills template slots with text content; never controls HTML/CSS structure. Brand colors/fonts/spacing from existing config. Icon names validated against whitelist. Jinja2 autoescape prevents injection.
+- GIF uploaded as image: plays inline, loops forever, no player controls, no sound
+- MP4 uploaded as video: shows video player, counts as "video post" (different algorithm)
+- For infographics, the looping image format is more natural and less intrusive
+- 5MB GIF limit is sufficient for 80-150 frames at 1080x1080 with flat colors
+- No ffmpeg dependency needed
 
-## Implementation
+### Animation Types
 
-### 1. New ContentType
+| Style | What Animates | Use Case |
+|-------|--------------|----------|
+| `sequential` | Each item appears one at a time (left-to-right, top-to-bottom) | Taxonomy grids, tool lists |
+| `row-by-row` | Each row appears together, rows appear sequentially | Category comparisons |
+| `fade-all` | All items fade in simultaneously, then labels appear | Simple showcases |
+| `build-up` | Bottom rows first, building upward | Stack/layer diagrams |
 
-Add `ANIMATED_INFOGRAPHIC` to the `ContentType` enum in `models.py`.
+### Layout Styles
 
-### 2. Infographic JSON Schema
+| Style | Description | Use Case |
+|-------|------------|----------|
+| `grid` | N×M uniform cells with icons + labels | Tool/technology lists |
+| `comparison` | 2 columns (Open vs Closed, Before vs After) | Side-by-side |
+| `flow` | Connected boxes with arrows | Process/pipeline diagrams |
+| `timeline` | Horizontal or vertical timeline with nodes | Roadmaps, history |
+
+## Technical Design
+
+### New Files
+
+```
+src/holus/visual/
+  infographic.py          # InfographicRenderer class
+  infographic_layout.py   # Grid calculation, animation timing
+  icon_registry.py        # Icon name → PIL Image mapping
+  gif_encoder.py          # Frame stitching with gifski/gifsicle
+
+assets/icons/             # Bundled SVG/PNG icon set (50-100 common icons)
+
+tests/unit/visual/
+  test_infographic.py
+  test_gif_encoder.py
+```
+
+### ContentType Addition
 
 ```python
-class InfographicItem(BaseModel):
-    name: str
-    icon: str | None = None  # validated against icon whitelist
-    color: str | None = None  # defaults to brand color
-
-class InfographicCategory(BaseModel):
-    name: str
-    items: list[InfographicItem]
-
-class InfographicSpec(BaseModel):
-    title: str
-    subtitle: str | None = None
-    categories: list[InfographicCategory]
-    style: Literal["grid", "timeline", "comparison", "hierarchy"] = "grid"
-    animation: Literal["sequential-reveal", "fade-in", "slide-in", "draw-lines"] = "sequential-reveal"
-    dimensions: tuple[int, int] = (1080, 1350)  # LinkedIn portrait
-    duration_seconds: float = 8.0
-    fps: int = 30
+class ContentType(str, Enum):
+    # existing...
+    ANIMATED_INFOGRAPHIC = "animated_infographic"
 ```
 
-### 3. Template Engine (`src/holus/visual/infographic_engine.py`)
+### Specialist Pipeline
 
 ```python
-async def render_infographic(spec: InfographicSpec, brand: BrandVisualIdentity) -> Path:
-    """Render animated infographic to MP4.
-
-    1. Load HTML template for spec.style
-    2. Inject brand CSS variables
-    3. Inject category/item data via Jinja2 (autoescaped)
-    4. Launch Puppeteer, set viewport to spec.dimensions
-    5. Capture frames at spec.fps for spec.duration_seconds
-    6. Encode to MP4 via ffmpeg (H.264, CRF 23)
-    7. Return path to output MP4
-    """
+PIPELINES["animated_infographic"] = [
+    "hook-architect",
+    "infographic-layout-architect",
+    "brand-designer",
+]
 ```
 
-### 4. HTML Templates (`src/holus/visual/templates/`)
+### Dependencies
 
 ```
-templates/
-  grid.html          — icon grid (like "AI Agent System Guide")
-  timeline.html      — horizontal timeline with milestones
-  comparison.html    — side-by-side (like "Claude vs Gemini")
-  hierarchy.html     — tree/org-chart structure
-  _base.html         — shared: brand vars, fonts, animation keyframes
-  _animations.css    — @keyframes: reveal, fade, slide, draw-line
+gifski    # brew install gifski (Rust-based, highest quality GIF encoding)
+gifsicle  # brew install gifsicle (C-based, GIF optimization/compression)
+Pillow    # Already a dependency
+cairosvg  # pip install cairosvg (SVG icon → PIL Image conversion)
 ```
 
-Each template:
-- Receives `categories`, `title`, `brand_css` via Jinja2
-- Uses CSS `@keyframes` with `animation-delay` for sequential reveal
-- Responsive within the fixed viewport (no media queries needed)
+### InfographicRenderer Interface
 
-### 5. Icon Whitelist
-
-Validate icon names against a known set (Lucide icons, already used in Observatory). Reject unknown icons to prevent template injection.
-
-### 6. Integration with Marketing Agent
-
-In the REASON step, when Holus decides content type:
 ```python
-if topic_needs_visual and data_is_structured:
-    decision.content_type = ContentType.ANIMATED_INFOGRAPHIC
-    decision.infographic_spec = InfographicSpec(
-        title="...",
-        categories=[...],
-        style="grid",
-    )
+class InfographicRenderer:
+    def __init__(self, brand_config: BrandVisualIdentity):
+        self.colors = brand_config.to_css_variables()
+        self.icon_registry = IconRegistry()
+
+    def render(self, layout: InfographicLayout) -> list[Image.Image]:
+        """Generate list of PIL frames for the animation."""
+        frames = []
+        total_frames = int(layout.duration_sec * layout.fps)
+        for frame_idx in range(total_frames):
+            t = frame_idx / total_frames
+            frame = self._draw_frame(layout, t)
+            frames.append(frame)
+        return frames
+
+    def _draw_frame(self, layout: InfographicLayout, t: float) -> Image.Image:
+        """Draw a single frame at normalized time t (0-1)."""
+        img = Image.new("RGBA", (1080, 1080), layout.background_color)
+        draw = ImageDraw.Draw(img)
+        draw.text((540, 40), layout.title, font=self.title_font, anchor="mt")
+        for item in layout.items:
+            if t >= item.appear_at:
+                alpha = min(1.0, (t - item.appear_at) / 0.05)
+                self._draw_item(draw, item, alpha)
+        return img
 ```
 
-In the ACT step:
-```python
-if decision.content_type == ContentType.ANIMATED_INFOGRAPHIC:
-    mp4_path = await render_infographic(decision.infographic_spec, brand)
-    # Upload to R2, get URL
-    # Queue with media_url and media_type="video"
-```
+### LinkedIn Constraints
+
+- Max file size: 5MB
+- Max frames: 400 (posts), 500 (articles)
+- Dimensions: 1080x1080px (square, best engagement)
+- At 10fps: 400 frames = 40 seconds max
+- GIFs auto-loop on LinkedIn feed
+- LinkedIn may re-encode in some contexts — keep quality high
 
 ## Acceptance Criteria
 
-### AC-033-001: Infographic renders to MP4
-**Priority:** P0
-**Given** an InfographicSpec with 5 categories and 20 items
-**When** `render_infographic()` is called
-**Then** an MP4 file is produced at the specified dimensions, under 5MB, duration within 1s of spec
-
-### AC-033-002: Sequential reveal animation works
-**Priority:** P0
-**Given** an InfographicSpec with `animation="sequential-reveal"`
-**When** rendered
-**Then** frame 1 shows only the title, frame 60 shows first category, frame 120 shows second category (items appear sequentially)
-
-### AC-033-003: Grid template renders correctly
-**Priority:** P0
-**Given** 8 categories with 4-6 items each
-**When** rendered with `style="grid"`
-**Then** items are arranged in a grid matching the icon/label layout, no overlapping text, all items visible
-
-### AC-033-004: Brand colors applied
-**Priority:** P1
-**Given** a BrandVisualIdentity with custom colors
-**When** infographic is rendered
-**Then** background, text, and accent colors match the brand config (not hardcoded)
-
-### AC-033-005: Icon whitelist enforced
-**Priority:** P1
-**Given** an InfographicSpec with `icon="<script>alert(1)</script>"`
-**When** validated
-**Then** validation rejects the spec with a clear error
-
-### AC-033-006: Static fallback generated
-**Priority:** P2
-**Given** a rendered infographic
-**When** MP4 encoding completes
-**Then** the final frame is also saved as a PNG for platforms that don't support video
-
-### AC-033-007: Content queued with correct media_type
-**Priority:** P0
-**Given** a rendered infographic MP4
-**When** queued via content_queue
-**Then** `media_type="video"` and `media_url` points to the uploaded file
+- AC-033-001: Given a valid `InfographicLayout` JSON, when `InfographicRenderer.render()` is called, then it produces 80-150 PIL Image frames at 1080x1080
+- AC-033-002: Given rendered frames, when `gif_encoder.encode()` is called, then the output GIF is <5MB and <400 frames
+- AC-033-003: Given a topic that decomposes into 4+ categories, when the marketing strategist reasons, then it can choose `ANIMATED_INFOGRAPHIC` as content type
+- AC-033-004: Given a generated GIF, when it is uploaded to LinkedIn via social-media API, then it plays inline and loops
+- AC-033-005: Given the brand config, when an infographic is rendered, then colors/fonts match `brand-visual.yaml`
+- AC-033-006: Given an icon name from the layout JSON, when the renderer draws it, then it loads from the bundled icon set (no external fetch)
+- AC-033-007: Given a GIF >5MB before optimization, when gifsicle runs, then the output is <5MB (or dimensions are reduced as fallback)
 
 ## Out of Scope
 
-- Interactive infographics (HTML embeds) — LinkedIn doesn't support them
-- User-designed templates (custom HTML) — security risk, use pre-built templates only
-- Real-time data infographics (live metrics) — future iteration
-- Carousel PDF generation — already handled by existing carousel pipeline
-- Audio/narration on infographics — use Genpeli for video with audio
+- Carousel PDF generation (existing system handles this)
+- Video with audio (Genpeli territory)
+- Real-time preview in Observatory (future spec)
+- Custom icon upload (use bundled set for now)
 
-## Dependencies
+## Decisions
 
-- **Puppeteer** (or Playwright) — frame capture. Already available (Observatory frontend uses it).
-- **ffmpeg** — MP4 encoding. Already available (Genpeli uses it).
-- **Jinja2** — template rendering. Already a dependency.
-- **Lucide icons** — icon set. Already used in Observatory.
+| Decision Point | Decision | Rationale | Vote |
+|---------------|----------|-----------|------|
+| `generation_approach` | Pillow frame-by-frame | CSS animations don't capture in Puppeteer. Pillow is deterministic. | Arch: A, Research: confirms |
+| `output_format` | GIF (not MP4) | Loops inline as image. No video player UI. Better for infographics. | Perf: revised from B to GIF per user input |
+| `icon_system` | Bundled SVG set + cairosvg | No runtime icon fetching. Deterministic. 50-100 common icons. | Sec: B (sanitized templates) |
+| `encoding_pipeline` | gifski → gifsicle | gifski for quality (per-frame palettes), gifsicle for compression (30-50% reduction). No ffmpeg. | Research: confirmed best pipeline |
+| `template_system` | Python layout + Pillow drawing | Not HTML. No browser dependency. Brand config loaded directly from YAML. | Arch: A adapted |
