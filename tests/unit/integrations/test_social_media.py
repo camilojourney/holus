@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
 
 from holus.integrations.social_media import (
@@ -11,6 +12,8 @@ from holus.integrations.social_media import (
     PublishRequest,
     PublishResult,
     PublishTarget,
+    ScheduleRequest,
+    ScheduleResult,
     SocialMediaClient,
 )
 
@@ -411,3 +414,282 @@ class TestGetTopPosts:
                 "/api/v1/analytics/top-posts",
                 params={"limit": 5, "days": 7, "metric": "success_rate"},
             )
+
+
+class TestSchedulePost:
+    """Test schedule_post method."""
+
+    @pytest.mark.asyncio
+    async def test_schedule_post_successful(self, client, mock_httpx_client):
+        """Successful schedule returns ScheduleResult."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "schedule_id": "sched_1",
+            "status": "pending_approval",
+            "platform": "linkedin",
+            "approval_required": True,
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.post.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            request = ScheduleRequest(
+                content="Test scheduled content",
+                platform="linkedin",
+            )
+            result = await client.schedule_post(request)
+
+            assert isinstance(result, ScheduleResult)
+            assert result.schedule_id == "sched_1"
+            assert result.status == "pending_approval"
+            assert result.approval_required is True
+
+    @pytest.mark.asyncio
+    async def test_schedule_post_validates_content(self, client):
+        """Schedule validates content before sending."""
+        request = ScheduleRequest(
+            content="x" * 300,
+            platform="twitter",
+        )
+        with pytest.raises(ValueError, match="Content validation failed"):
+            await client.schedule_post(request)
+
+    @pytest.mark.asyncio
+    async def test_schedule_post_sends_correct_payload(self, client, mock_httpx_client):
+        """Schedule sends the right payload to the API."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "schedule_id": "sched_2",
+            "status": "scheduled",
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.post.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            request = ScheduleRequest(
+                content="Scheduled post",
+                platform="linkedin",
+                approval_required=False,
+                scheduled_at="2026-03-25T10:00:00Z",
+            )
+            await client.schedule_post(request)
+
+            mock_httpx_client.post.assert_called_once()
+            call_args = mock_httpx_client.post.call_args
+            assert call_args[0][0] == "/api/v1/schedule"
+            payload = call_args[1]["json"]
+            assert payload["content"] == "Scheduled post"
+            assert payload["platform"] == "linkedin"
+            assert payload["approval_required"] is False
+            assert payload["scheduled_at"] == "2026-03-25T10:00:00Z"
+
+    @pytest.mark.asyncio
+    async def test_schedule_post_with_media(self, client, mock_httpx_client):
+        """Schedule includes media fields when provided."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "schedule_id": "sched_3",
+            "status": "pending_approval",
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.post.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            request = ScheduleRequest(
+                content="Post with image",
+                platform="instagram",
+                media_url="https://example.com/photo.jpg",
+                media_type="image",
+            )
+            await client.schedule_post(request)
+
+            payload = mock_httpx_client.post.call_args[1]["json"]
+            assert payload["media_url"] == "https://example.com/photo.jpg"
+            assert payload["media_type"] == "image"
+
+    @pytest.mark.asyncio
+    async def test_schedule_post_unwraps_data_envelope(self, client, mock_httpx_client):
+        """Schedule unwraps {"status": "ok", "data": {...}} envelope."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "status": "ok",
+            "data": {
+                "schedule_id": "sched_4",
+                "status": "pending_approval",
+                "platform": "linkedin",
+                "approval_required": True,
+            },
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.post.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            request = ScheduleRequest(content="Envelope test", platform="linkedin")
+            result = await client.schedule_post(request)
+
+            assert result.schedule_id == "sched_4"
+
+
+class TestGetPostAnalytics:
+    """Test get_post_analytics method."""
+
+    @pytest.mark.asyncio
+    async def test_get_post_analytics_successful(self, client, mock_httpx_client):
+        """Post analytics returns engagement data."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "views": 1200,
+            "likes": 45,
+            "comments": 12,
+            "shares": 8,
+            "saves": 3,
+            "engagement_rate": 0.057,
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            result = await client.get_post_analytics("post_42")
+
+            assert result["views"] == 1200
+            assert result["engagement_rate"] == 0.057
+            mock_httpx_client.get.assert_called_once_with(
+                "/api/v1/analytics/posts/post_42/latest"
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_post_analytics_not_found(self, client, mock_httpx_client):
+        """Post analytics raises on 404."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Not Found",
+            request=httpx.Request("GET", "http://localhost:8000/api/v1/analytics/posts/missing/latest"),
+            response=httpx.Response(404),
+        )
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+            await client.get_post_analytics("missing")
+
+
+class TestErrorHandling:
+    """Test HTTP error handling across methods."""
+
+    @pytest.mark.asyncio
+    async def test_publish_raises_on_5xx(self, client, mock_httpx_client):
+        """Publish raises HTTPStatusError on 5xx."""
+        mock_httpx_client.post.side_effect = httpx.HTTPStatusError(
+            "Internal Server Error",
+            request=httpx.Request("POST", "http://localhost:8000/api/v1/publish"),
+            response=httpx.Response(500),
+        )
+
+        with patch.object(client, "client", mock_httpx_client):
+            request = PublishRequest(content="Test", platforms=["linkedin"])
+            with pytest.raises(httpx.HTTPStatusError):
+                # Call underlying function directly to skip tenacity retry waits
+                await SocialMediaClient.publish.__wrapped__(client, request)
+
+    @pytest.mark.asyncio
+    async def test_get_analytics_raises_on_timeout(self, client, mock_httpx_client):
+        """get_analytics raises on connection timeout."""
+        mock_httpx_client.get.side_effect = httpx.TimeoutException("Connection timed out")
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.TimeoutException):
+            await client.get_analytics()
+
+    @pytest.mark.asyncio
+    async def test_get_top_posts_raises_on_4xx(self, client, mock_httpx_client):
+        """get_top_posts raises on 4xx client error."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Bad Request",
+            request=httpx.Request("GET", "http://localhost:8000/api/v1/analytics/top-posts"),
+            response=httpx.Response(400),
+        )
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+            await client.get_top_posts()
+
+    @pytest.mark.asyncio
+    async def test_health_raises_on_connection_error(self, client, mock_httpx_client):
+        """Health check raises on connection error."""
+        mock_httpx_client.get.side_effect = httpx.ConnectError("Connection refused")
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.ConnectError):
+            await client.health()
+
+    @pytest.mark.asyncio
+    async def test_get_status_raises_on_404(self, client, mock_httpx_client):
+        """get_status raises on 404 Not Found."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Not Found",
+            request=httpx.Request("GET", "http://localhost:8000/api/publish/missing_id"),
+            response=httpx.Response(404),
+        )
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+            await client.get_status("missing_id")
+
+    @pytest.mark.asyncio
+    async def test_schedule_post_raises_on_5xx(self, client, mock_httpx_client):
+        """schedule_post raises on server error."""
+        mock_httpx_client.post.side_effect = httpx.HTTPStatusError(
+            "Service Unavailable",
+            request=httpx.Request("POST", "http://localhost:8000/api/v1/schedule"),
+            response=httpx.Response(503),
+        )
+
+        with patch.object(client, "client", mock_httpx_client):
+            request = ScheduleRequest(content="Test", platform="linkedin")
+            with pytest.raises(httpx.HTTPStatusError):
+                # Call underlying function directly to skip tenacity retry waits
+                await SocialMediaClient.schedule_post.__wrapped__(client, request)
+
+    @pytest.mark.asyncio
+    async def test_publish_unwraps_data_envelope(self, client, mock_httpx_client):
+        """Publish correctly unwraps {"status": "ok", "data": {...}} envelope."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "status": "ok",
+            "data": {
+                "publish_id": "pub_99",
+                "targets": [
+                    {
+                        "platform": "linkedin",
+                        "status": "queued",
+                    }
+                ],
+                "warnings": [],
+            },
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.post.return_value = mock_response
+
+        with patch.object(client, "client", mock_httpx_client):
+            request = PublishRequest(content="Envelope test", platforms=["linkedin"])
+            result = await client.publish(request)
+
+            assert result.publish_id == "pub_99"
+            assert len(result.targets) == 1
+
+
+class TestScheduleModels:
+    """Test ScheduleRequest and ScheduleResult models."""
+
+    def test_schedule_request_defaults(self):
+        """ScheduleRequest has sensible defaults."""
+        req = ScheduleRequest(content="Hello", platform="linkedin")
+        assert req.approval_required is True
+        assert req.scheduled_at is None
+        assert req.media_url is None
+
+    def test_schedule_result_defaults(self):
+        """ScheduleResult has sensible defaults."""
+        result = ScheduleResult(schedule_id="sched_1")
+        assert result.status == "pending_approval"
+        assert result.approval_required is True
+        assert result.platform == ""
