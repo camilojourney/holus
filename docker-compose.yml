@@ -1,6 +1,6 @@
 # ==============================================================================
 # Holus Infrastructure — Docker Compose
-# Provides: PostgreSQL (pgvector), Redis, n8n, Temporal, Langfuse,
+# Provides: PostgreSQL (pgvector), Redis, Langfuse,
 #           Prometheus, OTEL Collector, Grafana
 # ==============================================================================
 
@@ -49,83 +49,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    networks:
-      - holus-network
-
-  # --------------------------------------------------------------------------
-  # n8n — Workflow automation (content pipelines, notifications)
-  # --------------------------------------------------------------------------
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: holus-n8n
-    restart: unless-stopped
-    environment:
-      DB_TYPE: postgresdb
-      DB_POSTGRESDB_HOST: postgres
-      DB_POSTGRESDB_PORT: 5432
-      DB_POSTGRESDB_DATABASE: n8n
-      DB_POSTGRESDB_USER: holus
-      DB_POSTGRESDB_PASSWORD: holus
-      N8N_HOST: localhost
-      N8N_PORT: 5678
-      N8N_PROTOCOL: http
-      WEBHOOK_URL: http://localhost:5678/
-      GENERIC_TIMEZONE: America/New_York
-    ports:
-      - "5678:5678"
-    volumes:
-      - holus-n8n-data:/home/node/.n8n
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    networks:
-      - holus-network
-
-  # --------------------------------------------------------------------------
-  # Temporal — Durable execution engine (trading workflows)
-  # --------------------------------------------------------------------------
-  temporal:
-    image: temporalio/auto-setup:latest
-    container_name: holus-temporal
-    restart: unless-stopped
-    environment:
-      DB: postgresql
-      DB_PORT: 5432
-      POSTGRES_USER: holus
-      POSTGRES_PWD: holus
-      POSTGRES_SEEDS: postgres
-      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
-    ports:
-      - "7233:7233"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "tctl", "--address", "temporal:7233", "cluster", "health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    networks:
-      - holus-network
-
-  temporal-ui:
-    image: temporalio/ui:latest
-    container_name: holus-temporal-ui
-    restart: unless-stopped
-    environment:
-      TEMPORAL_ADDRESS: temporal:7233
-      TEMPORAL_CORS_ORIGINS: http://localhost:3000
-    ports:
-      - "8080:8080"
-    depends_on:
-      - temporal
     networks:
       - holus-network
 
@@ -222,8 +145,6 @@ volumes:
   holus-postgres-data:
     driver: local
   holus-redis-data:
-    driver: local
-  holus-n8n-data:
     driver: local
   holus-prometheus-data:
     driver: local
