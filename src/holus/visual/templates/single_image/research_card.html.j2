@@ -1,0 +1,88 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+<style>
+.hero-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.hero-stat-value {
+  font-size: 72px;
+  font-weight: 800;
+  color: var(--brand-color-primary);
+  line-height: 1;
+  font-family: var(--brand-font-primary);
+}
+.hero-stat-label {
+  font-size: 20px;
+  color: var(--brand-color-muted);
+  font-family: var(--brand-font-primary);
+}
+.callout {
+  background: rgba(99, 102, 241, 0.08);
+  border-left: 4px solid var(--brand-color-primary);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  font-size: 18px;
+  color: var(--brand-color-accent);
+  line-height: 1.5;
+  margin: 24px 0;
+}
+.source {
+  font-size: 13px;
+  color: var(--brand-color-muted);
+  font-family: var(--brand-font-secondary);
+  margin-top: 24px;
+  opacity: 0.7;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="single-container">
+  <div class="single-content" style="padding: 48px;">
+    {% if title %}
+    <h1 class="single-headline" style="font-size: 40px; margin-bottom: 8px;">{{ title }}</h1>
+    {% endif %}
+    {% if subtitle %}
+    <p style="font-size: 18px; color: var(--brand-color-muted); margin-bottom: 32px;">{{ subtitle }}</p>
+    {% endif %}
+
+    {% if key_stat %}
+    <div class="hero-stat">
+      <span class="hero-stat-value">{{ key_stat }}</span>
+      {% if key_stat_label %}
+      <span class="hero-stat-label">{{ key_stat_label }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if chart_svg %}
+    <div style="margin: 24px 0;">
+      {{ chart_svg | safe }}
+    </div>
+    {% endif %}
+
+    {% if callout_text %}
+    <div class="callout">
+      {{ callout_text }}
+    </div>
+    {% endif %}
+
+    {% if source_citation %}
+    <p class="source">Source: {{ source_citation }}</p>
+    {% endif %}
+  </div>
+
+  <div class="single-footer">
+    {% if author_name %}
+    <span class="single-author">{{ author_name }}</span>
+    {% endif %}
+    {% if brand_handle %}
+    <span class="single-handle">{{ brand_handle }}</span>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

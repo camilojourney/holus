@@ -1,0 +1,117 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+<style>
+  body {
+    margin: 0;
+    font-family: "Inter", var(--brand-font-primary), sans-serif;
+    background:
+      radial-gradient(circle at bottom right, color-mix(in srgb, var(--brand-color-primary) 14%, transparent), transparent 40%),
+      linear-gradient(180deg, #020617 0%, #0f172a 100%);
+  }
+
+  .arch-shell {
+    width: var(--brand-image-width);
+    height: var(--brand-image-height);
+    padding: var(--brand-spacing-margin);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background:
+      linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arch-shell::before {
+    content: "";
+    position: absolute;
+    inset: 24px;
+    border-radius: 36px;
+    border: 1px solid color-mix(in srgb, var(--brand-color-primary) 22%, #1e293b);
+    pointer-events: none;
+  }
+
+  .arch-header {
+    position: relative;
+    z-index: 1;
+  }
+
+  .arch-label {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brand-color-primary);
+    margin-bottom: 12px;
+  }
+
+  .arch-title {
+    margin: 0;
+    max-width: 820px;
+    font-size: 44px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: #f8fafc;
+  }
+
+  .arch-stage {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 0;
+  }
+
+  .arch-stage svg {
+    width: 100%;
+    max-width: 880px;
+    height: auto;
+    filter: drop-shadow(0 20px 56px rgba(15, 23, 42, 0.45));
+  }
+
+  .arch-footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+    color: #94a3b8;
+  }
+
+  .arch-author {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="arch-shell">
+  <div class="arch-header">
+    {% if label %}
+    <span class="arch-label">{{ label }}</span>
+    {% endif %}
+    {% if title %}
+    <h1 class="arch-title">{{ title }}</h1>
+    {% endif %}
+  </div>
+
+  <div class="arch-stage">
+    {{ chart_svg | safe }}
+  </div>
+
+  <div class="arch-footer">
+    {% if author_name %}
+    <span class="arch-author">{{ author_name }}</span>
+    {% endif %}
+    {% if brand_handle %}
+    <span>{{ brand_handle }}</span>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

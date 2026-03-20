@@ -315,6 +315,184 @@ def carousel_spec_to_slides(
     )
 
 
+def flowchart_to_spec(
+    agent_output: dict[str, Any],
+    *,
+    output_format: OutputFormat = OutputFormat.PNG,
+    viewport_width: int = 1080,
+    viewport_height: int = 1080,
+) -> RenderSpec:
+    """Convert flowchart agent output to a RenderSpec.
+
+    Args:
+        agent_output: Dict with title, nodes [{id, label, description}],
+            connections [{from_id, to_id, label}], layout (vertical|horizontal).
+    """
+    _require_keys(agent_output, ["title", "nodes"])
+
+    from holus.visual.charts import flowchart_svg
+
+    nodes = agent_output["nodes"]
+    edges = agent_output.get("connections", [])
+    layout = agent_output.get("layout", "vertical")
+
+    svg = flowchart_svg(nodes, edges, layout=layout)
+
+    return RenderSpec(
+        template="single_image/flowchart",
+        variables={
+            "title": agent_output["title"],
+            "chart_svg": svg,
+            "author_name": agent_output.get("author_name", ""),
+        },
+        output_format=output_format,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
+    )
+
+
+def architecture_to_spec(
+    agent_output: dict[str, Any],
+    *,
+    output_format: OutputFormat = OutputFormat.PNG,
+    viewport_width: int = 1080,
+    viewport_height: int = 1080,
+) -> RenderSpec:
+    """Convert architecture diagram agent output to a RenderSpec.
+
+    Args:
+        agent_output: Dict with title, layers [{name, components: [{name, description}]}],
+            connections [{from_layer, from_comp, to_layer, to_comp}].
+    """
+    _require_keys(agent_output, ["title", "layers"])
+
+    from holus.visual.charts import architecture_svg
+
+    layers = agent_output["layers"]
+    connections = agent_output.get("connections", [])
+
+    svg = architecture_svg(layers, connections)
+
+    return RenderSpec(
+        template="single_image/architecture",
+        variables={
+            "title": agent_output["title"],
+            "chart_svg": svg,
+            "author_name": agent_output.get("author_name", ""),
+        },
+        output_format=output_format,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
+    )
+
+
+def comparison_to_spec(
+    agent_output: dict[str, Any],
+    *,
+    output_format: OutputFormat = OutputFormat.PNG,
+    viewport_width: int = 1080,
+    viewport_height: int = 1080,
+) -> RenderSpec:
+    """Convert comparison table agent output to a RenderSpec.
+
+    Args:
+        agent_output: Dict with title, left_label, right_label,
+            items [{dimension, left, right, winner}].
+    """
+    _require_keys(agent_output, ["title", "items"])
+
+    from holus.visual.charts import comparison_table_svg
+
+    svg = comparison_table_svg(
+        items=agent_output["items"],
+        left_label=agent_output.get("left_label", "Option A"),
+        right_label=agent_output.get("right_label", "Option B"),
+    )
+
+    return RenderSpec(
+        template="single_image/comparison",
+        variables={
+            "title": agent_output["title"],
+            "chart_svg": svg,
+            "author_name": agent_output.get("author_name", ""),
+        },
+        output_format=output_format,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
+    )
+
+
+def code_card_to_spec(
+    agent_output: dict[str, Any],
+    *,
+    output_format: OutputFormat = OutputFormat.PNG,
+    viewport_width: int = 1080,
+    viewport_height: int = 1080,
+) -> RenderSpec:
+    """Convert code snippet agent output to a RenderSpec.
+
+    Args:
+        agent_output: Dict with title, code, language, annotation.
+    """
+    _require_keys(agent_output, ["title", "code"])
+
+    return RenderSpec(
+        template="single_image/code_card",
+        variables={
+            "title": agent_output["title"],
+            "code": agent_output["code"],
+            "language": agent_output.get("language", ""),
+            "annotation": agent_output.get("annotation", ""),
+            "author_name": agent_output.get("author_name", ""),
+        },
+        output_format=output_format,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
+    )
+
+
+def research_card_to_spec(
+    agent_output: dict[str, Any],
+    *,
+    output_format: OutputFormat = OutputFormat.PNG,
+    viewport_width: int = 1080,
+    viewport_height: int = 1080,
+) -> RenderSpec:
+    """Convert research data card agent output to a RenderSpec.
+
+    Args:
+        agent_output: Dict with title, subtitle, key_stat, key_stat_label,
+            chart_type, data_points, callout_text, source_citation.
+    """
+    _require_keys(agent_output, ["title"])
+
+    chart_svg = ""
+    if agent_output.get("chart_type") and agent_output.get("data_points"):
+        chart_svg = generate_svg(
+            agent_output["chart_type"],
+            agent_output["data_points"],
+            highlight_index=agent_output.get("highlight_index"),
+            color=agent_output.get("color_scheme", "#6366f1"),
+        )
+
+    return RenderSpec(
+        template="single_image/research_card",
+        variables={
+            "title": agent_output["title"],
+            "subtitle": agent_output.get("subtitle", ""),
+            "key_stat": agent_output.get("key_stat", ""),
+            "key_stat_label": agent_output.get("key_stat_label", ""),
+            "chart_svg": chart_svg,
+            "callout_text": agent_output.get("callout_text", ""),
+            "source_citation": agent_output.get("source_citation", ""),
+            "author_name": agent_output.get("author_name", ""),
+        },
+        output_format=output_format,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
+    )
+
+
 def _require_keys(data: dict[str, Any], keys: list[str]) -> None:
     """Raise ValueError if any required key is missing from data."""
     missing = [k for k in keys if k not in data]
