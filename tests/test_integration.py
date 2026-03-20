@@ -750,6 +750,9 @@ class TestAuthorityEngineE2E:
         from holus.agents.marketing.agent import MarketingAgent
 
         _patch_agent_paths(monkeypatch, tmp_path)
+        # Ensure no leaked env vars cause real LLM calls
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("ANTHROPIC_BASE_URL", raising=False)
         mock_redis = _make_mock_redis()
 
         with (

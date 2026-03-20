@@ -84,11 +84,11 @@ class TestPreflightKillSwitch:
 
 class TestPreflightLLM:
     def test_missing_api_key_returns_blocking_false(self, tmp_path: Path) -> None:
-        with patch.dict("os.environ", {}, clear=False):
-            # Ensure no proxy base URL is set, so the direct API key check runs
-            import os
-
-            os.environ.pop("ANTHROPIC_BASE_URL", None)
+        with patch.dict(
+            "os.environ",
+            {"ANTHROPIC_BASE_URL": "", "ANTHROPIC_API_KEY": ""},
+            clear=False,
+        ):
             result = run_preflight_checks(
                 anthropic_api_key="",
                 trajectory_path=tmp_path / "traj.jsonl",
