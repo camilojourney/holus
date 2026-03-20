@@ -172,12 +172,12 @@ class MarketingAgent(BaseAgent):
             "capability_gaps": [],
         }
 
-    async def run(  # type: ignore[override]
+    async def run(
         self,
         state: dict[str, Any] | None = None,
         *,
         thread_id: str | None = None,
-        checkpointer=None,
+        checkpointer: Any = None,
     ) -> dict[str, Any]:
         """Run one marketing cycle wrapped in the CycleState machine.
 
@@ -225,7 +225,7 @@ class MarketingAgent(BaseAgent):
             # ------------------------------------------------------------------
             current_phase = "loading_state"
             ctx.transition(CycleState.LOADING_STATE)
-            app = self.compile(checkpointer=checkpointer)
+            app = self.compile(checkpointer=checkpointer)  # type: ignore[no-untyped-call]
             initial = state or self.default_state()
 
             run_config: dict[str, Any] = {}
@@ -1621,7 +1621,8 @@ class MarketingAgent(BaseAgent):
         try:
             data = json.loads(clean)
             rec_idx = data["recommended"]["index"]
-            return data["hooks"][rec_idx]["text"]
+            hook_text: str = data["hooks"][rec_idx]["text"]
+            return hook_text
         except (json.JSONDecodeError, KeyError, IndexError, TypeError):
             pass
         # Regex fallback: find first "text" value
@@ -1636,7 +1637,8 @@ class MarketingAgent(BaseAgent):
         clean = self._strip_code_fences(output)
         try:
             data = json.loads(clean)
-            return data.get("body", clean)
+            body: str = data.get("body", clean)
+            return body
         except (json.JSONDecodeError, TypeError):
             return output
 
@@ -1647,7 +1649,8 @@ class MarketingAgent(BaseAgent):
             data = json.loads(clean)
             options = data.get("options", [])
             if options and isinstance(options[0], dict):
-                return options[0].get("text", "")
+                cta_text: str = options[0].get("text", "")
+                return cta_text
         except (json.JSONDecodeError, TypeError):
             pass
         return ""
