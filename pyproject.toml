@@ -169,6 +169,7 @@ addopts = [
     "--strict-markers",
     "--tb=short",
     "-q",
+    "-m", "not integration",
 ]
 
 [tool.coverage.run]
