@@ -37,6 +37,7 @@ class ContentType(StrEnum):
     VIDEO_REEL = "video_reel"
     ANNOUNCEMENT = "announcement"
     EDUCATIONAL = "educational"
+    ANIMATED_INFOGRAPHIC = "animated_infographic"
 
 
 class ContentDecision(BaseModel):

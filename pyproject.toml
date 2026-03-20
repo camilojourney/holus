@@ -44,6 +44,8 @@ dependencies = [
     "sse-starlette>=2.1.0",
     "pypdf>=6.9.1",
     "pip-audit>=2.10.0",
+    # Visual rendering (infographics)
+    "Pillow>=10.0.0",
 ]
 
 [project.optional-dependencies]
