@@ -147,7 +147,7 @@ and clean up accumulated tech debt. The content pipeline (idea-runner) is produc
 
 ### P0 — Content Quality Fixes
 
-- [ ] [BUILD] Fix Instagram video_script missing hashtags — The `video_script` specialist pipeline (`hook-architect → storyteller → cta-strategist`) never generates hashtag_strategy or caption, but the Instagram judge rubric (platform-fit-judge) expects them. Fix: add platform-aware post-processing to `SpecialistDispatcher` that appends hashtag block + caption when format=video_script and platform=instagram.
+- [x] [BUILD] Fix Instagram video_script missing hashtags — Added `_enrich_for_platform()` to `specialist_dispatch.py` and `_get_format_instructions()` to `idea_runner.py`. Both content generation paths now append hashtag blocks + caption instructions for Instagram/TikTok/Facebook video_scripts. LinkedIn unchanged. 16 new tests. (Cycle 56)
 - [ ] [BUILD] Add judge retry with backoff — When judge evaluation fails with timeout or invalid JSON, retry once with exponential backoff (2s) before returning FAIL. Currently, a single timeout marks content as FAIL with score 0.0, losing valid content.
 
 ### P1 — Spec & Status Hygiene
