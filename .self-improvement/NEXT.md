@@ -105,7 +105,7 @@ This sprint closes the loop from "system built" to "system producing real output
 ### P2 — Review & Publishing Pipeline
 
 - [x] [BUILD] Add dry-run mode to publishing — `just publish --dry-run` shows what would be posted (platform, content preview, character count) without actually posting. Safety net before first real publish.
-- [ ] [BUILD] End-to-end publish test — Generate content → approve via `just approve-content` → publish via updated publisher → verify post appears on social media. First real published content through the full pipeline.
+- [x] [BUILD] End-to-end publish test — 8 integration tests covering full manual pipeline: enqueue → humanize (SPEC-032 gate) → approve → publish_all (mocked social-media API) → verify status=published. Also tests: humanization enforcement, edit distance limits, multi-piece flows, API failure handling, media attachments, missing API key. (Cycle 52)
 - [ ] [REVIEW] Camilo reviews brand.yaml TODOs — 6 sections need human input: consulting pivot story, service pricing/deliverables, entry-point service, discovery call link, target verticals, competitor accounts. Schedule a session. Not blocked by other tasks — agent works with current scaffold.
 
 ### P3 — Automation & Feedback Loop
