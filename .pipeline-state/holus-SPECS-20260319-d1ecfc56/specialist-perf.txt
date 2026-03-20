@@ -1,0 +1,46 @@
+SPECIALIST: Performance
+SCOPE: File size limits, rendering time, template caching, output format tradeoffs
+
+---
+
+FILE SIZE AND PLATFORM LIMITS
+
+LinkedIn image uploads max at 5MB. LinkedIn native video maxes at 200MB with a 10-minute limit. Animated GIFs are treated as images (5MB cap) on LinkedIn, and most platforms strip or poorly compress them. A 1080x1080 animated GIF at 30 frames with 256 colors will land between 2-8MB depending on complexity — right at the danger zone for the 5MB limit.
+
+Short MP4s (H.264, 10-15 seconds) of the same content compress to 200KB-1MB. That is 5-20x smaller. MP4 also autoplays on LinkedIn feed (GIFs do not reliably autoplay across all clients). The engagement advantage of motion content disappears if the file does not actually animate in-feed.
+
+RENDERING TIME
+
+For Puppeteer frame capture of a 1080x1080 HTML page: each screenshot takes 50-200ms depending on CSS complexity. For a 5-second animation at 15fps (75 frames), that is 4-15 seconds of rendering. At 30fps (150 frames), 8-30 seconds. This is within acceptable bounds for a batch content pipeline that runs on a schedule.
+
+The bottleneck is Puppeteer cold start (~2-3 seconds for browser launch). Mitigation: keep a browser instance warm for the duration of a content generation cycle. The marketing agent generates multiple pieces per cycle — amortize the cold start across all visual renders.
+
+Frame encoding: ffmpeg can encode 150 PNG frames to MP4 in <2 seconds on the Mac Mini. GIF encoding with gifsicle or ffmpeg palettegen takes 3-8 seconds for the same frames. Total pipeline: 15-40 seconds per infographic. Acceptable for a scheduled pipeline.
+
+TEMPLATE CACHING
+
+Two-tier approach:
+1. Pre-built layout templates (grid-2x3, grid-3x4, radial, timeline, pyramid) with CSS animation presets. These are static HTML/CSS files checked into the repo. The LLM selects a template and fills it with content — it does not generate HTML from scratch.
+2. Per-topic CSS overrides for color themes (already supported by BrandVisualIdentity.themes). The LLM can request a theme but not arbitrary CSS.
+
+This eliminates the "LLM generates broken HTML" failure mode. The LLM's job is structured data (JSON: items, labels, categories, icon names) + template selection. Rendering is deterministic from there.
+
+Template count estimate: 5-8 layouts cover the vast majority of infographic patterns (grid, timeline, pyramid, comparison, process flow, radial, list, matrix). Each layout supports 2-4 animation styles (fade-in, slide-in, draw-line, pop-scale). That is 10-32 combinations — all pre-built and tested.
+
+COST ANALYSIS
+
+Puppeteer + ffmpeg are free (open source, local execution). The only API cost is the LLM call to generate the structured layout JSON, which is a small structured output call (~500 input tokens, ~200 output tokens). At Sonnet pricing, that is ~$0.003 per infographic. Negligible compared to the image generation calls to Pilaster ($0.04-0.10 per Replicate generation).
+
+DECISION_POINT: output_format
+
+A) Animated GIF (5MB limit, wide support)
+B) Short MP4 (better compression, autoplay on LinkedIn)
+C) Both (generate MP4, fallback to GIF)
+
+VOTE: B — Short MP4
+
+Rationale: MP4 wins on every axis that matters for LinkedIn content. File size is 5-20x smaller (no risk of hitting platform limits). Autoplay works reliably (GIFs are inconsistent). Visual quality is higher (no 256-color palette limitation — gradients and brand colors render accurately). LinkedIn's algorithm favors native video content over static images, so even a 5-second "animated infographic" MP4 gets better distribution than a static carousel or GIF.
+
+The only argument for GIF is universal support, but the primary target platform is LinkedIn (per spec 031), where MP4 is first-class. For future platforms (Twitter/X, Instagram), MP4 is equally well-supported.
+
+Generate MP4 as the primary output. Store the individual frames as PNGs for debugging and for the static fallback case (single "final frame" PNG for platforms that do not support video). This gives us option C's flexibility without the complexity of maintaining two encoding paths as primary outputs.

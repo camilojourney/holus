@@ -1,0 +1,42 @@
+SPECIALIST: Architecture
+SCOPE: Animated infographic generation — where it fits, pipeline design, content-type routing
+
+---
+
+WHERE DOES THIS FIT?
+
+Neither Pilaster nor Genpeli. Pilaster owns AI image generation (diffusion models, LoRAs, ComfyUI backends). Genpeli owns video editing of human footage (ffmpeg, Whisper, caption burning). An animated infographic is neither: it is programmatic rendering of structured data into sequential frames. The input is not a prompt or raw footage — it is structured JSON (categories, labels, icons, grid layout) plus animation timing.
+
+The closest existing concept is the carousel-architect specialist, which already produces structured slide JSON. But carousels are static PNGs. This new content type extends the same structured-data-to-visual pipeline with a temporal dimension.
+
+Recommendation: This lives in Holus itself, not in a silo. Specifically, a new rendering module alongside the existing carousel renderer (which already uses HTML/CSS templates + brand-visual.yaml CSS variables). The BrandVisualIdentity model already generates CSS custom properties via to_css_variables(). The infographic renderer reuses this same brand system.
+
+GIF GENERATION PIPELINE
+
+The pipeline is: LLM generates structured layout JSON (grid spec, items, categories, icons) -> HTML/CSS template populates with CSS animations (keyframe delays per element) -> Puppeteer renders N frames at fixed intervals -> frames encoded to output format.
+
+Why HTML/CSS over Python animation libraries: (1) The brand system already emits CSS variables — zero new design tooling. (2) CSS @keyframes with animation-delay gives per-element sequential appearance for free. (3) Puppeteer is a single dependency with deterministic rendering. (4) The carousel pipeline already follows this exact pattern minus the frame capture step.
+
+CONTENT-TYPE ROUTING
+
+The marketing-strategist decides content types during the REASON stage. Currently ContentType has: TUTORIAL, DEMO, TIPS, THREAD, CASE_STUDY, CAROUSEL, VIDEO_REEL, ANNOUNCEMENT, EDUCATIONAL. Add ANIMATED_INFOGRAPHIC.
+
+The specialist_dispatch.py PIPELINES dict needs a new entry:
+"animated_infographic": ["hook-architect", "data-visualizer", "infographic-layout-architect", "brand-designer"]
+
+The data-visualizer specialist (already defined in vision.md under Visual Content) produces the structured data. A new infographic-layout-architect specialist produces the grid/layout spec. brand-designer validates brand compliance.
+
+When does the strategist choose this type? When the topic is a taxonomy, comparison, framework, or categorization. The REASON prompt should include: "If the topic naturally decomposes into 4-12 labeled categories with a clear hierarchy, consider ANIMATED_INFOGRAPHIC."
+
+DECISION_POINT: generation_approach
+
+A) HTML/CSS + Puppeteer screenshot frames -> GIF/MP4
+B) Python animation library (matplotlib, manim) -> GIF
+C) Pilaster generates static, Genpeli animates
+D) New dedicated service
+
+VOTE: A — HTML/CSS + Puppeteer
+
+Rationale: Option A reuses the existing brand CSS variable system (BrandVisualIdentity.to_css_variables()), keeps rendering deterministic and debuggable (inspect HTML in browser), and requires one new dependency (Puppeteer) rather than a new silo or service. Option C splits one atomic operation across two silos with a coordination problem — what if Pilaster returns an image that Genpeli cannot animate? Option B (manim/matplotlib) produces ugly output without extreme customization and cannot consume brand CSS. Option D is overengineering for what is essentially "render HTML frames and encode."
+
+The carousel renderer is the existence proof: HTML template + brand CSS -> screenshot -> PNG. This spec extends it to: HTML template + brand CSS + CSS animations -> screenshot N frames -> encode.

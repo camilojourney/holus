@@ -1,0 +1,52 @@
+SPECIALIST: Security
+SCOPE: Template injection, compute rate limiting, brand safety enforcement
+
+---
+
+CONTENT INJECTION IN TEMPLATE RENDERING
+
+The pipeline is: LLM produces structured JSON -> JSON populates HTML template -> Puppeteer renders. The injection surface is the JSON-to-HTML step. If the LLM outputs a label like `<script>alert(1)</script>` and that gets inserted raw into innerHTML, we have XSS in the Puppeteer context.
+
+In a headless Puppeteer instance, XSS does not directly compromise users (no real browser session). But it can: (1) cause rendering failures (broken layout), (2) execute arbitrary JS that reads the local filesystem via Puppeteer's node integration, (3) stall the render with infinite loops.
+
+Mitigations required:
+- All JSON values MUST be inserted via textContent (DOM API), never innerHTML. The template engine should use a safe interpolation method that HTML-escapes all dynamic values.
+- Validate JSON schema before rendering. The layout spec should conform to a strict Pydantic model: item labels are strings with max length (50 chars), category names are from an allowed set or alphanumeric-only, icon names are from a whitelist of available icons.
+- Puppeteer sandbox: run with --no-sandbox disabled (keep the sandbox ON). Set a page navigation timeout of 10 seconds. If the page does not render within 10 seconds, kill and retry once, then fail.
+
+The attack surface is low because the LLM is the only input source (no user-provided text in Phase 1). But when this extends to user-submitted topics or external data sources, the sanitization layer must already be in place.
+
+RATE LIMITING ON GENERATION
+
+Each infographic render costs ~15-40 seconds of CPU (Puppeteer + ffmpeg). On the Mac Mini (M2, 8 cores), running more than 4 concurrent renders will saturate the CPU and degrade other services (Observatory API, MCP servers).
+
+Mitigations:
+- Semaphore-based concurrency limit: max 2 concurrent infographic renders. This is a process-level asyncio.Semaphore, not a distributed rate limiter — appropriate for the single-machine architecture.
+- Per-cycle cap: max 5 infographics per marketing cycle. The strategist should not decide to create 20 infographics in one run. This is enforced in the REASON stage prompt + a hard code check in the ACT stage.
+- Cost guardrail integration: the existing guardrails.yaml system should track render count. If >10 infographics are rendered in a 24-hour window, pause and alert.
+
+These are conservative limits. A single infographic at 30 seconds means 5 per cycle = 2.5 minutes of render time. Acceptable.
+
+BRAND SAFETY
+
+The risk with LLM-generated visual content is off-brand output: wrong colors, wrong fonts, inconsistent style, or misleading data visualizations. Unlike text content where the voice-guardian agent catches tone issues, visual content needs structural validation.
+
+Mitigations:
+- Template-locked rendering: the LLM cannot generate arbitrary HTML/CSS. It fills a pre-built template. Colors come from BrandVisualIdentity.to_css_variables(). Fonts come from Typography config. The LLM has zero control over visual styling — only content and template selection.
+- Icon whitelist: infographic icons come from a curated set (e.g., Lucide icons bundled in the template). The LLM specifies icon names from the whitelist. Unknown icon names fall back to a generic dot/circle.
+- brand-designer agent gate: the existing brand-designer specialist (defined in vision.md) runs as a validation gate on the rendered output. It receives the final frame PNG and checks: correct brand colors used, text is legible, layout is balanced, no visual artifacts.
+- Data accuracy: the LLM generates the labels and categories. There is no external data source to verify against. The JudgeAgent evaluates factual accuracy of the content. If the infographic claims "5 types of AI agents" and lists 4, that is caught by the evaluator, not the renderer.
+
+DECISION_POINT: template_system
+
+A) Hardcoded Python templates (safe but inflexible)
+B) HTML/CSS templates with sanitized injection (flexible but needs XSS prevention)
+C) LLM generates SVG directly (most flexible, hardest to control)
+
+VOTE: B — HTML/CSS templates with sanitized injection
+
+Rationale: Option A (Python templates) means reimplementing CSS layout in Python — losing the brand CSS variable system that already exists and works. Option C (LLM-generated SVG) is the highest risk: SVGs can contain embedded scripts, arbitrary styling, and are notoriously difficult to validate. Every SVG sanitizer has had bypass vulnerabilities.
+
+Option B is the sweet spot: HTML/CSS templates are pre-built and auditable. The sanitization requirement is narrow — escape text content inserted into fixed template slots. The BrandVisualIdentity.to_css_variables() method already generates the CSS. Puppeteer renders HTML natively. The security boundary is clear: the template is trusted code, the JSON content is untrusted data, and they meet at a well-defined interpolation layer with HTML escaping.
+
+The key implementation constraint: use a template engine that escapes by default (Jinja2 with autoescape=True, or Python's html.escape on every interpolated value). Never use f-strings or string concatenation for HTML generation.
