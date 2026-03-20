@@ -316,11 +316,37 @@ def _strip_markdown(text: str) -> str:
     return text
 
 
+def _get_format_instructions(fmt: str, platform: str) -> str:
+    """Get format instructions, with platform-specific enrichment.
+
+    Instagram/TikTok video_scripts need hashtag and caption blocks that
+    the base format instructions don't include. This patches the gap so
+    the generated output satisfies the platform-fit-judge rubric.
+    """
+    base = FORMAT_INSTRUCTIONS.get(fmt, FORMAT_INSTRUCTIONS["text_post"])
+
+    if fmt == "video_script" and platform in ("instagram", "tiktok", "facebook"):
+        from holus.agents.marketing.platform_config import get_platform_config
+        config = get_platform_config(platform)
+        base += f"""
+<platform_enrichment>
+This video script targets {config.display_name}.
+After the CTA section, add:
+
+CAPTION: A short, engaging caption (100-200 chars) summarizing the video's value.
+
+HASHTAGS: {config.hashtag_limit} relevant hashtags in a single line, mixing broad
+and niche tags. Example: #AI #BuildInPublic #AgentArchitecture #TechFounder
+</platform_enrichment>
+"""
+    return base
+
+
 def generate_piece(raw_idea: str, decision: dict) -> dict:
     fmt = decision.get("format", "text_post")
     platform = decision.get("platform", "linkedin")
     angle = decision.get("angle", raw_idea)
-    fmt_instructions = FORMAT_INSTRUCTIONS.get(fmt, FORMAT_INSTRUCTIONS["text_post"])
+    fmt_instructions = _get_format_instructions(fmt, platform)
 
     # Load generator prompt via PromptLoader (falls back to GENERATOR_SYSTEM constant)
     generator_prompt, _variant = _load_prompt("idea-generator", GENERATOR_SYSTEM)
