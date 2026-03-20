@@ -24,6 +24,7 @@ from holus.agents.marketing.content_queue import (
     QueuedContent,
     approve,
     enqueue,
+    humanize,
     list_approved,
     list_pending,
     mark_published,
@@ -287,7 +288,7 @@ class TestContentQueueRoundTrip:
         assert pending[0].status == "pending_review"
 
     def test_approve_moves_to_approved(self, tmp_path: Path, monkeypatch):
-        """enqueue → approve → list_approved returns the item."""
+        """enqueue → humanize → approve → list_approved returns the item."""
         import holus.agents.marketing.content_queue as cq
 
         monkeypatch.setattr(cq, "QUEUE_DIR", tmp_path / "queue")
@@ -295,6 +296,7 @@ class TestContentQueueRoundTrip:
         item = self._make_item()
         enqueue(item)
 
+        humanize(item.piece_id, "This is a test post about Pilaster — edited.")
         approve(item.piece_id)
 
         pending = list_pending()
@@ -326,13 +328,14 @@ class TestContentQueueRoundTrip:
         assert data["rejection_reason"] == "Not relevant this week"
 
     def test_mark_published(self, tmp_path: Path, monkeypatch):
-        """enqueue → approve → mark_published → status is 'published'."""
+        """enqueue → humanize → approve → mark_published → status is 'published'."""
         import holus.agents.marketing.content_queue as cq
 
         monkeypatch.setattr(cq, "QUEUE_DIR", tmp_path / "queue")
 
         item = self._make_item()
         enqueue(item)
+        humanize(item.piece_id, "This is a test post about Pilaster — edited.")
         approve(item.piece_id)
         mark_published(item.piece_id, post_id="post_001")
 
@@ -353,7 +356,8 @@ class TestContentQueueRoundTrip:
         pending = list_pending()
         assert len(pending) == 3
 
-        # Approve one, reject another
+        # Approve one (humanize first per SPEC-032), reject another
+        humanize(items[0].piece_id, "This is a test post about Pilaster — edited.")
         approve(items[0].piece_id)
         reject(items[1].piece_id, reason="Off-brand")
 

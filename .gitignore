@@ -82,6 +82,16 @@ logs/
 # ---- Claude Code: Worktrees (ephemeral agent sandboxes) ----
 .claude/worktrees/
 
+# ---- Data: Generated Assets (runtime) ----
+data/rendered/
+data/examples/
+
+# ---- Pipeline State (runtime) ----
+.pipeline-state/
+
+# ---- Health Check Artifacts ----
+.failed
+
 # ---- Misc ----
 *.bak
 *.tmp

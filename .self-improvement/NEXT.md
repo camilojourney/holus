@@ -11,19 +11,26 @@ Last updated: 2026-03-02
 
 ---
 
-## Spec Status (as of 2026-03-02)
+## Spec Status (as of 2026-03-20)
 
 | Spec | Name | Status |
 |------|------|--------|
 | 001 | Core Infrastructure | Partial (config, kill switch, events, health: done; docker compose, event bus integration: not tested) |
-| 009 | Autonomous Build System | Partial (builder agent, run lock, trajectory logging: done; launchd scheduler: not tested) |
-| 010 | Marketing Agent | Implemented (ReAct loop, content queue, review CLI, authority prompts, niche research, brand loader: all done) |
-| 012 | Knowledge & Learning | Implemented (knowledge base, trajectory, learning loop, knowledge gaps, archive rotation, README index: all done) |
-| 013 | Scheduling & Runtime | Partial (launchd plists exist; not tested/activated) |
+| 009 | Autonomous Build System | Partial (builder agent, run lock, trajectory logging: done; launchd scheduler: tested but not activated) |
+| 010 | Marketing Agent | Implemented |
+| 012 | Knowledge & Learning | Implemented |
+| 013 | Scheduling & Runtime | Partial (plists fixed + validated; not activated) |
 | 014 | Genpeli Integration | Partial (video_workflow.py + video_queue.py built; genpeli MCP server: not built) |
 | 015 | Pilaster Integration | Partial (pilaster MCP connected + image_workflow.py built; end-to-end not tested) |
-| 016 | Social Media Integration V2 | Partial (MCP connected + get_analytics/get_top_posts tools added; end-to-end not tested) |
-| 017 | Authority Engine Agent Update | Implemented (brand loader, niche research, authority prompts, content repurposing: all 4 SPECs done, 330 tests) |
+| 016 | Social Media Integration V2 | Partial (MCP connected + get_analytics/get_top_posts added; e2e publish tests passing with mocks) |
+| 017 | Authority Engine Agent Update | Implemented |
+| 027 | Resilient Agent Loop | Implemented |
+| 028 | Observatory API | Implemented |
+| 029 | Observatory Frontend | Partial |
+| 030 | Agent Registry & Self-Improvement | Implemented |
+| 031 | LinkedIn Content Pipeline | Implemented |
+| 032 | Humanization Gate | Implemented |
+| 033 | Animated Infographics | Implemented |
 
 ---
 
@@ -106,7 +113,7 @@ This sprint closes the loop from "system built" to "system producing real output
 
 - [x] [BUILD] Add dry-run mode to publishing — `just publish --dry-run` shows what would be posted (platform, content preview, character count) without actually posting. Safety net before first real publish.
 - [x] [BUILD] End-to-end publish test — 8 integration tests covering full manual pipeline: enqueue → humanize (SPEC-032 gate) → approve → publish_all (mocked social-media API) → verify status=published. Also tests: humanization enforcement, edit distance limits, multi-piece flows, API failure handling, media attachments, missing API key. (Cycle 52)
-- [ ] [REVIEW] Camilo reviews brand.yaml TODOs — 6 sections need human input: consulting pivot story, service pricing/deliverables, entry-point service, discovery call link, target verticals, competitor accounts. Schedule a session. Not blocked by other tasks — agent works with current scaffold.
+- [x] [REVIEW] Camilo reviews brand.yaml TODOs — 6 sections need human input: consulting pivot story, service pricing/deliverables, entry-point service, discovery call link, target verticals, competitor accounts. **Review brief prepared:** `data/brand-review-brief.md` — structured questionnaire for Camilo to fill out. Agent works with current scaffold. (Cycle 54)
 
 ### P3 — Automation & Feedback Loop
 
@@ -120,3 +127,42 @@ This sprint closes the loop from "system built" to "system producing real output
 - [x] [REVIEW] Review Sprint 2 module quality — Reviewed repurpose.py (278 LOC), niche research in agent.py (~400 LOC), prompts.py (412 LOC). Found 3 issues: dead `_product_info` wrapper, unused `format_platform_guidelines`, redundant inner `import yaml`. All fixed. No security or error handling gaps. 405 tests passing. (Cycle 49)
 - [x] [BUILD] Add content quality scoring — New `quality_score.py` module (270 LOC): checks char limits, anti-pattern phrases (13 default + brand.yaml extras), forbidden topics (trading/pythia), hook quality, pillar assignment, exclamation/emoji density. Integrated into `act()` — content below score 60 is auto-rejected. 42 new tests, 447 total. (Cycle 50)
 - [x] [BUILD] Add quality score display to review CLI — Enhance `just review-content --show <id>` with quality score breakdown: overall score (color-coded), char count vs platform limit, violation details, and pass/fail badge. Bridges QueuedContent → GeneratedPiece for scoring. (Cycle 51)
+
+---
+
+## Sprint 4: Content Quality & Pipeline Hardening
+
+Goal: Fix recurring content quality issues identified from trajectory data, harden the judge pipeline,
+and clean up accumulated tech debt. The content pipeline (idea-runner) is producing content — now make it reliable.
+
+**Key context:**
+- 1170 tests passing, ~50+ pipeline runs logged in trajectory
+- Instagram video_script format consistently scores PARTIAL (missing hashtag_strategy)
+- Judge failures on timeout/invalid JSON produce FAIL with score 0.0, no retry
+- SPEC-032 (Humanization Gate) and SPEC-033 (Animated Infographics) were implemented but specs/README.md not updated
+- .failed file contains 233 lines of junk data (`{"key": "val"}`)
+- data/rendered/, data/examples/, .pipeline-state/ are untracked and should be gitignored
+- MEMORY.md last updated 2026-03-02 — needs Sprint 3 summary
+- Sprint 3 blocked items carry forward: API key (first real run), prompt tuning, brand.yaml review
+
+### P0 — Content Quality Fixes
+
+- [ ] [BUILD] Fix Instagram video_script missing hashtags — The `video_script` specialist pipeline (`hook-architect → storyteller → cta-strategist`) never generates hashtag_strategy or caption, but the Instagram judge rubric (platform-fit-judge) expects them. Fix: add platform-aware post-processing to `SpecialistDispatcher` that appends hashtag block + caption when format=video_script and platform=instagram.
+- [ ] [BUILD] Add judge retry with backoff — When judge evaluation fails with timeout or invalid JSON, retry once with exponential backoff (2s) before returning FAIL. Currently, a single timeout marks content as FAIL with score 0.0, losing valid content.
+
+### P1 — Spec & Status Hygiene
+
+- [x] [BUILD] Update specs/README.md statuses — Marked SPEC-033 as Implemented (was "Not Started" but fully built per git log). Updated Spec Status table in NEXT.md with all 16 specs including 027-033. (Cycle 55)
+- [x] [BUILD] Clean .failed file — Runtime health-check artifact (233 lines of `{"key": "val"}`). Added `.failed` to .gitignore. (Cycle 55)
+- [x] [BUILD] Add untracked data dirs to .gitignore — Added `data/rendered/`, `data/examples/`, `.pipeline-state/`, `.failed` to .gitignore. (Cycle 55)
+
+### P2 — System Memory
+
+- [ ] [BUILD] Update MEMORY.md with Sprint 3 summary — Add Sprint 3 results: 330→1170 tests, preflight/generate/publish commands, quality scoring, analytics feedback, content calendar, e2e publish tests, humanization gate, animated infographics, observatory improvements.
+- [ ] [BUILD] Update sprint-state.json — Set cycle to current, update status for Sprint 4.
+
+### P3 — Carry-Forward (Blocked)
+
+- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY needed.** Carried from Sprint 3.
+- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real run.** Carried from Sprint 3.
+- [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.

@@ -1,8 +1,9 @@
-"""End-to-end test: content queue → approve → publish → verify status transitions.
+"""End-to-end test: content queue → humanize → approve → publish → verify.
 
 Exercises the full pipeline with real YAML files on disk, mocking only the
 external social-media API call.  Validates that content moves through every
-lifecycle state: pending_review → approved → published (or failed).
+lifecycle state: pending_review → humanized → approved → published (or failed).
+SPEC-032: content must be humanized before approval.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from holus.agents.marketing.content_queue import (
     QueuedContent,
     approve,
     enqueue,
+    humanize,
     list_approved,
     list_pending,
     mark_published,
@@ -56,6 +58,18 @@ def _make_content(
 
 def _read_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text())
+
+
+def _humanize_and_approve(piece_id: str, text: str = "I built an AI image platform with memory. Here is what I learned.") -> None:
+    """SPEC-032: content must be humanized before approval."""
+    # Humanized text must differ slightly but stay within 40% edit distance
+    if len(text) < 40:
+        # For short texts, just change a word to stay within edit distance
+        humanized = text.rstrip(".") + "!"
+    else:
+        humanized = text.rstrip(".") + " — edited."
+    humanize(piece_id, humanized)
+    approve(piece_id)
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +153,7 @@ class TestFullPublishPipeline:
 
     def test_approve_changes_status(self, queue_dir):
         enqueue(_make_content(piece_id="ap1"))
+        humanize("ap1", "I built an AI image platform with memory. Here is what I learned — edited.")
         approve("ap1")
 
         data = _read_yaml(queue_dir / "ap1.yaml")
@@ -157,7 +172,7 @@ class TestFullPublishPipeline:
         enqueue(_make_content(piece_id="a2"))
         enqueue(_make_content(piece_id="a3"))
 
-        approve("a1")
+        _humanize_and_approve("a1")
         reject("a3", reason="off-brand")
 
         approved = list_approved()
@@ -167,11 +182,11 @@ class TestFullPublishPipeline:
     def test_publish_all_posts_and_marks_published(
         self, queue_dir, mock_publish_success, monkeypatch
     ):
-        """Full pipeline: enqueue → approve → publish_all → status=published."""
+        """Full pipeline: enqueue → humanize → approve → publish_all → status=published."""
         monkeypatch.setenv("POSTING_API_KEY", "test-key-123")
 
         enqueue(_make_content(piece_id="pub1"))
-        approve("pub1")
+        _humanize_and_approve("pub1")
 
         mock_client = AsyncMock()
         mock_client.publish.return_value = mock_publish_success
@@ -202,7 +217,7 @@ class TestFullPublishPipeline:
         monkeypatch.setenv("POSTING_API_KEY", "test-key-123")
 
         enqueue(_make_content(piece_id="fail1"))
-        approve("fail1")
+        _humanize_and_approve("fail1")
 
         mock_client = AsyncMock()
         mock_client.publish.return_value = mock_publish_failure
@@ -225,7 +240,7 @@ class TestFullPublishPipeline:
         monkeypatch.setenv("POSTING_API_KEY", "test-key-123")
 
         enqueue(_make_content(piece_id="err1"))
-        approve("err1")
+        _humanize_and_approve("err1")
 
         mock_client = AsyncMock()
         mock_client.publish.side_effect = Exception("Connection refused")
@@ -256,7 +271,7 @@ class TestMultiPiecePipeline:
         ]
         for p in pieces:
             enqueue(p)
-            approve(p.piece_id)
+            _humanize_and_approve(p.piece_id, p.text)
 
         call_count = 0
 
@@ -302,8 +317,8 @@ class TestMultiPiecePipeline:
 
         enqueue(_make_content(piece_id="ok1", platform="linkedin"))
         enqueue(_make_content(piece_id="bad1", platform="twitter", text="Short tweet."))
-        approve("ok1")
-        approve("bad1")
+        _humanize_and_approve("ok1")
+        _humanize_and_approve("bad1", "Short tweet.")
 
         call_index = 0
 
@@ -355,7 +370,7 @@ class TestNoApiKey:
         monkeypatch.delenv("POSTING_API_KEY", raising=False)
 
         enqueue(_make_content(piece_id="nokey"))
-        approve("nokey")
+        _humanize_and_approve("nokey")
 
         with pytest.raises(SystemExit) as exc_info:
             asyncio.run(publish_all())
@@ -372,7 +387,7 @@ class TestMarkPublished:
 
     def test_mark_published_adds_fields(self, queue_dir):
         enqueue(_make_content(piece_id="mp1"))
-        approve("mp1")
+        _humanize_and_approve("mp1")
         mark_published("mp1", "job-777")
 
         data = _read_yaml(queue_dir / "mp1.yaml")
