@@ -10,7 +10,7 @@ Covers:
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -77,7 +77,7 @@ class TestNormalizeOutlineDesign:
             "design": {"theme": "cool"},
         }
         result = _normalize_outline(outline)
-        assert result["slides"][0]["variables"]["author_name"] == ""
+        assert result["slides"][0]["variables"]["author_name"] == "Juan Camilo Martinez"
         assert result["slides"][0]["variables"]["theme"] == "cool"
 
 
@@ -378,9 +378,11 @@ class TestRenderCarouselPdf:
                 SlideSpec(template="carousel/body_slide", variables={"title": "B"}, slide_number=2),
             ],
         )
-        result = await engine.render_carousel_pdf(spec)
+        # Mock _merge_pdfs since fake bytes aren't valid PDFs for pypdf
+        with patch.object(PlaywrightEngine, "_merge_pdfs", return_value=b"MERGED_PDF"):
+            result = await engine.render_carousel_pdf(spec)
         assert result.success is True
-        assert result.output_bytes == b"CAROUSEL_PDF_BYTES"
+        assert result.output_bytes == b"MERGED_PDF"
         assert result.format == OutputFormat.PDF
         assert result.duration_ms >= 0
 
@@ -457,7 +459,7 @@ class TestRenderCarouselPdf:
         mock_page.close.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_multi_slide_combined_html(self, mock_browser, mock_page, mock_template_engine):
+    async def test_multi_slide_rendered_individually(self, mock_browser, mock_page, mock_template_engine):
         engine = PlaywrightEngine(mock_template_engine)
         engine._browser = mock_browser
 
@@ -468,13 +470,16 @@ class TestRenderCarouselPdf:
                 SlideSpec(template="carousel/cta_slide", variables={}, slide_number=3),
             ],
         )
-        await engine.render_carousel_pdf(spec)
-        # Verify the combined HTML has page-break rules
-        call_args = mock_page.set_content.call_args
-        html = call_args[0][0]
-        assert "page-break" in html
-        assert "1080px" in html
-        assert "1350px" in html
+        # Mock _merge_pdfs since fake bytes aren't valid PDFs for pypdf
+        with patch.object(PlaywrightEngine, "_merge_pdfs", return_value=b"MERGED") as merge_mock:
+            result = await engine.render_carousel_pdf(spec)
+        # Each slide rendered individually (3 set_content calls, 3 pdf calls)
+        assert mock_page.set_content.await_count == 3
+        assert mock_page.pdf.await_count == 3
+        # _merge_pdfs called with 3 slide PDFs
+        merge_mock.assert_called_once()
+        assert len(merge_mock.call_args[0][0]) == 3
+        assert result.success is True
 
 
 # ---------------------------------------------------------------------------

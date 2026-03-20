@@ -2,6 +2,13 @@
 
 Describes the structured data that drives infographic rendering:
 rows of categorized items, layout style, animation type, and dimensions.
+
+Supports 5 layout templates from the style guide:
+- LAYERED_STACK: horizontal rows with category + icons (default, LinkedIn-optimal)
+- CENTRAL_HUB: center element + surrounding cards
+- COMPARISON_GRID: 2-4 columns side by side
+- FLOW_DIAGRAM: numbered steps with arrows
+- CHEATSHEET: dense grid of labeled items in categories
 """
 
 from __future__ import annotations
@@ -14,10 +21,18 @@ from pydantic import BaseModel, Field
 class LayoutStyle(StrEnum):
     """Layout arrangement for infographic items."""
 
+    # Original styles (kept for backward compatibility)
     GRID = "grid"
     COMPARISON = "comparison"
     FLOW = "flow"
     TIMELINE = "timeline"
+
+    # New style-guide templates
+    LAYERED_STACK = "layered-stack"
+    CENTRAL_HUB = "central-hub"
+    COMPARISON_GRID = "comparison-grid"
+    FLOW_DIAGRAM = "flow-diagram"
+    CHEATSHEET = "cheatsheet"
 
 
 class AnimationType(StrEnum):
@@ -52,6 +67,16 @@ class InfographicRow(BaseModel):
     items: list[InfographicItem] = Field(
         default_factory=list, description="Items in this row"
     )
+    description: str = Field(
+        default="", description="Optional description for the category"
+    )
+
+
+class ColumnHeader(BaseModel):
+    """Header for a comparison column."""
+
+    title: str = Field(description="Column header text")
+    color: str = Field(default="#3B82F6", description="Header accent color")
 
 
 class InfographicLayout(BaseModel):
@@ -73,14 +98,23 @@ class InfographicLayout(BaseModel):
         default=AnimationType.SEQUENTIAL, description="Animation sequence"
     )
     background_color: str = Field(
-        default="#1A1A2E", description="Background hex color"
+        default="#FFFFFF", description="Background hex color"
     )
-    fps: int = Field(default=10, ge=1, le=30, description="Frames per second")
+    dark_mode: bool = Field(
+        default=False, description="Use dark color scheme"
+    )
+    fps: int = Field(default=18, ge=1, le=30, description="Frames per second")
     duration_sec: int = Field(
-        default=8, ge=1, le=40, description="Animation duration in seconds"
+        default=10, ge=1, le=40, description="Animation duration in seconds"
     )
     width: int = Field(default=1080, ge=100, description="Canvas width in pixels")
-    height: int = Field(default=1080, ge=100, description="Canvas height in pixels")
+    height: int = Field(default=1350, ge=100, description="Canvas height in pixels")
+    attribution: str = Field(
+        default="", description="Creator attribution text (top-right)"
+    )
+    column_headers: list[ColumnHeader] = Field(
+        default_factory=list, description="Column headers for comparison layouts"
+    )
 
     def compute_positions(self) -> None:
         """Calculate x,y positions and appear_at times for each item.
@@ -91,9 +125,214 @@ class InfographicLayout(BaseModel):
         if not self.rows:
             return
 
-        # Layout constants — fill the canvas, no wasted space
-        title_area_height = 130  # space for title + subtitle
-        category_label_width = 140  # left column for category names
+        style_dispatch = {
+            LayoutStyle.LAYERED_STACK: self._compute_layered_stack,
+            LayoutStyle.CENTRAL_HUB: self._compute_central_hub,
+            LayoutStyle.COMPARISON_GRID: self._compute_comparison_grid,
+            LayoutStyle.FLOW_DIAGRAM: self._compute_flow_diagram,
+            LayoutStyle.CHEATSHEET: self._compute_cheatsheet,
+            LayoutStyle.GRID: self._compute_grid,
+            LayoutStyle.COMPARISON: self._compute_grid,
+            LayoutStyle.FLOW: self._compute_grid,
+            LayoutStyle.TIMELINE: self._compute_grid,
+        }
+        compute_fn = style_dispatch.get(self.style, self._compute_grid)
+        compute_fn()
+
+    def _compute_layered_stack(self) -> None:
+        """Layered stack: full-width rows, category on left, icons on right.
+
+        Matches the ByteByteGo / Brij Pandey horizontal layered stack style.
+        """
+        margin = 48
+        title_area_height = 160
+        row_gap = 24
+        bottom_margin = 48
+
+        category_width = int(self.width * 0.25)
+        content_left = margin + category_width + 16
+        content_right = self.width - margin
+
+        num_rows = len(self.rows)
+        available_height = self.height - title_area_height - bottom_margin
+        row_height = (available_height - row_gap * max(num_rows - 1, 0)) / max(num_rows, 1)
+        row_height = min(row_height, 120)
+
+        item_global_idx = 0
+        total_items = sum(len(r.items) for r in self.rows)
+
+        for row_idx, row in enumerate(self.rows):
+            if not row.items:
+                continue
+
+            y = title_area_height + row_idx * (row_height + row_gap)
+            num_items = len(row.items)
+            item_gap = 16
+            available_w = content_right - content_left
+            item_w = min(100, (available_w - item_gap * max(num_items - 1, 0)) / max(num_items, 1))
+            item_h = min(row_height - 16, item_w)
+
+            # Center items vertically in the row
+            item_y = y + (row_height - item_h) / 2
+
+            for col_idx, item in enumerate(row.items):
+                x = content_left + col_idx * (item_w + item_gap)
+                item.position = (x, item_y)
+                item.size = (item_w, item_h)
+                item.appear_at = self._compute_appear_at(
+                    row_idx, col_idx, num_rows, num_items,
+                    item_global_idx, total_items,
+                )
+                item_global_idx += 1
+
+    def _compute_central_hub(self) -> None:
+        """Central hub: center element with surrounding section cards."""
+        import math
+
+        margin = 48
+        title_area_height = 140
+        center_x = self.width / 2
+        center_y = (self.height + title_area_height) / 2
+        radius = min(self.width, self.height - title_area_height) * 0.32
+
+        total_items = sum(len(r.items) for r in self.rows)
+        item_global_idx = 0
+        num_rows = len(self.rows)
+
+        for row_idx, row in enumerate(self.rows):
+            if not row.items:
+                continue
+
+            num_items = len(row.items)
+            angle_start = (2 * math.pi * row_idx) / max(num_rows, 1)
+            angle_step = (2 * math.pi / max(num_rows, 1)) / max(num_items + 1, 2)
+
+            for col_idx, item in enumerate(row.items):
+                angle = angle_start + (col_idx + 1) * angle_step
+                x = center_x + radius * math.cos(angle) - 50
+                y = center_y + radius * math.sin(angle) - 35
+                x = max(margin, min(x, self.width - margin - 100))
+                y = max(title_area_height, min(y, self.height - margin - 70))
+                item.position = (x, y)
+                item.size = (100, 70)
+                item.appear_at = self._compute_appear_at(
+                    row_idx, col_idx, num_rows, num_items,
+                    item_global_idx, total_items,
+                )
+                item_global_idx += 1
+
+    def _compute_comparison_grid(self) -> None:
+        """Comparison grid: 2-4 equal-width columns side by side."""
+        margin = 48
+        title_area_height = 160
+        col_gap = 16
+        row_gap = 12
+        bottom_margin = 48
+
+        num_cols = len(self.rows)
+        col_width = (self.width - 2 * margin - col_gap * max(num_cols - 1, 0)) / max(num_cols, 1)
+
+        total_items = sum(len(r.items) for r in self.rows)
+        item_global_idx = 0
+
+        max_items = max((len(r.items) for r in self.rows), default=1)
+        available_height = self.height - title_area_height - bottom_margin - 48  # header space
+        item_h = min(60, (available_height - row_gap * max(max_items - 1, 0)) / max(max_items, 1))
+
+        for col_idx, row in enumerate(self.rows):
+            if not row.items:
+                continue
+
+            col_x = margin + col_idx * (col_width + col_gap)
+            num_items = len(row.items)
+
+            for item_idx, item in enumerate(row.items):
+                y = title_area_height + 48 + item_idx * (item_h + row_gap)
+                item.position = (col_x + 8, y)
+                item.size = (col_width - 16, item_h)
+                item.appear_at = self._compute_appear_at(
+                    col_idx, item_idx, num_cols, num_items,
+                    item_global_idx, total_items,
+                )
+                item_global_idx += 1
+
+    def _compute_flow_diagram(self) -> None:
+        """Flow diagram: numbered steps top-to-bottom."""
+        margin = 48
+        title_area_height = 160
+        step_gap = 24
+        bottom_margin = 48
+
+        total_items = sum(len(r.items) for r in self.rows)
+        item_global_idx = 0
+        num_rows = len(self.rows)
+
+        available_height = self.height - title_area_height - bottom_margin
+        step_height = (available_height - step_gap * max(num_rows - 1, 0)) / max(num_rows, 1)
+        step_height = min(step_height, 100)
+        step_width = self.width - 2 * margin - 80  # leave room for step numbers
+
+        for row_idx, row in enumerate(self.rows):
+            y = title_area_height + row_idx * (step_height + step_gap)
+            num_items = len(row.items)
+            item_gap = 12
+            item_w = min(120, (step_width - item_gap * max(num_items - 1, 0)) / max(num_items, 1))
+
+            for col_idx, item in enumerate(row.items):
+                x = margin + 80 + col_idx * (item_w + item_gap)
+                item.position = (x, y + 8)
+                item.size = (item_w, step_height - 16)
+                item.appear_at = self._compute_appear_at(
+                    row_idx, col_idx, num_rows, num_items,
+                    item_global_idx, total_items,
+                )
+                item_global_idx += 1
+
+    def _compute_cheatsheet(self) -> None:
+        """Cheatsheet: dense grid organized into category sections."""
+        margin = 48
+        title_area_height = 140
+        section_gap = 20
+        item_gap = 12
+        bottom_margin = 48
+
+        num_rows = len(self.rows)
+        available_height = self.height - title_area_height - bottom_margin
+        section_height = (available_height - section_gap * max(num_rows - 1, 0)) / max(num_rows, 1)
+
+        total_items = sum(len(r.items) for r in self.rows)
+        item_global_idx = 0
+        content_width = self.width - 2 * margin
+
+        for row_idx, row in enumerate(self.rows):
+            if not row.items:
+                continue
+
+            section_y = title_area_height + row_idx * (section_height + section_gap)
+            num_items = len(row.items)
+
+            # Arrange in a grid within the section
+            cols_per_section = min(4, num_items)
+            item_w = (content_width - item_gap * max(cols_per_section - 1, 0)) / max(cols_per_section, 1)
+            item_h = min(50, section_height - 32)
+
+            for col_idx, item in enumerate(row.items):
+                grid_col = col_idx % cols_per_section
+                grid_row = col_idx // cols_per_section
+                x = margin + grid_col * (item_w + item_gap)
+                y = section_y + 28 + grid_row * (item_h + item_gap)
+                item.position = (x, y)
+                item.size = (item_w, item_h)
+                item.appear_at = self._compute_appear_at(
+                    row_idx, col_idx, num_rows, num_items,
+                    item_global_idx, total_items,
+                )
+                item_global_idx += 1
+
+    def _compute_grid(self) -> None:
+        """Original grid layout (backward compatible)."""
+        title_area_height = 130
+        category_label_width = 140
         margin = 30
         gap = 14
         bottom_margin = 30
@@ -106,7 +345,6 @@ class InfographicLayout(BaseModel):
         num_rows = len(self.rows)
         row_height = (content_height - gap * (num_rows - 1)) / max(num_rows, 1)
 
-        # Collect all items for global indexing (used by sequential animation)
         all_items: list[InfographicItem] = []
         for row in self.rows:
             all_items.extend(row.items)
@@ -121,66 +359,18 @@ class InfographicLayout(BaseModel):
             num_items = len(row.items)
             y = content_top + row_idx * (row_height + gap)
 
-            # Calculate item sizes and positions based on style
-            if self.style == LayoutStyle.GRID:
-                item_w = (content_width - gap * max(num_items - 1, 0)) / max(num_items, 1)
-                item_h = row_height - 20  # leave padding above/below in the row
-                for col_idx, item in enumerate(row.items):
-                    x = content_left + col_idx * (item_w + gap)
-                    item.position = (x, y)
-                    item.size = (item_w, item_h)
-                    item.appear_at = self._compute_appear_at(
-                        row_idx, col_idx, num_rows, num_items,
-                        item_global_idx, total_items,
-                    )
-                    item_global_idx += 1
+            item_w = (content_width - gap * max(num_items - 1, 0)) / max(num_items, 1)
+            item_h = row_height - 20
 
-            elif self.style == LayoutStyle.COMPARISON:
-                # Two-column layout: split items into left and right halves
-                mid = self.width / 2
-                half_items = (num_items + 1) // 2
-                item_w = min(120, (content_width / 2 - gap * half_items) / max(half_items, 1))
-                item_h = min(item_w, row_height)
-                for col_idx, item in enumerate(row.items):
-                    if col_idx < half_items:
-                        x = content_left + col_idx * (item_w + gap)
-                    else:
-                        x = mid + (col_idx - half_items) * (item_w + gap)
-                    item.position = (x, y)
-                    item.size = (item_w, item_h)
-                    item.appear_at = self._compute_appear_at(
-                        row_idx, col_idx, num_rows, num_items,
-                        item_global_idx, total_items,
-                    )
-                    item_global_idx += 1
-
-            elif self.style == LayoutStyle.FLOW:
-                # Horizontal flow with spacing
-                item_w = min(140, (content_width - gap * (num_items - 1)) / max(num_items, 1))
-                item_h = min(item_w, row_height)
-                for col_idx, item in enumerate(row.items):
-                    x = content_left + col_idx * (item_w + gap)
-                    item.position = (x, y)
-                    item.size = (item_w, item_h)
-                    item.appear_at = self._compute_appear_at(
-                        row_idx, col_idx, num_rows, num_items,
-                        item_global_idx, total_items,
-                    )
-                    item_global_idx += 1
-
-            elif self.style == LayoutStyle.TIMELINE:
-                # Vertical-ish timeline: items spread horizontally per row
-                item_w = min(100, (content_width - gap * (num_items - 1)) / max(num_items, 1))
-                item_h = min(item_w, row_height)
-                for col_idx, item in enumerate(row.items):
-                    x = content_left + col_idx * (item_w + gap)
-                    item.position = (x, y)
-                    item.size = (item_w, item_h)
-                    item.appear_at = self._compute_appear_at(
-                        row_idx, col_idx, num_rows, num_items,
-                        item_global_idx, total_items,
-                    )
-                    item_global_idx += 1
+            for col_idx, item in enumerate(row.items):
+                x = content_left + col_idx * (item_w + gap)
+                item.position = (x, y)
+                item.size = (item_w, item_h)
+                item.appear_at = self._compute_appear_at(
+                    row_idx, col_idx, num_rows, num_items,
+                    item_global_idx, total_items,
+                )
+                item_global_idx += 1
 
     def _compute_appear_at(
         self,
@@ -200,23 +390,19 @@ class InfographicLayout(BaseModel):
         end = 0.85   # hold final frame
 
         if self.animation == AnimationType.SEQUENTIAL:
-            # Each item one at a time, left-to-right then top-to-bottom
             if total_items <= 1:
                 return start
             return start + (end - start) * global_idx / (total_items - 1)
 
         elif self.animation == AnimationType.ROW_BY_ROW:
-            # All items in a row appear together; rows appear sequentially
             if num_rows <= 1:
                 return start
             return start + (end - start) * row_idx / (num_rows - 1)
 
         elif self.animation == AnimationType.FADE_ALL:
-            # All items appear at the same time (slight offset for visual interest)
             return start
 
         elif self.animation == AnimationType.BUILD_UP:
-            # Bottom rows first, building upward
             if num_rows <= 1:
                 return start
             inverted_row = num_rows - 1 - row_idx
