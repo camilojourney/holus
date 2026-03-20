@@ -145,9 +145,9 @@ class TestLayoutComputation:
         # which should always be the background
         first_frame = frames[0]
         pixel = first_frame.getpixel((0, 0))
-        # bg_color #2D1B69 -> (45, 27, 105, 255)
-        expected = (0x2D, 0x1B, 0x69, 255)
-        assert pixel == expected, f"Background pixel {pixel} != expected {expected}"
+        # bg_color #2D1B69 -> (45, 27, 105) in RGB (frames are flattened to RGB)
+        expected_rgb = (0x2D, 0x1B, 0x69)
+        assert pixel[:3] == expected_rgb, f"Background pixel {pixel[:3]} != expected {expected_rgb}"
 
     def test_SPEC033_007_sequential_animation(self) -> None:
         """Sequential animation: earlier items have lower appear_at times."""

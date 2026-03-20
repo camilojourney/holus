@@ -42,7 +42,7 @@ class IconRegistry:
         "docker": ("Docker", "#2496ED"),
         "kubernetes": ("K8s", "#326CE5"),
         "git": ("Git", "#F05032"),
-        "github": ("GitHub", "#181717"),
+        "github": ("GitHub", "#6E7681"),
         # AI/ML concepts
         "rag": ("RAG", "#7C3AED"),
         "fine-tuning": ("Fine-tune", "#EC4899"),
@@ -56,10 +56,32 @@ class IconRegistry:
         "aws": ("AWS", "#FF9900"),
         "gcp": ("GCP", "#4285F4"),
         "azure": ("Azure", "#0078D4"),
-        "vercel": ("Vercel", "#000000"),
+        "vercel": ("Vercel", "#5C6370"),
         "supabase": ("Supabase", "#3ECF8E"),
         "redis": ("Redis", "#DC382D"),
         "postgres": ("Postgres", "#4169E1"),
+        # Monitoring & observability
+        "grafana": ("Grafana", "#F46800"),
+        "datadog": ("Datadog", "#632CA6"),
+        "prometheus": ("Prometheus", "#E6522C"),
+        "langfuse": ("Langfuse", "#4F46E5"),
+        # Frontend
+        "react": ("React", "#61DAFB"),
+        "nextjs": ("Next.js", "#5C6370"),
+        "tailwind": ("Tailwind", "#06B6D4"),
+        # Messaging
+        "slack": ("Slack", "#4A154B"),
+        "telegram": ("Telegram", "#26A5E4"),
+        # Skills
+        "code": ("Code", "#22C55E"),
+        "specs": ("Specs", "#3B82F6"),
+        "research": ("Research", "#8B5CF6"),
+        "ux": ("UX", "#EC4899"),
+        "verify": ("Verify", "#F59E0B"),
+        "maintenance": ("Maint.", "#6366F1"),
+        # Eval
+        "security": ("Security", "#EF4444"),
+        "eval": ("Eval", "#14B8A6"),
     }
 
     def get_icon(self, name: str) -> tuple[str, str]:

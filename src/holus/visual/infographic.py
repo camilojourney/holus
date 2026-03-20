@@ -97,13 +97,28 @@ class InfographicRenderer:
         for frame_idx in range(total_frames):
             t = frame_idx / max(total_frames - 1, 1)
             frame = self._draw_frame(layout, t)
-            frames.append(frame)
+            # Flatten RGBA to RGB for GIF compatibility (composites alpha onto background)
+            rgb_frame = Image.new("RGB", frame.size, _hex_to_rgba(layout.background_color)[:3])
+            rgb_frame.paste(frame, mask=frame.split()[3])
+            frames.append(rgb_frame)
 
         logger.info(
             "Rendered %d frames at %dx%d for '%s'",
             len(frames), layout.width, layout.height, layout.title,
         )
         return frames
+
+    # Row border colors — cycle through these for each row (like the reference image)
+    _ROW_BORDER_COLORS = [
+        "#22C55E",  # green
+        "#3B82F6",  # blue
+        "#F59E0B",  # amber
+        "#EC4899",  # pink
+        "#8B5CF6",  # purple
+        "#14B8A6",  # teal
+        "#EF4444",  # red
+        "#06B6D4",  # cyan
+    ]
 
     def _draw_frame(self, layout: InfographicLayout, t: float) -> Image.Image:
         """Draw a single frame at normalized time t (0.0 to 1.0)."""
@@ -115,20 +130,22 @@ class InfographicRenderer:
         self._draw_title(draw, layout, title_alpha)
 
         # Draw category labels and items for each row
-        title_area_height = 160
-        margin = 40
-        gap = 16
+        title_area_height = 140
+        margin = 30
+        gap = 12
         num_rows = len(layout.rows)
         content_height = layout.height - title_area_height - margin
-        row_height = min(140, (content_height - gap * (num_rows - 1)) / max(num_rows, 1))
+        row_height = min(160, (content_height - gap * (num_rows - 1)) / max(num_rows, 1))
 
         for row_idx, row in enumerate(layout.rows):
             y_pos = title_area_height + row_idx * (row_height + gap)
-            # Category label appears when the first item in the row appears
             first_appear = min((item.appear_at for item in row.items), default=0.0)
             cat_alpha = self._fade_alpha(t, first_appear)
             if cat_alpha > 0:
-                self._draw_category_label(draw, row, y_pos, row_height, cat_alpha)
+                # Draw row background with colored dashed border
+                border_color = self._ROW_BORDER_COLORS[row_idx % len(self._ROW_BORDER_COLORS)]
+                self._draw_row_background(draw, y_pos, row_height, layout.width, border_color, cat_alpha)
+                self._draw_category_label(draw, row, y_pos, row_height, cat_alpha, border_color)
 
             for item in row.items:
                 alpha = self._fade_alpha(t, item.appear_at)
@@ -136,6 +153,35 @@ class InfographicRenderer:
                     self._draw_item(draw, item, alpha)
 
         return img
+
+    def _draw_row_background(
+        self,
+        draw: ImageDraw.ImageDraw,
+        y_pos: float,
+        row_height: float,
+        width: int,
+        border_color: str,
+        alpha: float,
+    ) -> None:
+        """Draw a subtle row background with a colored left border."""
+        if alpha <= 0:
+            return
+        a = int(alpha * 40)  # very subtle background
+        # Subtle row background
+        row_bg = _hex_to_rgba("#1a1a2e", a)
+        draw.rounded_rectangle(
+            [20, y_pos - 4, width - 20, y_pos + row_height + 4],
+            radius=8,
+            fill=row_bg,
+        )
+        # Colored left accent bar
+        bar_a = int(alpha * 200)
+        bar_color = _hex_to_rgba(border_color, bar_a)
+        draw.rounded_rectangle(
+            [20, y_pos - 4, 26, y_pos + row_height + 4],
+            radius=3,
+            fill=bar_color,
+        )
 
     def _fade_alpha(self, t: float, appear_at: float) -> float:
         """Compute fade-in alpha for an element.
@@ -190,18 +236,19 @@ class InfographicRenderer:
         y_pos: float,
         row_height: float,
         alpha: float,
+        border_color: str = "#FFFFFF",
     ) -> None:
         """Draw a category label on the left side of a row."""
         if alpha <= 0:
             return
 
         a = int(alpha * 255)
-        # Use accent color for category labels
-        label_color = _hex_to_rgba(self.brand.colors.accent, a)
+        # Use the row's border color for the category label — bright, visible
+        label_color = _hex_to_rgba(border_color, a)
 
-        # Draw category text vertically centered in the row
+        # Draw category text vertically centered, after the accent bar
         draw.text(
-            (30, y_pos + row_height / 2),
+            (36, y_pos + row_height / 2),
             row.category,
             fill=label_color,
             font=self._category_font,
