@@ -110,7 +110,8 @@ def _load_visual_variety_config() -> dict[str, Any]:
                 "recency_window_days": 3,
                 "topic_signals": {},
             }
-    return _visual_variety_cache["config"]
+    result: dict[str, Any] = _visual_variety_cache["config"]
+    return result
 
 
 def _pick_visual_type(post_text: str, *, override: str | None = None) -> str:
