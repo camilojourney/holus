@@ -13,6 +13,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -48,6 +49,13 @@ class EnrichedContext:
 
 
 @dataclass
+class CardVariant:
+    arm_id: str
+    path: str
+    variant: str  # "A", "B", "C"
+
+
+@dataclass
 class VoicePipelineResult:
     hook: str
     body: str
@@ -58,6 +66,7 @@ class VoicePipelineResult:
     context: EnrichedContext
     retried: bool = False
     error: str | None = None
+    cards: list[CardVariant] = field(default_factory=list)
 
 
 def _call_llm(
@@ -114,8 +123,9 @@ def _parse_voice_sections(text: str) -> tuple[str, str, str, str]:
 class VoicePipeline:
     """LinkedIn voice writing pipeline (SPEC-035)."""
 
-    def __init__(self, loader: PromptLoader | None = None) -> None:
+    def __init__(self, loader: PromptLoader | None = None, generate_cards: bool = True) -> None:
         self._loader = loader or PromptLoader()
+        self._generate_cards = generate_cards
 
     def run(self, raw_idea: str) -> VoicePipelineResult:
         """Run the full pipeline from raw idea to post."""
@@ -140,6 +150,28 @@ class VoicePipeline:
         result.retried = retried
         result.metadata = metadata
         result.context = context
+
+        # Generate visual variants via bandit
+        if self._generate_cards:
+            try:
+                from holus.agents.marketing.bandit import Bandit
+                from holus.agents.marketing.card_generator import generate_cards
+
+                bandit = Bandit()
+                arms = bandit.select_arms(n=2)
+                raw_cards = generate_cards(
+                    hook=result.hook,
+                    body=result.body,
+                    arms=arms,
+                )
+                result.cards = [
+                    CardVariant(arm_id=c["arm_id"], path=c["path"], variant=c["variant"])
+                    for c in raw_cards
+                ]
+                logger.info("generated %d card variants: %s", len(result.cards), [c.variant for c in result.cards])
+            except Exception as exc:
+                logger.warning("card generation failed (non-fatal): %s", exc)
+
         return result
 
     def _inject(self, raw_idea: str) -> IdeaMetadata:

@@ -108,6 +108,34 @@ agents:
     gate: true
 
   # SPECIALISTS — Content Pipeline (3) — Idea injection pipeline agents
+  idea-injector:
+    role: "Input parser — extracts content pillar, product angle, and hook pattern from raw idea"
+    type: specialist
+    category: content
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/content/idea-injector.md"
+
+  context-builder:
+    role: "Context enricher — adds supporting data, angle, and anti-pattern flags to an idea"
+    type: specialist
+    category: content
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/content/context-builder.md"
+
+  voice-writer:
+    role: "LinkedIn post writer — produces [HOOK][BODY][CTA][VOICE_CHECK] in Juan's voice"
+    type: specialist
+    category: content
+    model_tier: strategic
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/content/voice-writer.md"
+    evaluated_by: written-content-judge
+
   idea-planner:
     role: "Content strategist — plans which formats to create from a raw idea"
     type: specialist
