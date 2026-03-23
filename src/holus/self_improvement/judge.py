@@ -154,7 +154,7 @@ class JudgeAgent:
     def __init__(
         self,
         api_key: str | None = None,
-        model: str = "anthropic/claude-haiku-4-5-20251001",
+        model: str = "anthropic/claude-sonnet-4-6",
         *,
         use_proxy: bool = True,
         proxy_url: str | None = None,
@@ -277,6 +277,7 @@ class JudgeAgent:
                 ],
                 "max_tokens": 1024,
                 "temperature": 0.0,
+                "response_format": {"type": "json_object"},
             }
             from holus.core.llm_proxy import get_proxy_headers
 
@@ -308,7 +309,14 @@ class JudgeAgent:
     @staticmethod
     def _parse_response(response_text: str) -> JudgeEvaluation:
         """Parse LLM response into JudgeEvaluation. Raises JSONDecodeError on bad JSON."""
-        evaluation = json.loads(response_text)
+        # Strip markdown code fences if present (```json ... ```)
+        text = response_text.strip()
+        if text.startswith("```"):
+            lines = text.split("\n")
+            # Remove first line (```json or ```) and last line (```)
+            inner = [l for l in lines[1:] if l.strip() != "```"]
+            text = "\n".join(inner).strip()
+        evaluation = json.loads(text)
 
         verdict_str = evaluation.get("verdict", "FAIL").upper()
         verdict = (
