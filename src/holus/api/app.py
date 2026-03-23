@@ -17,6 +17,7 @@ from holus.api.routes import (
     evaluations,
     health,
     improvement,
+    ingest,
     knowledge,
     results,
     telegram_gate,
@@ -86,6 +87,7 @@ def create_app() -> FastAPI:
     app.include_router(results.router, prefix=prefix)
     app.include_router(improvement.router, prefix=prefix)
     app.include_router(telegram_gate.router)  # prefix already set in router
+    app.include_router(ingest.router)          # prefix already set in router
 
     return app
 
