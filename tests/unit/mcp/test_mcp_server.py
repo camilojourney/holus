@@ -1,0 +1,266 @@
+"""Unit tests for MCP tool functions exposed in holus.mcp.server."""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
+from unittest.mock import AsyncMock, patch
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+import pytest
+import yaml
+
+from holus.agents.marketing import content_queue
+from holus.agents.marketing.content_queue import QueuedContent
+from holus.integrations.social_media.client import PublishRequest, PublishResult, PublishTarget
+from holus.mcp import server
+
+
+@pytest.fixture
+def queue_dir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """Point queue storage at a temporary directory for each test."""
+    temp_queue_dir = tmp_path / "content-queue"
+    monkeypatch.setattr(content_queue, "QUEUE_DIR", temp_queue_dir)
+    monkeypatch.setattr(server, "QUEUE_DIR", temp_queue_dir)
+    return temp_queue_dir
+
+
+def _make_content(
+    *,
+    piece_id: str = "piece-1234",
+    status: str = "pending_review",
+    platform: str = "linkedin",
+    text: str = "Short post for review.",
+    topic: str = "Queue topic",
+) -> QueuedContent:
+    return QueuedContent(
+        piece_id=piece_id,
+        product="pilaster",
+        platform=platform,
+        content_type="educational",
+        topic=topic,
+        text=text,
+        reasoning="Test reasoning",
+        generated_at=datetime(2026, 3, 23, 12, 0, tzinfo=UTC),
+        status=status,
+    )
+
+
+def _read_queue_entry(queue_dir: Path, piece_id: str) -> dict[str, object]:
+    path = queue_dir / f"{piece_id}.yaml"
+    return yaml.safe_load(path.read_text())
+
+
+def test_holus_queue_creates_piece_calls_enqueue_and_returns_metadata(queue_dir: Path):
+    """holus_queue creates queued content, enqueues it, and returns queue metadata."""
+    # Arrange
+    text = "Launch update for LinkedIn."
+
+    with patch("holus.mcp.server.enqueue", wraps=content_queue.enqueue) as mock_enqueue:
+        # Act
+        result = server.holus_queue(
+            text=text,
+            platform="linkedin",
+            product="pilaster",
+            content_type="educational",
+            topic="Launch update",
+        )
+
+    # Assert
+    assert result["piece_id"]
+    assert result == {
+        "piece_id": result["piece_id"],
+        "status": "pending_review",
+        "platform": "linkedin",
+    }
+    mock_enqueue.assert_called_once()
+
+    saved_entry = _read_queue_entry(queue_dir, result["piece_id"])
+    assert saved_entry["text"] == text
+    assert saved_entry["platform"] == "linkedin"
+    assert saved_entry["status"] == "pending_review"
+
+
+def test_holus_list_queue_calls_list_humanizable_and_returns_expected_keys(queue_dir: Path):
+    """holus_list_queue returns humanizable entries with the expected shape."""
+    # Arrange
+    content = _make_content(
+        piece_id="piece-list",
+        text="A" * 140,
+        topic="List topic",
+    )
+    content_queue.enqueue(content)
+
+    with patch(
+        "holus.mcp.server.list_humanizable", wraps=content_queue.list_humanizable
+    ) as mock_list:
+        # Act
+        result = server.holus_list_queue()
+
+    # Assert
+    mock_list.assert_called_once()
+    assert len(result) == 1
+    assert set(result[0]) == {
+        "piece_id",
+        "platform",
+        "product",
+        "status",
+        "topic",
+        "text_preview",
+        "generated_at",
+    }
+    assert result[0]["piece_id"] == "piece-list"
+    assert result[0]["platform"] == "linkedin"
+    assert result[0]["status"] == "pending_review"
+    assert result[0]["text_preview"].endswith("...")
+    assert len(result[0]["text_preview"]) == 123
+
+
+def test_holus_approve_humanizes_pending_humanization_and_returns_approved(queue_dir: Path):
+    """holus_approve humanizes when needed, approves the piece, and returns approved."""
+    # Arrange
+    content = _make_content(piece_id="piece-approve", status="pending_humanization")
+    content_queue.enqueue(content)
+
+    with (
+        patch("holus.mcp.server.humanize", wraps=content_queue.humanize) as mock_humanize,
+        patch("holus.mcp.server.approve", wraps=content_queue.approve) as mock_approve,
+    ):
+        # Act
+        result = server.holus_approve("piece-approve")
+
+    # Assert
+    assert result == {"piece_id": "piece-approve", "status": "approved"}
+    mock_humanize.assert_called_once_with("piece-approve", content.text)
+    mock_approve.assert_called_once_with("piece-approve")
+
+    saved_entry = _read_queue_entry(queue_dir, "piece-approve")
+    assert saved_entry["status"] == "approved"
+    assert saved_entry["humanized_text"] == content.text
+
+
+def test_holus_reject_calls_reject_and_returns_rejected(queue_dir: Path):
+    """holus_reject delegates to reject() and returns rejected metadata."""
+    # Arrange
+    content = _make_content(piece_id="piece-reject")
+    content_queue.enqueue(content)
+
+    with patch("holus.mcp.server.reject", wraps=content_queue.reject) as mock_reject:
+        # Act
+        result = server.holus_reject("piece-reject", reason="Needs revision")
+
+    # Assert
+    assert result == {"piece_id": "piece-reject", "status": "rejected"}
+    mock_reject.assert_called_once_with("piece-reject", "Needs revision")
+
+    saved_entry = _read_queue_entry(queue_dir, "piece-reject")
+    assert saved_entry["status"] == "rejected"
+    assert saved_entry["rejection_reason"] == "Needs revision"
+
+
+@pytest.mark.asyncio
+async def test_holus_publish_queues_humanizes_approves_and_publishes(
+    monkeypatch: pytest.MonkeyPatch,
+    queue_dir: Path,
+):
+    """holus_publish runs the one-shot flow and returns publish metadata."""
+    # Arrange
+    monkeypatch.setenv("POSTING_API_KEY", "test-posting-key")
+    monkeypatch.setattr(server, "POSTING_API_KEY", "test-posting-key")
+    mock_result = PublishResult(
+        publish_id="pub-123",
+        targets=[PublishTarget(platform="linkedin", status="published")],
+    )
+
+    with patch("holus.mcp.server.SocialMediaClient") as mock_cls:
+        mock_client = mock_cls.return_value.__aenter__.return_value
+        mock_client.publish = AsyncMock(return_value=mock_result)
+
+        # Act
+        result = await server.holus_publish(
+            text="Publish this update.",
+            platform="linkedin",
+            product="pilaster",
+            media_url="https://example.com/post.png",
+            media_type="image",
+        )
+
+    # Assert
+    assert result["publish_id"] == "pub-123"
+    assert result["platform"] == "linkedin"
+    assert result["status"] == "published"
+    assert result["targets"] == [
+        {
+            "platform": "linkedin",
+            "account": "",
+            "language": "en",
+            "status": "published",
+            "error": None,
+            "job_id": None,
+        }
+    ]
+
+    mock_cls.assert_called_once_with(
+        api_key="test-posting-key",
+        base_url="http://localhost:8000",
+    )
+    mock_client.publish.assert_awaited_once()
+
+    publish_request = mock_client.publish.await_args.args[0]
+    assert isinstance(publish_request, PublishRequest)
+    assert publish_request.content == "Publish this update."
+    assert publish_request.platforms == ["linkedin"]
+    assert publish_request.media_url == "https://example.com/post.png"
+    assert publish_request.media_type == "image"
+
+    saved_entry = _read_queue_entry(queue_dir, result["piece_id"])
+    assert saved_entry["status"] == "published"
+    assert saved_entry["post_id"] == "pub-123"
+    assert saved_entry["humanized_text"] == "Publish this update."
+
+
+def test_holus_approve_returns_error_when_piece_not_found():
+    """holus_approve returns an error payload for a missing piece."""
+    # Arrange
+    piece_id = "missing-piece"
+
+    # Act
+    result = server.holus_approve(piece_id)
+
+    # Assert
+    assert result == {"error": f"Content piece {piece_id} not found", "piece_id": piece_id}
+
+
+def test_holus_approve_auto_humanizes_pending_review_before_approve(queue_dir: Path):
+    """holus_approve humanizes pending_review content before approving it."""
+    # Arrange
+    content = _make_content(piece_id="piece-auto-humanize", status="pending_review")
+    content_queue.enqueue(content)
+    call_order: list[str] = []
+
+    def humanize_spy(piece_id: str, humanized_text: str):
+        call_order.append("humanize")
+        return content_queue.humanize(piece_id, humanized_text)
+
+    def approve_spy(piece_id: str):
+        call_order.append("approve")
+        return content_queue.approve(piece_id)
+
+    with (
+        patch("holus.mcp.server.humanize", side_effect=humanize_spy) as mock_humanize,
+        patch("holus.mcp.server.approve", side_effect=approve_spy) as mock_approve,
+    ):
+        # Act
+        result = server.holus_approve("piece-auto-humanize")
+
+    # Assert
+    assert result == {"piece_id": "piece-auto-humanize", "status": "approved"}
+    assert call_order == ["humanize", "approve"]
+    mock_humanize.assert_called_once_with("piece-auto-humanize", content.text)
+    mock_approve.assert_called_once_with("piece-auto-humanize")
+
+    saved_entry = _read_queue_entry(queue_dir, "piece-auto-humanize")
+    assert saved_entry["status"] == "approved"
+    assert saved_entry["humanized_text"] == content.text

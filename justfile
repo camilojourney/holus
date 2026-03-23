@@ -88,6 +88,12 @@ generate:
 run-marketing:
     uv run python -m holus run marketing --once
 
+run-mcp:
+    uv run python -m holus.mcp.server
+
+mcp-install:
+    uv add mcp
+
 # Review pending social media content
 review-content:
     uv run python -m holus.agents.marketing.review
