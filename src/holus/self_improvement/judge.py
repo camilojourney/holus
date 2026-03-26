@@ -367,7 +367,7 @@ class JudgeAgent:
         try:
             from holus.agents.registry import AgentRegistry
 
-            root = repo_root or Path(__file__).parents[2]
+            root = repo_root or Path(__file__).parents[3]
             registry = AgentRegistry(
                 yaml_path=root / "agents" / "AGENTS.yaml"
             )
