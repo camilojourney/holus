@@ -78,6 +78,39 @@ DEFAULT_ANTI_PATTERN_PHRASES: list[str] = [
     "furthermore",
     "additionally",
     "moreover",
+    # AI slop — overused transitional filler (ChatGPT / Claude signature phrases)
+    "it's important to note",
+    "it's crucial to",
+    "it's essential to",
+    "it's no secret that",
+    "it's not just about",
+    "that said",
+    "that being said",
+    "having said that",
+    "in a nutshell",
+    "at its core",
+    "when it comes to",
+    "in the world of",
+    "in the realm of",
+    "on the other hand",
+    "as a matter of fact",
+    "in this day and age",
+    # AI slop — superlative padding
+    "incredibly powerful",
+    "truly remarkable",
+    "absolutely essential",
+    "incredibly important",
+    "simply put",
+    "the bottom line",
+    "make no mistake",
+    # AI slop — fake depth / pseudo-insight
+    "think about it",
+    "the landscape is shifting",
+    "the landscape has changed",
+    "paradigm shift",
+    "a testament to",
+    "the key takeaway",
+    "the takeaway here",
 ]
 
 # Content anti-patterns (forbidden topics)
@@ -266,6 +299,23 @@ def _check_emoji_density(text: str) -> QualityViolation | None:
 _SENTENCE_SPLIT_RE = re.compile(r"[.!?]+")
 _NUMBER_RE = re.compile(r"\d+")
 _PROPER_NOUN_RE = re.compile(r"\b[A-Z][a-z]+\b")
+_VOWEL_GROUP_RE = re.compile(r"[aeiouy]+", re.IGNORECASE)
+
+# Flesch-Kincaid threshold: grade level > 12 means too academic for social media
+FK_GRADE_THRESHOLD: float = 12.0
+
+
+def _count_syllables(word: str) -> int:
+    """Estimate syllable count for a word using vowel-group heuristic."""
+    word = word.lower().strip(".,;:!?\"'()-")
+    if not word:
+        return 0
+    count = len(_VOWEL_GROUP_RE.findall(word))
+    # Silent 'e' at end
+    if word.endswith("e") and count > 1:
+        count -= 1
+    # Words like "the", "me" — at least 1 syllable
+    return max(count, 1)
 
 
 def _check_readability(text: str) -> QualityViolation | None:
@@ -299,6 +349,37 @@ def _check_readability(text: str) -> QualityViolation | None:
                 f"({len(sentences)} sentences, {total_words} words)"
             ),
             penalty=10,
+        )
+    return None
+
+
+def _check_flesch_kincaid(text: str) -> QualityViolation | None:
+    """Check Flesch-Kincaid grade level — social media should be grade 8-12.
+
+    FK Grade = 0.39 * (words/sentences) + 11.8 * (syllables/words) - 15.59
+    Grade > 12 means prose is too academic/dense for social media audiences.
+    Only fires when there are enough sentences (>=3) for the metric to be stable.
+    """
+    if not text:
+        return None
+    sentences = [s.strip() for s in _SENTENCE_SPLIT_RE.split(text) if s.strip()]
+    if len(sentences) < 3:
+        return None
+    words = text.split()
+    if len(words) < 10:
+        return None
+    total_syllables = sum(_count_syllables(w) for w in words)
+    words_per_sentence = len(words) / len(sentences)
+    syllables_per_word = total_syllables / len(words)
+    grade = 0.39 * words_per_sentence + 11.8 * syllables_per_word - 15.59
+    if grade > FK_GRADE_THRESHOLD:
+        return QualityViolation(
+            check="flesch_kincaid_high",
+            message=(
+                f"Flesch-Kincaid grade {grade:.1f} — too academic for social media "
+                f"(target ≤ {FK_GRADE_THRESHOLD:.0f}). Simplify vocabulary and shorten sentences."
+            ),
+            penalty=15,
         )
     return None
 
@@ -548,6 +629,11 @@ def score_content(
 
     # Readability (sentence length)
     v = _check_readability(text)
+    if v:
+        violations.append(v)
+
+    # Flesch-Kincaid grade level (academic complexity)
+    v = _check_flesch_kincaid(text)
     if v:
         violations.append(v)
 

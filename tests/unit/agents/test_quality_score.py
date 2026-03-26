@@ -7,15 +7,18 @@ from datetime import UTC, datetime
 from holus.agents.marketing.models import ContentDecision, ContentType, GeneratedPiece, Platform
 from holus.agents.marketing.quality_score import (
     DEFAULT_ANTI_PATTERN_PHRASES,
+    FK_GRADE_THRESHOLD,
     PASS_THRESHOLD,
     PLATFORM_CHAR_LIMITS,
     VALID_PILLARS,
     QualityResult,
     QualityViolation,
     _check_consecutive_same_length,
+    _check_flesch_kincaid,
     _check_opening_word_diversity,
     _check_sentence_length_variance,
     _check_single_sentence_paragraphs,
+    _count_syllables,
     score_content,
 )
 
@@ -623,3 +626,171 @@ class TestLinkedinIOpening:
         result = score_content(piece)
         violations = [v for v in result.violations if v.check == "linkedin_i_opening"]
         assert len(violations) == 0
+
+
+# ---------------------------------------------------------------------------
+# Expanded AI slop phrases
+# ---------------------------------------------------------------------------
+
+
+class TestExpandedAiSlopPhrases:
+    """Tests for the 30 new AI-giveaway phrases added in Cycle 80."""
+
+    def test_detects_its_important_to_note(self) -> None:
+        piece = _make_piece(text="It's important to note that AI pipelines fail silently in production.")
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "anti_pattern"]
+        assert any("it's important to note" in v.message.lower() for v in violations)
+
+    def test_detects_that_being_said(self) -> None:
+        piece = _make_piece(text="Pilaster handles 10K requests daily. That being said, scaling is tricky.")
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "anti_pattern"]
+        assert any("that being said" in v.message.lower() for v in violations)
+
+    def test_detects_in_the_realm_of(self) -> None:
+        piece = _make_piece(text="In the realm of ML deployment, monitoring matters most.")
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "anti_pattern"]
+        assert any("in the realm of" in v.message.lower() for v in violations)
+
+    def test_detects_truly_remarkable(self) -> None:
+        piece = _make_piece(text="The results were truly remarkable after switching backends.")
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "anti_pattern"]
+        assert any("truly remarkable" in v.message.lower() for v in violations)
+
+    def test_detects_paradigm_shift(self) -> None:
+        piece = _make_piece(text="This is a paradigm shift in how teams deploy models.")
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "anti_pattern"]
+        assert any("paradigm shift" in v.message.lower() for v in violations)
+
+    def test_detects_a_testament_to(self) -> None:
+        piece = _make_piece(text="This is a testament to the team's dedication to quality engineering.")
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "anti_pattern"]
+        assert any("a testament to" in v.message.lower() for v in violations)
+
+    def test_detects_when_it_comes_to(self) -> None:
+        piece = _make_piece(text="When it comes to AI deployment, most teams get it wrong.")
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "anti_pattern"]
+        assert any("when it comes to" in v.message.lower() for v in violations)
+
+    def test_total_anti_pattern_count_above_60(self) -> None:
+        """Ensure we have at least 60 anti-pattern phrases after expansion."""
+        assert len(DEFAULT_ANTI_PATTERN_PHRASES) >= 60
+
+    def test_clean_builder_text_no_slop(self) -> None:
+        """Real builder content should pass without triggering new slop phrases."""
+        piece = _make_piece(
+            text=(
+                "6 months ago our image pipeline crashed every 3 hours.\n"
+                "We rewrote the retry logic from scratch.\n"
+                "Downtime went from 47 minutes/week to zero.\n"
+                "The fix was 12 lines of Python."
+            )
+        )
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "anti_pattern"]
+        assert len(violations) == 0
+
+
+# ---------------------------------------------------------------------------
+# Syllable counting helper
+# ---------------------------------------------------------------------------
+
+
+class TestSyllableCounter:
+    def test_one_syllable_words(self) -> None:
+        assert _count_syllables("cat") == 1
+        assert _count_syllables("the") == 1
+        assert _count_syllables("dog") == 1
+
+    def test_two_syllable_words(self) -> None:
+        assert _count_syllables("happy") == 2
+        assert _count_syllables("model") == 2
+
+    def test_three_syllable_words(self) -> None:
+        assert _count_syllables("beautiful") == 3
+        assert _count_syllables("customer") == 3
+
+    def test_silent_e(self) -> None:
+        # "make" should be 1 syllable, not 2
+        assert _count_syllables("make") == 1
+        # "came" → 1 syllable (silent e trims vowel group)
+        assert _count_syllables("came") == 1
+
+    def test_empty_string(self) -> None:
+        assert _count_syllables("") == 0
+
+    def test_strips_punctuation(self) -> None:
+        assert _count_syllables("hello,") == 2
+        assert _count_syllables("world!") == 1
+
+
+# ---------------------------------------------------------------------------
+# Flesch-Kincaid grade level check
+# ---------------------------------------------------------------------------
+
+
+class TestFleschKincaid:
+    def test_simple_text_passes(self) -> None:
+        """Short sentences, simple words → low FK grade."""
+        text = (
+            "We built a system. It processes images. "
+            "The API is fast. Users love it. Teams ship faster."
+        )
+        v = _check_flesch_kincaid(text)
+        assert v is None
+
+    def test_academic_text_fails(self) -> None:
+        """Long sentences with polysyllabic words → high FK grade."""
+        text = (
+            "The implementation of sophisticated computational infrastructure "
+            "necessitates comprehensive understanding of distributed architectures. "
+            "Furthermore, the characterization of performance optimization opportunities "
+            "requires meticulous examination of heterogeneous parallelization strategies. "
+            "Consequently, the establishment of reproducible experimentation methodologies "
+            "facilitates systematic identification of architectural bottlenecks."
+        )
+        v = _check_flesch_kincaid(text)
+        assert v is not None
+        assert v.check == "flesch_kincaid_high"
+        assert v.penalty == 15
+
+    def test_too_few_sentences_skips(self) -> None:
+        """Less than 3 sentences → skip check."""
+        text = "Short text. Only two sentences."
+        v = _check_flesch_kincaid(text)
+        assert v is None
+
+    def test_too_few_words_skips(self) -> None:
+        """Less than 10 words → skip check."""
+        text = "One. Two. Three."
+        v = _check_flesch_kincaid(text)
+        assert v is None
+
+    def test_empty_text_skips(self) -> None:
+        v = _check_flesch_kincaid("")
+        assert v is None
+
+    def test_threshold_constant(self) -> None:
+        assert FK_GRADE_THRESHOLD == 12.0
+
+    def test_integrated_in_score_content(self) -> None:
+        """Academic text triggers flesch_kincaid_high in full scoring pipeline."""
+        piece = _make_piece(
+            text=(
+                "The implementation of sophisticated computational infrastructure "
+                "necessitates comprehensive understanding of distributed architectures. "
+                "Furthermore, the characterization of performance optimization opportunities "
+                "requires meticulous examination of heterogeneous parallelization strategies. "
+                "Consequently, the establishment of reproducible experimentation methodologies "
+                "facilitates systematic identification of architectural bottlenecks."
+            )
+        )
+        result = score_content(piece)
+        fk_violations = [v for v in result.violations if v.check == "flesch_kincaid_high"]
+        assert len(fk_violations) == 1
