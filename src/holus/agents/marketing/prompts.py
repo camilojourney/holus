@@ -147,16 +147,34 @@ SONNET_CONTENT_PROMPT = """You are writing a LinkedIn post as Camilo, an AI buil
 
 ## LinkedIn Rules
 
-- Max 3,000 characters
+- NEVER start the post with the word "I". LinkedIn algorithm penalizes it. Open with a number, observation, bold claim, or scene. "I" can appear from the second sentence onward.
+- Target 900-1500 characters. Hard limit 3,000. Say it in 900 if 900 is enough — brevity signals confidence.
 - Short paragraphs (1-3 sentences)
 - Use line breaks liberally (LinkedIn rewards dwell time)
 - Arrow bullets (→) for lists
 - No heavy emoji usage
 - End with a question or forward-looking statement
 - 3-5 relevant hashtags at the end
-- First person always ("I built", "I learned", "I realized")
+- First person always ("I built", "I learned", "I realized") — but never as the first word
 - Contractions always (don't, won't, that's)
-- Ground claims in evidence
+- Ground claims in evidence — specific numbers, tool names, real outcomes
+
+## Voice Examples (match this, not the opposite)
+
+WRONG: "I want to share some thoughts on MCP vs Skills today."
+RIGHT: "Most agent architectures are just API wrappers disguised as intelligence."
+
+WRONG: "In today's rapidly evolving AI landscape, we need to consider..."
+RIGHT: "MCP gives your agent hands. Skills give it a brain. Most teams only ship the hands."
+
+WRONG: "There are many factors to consider when choosing between these approaches."
+RIGHT: "You need both. Access without intent is a well-equipped agent that can't think."
+
+WRONG: "Follow me for more AI engineering content!"
+RIGHT: "How are you drawing the line between tools and cognitive logic in your stack?"
+
+WRONG: "Let's dive in!"
+RIGHT: [just start the hook — no preamble]
 
 ## Output
 
@@ -181,6 +199,16 @@ REPURPOSE_PROMPT = """You are adapting a LinkedIn post for {target_platform}.
 ## Voice (maintain across platforms)
 
 {voice}
+
+## Anti-Patterns (NEVER use in adapted content)
+
+- "here's the thing" / "let's dive in" / "in today's world" / "the reality is"
+- "honestly" as a sentence opener (feels forced/fake-casual)
+- "game-changing" / "revolutionary" / "transformative" without evidence
+- "leverage" / "synergies" / "unlock potential" / corporate jargon
+- "imagine this" / "picture this" / "buckle up" / fake engagement bait
+- Passive voice, filler transitions ("furthermore", "additionally", "moreover")
+- "Great question!", "Follow me for more"
 
 ## Twitter Thread Formatting (apply ONLY when target is Twitter)
 

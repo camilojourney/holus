@@ -39,16 +39,16 @@ PLATFORM_RULES: dict[Platform, dict[str, str]] = {
     },
     Platform.INSTAGRAM: {
         "max_chars": "2200",
-        "style": "Visual-friendly caption. Hook in first line (shows in feed preview).",
+        "style": "Visual-friendly caption. Hook in first line (shows in feed preview). 50-120 words — much shorter than LinkedIn.",
         "format": "Shorter paragraphs. Strategic line breaks. 10-15 relevant hashtags at the very end.",
-        "adapt": "Keep the story but shorten. Add a clear CTA. Use emojis sparingly (1-2 max). Keep first person voice.",
+        "adapt": "Condense the LinkedIn post significantly. Keep the hook and core insight, cut the supporting evidence. Add a clear CTA. Use emojis sparingly (1-2 max). Keep first person voice.",
         "cta": "'Save this' or 'Link in bio'.",
     },
     Platform.THREADS: {
         "max_chars": "500",
-        "style": "Conversational, informal. Like talking to a colleague who works in tech.",
-        "format": "Short post. No hashtags. Get to the point fast.",
-        "adapt": "More casual tone. Can use 'honestly,' and 'here's the thing'. Ask a question to invite replies. First person.",
+        "style": "Conversational, informal. Like texting a tech friend. 30-80 words max.",
+        "format": "Short post. No hashtags. One core insight only — strip all setup and context.",
+        "adapt": "Extract the single most interesting claim or insight from the LinkedIn post. Direct, casual tone. Ask a question to invite replies. First person. Under 500 chars. NEVER use 'here\\'s the thing', 'honestly', 'let\\'s dive in', or other filler openers.",
         "cta": "'What do you think?' (community-oriented).",
     },
     Platform.FACEBOOK: {

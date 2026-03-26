@@ -435,6 +435,31 @@ def _check_opening_word_diversity(text: str) -> QualityViolation | None:
     return None
 
 
+def _check_linkedin_i_opening(text: str, platform: Platform) -> QualityViolation | None:
+    """Flag LinkedIn posts that start with 'I' — algorithm penalizes it.
+
+    Voice profile rule: "NEVER start with 'I'. LinkedIn algorithm penalizes it.
+    Start with a number, observation, or bold claim."
+    Only applies to LinkedIn platform.
+    """
+    if platform != Platform.LINKEDIN:
+        return None
+    stripped = text.lstrip()
+    if not stripped:
+        return None
+    # Check if post starts with "I " or "I'" (e.g., "I've", "I'm")
+    if stripped.startswith("I ") or stripped.startswith("I'"):
+        return QualityViolation(
+            check="linkedin_i_opening",
+            message=(
+                "LinkedIn post starts with 'I' — algorithm penalizes this. "
+                "Open with a number, observation, or bold claim instead."
+            ),
+            penalty=15,
+        )
+    return None
+
+
 def _check_consecutive_same_length(text: str) -> QualityViolation | None:
     """Flag 3+ consecutive sentences with nearly identical word counts.
 
@@ -545,6 +570,11 @@ def score_content(
         violations.append(v)
 
     v = _check_consecutive_same_length(text)
+    if v:
+        violations.append(v)
+
+    # LinkedIn-specific: don't start with "I"
+    v = _check_linkedin_i_opening(text, piece.platform)
     if v:
         violations.append(v)
 

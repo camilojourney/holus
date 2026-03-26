@@ -396,8 +396,8 @@ _MOCK_REASON_JSON = json.dumps(
 )
 
 _MOCK_LINKEDIN_POST = (
-    "I spent 6 months locked into one AI backend. Then I rebuilt everything.\n\n"
-    "When I started Pilaster, I picked ComfyUI because it was the obvious choice. "
+    "6 months locked into one AI backend taught me a brutal lesson.\n\n"
+    "When I started Pilaster, ComfyUI was the obvious choice. "
     "Fast iteration, great community, powerful nodes.\n\n"
     "But then I needed to run the same workflow on Replicate for scale. "
     "And Runway for video. And a custom pipeline for a client.\n\n"
@@ -414,25 +414,27 @@ _MOCK_LINKEDIN_POST = (
 
 _MOCK_REPURPOSED: dict[str, str] = {
     "twitter": (
-        "I spent 6 months locked into one AI backend. Then I rebuilt everything.\n\n"
-        "One interface. Multiple backends. Architect for change from day one."
+        "1/ 6 months locked into ComfyUI taught me a brutal lesson about AI vendor lock-in.\n\n"
+        "2/ Built an abstraction layer for Pilaster. One interface, any backend underneath.\n\n"
+        "3/ Your AI stack will outlive any single vendor. Architect for change from day one."
     ),
     "instagram": (
-        "I spent 6 months locked into one AI backend. Then I rebuilt everything.\n\n"
-        "Built Pilaster on ComfyUI. Needed to scale to Replicate, Runway.\n\n"
-        "-> Your AI stack will outlive any single vendor\n\n"
-        "Save this if you are building AI systems.\n\n"
+        "6 months locked into one AI backend changed how I build everything.\n\n"
+        "Built Pilaster on ComfyUI. Then needed Replicate for scale and Runway for video.\n\n"
+        "-> Your AI stack will outlive any single vendor\n"
+        "-> Abstraction pays for itself after the first migration\n\n"
+        "Save this if you are building AI systems right now.\n\n"
         "#AI #ProductionAI #Builder #MachineLearning #TechFounder"
     ),
     "threads": (
-        "Honestly, I spent 6 months locked into one AI backend before I "
-        "realized the mistake.\n\n"
-        "Built an abstraction layer. One interface, any backend.\n\n"
-        "What backend are you locked into?"
+        "6 months locked into ComfyUI before the lesson hit.\n\n"
+        "Built an abstraction layer for Pilaster — one interface, "
+        "any backend underneath. Replicate, Runway, custom pipelines.\n\n"
+        "What backend are you locked into right now?"
     ),
     "facebook": (
-        "I spent 6 months locked into one AI backend. Then I rebuilt everything.\n\n"
-        "When I started Pilaster, I picked ComfyUI. But then I needed Replicate "
+        "6 months locked into one AI backend taught me a brutal lesson.\n\n"
+        "Started Pilaster on ComfyUI. But then needed Replicate "
         "for scale, Runway for video, and a custom pipeline for a client.\n\n"
         "So I built an abstraction layer. One interface, multiple backends.\n\n"
         "-> Your AI stack will outlive any single vendor\n"
@@ -485,9 +487,10 @@ def _authority_claude_side_effect(**kwargs: Any) -> MagicMock:
         return _make_claude_response_mock(_MOCK_LINKEDIN_POST)
 
     # Act stage — repurposing (REPURPOSE_PROMPT)
-    if "adapting a LinkedIn post for" in system_prompt.lower():
+    lower_prompt = system_prompt.lower()
+    if "adapting a linkedin post for" in lower_prompt:
         for platform_key, text in _MOCK_REPURPOSED.items():
-            if platform_key in system_prompt.lower():
+            if f"post for {platform_key}" in lower_prompt:
                 return _make_claude_response_mock(text)
         return _make_claude_response_mock(_MOCK_REPURPOSED["twitter"])
 

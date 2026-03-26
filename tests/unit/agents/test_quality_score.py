@@ -25,7 +25,7 @@ from holus.agents.marketing.quality_score import (
 
 
 def _make_piece(
-    text: str = "I built Pilaster over 6 months. 3 lessons I learned about AI deployment with ComfyUI.",
+    text: str = "6 months building Pilaster taught me 3 lessons about AI deployment with ComfyUI.",
     platform: Platform = Platform.LINKEDIN,
     content_pillar: str = "builder_stories",
     hook: str = "I built Pilaster from scratch.",
@@ -116,7 +116,7 @@ class TestScoreContentClean:
             text = (
                 "Short hook that works."
                 if platform == Platform.TWITTER
-                else ("I built Pilaster from scratch. Here's the architecture behind it.")
+                else ("Building Pilaster from scratch revealed this architecture pattern.")
             )
             piece = _make_piece(text=text, platform=platform)
             result = score_content(piece)
@@ -569,3 +569,57 @@ class TestStructuralChecks:
         assert result.passed is True
         assert result.score == 100
         assert result.violations == []
+
+
+# ---------------------------------------------------------------------------
+# score_content — LinkedIn "I" opening
+# ---------------------------------------------------------------------------
+
+
+class TestLinkedinIOpening:
+    def test_linkedin_starting_with_i_fails(self) -> None:
+        piece = _make_piece(
+            text="I've shipped 3 production AI systems. The demo never failed.",
+            platform=Platform.LINKEDIN,
+        )
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "linkedin_i_opening"]
+        assert len(violations) == 1
+        assert violations[0].penalty == 15
+
+    def test_linkedin_starting_with_i_space_fails(self) -> None:
+        piece = _make_piece(
+            text="I built Pilaster from scratch. Here's what happened.",
+            platform=Platform.LINKEDIN,
+        )
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "linkedin_i_opening"]
+        assert len(violations) == 1
+
+    def test_linkedin_not_starting_with_i_passes(self) -> None:
+        piece = _make_piece(
+            text="75% of AI pilots never reach production. Here's why.",
+            platform=Platform.LINKEDIN,
+        )
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "linkedin_i_opening"]
+        assert len(violations) == 0
+
+    def test_non_linkedin_starting_with_i_passes(self) -> None:
+        """The 'I' opening check only applies to LinkedIn."""
+        piece = _make_piece(
+            text="I've shipped 3 production AI systems.",
+            platform=Platform.INSTAGRAM,
+        )
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "linkedin_i_opening"]
+        assert len(violations) == 0
+
+    def test_linkedin_i_in_middle_passes(self) -> None:
+        piece = _make_piece(
+            text="Most teams skip this layer. I learned that the hard way.",
+            platform=Platform.LINKEDIN,
+        )
+        result = score_content(piece)
+        violations = [v for v in result.violations if v.check == "linkedin_i_opening"]
+        assert len(violations) == 0
