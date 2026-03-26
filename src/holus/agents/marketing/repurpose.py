@@ -229,12 +229,23 @@ def _format_rules(rules: dict[str, str]) -> str:
 
 
 def _enforce_limit(text: str, platform: Platform) -> str:
-    """Enforce platform character limit with ellipsis truncation."""
+    """Enforce platform character limit, truncating at last complete sentence."""
     limit = CHAR_LIMITS.get(platform)
     if limit is None or len(text) <= limit:
         return text
-    trimmed = text[: max(limit - 3, 0)].rstrip()
-    return f"{trimmed}..."
+    # Try to cut at last sentence boundary within the limit
+    budget = max(limit - 3, 0)
+    candidate = text[:budget]
+    # Find last sentence-ending punctuation
+    for sep in ("\n\n", ".\n", ". ", ".\u200b"):
+        pos = candidate.rfind(sep)
+        if pos > budget // 2:  # don't cut too early
+            return candidate[: pos + len(sep)].rstrip() + "..."
+    # Fallback: cut at last space to avoid mid-word truncation
+    last_space = candidate.rfind(" ")
+    if last_space > budget // 2:
+        return candidate[:last_space].rstrip() + "..."
+    return candidate.rstrip() + "..."
 
 
 def _fallback_adapt(original_text: str, target: Platform) -> str:
