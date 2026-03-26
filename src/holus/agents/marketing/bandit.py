@@ -40,7 +40,8 @@ class Bandit:
     def _load(self) -> dict[str, Any]:
         if self._path.exists():
             try:
-                return json.loads(self._path.read_text())
+                result: dict[str, Any] = json.loads(self._path.read_text())
+                return result
             except Exception:
                 pass
         # Bootstrap with default arms

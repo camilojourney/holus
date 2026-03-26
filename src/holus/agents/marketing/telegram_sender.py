@@ -13,6 +13,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -33,16 +34,17 @@ class TelegramSender:
         self._chat_id = chat_id or os.environ.get("TELEGRAM_CHAT_ID", "8419106275")
         self._base = f"https://api.telegram.org/bot{self._token}"
 
-    def _post(self, method: str, payload: dict) -> dict:
+    def _post(self, method: str, payload: dict[str, Any]) -> dict[str, Any]:
         resp = httpx.post(f"{self._base}/{method}", json=payload, timeout=30.0)
         resp.raise_for_status()
-        return resp.json()
+        raw: Any = resp.json()
+        return dict(raw)
 
     def send_approval_request(
         self,
         post_id: str,
         full_post: str,
-        cards: list[dict],  # [{arm_id, path, variant}]
+        cards: list[dict[str, Any]],  # [{arm_id, path, variant}]
     ) -> None:
         """Send post text + card images with approval buttons.
 

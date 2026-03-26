@@ -62,7 +62,8 @@ class ApprovalStatus(BaseModel):
 def _load_pending() -> dict[str, Any]:
     if _PENDING_PATH.exists():
         try:
-            return json.loads(_PENDING_PATH.read_text())
+            result: dict[str, Any] = json.loads(_PENDING_PATH.read_text())
+            return result
         except Exception:
             pass
     return {}

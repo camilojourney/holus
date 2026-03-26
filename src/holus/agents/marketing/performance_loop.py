@@ -9,13 +9,11 @@ from __future__ import annotations
 
 import json
 import logging
-import statistics
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from holus.agents.marketing.bandit import Bandit
-from holus.memory.trajectory import TrajectoryLogger
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +96,7 @@ class PerformanceLoop:
     ) -> None:
         entry = {
             "agent_id": "performance-loop",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "task_type": "performance_readback",
             "post_id": post_id,
             "arm_id": arm_id,

@@ -314,7 +314,7 @@ class JudgeAgent:
         if text.startswith("```"):
             lines = text.split("\n")
             # Remove first line (```json or ```) and last line (```)
-            inner = [l for l in lines[1:] if l.strip() != "```"]
+            inner = [ln for ln in lines[1:] if ln.strip() != "```"]
             text = "\n".join(inner).strip()
         evaluation = json.loads(text)
 

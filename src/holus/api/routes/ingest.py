@@ -15,10 +15,11 @@ Input types:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
@@ -61,7 +62,7 @@ async def _extract_from_audio(file: UploadFile) -> str:
         )
         resp.raise_for_status()
         data = resp.json()
-        transcript = data.get("transcript", "")
+        transcript: str = data.get("transcript", "")
         if not transcript:
             raise ValueError("Whisper returned empty transcript")
         return transcript
@@ -95,17 +96,15 @@ def _queue_for_pipeline(post_id: str, text: str, input_type: str) -> None:
     _DATA_DIR.mkdir(parents=True, exist_ok=True)
     pending: dict[str, Any] = {}
     if _PENDING_PATH.exists():
-        try:
+        with contextlib.suppress(Exception):
             pending = json.loads(_PENDING_PATH.read_text())
-        except Exception:
-            pass
 
     pending[post_id] = {
         "post_id": post_id,
         "status": "pipeline_queued",
         "input_type": input_type,
         "raw_text": text,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
     }
     _PENDING_PATH.write_text(json.dumps(pending, indent=2))
 

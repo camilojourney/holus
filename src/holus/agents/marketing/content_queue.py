@@ -47,6 +47,7 @@ class QueuedContent(BaseModel):
     rejection_reason: str = ""
     rendered_image_path: str | None = None
     rendered_pdf_path: str | None = None
+    media_url: str | None = None
     media_type: str | None = None
     # SPEC-032: Humanization fields
     humanized_text: str | None = None

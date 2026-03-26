@@ -13,7 +13,6 @@ import json
 import logging
 import re
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 import httpx
@@ -93,7 +92,8 @@ def _call_llm(
     )
     resp.raise_for_status()
     data = resp.json()
-    return data["choices"][0]["message"]["content"].strip()
+    result: str = data["choices"][0]["message"]["content"].strip()
+    return result
 
 
 def _parse_json_response(text: str) -> dict[str, Any]:
@@ -102,7 +102,8 @@ def _parse_json_response(text: str) -> dict[str, Any]:
     match = re.search(r"```(?:json)?\s*([\s\S]+?)```", text)
     if match:
         text = match.group(1)
-    return json.loads(text.strip())
+    parsed: dict[str, Any] = json.loads(text.strip())
+    return parsed
 
 
 def _parse_voice_sections(text: str) -> tuple[str, str, str, str]:

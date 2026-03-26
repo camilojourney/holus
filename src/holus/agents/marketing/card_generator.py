@@ -89,12 +89,12 @@ def _render_html(hook: str, body_preview: str, arm_id: str, author: str = "Juan 
     pad = style["padding"]
 
     # Body preview — first 2 paragraphs max
-    lines = [l.strip() for l in body_preview.split("\n") if l.strip()][:4]
-    body_html = "".join(f"<p>{l}</p>" for l in lines)
+    lines = [ln.strip() for ln in body_preview.split("\n") if ln.strip()][:4]
+    body_html = "".join(f"<p>{ln}</p>" for ln in lines)
 
     # Layout-specific CSS
     if layout == "centered":
-        content_css = f"""
+        content_css = """
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -103,14 +103,14 @@ def _render_html(hook: str, body_preview: str, arm_id: str, author: str = "Juan 
         """
         hook_css = f"font-size: {style['font_size_hook']}; text-align: center;"
     elif layout == "split":
-        content_css = f"""
+        content_css = """
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         """
         hook_css = f"font-size: {style['font_size_hook']}; text-align: left; border-left: 6px solid {style['accent_color']}; padding-left: 32px;"
     else:  # asymmetric
-        content_css = f"""
+        content_css = """
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
