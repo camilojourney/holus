@@ -199,16 +199,64 @@ and niche tags. Example: #AI #BuildInPublic #AgentArchitecture #TechFounder
     return base
 
 
+def _load_few_shot_context(content_type: str) -> str:
+    """Load pre-materialized few-shot examples for this content type."""
+    try:
+        from holus.data.few_shot import FewShotMaterializer
+
+        materializer = FewShotMaterializer()
+        examples = materializer.load_examples(content_type, limit=3)
+        if not examples:
+            return ""
+        parts = ["## Top-Performing Examples (study these — they worked on LinkedIn)\n"]
+        for i, ex in enumerate(examples, 1):
+            creator = ex.get("creator", "unknown")
+            engagement = ex.get("engagement_total", 0)
+            text = ex.get("text", "")[:500]
+            why = ex.get("why_it_works", "")
+            parts.append(f"### Example {i} ({engagement:,} engagement — @{creator})")
+            parts.append(text)
+            if why:
+                parts.append(f"Why it works: {why}")
+            parts.append("")
+        parts.append("Now write YOUR post. Match their quality. Be specific like them.\n")
+        return "\n".join(parts)
+    except Exception:
+        logger.debug("Few-shot examples not available", exc_info=True)
+        return ""
+
+
+def _load_personal_context(product: str = "") -> str:
+    """Load personal context entries for prompt injection."""
+    try:
+        from holus.agents.marketing.humanize import format_personal_context, select_personal_context
+
+        entries = select_personal_context(product=product, count=3)
+        if entries:
+            return format_personal_context(entries)
+        return ""
+    except Exception:
+        logger.debug("Personal context not available", exc_info=True)
+        return ""
+
+
 def generate_piece(raw_idea: str, decision: dict[str, Any]) -> dict[str, Any]:
     fmt = decision.get("format", "text_post")
     platform = decision.get("platform", "linkedin")
     angle = decision.get("angle", raw_idea)
+    product = decision.get("product", "")
     fmt_instructions = _get_format_instructions(fmt, platform)
 
     # Load generator prompt via PromptLoader (falls back to GENERATOR_SYSTEM constant)
     generator_prompt, _variant = _load_prompt("idea-generator", GENERATOR_SYSTEM)
 
+    # Load few-shot examples and personal context (graceful degradation)
+    few_shot = _load_few_shot_context(fmt)
+    personal_ctx = _load_personal_context(product)
+
     user_msg = f"""
+{few_shot}
+{personal_ctx}
 <idea>
 {raw_idea}
 </idea>

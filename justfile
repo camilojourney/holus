@@ -263,6 +263,28 @@ dev-observatory-frontend:
 build-observatory:
     cd observatory/frontend && pnpm build
 
+# -- Data Pipeline (corpus + few-shot) ----------------------------------------
+
+# Rebuild SQLite corpus index from all scraped reference posts
+data-reindex:
+    uv run python -c "from holus.data.corpus import CorpusDB; db = CorpusDB(); n = db.ingest_all(); print(f'Indexed {n} posts'); db.close()"
+
+# Show corpus statistics (post count, creators, avg engagement)
+data-stats:
+    uv run python -c "from holus.data.corpus import CorpusDB; db = CorpusDB(); import json; print(json.dumps(db.stats(), indent=2)); db.close()"
+
+# Full-text search across the corpus
+data-search query:
+    uv run python -c "from holus.data.corpus import CorpusDB; db = CorpusDB(); results = db.search('{{query}}', limit=10); [print(f'[{r[\"creator\"]}] ({r[\"engagement_total\"]}eng) {r[\"text\"][:120]}...') for r in results]; db.close()"
+
+# Show top posts by engagement
+data-top *args:
+    uv run python -c "from holus.data.corpus import CorpusDB; db = CorpusDB(); results = db.top_by_engagement(limit=10); [print(f'[{r[\"creator\"]}] ({r[\"engagement_total\"]}eng) {r[\"text\"][:120]}...') for r in results]; db.close()"
+
+# Materialize few-shot examples from corpus for content generation
+data-materialize:
+    uv run python -c "from holus.data.few_shot import FewShotMaterializer; m = FewShotMaterializer(); result = m.materialize_all(); print(f'Materialized: {result}')"
+
 # -- Evaluation --------------------------------------------------------------
 
 # Run domain evaluators on pending content (no publishing)
