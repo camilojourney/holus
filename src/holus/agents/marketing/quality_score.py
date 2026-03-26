@@ -34,15 +34,45 @@ PLATFORM_CHAR_LIMITS: dict[Platform, int] = {
 # ---------------------------------------------------------------------------
 
 DEFAULT_ANTI_PATTERN_PHRASES: list[str] = [
+    # Corporate jargon
     "leverage synergies",
     "drive engagement",
     "unlock potential",
     "game-changing",
     "game changing",
+    "game-changer",
+    "game changer",
     "revolutionary",
+    # AI-typical openers and transitions (12-34x natural frequency)
     "let's dive in",
     "in today's fast-paced world",
     "here's the thing",
+    "let that sink in",
+    "delve",
+    "in today's world",
+    "in today's landscape",
+    "it's worth noting",
+    "at the end of the day",
+    "it goes without saying",
+    "needless to say",
+    "without further ado",
+    "first and foremost",
+    "last but not least",
+    "the reality is",
+    "the truth is",
+    "to be honest",
+    "if you're like me",
+    "let me be clear",
+    # AI-typical hooks (fake engagement bait)
+    "imagine this",
+    "picture this",
+    "buckle up",
+    "spoiler alert",
+    "hot take",
+    "unpopular opinion",
+    "here's why",
+    "here's what",
+    # Filler / hedging
     "great question",
     "furthermore",
     "additionally",
@@ -232,6 +262,76 @@ def _check_emoji_density(text: str) -> QualityViolation | None:
     return None
 
 
+_SENTENCE_SPLIT_RE = re.compile(r"[.!?]+")
+_NUMBER_RE = re.compile(r"\d+")
+_PROPER_NOUN_RE = re.compile(r"\b[A-Z][a-z]+\b")
+
+
+def _check_readability(text: str) -> QualityViolation | None:
+    """Check average sentence length for mobile readability.
+
+    Too long (>25 words/sentence) means dense, hard-to-scan prose.
+    Too short (<5 words/sentence) means choppy lists that lack substance.
+    """
+    if not text:
+        return None
+    # Split on sentence-ending punctuation and filter empty fragments
+    sentences = [s.strip() for s in _SENTENCE_SPLIT_RE.split(text) if s.strip()]
+    if not sentences:
+        return None
+    total_words = sum(len(s.split()) for s in sentences)
+    avg_words = total_words / len(sentences)
+    if avg_words > 25:
+        return QualityViolation(
+            check="readability_dense",
+            message=(
+                f"Avg {avg_words:.1f} words/sentence — too dense for mobile "
+                f"({len(sentences)} sentences, {total_words} words)"
+            ),
+            penalty=15,
+        )
+    if avg_words < 5:
+        return QualityViolation(
+            check="readability_choppy",
+            message=(
+                f"Avg {avg_words:.1f} words/sentence — too choppy/listy "
+                f"({len(sentences)} sentences, {total_words} words)"
+            ),
+            penalty=10,
+        )
+    return None
+
+
+def _check_specificity(text: str) -> QualityViolation | None:
+    """Check that content contains concrete evidence (numbers, named entities).
+
+    Generic content with zero numbers and zero proper nouns reads as vague filler.
+    Content with only a single number has weak specificity.
+    """
+    if not text:
+        return None
+    number_count = len(_NUMBER_RE.findall(text))
+    proper_noun_count = len(_PROPER_NOUN_RE.findall(text))
+    if number_count == 0 and proper_noun_count == 0:
+        return QualityViolation(
+            check="specificity_generic",
+            message=(
+                "No numbers and no proper nouns found — content is generic with no evidence"
+            ),
+            penalty=20,
+        )
+    if number_count == 1 and proper_noun_count == 0:
+        return QualityViolation(
+            check="specificity_weak",
+            message=(
+                f"Only 1 number and no proper nouns — weak specificity "
+                f"(numbers: {number_count}, proper nouns: {proper_noun_count})"
+            ),
+            penalty=5,
+        )
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Main scoring function
 # ---------------------------------------------------------------------------
@@ -285,6 +385,16 @@ def score_content(
 
     # Emoji density
     v = _check_emoji_density(text)
+    if v:
+        violations.append(v)
+
+    # Readability (sentence length)
+    v = _check_readability(text)
+    if v:
+        violations.append(v)
+
+    # Specificity (numbers, proper nouns)
+    v = _check_specificity(text)
     if v:
         violations.append(v)
 

@@ -29,11 +29,12 @@ logger = logging.getLogger(__name__)
 
 PLATFORM_RULES: dict[Platform, dict[str, str]] = {
     Platform.TWITTER: {
-        "max_chars": "280",
-        "style": "Condensed, punchy. One key insight. No hashtags unless viral.",
-        "format": "Single tweet. If the insight is too rich for 280 chars, write a 3-5 tweet thread separated by blank lines.",
-        "adapt": "Extract the core insight. Lead with the hook. Cut all filler. Keep Camilo's voice — first person, contractions, builder mindset.",
-        "cta": "'Reply' or 'RT if you agree' (not DM).",
+        "max_chars": "280 per tweet",
+        "style": "Condensed, punchy. One key insight per tweet. No hashtags unless viral.",
+        "format": "ALWAYS format as a numbered thread: 1/, 2/, 3/... Each tweet MUST be under 280 chars. Separate tweets with blank lines.",
+        "thread_format": "ALWAYS format as a numbered thread (1/, 2/, 3/...). Each tweet MUST be under 280 chars. Split at natural thought boundaries. First tweet is the hook.",
+        "adapt": "Extract the core insight. Lead with the hook in tweet 1/. Expand the argument across 3-5 tweets. Cut all filler. Keep Camilo's voice — first person, contractions, builder mindset.",
+        "cta": "'Reply' or 'RT if you agree' (not DM). Put CTA in last tweet.",
         "links": "OK in tweets (no penalty like LinkedIn).",
     },
     Platform.INSTAGRAM: {
@@ -229,11 +230,20 @@ def _format_rules(rules: dict[str, str]) -> str:
 
 
 def _enforce_limit(text: str, platform: Platform) -> str:
-    """Enforce platform character limit, truncating at last complete sentence."""
+    """Enforce platform character limit, truncating at last complete sentence.
+
+    For Twitter: if the text exceeds 280 chars and is not already formatted
+    as a numbered thread, split into a numbered thread instead of truncating.
+    """
     limit = CHAR_LIMITS.get(platform)
     if limit is None or len(text) <= limit:
         return text
-    # Try to cut at last sentence boundary within the limit
+
+    # Twitter special case: split into thread instead of truncating
+    if platform == Platform.TWITTER and not _is_thread(text):
+        return _split_into_thread(text)
+
+    # Generic truncation for other platforms
     budget = max(limit - 3, 0)
     candidate = text[:budget]
     # Find last sentence-ending punctuation
@@ -248,6 +258,56 @@ def _enforce_limit(text: str, platform: Platform) -> str:
     return candidate.rstrip() + "..."
 
 
+def _is_thread(text: str) -> bool:
+    """Check if text is already formatted as a numbered thread."""
+    return "1/" in text and "2/" in text
+
+
+def _split_into_thread(text: str, max_tweet_chars: int = 260) -> str:
+    """Split text into a numbered Twitter thread at sentence boundaries.
+
+    Each tweet is prefixed with ``N/`` and kept under *max_tweet_chars*
+    (default 260 to leave room for the number prefix and whitespace).
+    Tweets are separated by blank lines.
+    """
+    import re
+
+    # Split into sentences (keep the delimiter attached)
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    sentences = [s.strip() for s in sentences if s.strip()]
+
+    tweets: list[str] = []
+    current = ""
+
+    for sentence in sentences:
+        # Check if adding this sentence would exceed the limit
+        # Account for the thread prefix like "1/ " (up to "99/ " = 4 chars)
+        prefix_len = len(f"{len(tweets) + 1}/ ")
+        candidate = f"{current} {sentence}".strip() if current else sentence
+
+        if len(candidate) + prefix_len <= max_tweet_chars:
+            current = candidate
+        else:
+            # Save the current tweet if it has content
+            if current:
+                tweets.append(current)
+            # Start a new tweet with this sentence
+            # If the sentence itself is too long, truncate it
+            new_prefix_len = len(f"{len(tweets) + 1}/ ")
+            if len(sentence) + new_prefix_len > max_tweet_chars:
+                current = sentence[: max_tweet_chars - new_prefix_len - 3] + "..."
+            else:
+                current = sentence
+
+    # Don't forget the last chunk
+    if current:
+        tweets.append(current)
+
+    # Format as numbered thread
+    numbered = [f"{i + 1}/ {tweet}" for i, tweet in enumerate(tweets)]
+    return "\n\n".join(numbered)
+
+
 def _fallback_adapt(original_text: str, target: Platform) -> str:
     """Mechanical fallback when Claude is unavailable.
 
@@ -258,13 +318,10 @@ def _fallback_adapt(original_text: str, target: Platform) -> str:
     - Facebook: full text (effectively unlimited)
     """
     if target == Platform.TWITTER:
-        # Extract first meaningful line as a tweet
-        lines = [line.strip() for line in original_text.split("\n") if line.strip()]
-        if lines:
-            first_line = lines[0]
-            if len(first_line) <= 280:
-                return first_line
-        return original_text[:277] + "..." if len(original_text) > 280 else original_text
+        # Split into a numbered thread at sentence boundaries
+        if len(original_text) <= 280:
+            return f"1/ {original_text}"
+        return _split_into_thread(original_text)
 
     if target == Platform.INSTAGRAM:
         # Use LinkedIn text, trimmed to limit

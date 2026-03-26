@@ -21,7 +21,7 @@ from holus.agents.marketing.quality_score import (
 
 
 def _make_piece(
-    text: str = "I built Pilaster from scratch. Here's what I learned about AI deployment.",
+    text: str = "I built Pilaster over 6 months. 3 lessons I learned about AI deployment with ComfyUI.",
     platform: Platform = Platform.LINKEDIN,
     content_pillar: str = "builder_stories",
     hook: str = "I built Pilaster from scratch.",
@@ -195,7 +195,7 @@ class TestAntiPatternPhrases:
         assert len(violations) >= 3
 
     def test_clean_text_no_anti_patterns(self) -> None:
-        piece = _make_piece(text="I spent 6 months building an AI pipeline. Here's what broke.")
+        piece = _make_piece(text="I spent 6 months building an AI pipeline. 3 things broke along the way.")
         result = score_content(piece)
         violations = [v for v in result.violations if v.check == "anti_pattern"]
         assert len(violations) == 0

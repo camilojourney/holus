@@ -263,6 +263,16 @@ dev-observatory-frontend:
 build-observatory:
     cd observatory/frontend && pnpm build
 
+# -- Evaluation --------------------------------------------------------------
+
+# Run domain evaluators on pending content (no publishing)
+evaluate-content *args:
+    uv run python -m holus.evaluate_content {{args}}
+
+# Run system diagnostician (analyzes pipeline health + proposes fixes)
+diagnose:
+    uv run python -m holus.self_improvement.diagnostician
+
 # -- Health ------------------------------------------------------------------
 
 health:

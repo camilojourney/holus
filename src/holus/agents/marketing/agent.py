@@ -437,6 +437,9 @@ class MarketingAgent(BaseAgent):
             logger.warning("Niche research failed; continuing without it", exc_info=True)
             observe_gaps.append("niche_research_unavailable")
 
+        # Load judge feedback from last cycle (feedback loop)
+        prior_feedback = self._load_prior_judge_feedback()
+
         return {
             "product_updates": products,
             "knowledge": knowledge,
@@ -446,7 +449,57 @@ class MarketingAgent(BaseAgent):
             "brand_identity": brand_identity,
             "niche_research": niche_research,
             "capability_gaps": observe_gaps,
+            "prior_judge_feedback": prior_feedback,
         }
+
+    def _load_prior_judge_feedback(self) -> str:
+        """Load judge feedback from last content cycle to inject into next generation.
+
+        Reads the last 20 trajectory entries, extracts judge feedback
+        from content pieces, and formats as a concise summary for the
+        generation prompt.
+        """
+        traj_path = Path(".self-improvement/memory/trajectory.jsonl")
+        if not traj_path.exists():
+            return ""
+
+        try:
+            lines = traj_path.read_text().splitlines()
+            # Read last 50 lines, filter to content entries with judge feedback
+            recent = []
+            for line in lines[-50:]:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                feedback = entry.get("judge_feedback")
+                verdict = entry.get("judge_verdict")
+                if feedback and verdict and verdict in ("FAIL", "PARTIAL"):
+                    dims = entry.get("metadata", {}).get("dimension_scores", {})
+                    platform = entry.get("metadata", {}).get("platform", "")
+                    recent.append({
+                        "platform": platform,
+                        "verdict": verdict,
+                        "feedback": feedback[:300],
+                        "weak_dims": {k: v for k, v in dims.items() if isinstance(v, (int, float)) and v < 0.6},
+                    })
+
+            if not recent:
+                return ""
+
+            parts = ["## Prior Cycle Feedback (learn from these mistakes)\n"]
+            for r in recent[-5:]:  # Last 5 failures max
+                parts.append(f"- [{r['platform'].upper()} — {r['verdict']}] {r['feedback'][:200]}")
+                if r["weak_dims"]:
+                    weak = ", ".join(f"{k}={v:.2f}" for k, v in r["weak_dims"].items())
+                    parts.append(f"  Weak dimensions: {weak}")
+            return "\n".join(parts)
+        except Exception:
+            logger.warning("Failed to load prior judge feedback", exc_info=True)
+            return ""
 
     def _load_brand_identity(self) -> dict[str, Any]:
         """Load and validate config/brand.yaml.

@@ -129,6 +129,38 @@ async def improvement_cycle() -> dict[str, Any]:
     capability_gaps = len(list(gap_dir.glob("*.md"))) if gap_dir.exists() else 0
     knowledge_gaps = len(list(knowledge_gap_dir.glob("*.md"))) - 1 if knowledge_gap_dir.exists() else 0  # -1 for README
 
+    # 4. System diagnostic (SPEC-036)
+    diagnostic_findings = 0
+    try:
+        from holus.self_improvement.diagnostician import run_diagnostic
+        from holus.self_improvement.diagnostician import save_report as save_diagnostic
+
+        diag_report = run_diagnostic(days=30)
+        diagnostic_findings = (
+            len(diag_report.critical) + len(diag_report.high)
+            + len(diag_report.medium) + len(diag_report.suggestions)
+        )
+        if diagnostic_findings > 0:
+            save_diagnostic(diag_report)
+            logger.info(
+                "Diagnostic: %d critical, %d high, %d medium findings",
+                len(diag_report.critical), len(diag_report.high), len(diag_report.medium),
+            )
+    except Exception as exc:
+        logger.warning("System diagnostic failed (non-blocking): %s", exc)
+
+    # 5. Detect failure streaks (log for diagnostician — auto-optimization is future work)
+    try:
+        traj_entries = _load_recent_trajectory()
+        streaks = _detect_failure_streaks(traj_entries)
+        for agent_id, streak_len in streaks.items():
+            logger.warning(
+                "Failure streak: agent '%s' has %d consecutive FAIL/PARTIAL",
+                agent_id, streak_len,
+            )
+    except Exception as exc:
+        logger.warning("Failure streak detection failed (non-blocking): %s", exc)
+
     summary = {
         "entries_analyzed": report.trajectory_entries_analyzed,
         "insights": len(report.insights),
@@ -138,11 +170,50 @@ async def improvement_cycle() -> dict[str, Any]:
         "open_capability_gaps": max(0, capability_gaps),
         "open_knowledge_gaps": max(0, knowledge_gaps),
         "evolution_ran": evolution_report is not None,
+        "diagnostic_findings": diagnostic_findings,
         "skipped_reason": report.skipped_reason,
     }
 
     logger.info("Improvement cycle complete: %s", summary)
     return summary
+
+
+def _load_recent_trajectory() -> list[dict[str, Any]]:
+    """Load recent trajectory entries for failure streak detection."""
+    import json
+
+    path = Path(".self-improvement/memory/trajectory.jsonl")
+    if not path.exists():
+        return []
+    entries = []
+    for line in path.read_text().splitlines()[-100:]:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entries.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return entries
+
+
+def _detect_failure_streaks(entries: list[dict[str, Any]]) -> dict[str, int]:
+    """Detect consecutive failure streaks per agent. Returns {agent_id: max_streak}."""
+    agent_streaks: dict[str, int] = {}
+    agent_current: dict[str, int] = {}
+
+    for entry in entries:
+        agent = entry.get("agent_id", "")
+        verdict = entry.get("judge_verdict")
+        if not agent or not verdict:
+            continue
+        if verdict in ("FAIL", "PARTIAL"):
+            agent_current[agent] = agent_current.get(agent, 0) + 1
+            agent_streaks[agent] = max(agent_streaks.get(agent, 0), agent_current[agent])
+        else:
+            agent_current[agent] = 0
+
+    return {a: s for a, s in agent_streaks.items() if s >= 3}
 
 
 # ---------------------------------------------------------------------------

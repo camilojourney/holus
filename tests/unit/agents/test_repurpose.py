@@ -297,12 +297,19 @@ class TestEnforceLimit:
         text = "Short tweet"
         assert _enforce_limit(text, Platform.TWITTER) == text
 
-    def test_long_text_truncated_with_ellipsis(self) -> None:
-        """Text exceeding limit is truncated with '...'."""
-        text = "x" * 300
+    def test_long_twitter_text_becomes_thread(self) -> None:
+        """Twitter text exceeding 280 chars is split into a numbered thread."""
+        text = (
+            "I spent three weeks debugging the glue between Whisper and FFmpeg. "
+            "The AI worked on day one but the integration took forever. "
+            "Every failure was at a handoff between tools, not inside them. "
+            "Most automation projects die here because nobody designed the contract between steps. "
+            "The pipeline went from brittle to resumable once I added a manifest layer."
+        )
+        assert len(text) > 280
         result = _enforce_limit(text, Platform.TWITTER)
-        assert len(result) == 280
-        assert result.endswith("...")
+        assert "1/" in result
+        assert "2/" in result
 
     def test_exact_limit_unchanged(self) -> None:
         """Text exactly at the limit passes through."""
@@ -339,16 +346,16 @@ class TestFallbackAdapt:
     """Tests for mechanical fallback adaptation."""
 
     def test_twitter_short_text(self) -> None:
-        """Short text that fits in a tweet is returned as first line."""
+        """Short text that fits in a tweet is returned with thread prefix."""
         result = _fallback_adapt("Short insight.\n\nMore details here.", Platform.TWITTER)
-        assert result == "Short insight."
+        assert result.startswith("1/ ")
+        assert "Short insight" in result
 
-    def test_twitter_long_text_truncated(self) -> None:
-        """Long text for Twitter is truncated to 280 with ellipsis."""
-        text = "x" * 400
+    def test_twitter_long_text_becomes_thread(self) -> None:
+        """Long text for Twitter is split into a numbered thread."""
+        text = "First sentence here. Second sentence here. Third sentence is also here. Fourth one too."
         result = _fallback_adapt(text, Platform.TWITTER)
-        assert len(result) <= 280
-        assert result.endswith("...")
+        assert "1/" in result
 
     def test_instagram_adds_hashtags(self) -> None:
         """Instagram fallback appends basic hashtags."""
