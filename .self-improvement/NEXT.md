@@ -106,8 +106,8 @@ This sprint closes the loop from "system built" to "system producing real output
 ### P1 — First Content Generation
 
 - [x] [BUILD] Create `just generate` command — Runs ONE marketing agent cycle in generate-only mode (no publishing). Requires ANTHROPIC_API_KEY. Agent executes: observe (load brand, knowledge, niche research) → reason (Opus decides what to write) → act (Sonnet writes LinkedIn post + repurposes) → evaluate (log trajectory). Output goes to `data/content-queue/` for review. This is the first time the agent produces real content.
-- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY in `.env` is expired/invalid (401).** Cycle 43 fixed `.env` loading (preflight + generate both read from `.env`), validated 380 tests pass, but actual generation needs a valid key. Camilo must update the key.
-- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real agent run (API key invalid).** After reviewing the first real output, adjust prompts in `prompts.py` for better voice match, hook quality, and content depth. This is iterative — may take 2-3 cycles of generate → review → tune.
+- [x] [REVIEW] First real agent run — **UNBLOCKED (Cycle 77).** Fixed preflight to accept proxy dummy keys (ANTHROPIC_BASE_URL=localhost:8080). First generation produced 5 pieces (LinkedIn/Twitter/Instagram/Threads/Facebook) about genpeli automation. Quality scores: 100/100/100/70/100. Topic: builder story about video editing pipeline. 378s total cycle time.
+- [ ] [BUILD] Prompt tuning based on first run — Review first real output in `data/content-queue/`. Adjust prompts in `prompts.py` for better voice match, hook quality, and content depth. Threads scored 70 (2 violations). This is iterative — may take 2-3 cycles of generate → review → tune.
 
 ### P2 — Review & Publishing Pipeline
 
@@ -163,8 +163,8 @@ and clean up accumulated tech debt. The content pipeline (idea-runner) is produc
 
 ### P3 — Carry-Forward (Blocked)
 
-- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY needed.** Carried from Sprint 3.
-- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real run.** Carried from Sprint 3.
+- [x] [REVIEW] First real agent run — **DONE (Cycle 77).** Proxy key fix unblocked generation.
+- [ ] [BUILD] Prompt tuning based on first run — Unblocked. Review output in `data/content-queue/`.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
 
 ---
@@ -202,8 +202,8 @@ Goal: Eliminate the PROXY_URL duplication across 8 files, add test coverage for 
 
 ### P3 — Carry-Forward (Blocked)
 
-- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY needed.** Carried from Sprint 3.
-- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real run.** Carried from Sprint 3.
+- [x] [REVIEW] First real agent run — **DONE (Cycle 77).** Proxy key fix unblocked generation.
+- [ ] [BUILD] Prompt tuning based on first run — Unblocked. Review output in `data/content-queue/`.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
 
 ---
@@ -238,8 +238,8 @@ events system), and reduce mypy error count. Clean codebase = faster future deve
 
 ### P3 — Carry-Forward (Blocked)
 
-- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY needed.** Carried from Sprint 3.
-- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real run.** Carried from Sprint 3.
+- [x] [REVIEW] First real agent run — **DONE (Cycle 77).** Proxy key fix unblocked generation.
+- [ ] [BUILD] Prompt tuning based on first run — Unblocked. Review output in `data/content-queue/`.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
 
 ---
@@ -256,26 +256,75 @@ Goal: Reduce mypy errors from 104 → 0 across all 27 affected files. Clean type
 
 ### P0 — Top 5 Files (65 errors)
 
-- [ ] [BUILD] Fix otel.py type errors (19) — Add return types to `_init_otel`, `get_tracer`, `get_meter`, `_ensure_instruments`, NoOp classes. Add `type: ignore[union-attr]` for nullable instrument access.
-- [ ] [BUILD] Fix visual/engine.py type errors (16) — Replace `object` types for `_playwright`/`_browser` with proper Playwright types in TYPE_CHECKING block. Fix stale `type: ignore` comments. Fix `seen_styles` set type (str vs int hash).
-- [ ] [BUILD] Fix api/routes/alerts.py type errors (11) — Add type annotations and fix return types.
-- [ ] [BUILD] Fix visual/charts.py type errors (10) — Add type annotations to decorator functions, fix callable return types.
-- [ ] [BUILD] Fix api/routes/content.py type errors (9) — Add type annotations and fix return types.
+- [x] [BUILD] Fix otel.py type errors (19) — Added return types to all functions + NoOp classes. `type: ignore[union-attr]` for nullable instrument fields. Zero errors. (Cycle 69)
+- [x] [BUILD] Fix visual/engine.py type errors (16) — Replaced `object` with Playwright types in TYPE_CHECKING. Removed 6 stale `type: ignore` comments. Fixed `seen_styles` set type. Zero errors. (Cycle 69)
+- [x] [BUILD] Fix api/routes/alerts.py type errors (11) — Parameterized all bare `dict` to `dict[str, Any]`. Zero errors. (Cycle 69)
+- [x] [BUILD] Fix visual/charts.py type errors (10) — Typed `_register` decorator with `Callable`, moved to TYPE_CHECKING. Changed registry to `dict[str, Any]`. Zero errors. (Cycle 69)
+- [x] [BUILD] Fix api/routes/content.py type errors (9) — Parameterized all bare `dict` params and return types. Zero errors. (Cycle 69)
 
 ### P1 — Medium Files (25 errors)
 
-- [ ] [BUILD] Fix resilience.py type errors (5) — Add import-untyped ignore, return type annotations.
-- [ ] [BUILD] Fix platform_config.py type errors (5) — Fix dict type params, None in dict literal, return types.
-- [ ] [BUILD] Fix auto_publish.py type errors (5) — Add type annotations.
-- [ ] [BUILD] Fix api/routes/results.py type errors (3) — Add type annotations.
-- [ ] [BUILD] Fix orchestrator.py type errors (3) — Add dict type params.
+- [x] [BUILD] Fix resilience.py type errors (5) — Typed retry decorator, annotated return values from `resp.json()`. (Cycle 69)
+- [x] [BUILD] Fix platform_config.py type errors (5) — Fixed None in dict literal with `type: ignore[dict-item]`, parameterized dicts, annotated return values. (Cycle 69)
+- [x] [BUILD] Fix auto_publish.py type errors (3) — Annotated verdict return, fixed requests import. (Cycle 69)
+- [x] [BUILD] Fix api/routes/results.py type errors (3) — Parameterized dicts, annotated json.loads return. (Cycle 69)
+- [x] [BUILD] Fix orchestrator.py type errors (3) — Parameterized all bare dicts. (Cycle 69)
+
+### P1.5 — New Mypy + Lint Errors (post-Sprint 8 code)
+
+- [x] [BUILD] Fix 9 new mypy errors + 12 lint errors across 9 files — Added `media_url` to QueuedContent, typed dict params in telegram_sender/bandit, annotated return values in voice_pipeline/telegram_gate/ingest, renamed ambiguous `l` vars to `ln`, replaced try/except/pass with contextlib.suppress, removed unused imports, fixed f-strings without placeholders. 0 mypy, 0 lint. 1265 tests. (Cycle 76)
 
 ### P2 — Small Files (14 across 12 files)
 
-- [ ] [BUILD] Fix remaining mypy errors (14 across 12 files) — carousel_builder.py (2), dspy_optimizer.py (2), api/models.py (2), specialist_dispatch.py (2), revision_loop.py (2), quality_compounding.py (2), prompt_loader.py (1), multi_tenant.py (1), platform_adapter.py (2), api/routes/agents.py (1), gap_detector.py (1), visual/templates.py (1).
+- [x] [BUILD] Fix remaining mypy errors (14 across 12 files) — All fixed: carousel_builder None check, dspy_optimizer type: ignore[misc], api/models parameterized dicts, specialist_dispatch/revision_loop/quality_compounding/platform_adapter requests + return annotations, prompt_loader Path annotation, multi_tenant return type, gap_detector Counter[str], gif_encoder LANCZOS attr-defined, templates type guard, analytics_collector api_key arg, evaluations return type, improvement/knowledge/agents return annotations. Added requests/opentelemetry/pypdf to mypy overrides. (Cycle 69)
 
 ### P3 — Carry-Forward (Blocked)
 
-- [~] [REVIEW] First real agent run — **BLOCKED: ANTHROPIC_API_KEY needed.** Carried from Sprint 3.
-- [~] [BUILD] Prompt tuning based on first run — **BLOCKED: Depends on first real run.** Carried from Sprint 3.
+- [x] [REVIEW] First real agent run — **DONE (Cycle 77).** Proxy key fix unblocked generation.
+- [ ] [BUILD] Prompt tuning based on first run — Unblocked. Review output in `data/content-queue/`.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
+
+---
+
+## Sprint 9: Quality Engine — Make Content Actually Good
+
+Goal: Close the loop from "content generated" to "content improves automatically."
+The system generates content, evaluates it, traces failures to root causes, and
+proposes fixes. Camilo reviews and implements. Each cycle gets better.
+
+**Key context:**
+- Registry path bug fixed (commit 4b3aa2f) — 7 domain evaluators now load
+- First real content generated (5 pieces, all scored 100/100 by rubber-stamp fallback)
+- Preflight fixed for proxy (commit b2c1635)
+- Research done: LLM-as-judge best practices, self-improving agent systems, content quality loops
+- Spec 036 (System Diagnostician) written
+
+### P0 — Make Judges Actually Run
+
+- [x] [FIX] Registry path off-by-one (parents[2] → parents[3]) — All 7 domain evaluators were silently skipped. Fixed in commit 4b3aa2f.
+- [ ] [BUILD] Run domain evaluators on today's 5 content pieces — Use evaluate_with_routing() on the 5 pieces in data/content-queue/. Log real scores to trajectory. First time real judges evaluate real content.
+- [ ] [BUILD] Add `just evaluate-content` command — Runs all 7 domain evaluators on pending content. Shows dimension scores, evidence, suggestions. No publishing.
+
+### P1 — Feed Judge Feedback Back to Generators
+
+- [ ] [BUILD] Feedback injection in observe phase — Load last cycle's judge feedback from trajectory. Inject into generation prompt so agent learns from mistakes.
+- [ ] [BUILD] Expand AI slop detection in quality_score.py — Add 20+ AI-giveaway phrases, readability check (Flesch-Kincaid > 12), specificity check (0 numbers/names = reject).
+- [ ] [BUILD] Fix Twitter thread formatting — repurpose.py _claude_adapt() for Twitter needs thread-splitting instruction.
+
+### P2 — System Diagnostician (SPEC-036)
+
+- [ ] [BUILD] Core diagnostician module — `src/holus/self_improvement/diagnostician.py`. Reads trajectory, groups failures by agent/dimension/platform, detects patterns and anomalies.
+- [ ] [BUILD] Code-reading diagnostic — Traces failing dimensions to specific code/prompt sections. Uses Opus.
+- [ ] [BUILD] Diagnostic report writer — Structured report with P0-P3 tasks, each with category/file/evidence/suggested fix.
+- [ ] [BUILD] `just diagnose` command + orchestrator integration.
+
+### P3 — Connect Existing Self-Improvement Pieces
+
+- [ ] [BUILD] Auto-trigger prompt optimizer on 3+ consecutive failures per agent.
+- [ ] [BUILD] Connect prompt evolution output to PromptLoader Layer 1.
+- [ ] [BUILD] Wire DSPy few-shot examples into agent prompts.
+
+### P4 — Carry-Forward
+
+- [ ] [BUILD] Prompt tuning based on first run output.
+- [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.**

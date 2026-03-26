@@ -85,6 +85,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | 034 | [Creative Tool Registry](034-creative-tool-registry.md)          | Backend | Not Started |
 | 035 | [LinkedIn Voice Pipeline](035-linkedin-voice-pipeline.md)        | Backend | Ready |
 
+## Quality & Self-Improvement
+
+| #   | Spec                                                             | Type    | Status      |
+| --- | ---------------------------------------------------------------- | ------- | ----------- |
+| 036 | [System Diagnostician](036-system-diagnostician.md)              | Backend | Not Started |
+
 ---
 
 ## Spec Status Legend
