@@ -32,6 +32,7 @@ CONTENT_QUEUE = REPO_ROOT / "data" / "content-queue"
 REPORT_DIR = REPO_ROOT / ".self-improvement" / "reports" / "diagnostic"
 AGENTS_YAML = REPO_ROOT / "agents" / "AGENTS.yaml"
 KNOWLEDGE_DIR = REPO_ROOT / ".self-improvement" / "knowledge" / "current"
+NEXT_MD_PATH = REPO_ROOT / ".self-improvement" / "NEXT.md"
 
 # Dimension score thresholds
 DIMENSION_FAIL_THRESHOLD = 0.6
@@ -418,13 +419,99 @@ def format_report(report: DiagnosticReport) -> str:
 
 
 def save_report(report: DiagnosticReport) -> Path:
-    """Save report to reports directory."""
+    """Save report to reports directory and append tasks to NEXT.md."""
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     date_str = report.timestamp[:10]
     path = REPORT_DIR / f"{date_str}.md"
     path.write_text(format_report(report))
     logger.info("Diagnostic report saved to %s", path)
+    append_to_next_md(report)
     return path
+
+
+def append_to_next_md(report: DiagnosticReport) -> int:
+    """Append P0/P1 findings to .self-improvement/NEXT.md.
+
+    Creates a '## System Diagnostic Tasks' section if missing.
+    Skips tasks whose first 50 chars of description already appear in the section.
+
+    Returns the count of tasks appended.
+    """
+    section_header = "## System Diagnostic Tasks"
+
+    # Gather P0 and P1 tasks
+    tasks_to_add: list[DiagnosticTask] = []
+    for task in report.critical:
+        if task.priority in ("P0", "P1"):
+            tasks_to_add.append(task)
+    for task in report.high:
+        if task.priority in ("P0", "P1"):
+            tasks_to_add.append(task)
+
+    if not tasks_to_add:
+        return 0
+
+    # Read current NEXT.md
+    content = NEXT_MD_PATH.read_text() if NEXT_MD_PATH.exists() else ""
+
+    # Find or create the section
+    if section_header in content:
+        # Extract existing section text for dedup checking
+        section_start = content.index(section_header)
+        # Find the next ## heading after our section (or EOF)
+        rest = content[section_start + len(section_header):]
+        next_heading = rest.find("\n## ")
+        section_text = rest if next_heading == -1 else rest[:next_heading]
+    else:
+        # Append the section header at the end
+        content = content.rstrip() + "\n\n---\n\n" + section_header + "\n"
+        section_text = ""
+
+    # Append non-duplicate tasks
+    appended = 0
+    new_lines: list[str] = []
+    for task in tasks_to_add:
+        # Fuzzy match: check if first 50 chars of description already in section
+        prefix = task.description[:50]
+        if prefix in section_text:
+            continue
+        line = (
+            f"- [ ] [{task.category}] {task.description}"
+            f" — File: `{task.file_ref}`."
+            f" Fix: {task.suggested_fix}"
+        )
+        new_lines.append(line)
+        appended += 1
+
+    if not new_lines:
+        return 0
+
+    # Write back
+    if section_header in content:
+        # Insert new lines at the end of the section
+        section_start = content.index(section_header)
+        rest = content[section_start + len(section_header):]
+        next_heading = rest.find("\n## ")
+        if next_heading == -1:
+            # Section is at the end — just append
+            content = content.rstrip() + "\n" + "\n".join(new_lines) + "\n"
+        else:
+            # Insert before the next heading
+            insert_pos = section_start + len(section_header) + next_heading
+            content = (
+                content[:insert_pos].rstrip()
+                + "\n"
+                + "\n".join(new_lines)
+                + "\n"
+                + content[insert_pos:]
+            )
+    else:
+        # Header was just added above, append tasks
+        content = content.rstrip() + "\n" + "\n".join(new_lines) + "\n"
+
+    NEXT_MD_PATH.write_text(content)
+    logger.info("Appended %d diagnostic tasks to %s", appended, NEXT_MD_PATH)
+    return appended
 
 
 # ---------------------------------------------------------------------------
@@ -447,6 +534,9 @@ def main() -> None:
 
     path = save_report(report)
     print(f"\nReport saved to: {path}")
+
+    appended = append_to_next_md(report)
+    print(f"Tasks appended to NEXT.md: {appended}")
 
     # Summary counts
     print(f"\nFindings: {len(report.critical)} critical, {len(report.high)} high, "

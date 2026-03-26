@@ -860,6 +860,7 @@ class MarketingAgent(BaseAgent):
                     else "No analytics yet (cold start)."
                 ),
                 anti_patterns=format_anti_patterns(brand),
+                prior_feedback=state.get("prior_judge_feedback", ""),
             )
 
             try:

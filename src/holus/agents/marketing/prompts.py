@@ -62,6 +62,8 @@ Use this to:
 
 {analytics}
 
+{prior_feedback}
+
 ---
 
 ## Your Task
@@ -179,6 +181,23 @@ REPURPOSE_PROMPT = """You are adapting a LinkedIn post for {target_platform}.
 ## Voice (maintain across platforms)
 
 {voice}
+
+## Twitter Thread Formatting (apply ONLY when target is Twitter)
+
+If adapting for Twitter, you MUST format the output as a numbered thread:
+- Start each tweet with its number: 1/, 2/, 3/, etc.
+- Each tweet MUST be under 280 characters (including the number prefix).
+- Separate tweets with a blank line.
+- First tweet (1/) is the hook — make it compelling and standalone.
+- Last tweet should contain the CTA.
+- Aim for 3-5 tweets. Split at natural thought boundaries.
+
+Example Twitter thread format:
+1/ Hook tweet that grabs attention
+
+2/ Supporting point or example
+
+3/ Key insight or takeaway. Reply if you agree.
 
 ## Output
 

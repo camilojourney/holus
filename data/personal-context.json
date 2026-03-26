@@ -1,0 +1,304 @@
+{
+  "anecdotes": [
+    {
+      "id": "anecdote-001",
+      "text": "The agent registry had a path off-by-one bug where domain evaluators failed to load. The AGENTS.yaml listed prompt paths like 'evaluators/written-content-judge.md' but the loader was stripping one too many path segments. Took a full debugging cycle to find because the error was silent — the system fell back to Python constants and kept running with degraded prompts.",
+      "products": ["holus"],
+      "topics": ["debugging", "agent-registry", "silent-failures"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "anecdote-002",
+      "text": "When repurposing LinkedIn posts to Threads, the truncation logic was naive — it cut at character count, often mid-sentence. Had to build sentence-aware truncation that respects paragraph boundaries. The fix was in commit b2c1635: 'preflight proxy support + sentence-aware truncation for repurposed content.'",
+      "products": ["holus"],
+      "topics": ["content-repurposing", "platform-adaptation", "text-processing"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "anecdote-003",
+      "text": "Instagram video_script posts were missing hashtags entirely. The specialist dispatch pipeline did platform-aware post-processing for text posts but the video_script content type bypassed it. Took 3 commits across cycle 56 to fix: detect content type, route through post-processing, add 16 tests to prevent regression.",
+      "products": ["holus"],
+      "topics": ["platform-bugs", "instagram", "content-pipeline"],
+      "updated": "2026-03-20"
+    },
+    {
+      "id": "anecdote-004",
+      "text": "The judge agent was failing silently when Claude returned markdown-fenced JSON. The _parse_response method expected raw JSON but the model wrapped it in ```json blocks. Fix was simple — strip markdown fences before parsing — but it caused every evaluation in the pipeline to fail with a cryptic 'invalid JSON' error until we traced it.",
+      "products": ["holus"],
+      "topics": ["llm-parsing", "judge-agent", "json-handling"],
+      "updated": "2026-03-24"
+    },
+    {
+      "id": "anecdote-005",
+      "text": "Eliminated 104 mypy errors across 27 files in a single commit (5bf28a1). Most were untyped function arguments and Any returns that had accumulated during rapid prototyping. The discipline of running strict mypy caught real bugs: dict params being passed where TypedDict was expected, missing Optional annotations hiding None crashes.",
+      "products": ["holus"],
+      "topics": ["type-safety", "mypy", "code-quality", "technical-debt"],
+      "updated": "2026-03-19"
+    },
+    {
+      "id": "anecdote-006",
+      "text": "Two tests were flaky for weeks — passing in isolation, failing in CI. Root cause: env var leakage across the test suite. One test set ANTHROPIC_API_KEY for integration testing and never cleaned up. The next test loaded config and got the test key instead of the mock. Fixed with proper monkeypatch scoping in aa0a572.",
+      "products": ["holus"],
+      "topics": ["testing", "flaky-tests", "environment-variables", "ci"],
+      "updated": "2026-03-20"
+    },
+    {
+      "id": "anecdote-007",
+      "text": "The health check was exiting non-zero when Redis was unavailable, which caused launchd to think the agent had crashed and restart it in a loop. But Redis is optional in Phase 1 — the kill switch falls back to file-based checks. Fixed exit codes so degraded != unhealthy. Lesson: exit codes are part of your API contract with the OS.",
+      "products": ["holus"],
+      "topics": ["health-checks", "launchd", "exit-codes", "operational"],
+      "updated": "2026-03-02"
+    },
+    {
+      "id": "anecdote-008",
+      "text": "Built a 3-layer prompt resolution system: (1) optimizer-promoted variants in config/prompts/, (2) canonical .md files in agents/, (3) hardcoded Python fallback constants. First hit wins. This means you can A/B test prompts without changing code — just drop a file in config/prompts/ and it takes priority. The architecture came from needing to tune agent prompts without redeploying.",
+      "products": ["holus"],
+      "topics": ["prompt-engineering", "architecture", "a-b-testing", "agent-design"],
+      "updated": "2026-03-15"
+    },
+    {
+      "id": "anecdote-009",
+      "text": "The justfile PATH issue drove us crazy for a full sprint. All 'just' commands failed because uv wasn't on the PATH inside the just shell. The fix was embarrassingly simple: prefix every command with 'uv run'. But finding it required tracing through zsh profile loading, just's shell invocation, and uv's PATH management. Cycle 35 fix.",
+      "products": ["holus"],
+      "topics": ["devtools", "path-issues", "justfile", "developer-experience"],
+      "updated": "2026-03-02"
+    },
+    {
+      "id": "anecdote-010",
+      "text": "A background CLI agent hung for 31+ minutes during cycle 34. It was supposed to run a quick analysis, but zsh escaping combined with the agent's multi-turn reasoning caused it to loop. Killed it and implemented the feature directly with Edit/Write tools. Lesson learned: background CLI agents are unreliable for production work — use direct tool calls.",
+      "products": ["holus"],
+      "topics": ["agent-reliability", "cli-tools", "timeouts", "operational"],
+      "updated": "2026-03-02"
+    },
+    {
+      "id": "anecdote-011",
+      "text": "Built Thompson Sampling into the content strategy bandit. Instead of manually deciding which (product, content_type, platform) combination to try next, the bandit uses Beta distributions updated from judge scores. After enough samples, it converges on what actually performs well. The math is simple but the impact is huge — the agent self-optimizes its content mix.",
+      "products": ["holus"],
+      "topics": ["multi-armed-bandit", "thompson-sampling", "content-strategy", "optimization"],
+      "updated": "2026-03-15"
+    },
+    {
+      "id": "anecdote-012",
+      "text": "Decided early that Pilaster should be backend-agnostic: ComfyUI, Replicate, Runway, or any future engine are swappable. The key insight was that the value isn't in the generation engine — it's in the character registry (LoRAs + references), experiment memory, and templates. Engines change every 6 months. Your data and abstractions don't.",
+      "products": ["pilaster"],
+      "topics": ["architecture", "backend-agnostic", "abstraction", "product-design"],
+      "updated": "2026-02-28"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "metric-001",
+      "text": "Holus has ~28,800 lines of Python source code across the src/ directory, accumulated over 4 sprints and 258 git commits.",
+      "products": ["holus"],
+      "topics": ["codebase-size", "engineering-velocity"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "metric-002",
+      "text": "The test suite has ~25,100 lines across 84 test files. Sprint 1 started with 247 tests, Sprint 2 grew to 330, Sprint 3 exploded to 1170, and Sprint 4 reached 1198+.",
+      "products": ["holus"],
+      "topics": ["testing", "test-coverage", "engineering-velocity"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "metric-003",
+      "text": "The agent registry contains 35 agents: 1 manager (marketing-strategist), 25 specialists across 6 categories (written-authority, visual, video, growth, research, repurposing), 7 domain-expert evaluators, and 2 ops agents. Each has a .md prompt file with YAML frontmatter.",
+      "products": ["holus"],
+      "topics": ["agent-architecture", "agent-count", "multi-agent-systems"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "metric-004",
+      "text": "7 domain-specific evaluators route content evaluation: written-content-judge, visual-content-judge, brand-safety-judge, and 4 others. Each has its own rubric dimensions — not generic correctness/completeness scores.",
+      "products": ["holus"],
+      "topics": ["evaluation", "quality-gates", "domain-evaluators"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "metric-005",
+      "text": "25 spec documents tracked in specs/README.md (numbered 000-036 with gaps from deprecated specs). 10 are Implemented, 6 are Partial, 3 are Deprecated, and the rest are Not Started or Ready.",
+      "products": ["holus"],
+      "topics": ["specs", "documentation", "project-management"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "metric-006",
+      "text": "Sprint 2 completed 17/17 tasks in a single day (2026-03-02), building the entire Authority Engine: brand.yaml (289 lines), 4 rewritten knowledge files, 12 viral frameworks, 24 niche research queries, and brand loader code.",
+      "products": ["holus"],
+      "topics": ["sprint-velocity", "authority-engine", "productivity"],
+      "updated": "2026-03-02"
+    },
+    {
+      "id": "metric-007",
+      "text": "Sprint 3 was the biggest: 31/31 tasks completed, growing the codebase from 9,800 to 24,000 LOC and tests from 330 to 1170. Six new specs implemented (027-033) covering the Observatory, agent intelligence, LinkedIn pipeline, humanization gate, and animated infographics.",
+      "products": ["holus"],
+      "topics": ["sprint-velocity", "codebase-growth", "engineering"],
+      "updated": "2026-03-20"
+    },
+    {
+      "id": "metric-008",
+      "text": "The brand.yaml identity file is 351 lines covering story, positioning, offer, target client, voice (derived from analysis of 15 published posts), anti-patterns, content pillars, personal frameworks, and platform strategy across 5 platforms.",
+      "products": ["holus"],
+      "topics": ["brand-identity", "content-strategy", "configuration"],
+      "updated": "2026-03-14"
+    },
+    {
+      "id": "metric-009",
+      "text": "Eliminated 104 mypy errors across 27 files in a single commit, then continued fixing additional mypy issues across subsequent commits (9 more errors in 9 files, 23 in idea_runner.py, 5 in agent.py). Strict typing caught real bugs that would have been production crashes.",
+      "products": ["holus"],
+      "topics": ["type-safety", "mypy", "code-quality"],
+      "updated": "2026-03-24"
+    },
+    {
+      "id": "metric-010",
+      "text": "12 viral LinkedIn frameworks were reverse-engineered and documented in knowledge/viral-frameworks.md, with 24 niche research queries across 4 categories with rotation schedules for continuous market monitoring.",
+      "products": ["holus"],
+      "topics": ["content-frameworks", "niche-research", "linkedin"],
+      "updated": "2026-03-02"
+    }
+  ],
+  "opinions": [
+    {
+      "id": "opinion-001",
+      "text": "MCP (Model Context Protocol) over REST for silo communication. Each silo (genpeli, pilaster, social-media) is an independent repo with its own MCP server. The MCP boundary IS the contract — Holus never imports silo Python packages, reads silo databases directly, or SSHs into silo servers. If a silo's MCP is down, Holus waits. Clean boundaries beat tight coupling every time.",
+      "products": ["holus", "genpeli", "pilaster"],
+      "topics": ["architecture", "mcp", "silo-architecture", "api-design"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "opinion-002",
+      "text": "Pydantic models at every silo boundary, no raw dicts. ContentDecision, BrandIdentity, NicheInsight, AnalyticsSnapshot — all typed. When you're calling external services through MCP, the Pydantic validation layer catches malformed responses before they propagate through your pipeline. Raw dicts are tech debt disguised as flexibility.",
+      "products": ["holus"],
+      "topics": ["pydantic", "type-safety", "api-contracts", "data-validation"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "opinion-003",
+      "text": "Playwright over Puppeteer for rendering visual content. The animated infographics system (SPEC-033) uses Playwright to render data_viz, poll, and insight templates into images and short animations. Playwright's multi-browser support and Python bindings made it the obvious choice for a Python-first codebase.",
+      "products": ["holus"],
+      "topics": ["playwright", "rendering", "visual-content", "tooling"],
+      "updated": "2026-03-20"
+    },
+    {
+      "id": "opinion-004",
+      "text": "Analytics should live in the silo that owns the social accounts, not in the orchestrator. Holus reads analytics from social-media-automatization via MCP — never stores them permanently. The source of truth for engagement data is the publishing system, period. Duplicating analytics creates drift and stale data.",
+      "products": ["holus"],
+      "topics": ["data-ownership", "analytics", "silo-architecture", "separation-of-concerns"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "opinion-005",
+      "text": "Structured prompt recipes over flat prompt strings for image generation. Holus sends Pilaster a decomposed recipe with independent dimensions (subject, style, composition, lighting, quality, negative) instead of a single prompt string. This maps to ComfyUI nodes but works identically across DALL-E 3, Imagen 3, Fal.ai, Gemini. The abstraction survives backend swaps.",
+      "products": ["pilaster", "holus"],
+      "topics": ["prompt-engineering", "image-generation", "abstraction", "backend-agnostic"],
+      "updated": "2026-03-12"
+    },
+    {
+      "id": "opinion-006",
+      "text": "Constitutional AI revision loops for content quality. Before content enters the review queue, it goes through a critique-and-revise cycle: the agent critiques its own output against brand voice and anti-patterns, then rewrites. This catches 'AI slop' (corporate jargon, sycophantic openings, exclamation marks) before a human ever sees it.",
+      "products": ["holus"],
+      "topics": ["constitutional-ai", "content-quality", "self-critique", "llm-patterns"],
+      "updated": "2026-03-15"
+    },
+    {
+      "id": "opinion-007",
+      "text": "Opus for strategy, Sonnet for execution. The marketing agent uses Claude Opus for high-level decisions (what to create, which product, which platform) and Sonnet for content generation and evaluation. Strategy requires reasoning depth; content generation requires speed and cost efficiency. Match the model tier to the cognitive demand.",
+      "products": ["holus"],
+      "topics": ["model-selection", "claude", "cost-optimization", "agent-design"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "opinion-008",
+      "text": "File-based state over databases for solo-dev agent systems. Trajectory logs are JSONL, lessons are JSON, memory is Markdown, agent definitions are YAML. The Observatory dashboard reads these files directly via FastAPI — no database layer. For a system with one user and episodic execution, files are easier to debug, version, and recover than any database.",
+      "products": ["holus"],
+      "topics": ["file-based-state", "simplicity", "solo-dev", "architecture"],
+      "updated": "2026-03-20"
+    },
+    {
+      "id": "opinion-009",
+      "text": "Never build Phase 2 before Phase 1 produces content you're proud of. Holus has a strict build order: Phase 1 (one working loop with human approval), Phase 2 (automation with launchd + Telegram), Phase 3 (optimization with performance data). The temptation to automate before the output quality is right is the number one way AI projects fail.",
+      "products": ["holus"],
+      "topics": ["build-order", "discipline", "product-development", "ai-systems"],
+      "updated": "2026-03-12"
+    },
+    {
+      "id": "opinion-010",
+      "text": "The hardest problem in AI isn't building — it's building for the right market. Silicon Valley builds for English-first audiences by default. The 600M Spanish/English bilingual market is underserved, underrepresented, and increasingly online. Technical depth plus lived bilingual experience plus a business lens is a combination almost nobody has.",
+      "products": ["pilaster", "genpeli", "invoz"],
+      "topics": ["market-insight", "bilingual", "product-strategy", "positioning"],
+      "updated": "2026-03-14"
+    }
+  ],
+  "project_facts": [
+    {
+      "id": "fact-001",
+      "text": "Genpeli is an AI video editing pipeline for human footage. It takes raw video, removes silences and fillers, burns word-by-word captions, and normalizes audio. It is NOT a video creator from scratch — it's a video editor. It uses ffmpeg for processing and Whisper for transcription.",
+      "products": ["genpeli"],
+      "topics": ["product-description", "video-editing", "whisper", "ffmpeg"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "fact-002",
+      "text": "Pilaster is an AI image generation platform with memory. It has three layers: a character registry (LoRAs + reference sheets), a backend-agnostic generation abstraction (ComfyUI, Replicate, Runway are all swappable), and experiment memory that tracks every generation with outcomes and quality scores. The memory and characters are the product — backends change every 6 months.",
+      "products": ["pilaster"],
+      "topics": ["product-description", "image-generation", "backend-agnostic", "character-registry"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "fact-003",
+      "text": "Invoz is a Whisper-powered audio ML API built for non-native English speakers. It handles transcription, speaker diarization, and silence detection. The product insight came from the bilingual experience — existing speech APIs are optimized for native English speakers and degrade badly on accented or code-switched speech.",
+      "products": ["invoz"],
+      "topics": ["product-description", "audio-ml", "whisper", "bilingual"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "fact-004",
+      "text": "Holus is the AI marketing strategist that orchestrates the entire content engine. It runs a ReAct loop (Observe analytics, Reason about strategy, Act via silo MCP calls, Evaluate with domain judges) and learns from results to improve over time. It holds the brain; the silos hold the hands.",
+      "products": ["holus"],
+      "topics": ["product-description", "agent-orchestration", "react-loop", "marketing"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "fact-005",
+      "text": "The silo architecture keeps each product fully independent. Genpeli, Pilaster, and social-media-automatization each have their own repos, databases, and MCP servers. Holus never imports silo code, reads silo databases, or manages silo deployments. The MCP boundary is the only interface.",
+      "products": ["holus", "genpeli", "pilaster"],
+      "topics": ["silo-architecture", "separation-of-concerns", "mcp", "system-design"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "fact-006",
+      "text": "The Observatory is a local monitoring dashboard: FastAPI backend on localhost:8000 and a frontend on localhost:3000. It reads trajectory.jsonl, AGENTS.yaml, eval_history, and content-queue directly from disk — no separate database. It gives visibility into agent decisions, content pipeline state, and evaluation scores.",
+      "products": ["holus"],
+      "topics": ["observatory", "monitoring", "dashboard", "fastapi"],
+      "updated": "2026-03-20"
+    },
+    {
+      "id": "fact-007",
+      "text": "The LinkedIn content pipeline is the most developed flow: idea generation, planning, specialist dispatch (hook-architect, storyteller, cta-strategist, voice-guardian), constitutional AI revision, judge evaluation, humanization gate, human review, and finally MCP-based publishing. Content must be humanized before approval — edit distance limits ensure the human actually touched it.",
+      "products": ["holus"],
+      "topics": ["linkedin", "content-pipeline", "humanization-gate", "quality-control"],
+      "updated": "2026-03-20"
+    },
+    {
+      "id": "fact-008",
+      "text": "Content repurposing adapts LinkedIn posts to 4 other platforms: Twitter (condensed, more direct), Instagram (visual or bilingual angle), Threads (conversational), and Facebook (bilingual Spanish if applicable). Claude Sonnet does the adaptation, with a mechanical fallback that ensures the feature never fails even if the API is down.",
+      "products": ["holus"],
+      "topics": ["content-repurposing", "multi-platform", "linkedin", "graceful-degradation"],
+      "updated": "2026-03-02"
+    },
+    {
+      "id": "fact-009",
+      "text": "Trading systems (pythia and milo-to-the-moon) are completely isolated from Holus. They run their own cron jobs, their own strategies, and never communicate with the marketing stack. This is a hard boundary — Holus agents are explicitly forbidden from accessing, referencing, or posting about trading.",
+      "products": ["holus"],
+      "topics": ["isolation", "trading", "security", "boundaries"],
+      "updated": "2026-03-26"
+    },
+    {
+      "id": "fact-010",
+      "text": "The self-improvement loop writes to .self-improvement/: MEMORY.md (system memory, in git), NEXT.md (priority queue, in git), trajectory.jsonl (run logs, git-ignored), lessons.json (learned patterns, git-ignored), and weekly reports in reports/marketing/ and reports/manager/. The WeeklyLearningLoop extracts patterns from trajectory data and updates the knowledge base.",
+      "products": ["holus"],
+      "topics": ["self-improvement", "learning-loop", "memory", "trajectory"],
+      "updated": "2026-03-20"
+    }
+  ]
+}

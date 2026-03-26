@@ -12,6 +12,10 @@ from holus.agents.marketing.quality_score import (
     VALID_PILLARS,
     QualityResult,
     QualityViolation,
+    _check_consecutive_same_length,
+    _check_opening_word_diversity,
+    _check_sentence_length_variance,
+    _check_single_sentence_paragraphs,
     score_content,
 )
 
@@ -392,3 +396,176 @@ class TestConstants:
 
     def test_pass_threshold_reasonable(self) -> None:
         assert 40 <= PASS_THRESHOLD <= 80
+
+
+# ---------------------------------------------------------------------------
+# Structural AI-detection checks
+# ---------------------------------------------------------------------------
+
+
+class TestStructuralChecks:
+    """Tests for the 4 structural AI-detection checks."""
+
+    # -- _check_sentence_length_variance --
+
+    def test_sentence_variance_uniform_triggers(self) -> None:
+        # 6 sentences, all ~8 words → very low std dev
+        text = (
+            "The system handles all the input data. "
+            "The model processes every single request. "
+            "The pipeline transforms all raw features. "
+            "The service returns the final results. "
+            "The client receives the full response. "
+            "The dashboard displays all the metrics."
+        )
+        v = _check_sentence_length_variance(text)
+        assert v is not None
+        assert v.check == "sentence_variance_low"
+        assert v.penalty == 15
+        assert "std dev" in v.message
+
+    def test_sentence_variance_varied_passes(self) -> None:
+        # Sentences with very different lengths → high std dev
+        text = (
+            "Stop. "
+            "This is a radically different approach to building AI systems that actually work in production. "
+            "Why? "
+            "Because most teams over-engineer their ML pipelines with unnecessary complexity and abstraction layers. "
+            "Ship it. "
+            "The best architecture is the one your team can debug at 3am when the pager goes off."
+        )
+        v = _check_sentence_length_variance(text)
+        assert v is None
+
+    def test_sentence_variance_too_few_sentences_skips(self) -> None:
+        # Only 3 sentences — below the 5-sentence minimum
+        text = "First sentence here. Second sentence here. Third sentence here."
+        v = _check_sentence_length_variance(text)
+        assert v is None
+
+    def test_sentence_variance_empty_text(self) -> None:
+        assert _check_sentence_length_variance("") is None
+
+    # -- _check_single_sentence_paragraphs --
+
+    def test_single_sentence_paragraphs_too_few_triggers(self) -> None:
+        # 4 paragraphs, 0 single-sentence → 0% < 30%
+        text = (
+            "The first point is important. It has multiple sentences here.\n\n"
+            "The second point builds on that. It also has two sentences.\n\n"
+            "Here is the third point. Again with two sentences.\n\n"
+            "Finally the fourth point. Two sentences as well."
+        )
+        v = _check_single_sentence_paragraphs(text, Platform.LINKEDIN)
+        assert v is not None
+        assert v.check == "few_short_paragraphs"
+        assert v.penalty == 10
+        assert "30%+" in v.message
+
+    def test_single_sentence_paragraphs_enough_passes(self) -> None:
+        # 4 paragraphs, 2 are single-sentence → 50% > 30%
+        text = (
+            "This stands alone.\n\n"
+            "This paragraph has two sentences. Here is the second one.\n\n"
+            "Another standalone.\n\n"
+            "And a final paragraph with more detail. It elaborates further."
+        )
+        v = _check_single_sentence_paragraphs(text, Platform.LINKEDIN)
+        assert v is None
+
+    def test_single_sentence_paragraphs_non_linkedin_skips(self) -> None:
+        # Same violating text but on Twitter — should not fire
+        text = (
+            "The first point is important. It has multiple sentences.\n\n"
+            "The second point builds on that. It also has two sentences.\n\n"
+            "Here is the third point. Again with two sentences.\n\n"
+            "Finally the fourth point. Two sentences as well."
+        )
+        v = _check_single_sentence_paragraphs(text, Platform.TWITTER)
+        assert v is None
+
+    def test_single_sentence_paragraphs_too_few_paragraphs_skips(self) -> None:
+        # Only 2 paragraphs — below the 3-paragraph minimum
+        text = "First paragraph with multiple sentences. Two of them.\n\nSecond paragraph here. Also two."
+        v = _check_single_sentence_paragraphs(text, Platform.LINKEDIN)
+        assert v is None
+
+    # -- _check_opening_word_diversity --
+
+    def test_opening_word_diversity_repetitive_triggers(self) -> None:
+        # 4 paragraphs all starting with generic openers
+        text = (
+            "I built this system from scratch.\n\n"
+            "The architecture is clean.\n\n"
+            "In production, it handles 10K requests.\n\n"
+            "It scales horizontally across regions."
+        )
+        v = _check_opening_word_diversity(text)
+        assert v is not None
+        assert v.check == "repetitive_openers"
+        assert v.penalty == 10
+        assert "repetitive" in v.message.lower()
+
+    def test_opening_word_diversity_varied_passes(self) -> None:
+        # 4 paragraphs with diverse openers
+        text = (
+            "Yesterday we shipped a new feature.\n\n"
+            "Most teams struggle with deployment.\n\n"
+            "Here is what changed.\n\n"
+            "After 6 months, the results speak for themselves."
+        )
+        v = _check_opening_word_diversity(text)
+        assert v is None
+
+    def test_opening_word_diversity_too_few_paragraphs_skips(self) -> None:
+        # Only 3 paragraphs — below the 4-paragraph minimum
+        text = "I did this.\n\nThe result was good.\n\nIn summary, it worked."
+        v = _check_opening_word_diversity(text)
+        assert v is None
+
+    def test_opening_word_diversity_empty_text(self) -> None:
+        assert _check_opening_word_diversity("") is None
+
+    # -- _check_consecutive_same_length --
+
+    def test_consecutive_same_length_triggers(self) -> None:
+        # 3 consecutive sentences each with 7 words (within +/-2)
+        text = (
+            "The system handles all the requests well. "
+            "The model processes every input it gets. "
+            "The pipeline transforms raw data into features."
+        )
+        v = _check_consecutive_same_length(text)
+        assert v is not None
+        assert v.check == "mechanical_rhythm"
+        assert v.penalty == 10
+        assert "mechanical rhythm" in v.message
+
+    def test_consecutive_same_length_varied_passes(self) -> None:
+        # 3 sentences with very different lengths
+        text = (
+            "Stop. "
+            "The entire ML pipeline was rebuilt from the ground up over six months of intensive work. "
+            "It works now."
+        )
+        v = _check_consecutive_same_length(text)
+        assert v is None
+
+    def test_consecutive_same_length_too_few_sentences_skips(self) -> None:
+        # Only 2 sentences
+        text = "First sentence here. Second sentence here."
+        v = _check_consecutive_same_length(text)
+        assert v is None
+
+    def test_consecutive_same_length_empty_text(self) -> None:
+        assert _check_consecutive_same_length("") is None
+
+    # -- Integration: default _make_piece still passes --
+
+    def test_default_piece_unaffected_by_structural_checks(self) -> None:
+        """Ensure the default test piece still scores 100 with structural checks."""
+        piece = _make_piece()
+        result = score_content(piece)
+        assert result.passed is True
+        assert result.score == 100
+        assert result.violations == []

@@ -8,6 +8,7 @@ Content below the threshold is auto-rejected and logged, not queued.
 from __future__ import annotations
 
 import re
+import statistics
 
 import structlog
 
@@ -333,6 +334,138 @@ def _check_specificity(text: str) -> QualityViolation | None:
 
 
 # ---------------------------------------------------------------------------
+# Structural AI-detection checks
+# ---------------------------------------------------------------------------
+
+_SENTENCE_END_RE = re.compile(r"[.!?]+")
+
+
+def _check_sentence_length_variance(text: str) -> QualityViolation | None:
+    """Flag text where all sentences are suspiciously similar in length.
+
+    Low variance in sentence word-counts is a strong AI-generation signal.
+    Only fires when there are enough sentences (>=5) for the metric to be
+    meaningful.
+    """
+    if not text:
+        return None
+    sentences = [s.strip() for s in _SENTENCE_END_RE.split(text) if s.strip()]
+    if len(sentences) < 5:
+        return None
+    word_counts = [len(s.split()) for s in sentences]
+    std_dev = statistics.pstdev(word_counts)
+    if std_dev < 4:
+        return QualityViolation(
+            check="sentence_variance_low",
+            message=(
+                f"Sentence lengths too uniform (std dev {std_dev:.1f} words) "
+                "— AI-typical pattern. Mix short and long sentences."
+            ),
+            penalty=15,
+        )
+    return None
+
+
+def _check_single_sentence_paragraphs(
+    text: str, platform: Platform
+) -> QualityViolation | None:
+    """Check that LinkedIn posts have enough short, punchy paragraphs.
+
+    Top LinkedIn creators use 30%+ single-sentence paragraphs for scanability.
+    Only applies to LinkedIn and only when there are enough paragraphs (>=3)
+    to make the metric meaningful.
+    """
+    if platform != Platform.LINKEDIN:
+        return None
+    # Split on blank lines or single newlines
+    paragraphs = [p.strip() for p in re.split(r"\n\n|\n", text) if p.strip()]
+    if len(paragraphs) < 3:
+        return None
+    single_sentence_count = 0
+    for para in paragraphs:
+        sentence_parts = [s.strip() for s in _SENTENCE_END_RE.split(para) if s.strip()]
+        if len(sentence_parts) <= 1:
+            single_sentence_count += 1
+    ratio = single_sentence_count / len(paragraphs)
+    if ratio < 0.30:
+        return QualityViolation(
+            check="few_short_paragraphs",
+            message=(
+                f"Only {ratio:.0%} single-sentence paragraphs — "
+                "LinkedIn top creators use 30%+. Break up some paragraphs."
+            ),
+            penalty=10,
+        )
+    return None
+
+
+def _check_opening_word_diversity(text: str) -> QualityViolation | None:
+    """Flag when most paragraphs start with the same small set of words.
+
+    If the 4 generic openers (I, The, In, It) account for >50% of paragraph
+    openings, the text reads as AI-generated.  Only fires when there are
+    enough paragraphs (>=4) for the metric to matter.
+    """
+    if not text:
+        return None
+    paragraphs = [p.strip() for p in re.split(r"\n\n|\n", text) if p.strip()]
+    if len(paragraphs) < 4:
+        return None
+    generic_openers = {"i", "the", "in", "it"}
+    first_words = []
+    for para in paragraphs:
+        words = para.split()
+        if words:
+            first_words.append(words[0].lower().rstrip(".,;:!?"))
+    if not first_words:
+        return None
+    generic_count = sum(1 for w in first_words if w in generic_openers)
+    ratio = generic_count / len(first_words)
+    if ratio > 0.50:
+        # List which generic openers were actually used
+        used = sorted({w for w in first_words if w in generic_openers})
+        return QualityViolation(
+            check="repetitive_openers",
+            message=(
+                f"Opening words are repetitive ({', '.join(used)}). "
+                "Vary paragraph starts."
+            ),
+            penalty=10,
+        )
+    return None
+
+
+def _check_consecutive_same_length(text: str) -> QualityViolation | None:
+    """Flag 3+ consecutive sentences with nearly identical word counts.
+
+    When consecutive sentences all land within +/-2 words of each other,
+    the rhythm feels mechanical — a strong AI-generation signal.
+    """
+    if not text:
+        return None
+    sentences = [s.strip() for s in _SENTENCE_END_RE.split(text) if s.strip()]
+    if len(sentences) < 3:
+        return None
+    word_counts = [len(s.split()) for s in sentences]
+    streak = 1
+    for i in range(1, len(word_counts)):
+        if abs(word_counts[i] - word_counts[i - 1]) <= 2:
+            streak += 1
+            if streak >= 3:
+                return QualityViolation(
+                    check="mechanical_rhythm",
+                    message=(
+                        "3+ consecutive sentences with similar length "
+                        "— mechanical rhythm."
+                    ),
+                    penalty=10,
+                )
+        else:
+            streak = 1
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Main scoring function
 # ---------------------------------------------------------------------------
 
@@ -395,6 +528,23 @@ def score_content(
 
     # Specificity (numbers, proper nouns)
     v = _check_specificity(text)
+    if v:
+        violations.append(v)
+
+    # Structural AI-detection checks
+    v = _check_sentence_length_variance(text)
+    if v:
+        violations.append(v)
+
+    v = _check_single_sentence_paragraphs(text, piece.platform)
+    if v:
+        violations.append(v)
+
+    v = _check_opening_word_diversity(text)
+    if v:
+        violations.append(v)
+
+    v = _check_consecutive_same_length(text)
     if v:
         violations.append(v)
 

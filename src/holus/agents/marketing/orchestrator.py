@@ -99,7 +99,7 @@ async def improvement_cycle() -> dict[str, Any]:
     if trajectory_path.exists():
         with open(trajectory_path, encoding="utf-8") as fh:
             total_entries = sum(1 for _ in fh)
-        if total_entries >= 500:
+        if total_entries >= 100:
             try:
                 from holus.self_improvement.prompt_evolution import PromptEvolution
 
@@ -119,8 +119,8 @@ async def improvement_cycle() -> dict[str, Any]:
                 logger.warning("Prompt evolution failed (non-blocking): %s", exc)
         else:
             logger.info(
-                "Prompt evolution gate: %d/%d entries (need 500)",
-                total_entries, 500,
+                "Prompt evolution gate: %d/%d entries (need 100)",
+                total_entries, 100,
             )
 
     # 3. Log gap summary
