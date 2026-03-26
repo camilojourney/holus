@@ -19,7 +19,12 @@ from typing import Any
 
 import yaml
 
-from holus.preflight import _read_key_from_dotenv, check_api_key, run_preflight
+from holus.preflight import (
+    _read_env_var_from_dotenv,
+    _read_key_from_dotenv,
+    check_api_key,
+    run_preflight,
+)
 
 QUEUE_DIR = Path("data/content-queue")
 
@@ -97,6 +102,10 @@ def main() -> None:
         dotenv_key = _read_key_from_dotenv()
         if dotenv_key:
             os.environ["ANTHROPIC_API_KEY"] = dotenv_key
+    if not os.environ.get("ANTHROPIC_BASE_URL"):
+        dotenv_base = _read_env_var_from_dotenv("ANTHROPIC_BASE_URL")
+        if dotenv_base:
+            os.environ["ANTHROPIC_BASE_URL"] = dotenv_base
 
     # -- Preflight (require API key) ------------------------------------------
     api_check = check_api_key()

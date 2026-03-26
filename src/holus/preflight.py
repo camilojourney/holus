@@ -59,8 +59,8 @@ class CheckResult:
 # ---------------------------------------------------------------------------
 
 
-def _read_key_from_dotenv() -> str:
-    """Read ANTHROPIC_API_KEY from .env file (fallback when not in os.environ)."""
+def _read_env_var_from_dotenv(var_name: str) -> str:
+    """Read a variable from .env file (fallback when not in os.environ)."""
     env_path = Path(".env")
     if not env_path.exists():
         return ""
@@ -70,32 +70,53 @@ def _read_key_from_dotenv() -> str:
             if stripped.startswith("#") or "=" not in stripped:
                 continue
             name, _, value = stripped.partition("=")
-            if name.strip() == "ANTHROPIC_API_KEY":
+            if name.strip() == var_name:
                 return value.strip().strip("\"'")
     except Exception:
         pass
     return ""
 
 
+def _read_key_from_dotenv() -> str:
+    """Read ANTHROPIC_API_KEY from .env file (fallback when not in os.environ)."""
+    return _read_env_var_from_dotenv("ANTHROPIC_API_KEY")
+
+
 def check_api_key() -> CheckResult:
-    """Check that ANTHROPIC_API_KEY is set (env var or .env file)."""
+    """Check that ANTHROPIC_API_KEY is set (env var or .env file).
+
+    Accepts either a real Anthropic key (sk-ant-...) or a proxy dummy key
+    when ANTHROPIC_BASE_URL points to a local proxy (not api.anthropic.com).
+    """
     key = os.environ.get("ANTHROPIC_API_KEY", "")
     source = "env"
     if not key:
         key = _read_key_from_dotenv()
         source = ".env"
+
+    base_url = os.environ.get("ANTHROPIC_BASE_URL", "")
+    if not base_url:
+        base_url = _read_env_var_from_dotenv("ANTHROPIC_BASE_URL")
+    using_proxy = base_url and "api.anthropic.com" not in base_url
+
     if key and key.startswith("sk-ant-"):
         return CheckResult(
             "ANTHROPIC_API_KEY",
             passed=True,
             detail=f"Set via {source} (sk-ant-...{key[-4:]})",
         )
+    if key and using_proxy:
+        return CheckResult(
+            "ANTHROPIC_API_KEY",
+            passed=True,
+            detail=f"Set via {source} (proxy key, base_url={base_url})",
+        )
     if key:
         return CheckResult(
             "ANTHROPIC_API_KEY",
             passed=False,
-            detail="Set but doesn't look like a valid key",
-            fix="Export a valid key: export ANTHROPIC_API_KEY=sk-ant-...",
+            detail="Set but doesn't look like a valid key (set ANTHROPIC_BASE_URL for proxy)",
+            fix="Export a valid key: export ANTHROPIC_API_KEY=sk-ant-... or set ANTHROPIC_BASE_URL for proxy",
         )
     return CheckResult(
         "ANTHROPIC_API_KEY",

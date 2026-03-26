@@ -47,9 +47,18 @@ class TestCheckApiKey:
 
     def test_invalid_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("ANTHROPIC_API_KEY", "not-a-real-key")
-        result = check_api_key()
+        monkeypatch.delenv("ANTHROPIC_BASE_URL", raising=False)
+        with patch("holus.preflight._read_env_var_from_dotenv", return_value=""):
+            result = check_api_key()
         assert result.passed is False
         assert "doesn't look like" in result.detail
+
+    def test_proxy_dummy_key_accepted(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "dummy-key-for-proxy")
+        monkeypatch.setenv("ANTHROPIC_BASE_URL", "http://localhost:8080")
+        result = check_api_key()
+        assert result.passed is True
+        assert "proxy" in result.detail.lower()
 
     def test_key_from_dotenv(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
