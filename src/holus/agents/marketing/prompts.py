@@ -176,6 +176,10 @@ RIGHT: "How are you drawing the line between tools and cognitive logic in your s
 WRONG: "Let's dive in!"
 RIGHT: [just start the hook — no preamble]
 
+## Prior Feedback (mistakes to avoid)
+
+{prior_feedback}
+
 ## Output
 
 Return ONLY the post text. No preamble, no meta-commentary. Ready to publish.
@@ -227,9 +231,14 @@ Example Twitter thread format:
 
 3/ Key insight or takeaway. Reply if you agree.
 
+## Prior Feedback for {target_platform} (mistakes to avoid)
+
+{prior_feedback}
+
 ## Output
 
 Return ONLY the adapted post text. No preamble. Ready to publish.
+The output MUST be complete — never end mid-sentence or leave thoughts unfinished.
 """
 
 

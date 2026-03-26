@@ -501,6 +501,43 @@ class MarketingAgent(BaseAgent):
             logger.warning("Failed to load prior judge feedback", exc_info=True)
             return ""
 
+    def _format_generation_feedback(
+        self, platform: str, *, prior_feedback: str = ""
+    ) -> str:
+        """Extract platform-specific generation feedback from prior judge results.
+
+        Filters the full prior_judge_feedback (loaded in observe) to entries
+        matching the target platform. Returns concise writing guidance — what
+        to avoid, which dimensions were weak.
+
+        Parameters
+        ----------
+        platform:
+            Target platform name (e.g. "linkedin", "threads", "twitter").
+        prior_feedback:
+            The full prior_judge_feedback string from observe phase.
+
+        Returns
+        -------
+        str
+            Formatted feedback for injection into generation prompts, or
+            "No prior feedback for this platform." if nothing relevant.
+        """
+        if not prior_feedback:
+            return "No prior feedback for this platform."
+
+        platform_upper = platform.upper()
+        relevant_lines: list[str] = []
+        for line in prior_feedback.splitlines():
+            # Match lines like "- [THREADS — PARTIAL] ..."
+            if platform_upper in line.upper() or line.startswith("  Weak"):
+                relevant_lines.append(line)
+
+        if not relevant_lines:
+            return "No prior feedback for this platform."
+
+        return "\n".join(relevant_lines)
+
     def _load_brand_identity(self) -> dict[str, Any]:
         """Load and validate config/brand.yaml.
 
@@ -936,6 +973,7 @@ class MarketingAgent(BaseAgent):
         knowledge = state.get("knowledge", {})
         products = state.get("product_updates", {})
         brand = state.get("brand_identity", {})
+        prior_feedback: str = str(state.get("prior_judge_feedback", ""))
 
         for index, raw_decision in enumerate(state.get("content_decisions", []), start=1):
             self.check_kill_switch()
@@ -957,6 +995,9 @@ class MarketingAgent(BaseAgent):
                     knowledge=knowledge,
                     products=products,
                     brand=brand,
+                    prior_feedback=self._format_generation_feedback(
+                        decision.platform.value, prior_feedback=prior_feedback
+                    ),
                 )
                 piece = GeneratedPiece(
                     piece_id=f"{state.get('cycle_id', 'cycle')}-{index}-{uuid4().hex[:8]}",
@@ -1025,6 +1066,8 @@ class MarketingAgent(BaseAgent):
                         cycle_id=state.get("cycle_id", "cycle"),
                         piece_index=index,
                         agent_id=self.agent_name,
+                        prior_feedback=prior_feedback,
+                        format_feedback_fn=self._format_generation_feedback,
                     )
                     for rp in repurposed:
                         rp_quality = score_content(rp, brand_anti_patterns=brand_anti_phrases)
@@ -1466,6 +1509,7 @@ class MarketingAgent(BaseAgent):
         knowledge: dict[str, str],
         products: dict[str, Any],
         brand: dict[str, Any] | None = None,
+        prior_feedback: str = "",
     ) -> tuple[str, str]:
         """Generate content text for a decision using authority-building prompts.
 
@@ -1487,7 +1531,9 @@ class MarketingAgent(BaseAgent):
         chain_platforms = {Platform.LINKEDIN, Platform.INSTAGRAM, Platform.THREADS}
         if decision.platform in chain_platforms:
             try:
-                text = self._specialist_chain(decision=decision, brand=brand)
+                text = self._specialist_chain(
+                    decision=decision, brand=brand, prior_feedback=prior_feedback
+                )
                 if text and len(text) > 50:
                     return self._enforce_platform_limit(
                         text, decision.platform
@@ -1509,6 +1555,7 @@ class MarketingAgent(BaseAgent):
             positioning=format_positioning(brand),
             product_info=product_info,
             anti_patterns=format_anti_patterns(brand),
+            prior_feedback=prior_feedback or "No prior feedback for this platform.",
         )
 
         response = self.claude.call(
@@ -1553,6 +1600,7 @@ class MarketingAgent(BaseAgent):
         *,
         decision: ContentDecision,
         brand: dict[str, Any],
+        prior_feedback: str = "",
     ) -> str:
         """Run the specialist chain: hook → storyteller → voice-guardian → CTA.
 
@@ -1586,6 +1634,11 @@ class MarketingAgent(BaseAgent):
 
         # Step 2: Storyteller
         story_prompt = loader.get_prompt("storyteller")
+        feedback_section = ""
+        if prior_feedback and prior_feedback != "No prior feedback for this platform.":
+            feedback_section = (
+                f"\n\nPrior judge feedback (avoid these mistakes):\n{prior_feedback}"
+            )
         story_input = (
             f"{self._GENERATION_PREFIX}"
             f"Content brief:\n"
@@ -1596,6 +1649,7 @@ class MarketingAgent(BaseAgent):
             f"- Hook (from hook-architect): {best_hook}\n\n"
             f"Write the narrative body. Do NOT include the hook itself.\n\n"
             f"Platform guidance: {self._PLATFORM_STORY_HINTS.get(decision.platform.value, '')}"
+            f"{feedback_section}"
         )
         story_resp = self.claude.call(
             cached_prompt=CachedPrompt(system_prompt=story_prompt),

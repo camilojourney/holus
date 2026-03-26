@@ -10,8 +10,11 @@ Spec reference: specs/017-authority-engine-agent-update.md (SPEC-004).
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 from holus.agents.marketing.models import (
     ContentDecision,
@@ -93,6 +96,8 @@ async def repurpose_content(
     piece_index: int,
     agent_id: str = "marketing-agent",
     targets: list[Platform] | None = None,
+    prior_feedback: str = "",
+    format_feedback_fn: Callable[..., str] | None = None,
 ) -> list[GeneratedPiece]:
     """Adapt a LinkedIn post for secondary platforms.
 
@@ -114,6 +119,11 @@ async def repurpose_content(
         Agent identifier for Claude API cost tracking.
     targets:
         Override default REPURPOSE_TARGETS if needed.
+    prior_feedback:
+        Full prior judge feedback string (all platforms).
+    format_feedback_fn:
+        Callable that filters prior_feedback for a specific platform.
+        Signature: ``(platform: str, *, prior_feedback: str) -> str``.
 
     Returns
     -------
@@ -130,6 +140,13 @@ async def repurpose_content(
             logger.warning("No repurpose rules for platform %s, skipping", target)
             continue
 
+        # Get platform-specific feedback for this target
+        platform_feedback = ""
+        if prior_feedback and format_feedback_fn:
+            platform_feedback = format_feedback_fn(
+                target.value, prior_feedback=prior_feedback
+            )
+
         adapted_text = _adapt_for_platform(
             original_text=original_text,
             target=target,
@@ -137,6 +154,7 @@ async def repurpose_content(
             voice=voice,
             claude_client=claude_client,
             agent_id=agent_id,
+            prior_feedback=platform_feedback,
         )
 
         piece = GeneratedPiece(
@@ -165,6 +183,7 @@ def _adapt_for_platform(
     voice: str,
     claude_client: Any,
     agent_id: str,
+    prior_feedback: str = "",
 ) -> str:
     """Call Claude Sonnet to adapt the text, falling back to mechanical adaptation."""
     try:
@@ -175,6 +194,7 @@ def _adapt_for_platform(
             voice=voice,
             claude_client=claude_client,
             agent_id=agent_id,
+            prior_feedback=prior_feedback,
         )
         if adapted:
             return _enforce_limit(adapted, target)
@@ -192,6 +212,7 @@ def _claude_adapt(
     voice: str,
     claude_client: Any,
     agent_id: str,
+    prior_feedback: str = "",
 ) -> str:
     """Use Claude Sonnet to intelligently adapt content."""
     system_prompt = REPURPOSE_PROMPT.format(
@@ -199,6 +220,7 @@ def _claude_adapt(
         original_text=original_text,
         platform_rules=_format_rules(rules),
         voice=voice,
+        prior_feedback=prior_feedback or "No prior feedback for this platform.",
     )
 
     response = claude_client.call(
