@@ -1,3 +1,4 @@
+import { ShieldAlert, ShieldCheck } from 'lucide-react';
 import type { HealthStatus } from '@/lib/types';
 
 interface Props {
@@ -13,13 +14,15 @@ export default function KillSwitchBanner({ health, compact = false }: Props) {
       <div
         role="alert"
         aria-live="assertive"
-        className={`w-full bg-red-600 text-white ${compact ? 'px-4 py-2 text-sm' : 'px-6 py-4 text-base'} flex items-center gap-3`}
+        className={`w-full flex items-center gap-3 ${compact ? 'px-4 py-2' : 'px-6 py-4'}`}
+        style={{ background: 'var(--danger)', color: 'var(--text-inverse)' }}
       >
-        <span className="font-bold uppercase tracking-wide">
+        <ShieldAlert size={compact ? 16 : 20} aria-hidden="true" />
+        <span className={`font-bold uppercase tracking-wide ${compact ? 'text-sm' : 'text-base'}`}>
           {compact ? 'KILL SWITCH ON' : 'KILL SWITCH ACTIVE'}
         </span>
         {health.kill_switch_activated_at && (
-          <span className="opacity-75 text-sm">
+          <span className="opacity-75 text-sm ml-auto">
             Activated: {new Date(health.kill_switch_activated_at).toLocaleString()}
           </span>
         )}
@@ -29,8 +32,12 @@ export default function KillSwitchBanner({ health, compact = false }: Props) {
 
   if (!compact) {
     return (
-      <div className="w-full bg-green-600 text-white px-6 py-3 flex items-center gap-3">
-        <span className="font-medium">System running normally — Kill switch INACTIVE</span>
+      <div
+        className="w-full flex items-center gap-3 px-6 py-3"
+        style={{ background: 'var(--success)', color: 'var(--text-inverse)' }}
+      >
+        <ShieldCheck size={20} aria-hidden="true" />
+        <span className="font-medium">System running normally -- Kill switch INACTIVE</span>
       </div>
     );
   }

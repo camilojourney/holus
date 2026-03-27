@@ -7,17 +7,17 @@ function fmt(n: number): string {
 }
 
 const pillarColors: Record<string, string> = {
-  authority: 'bg-indigo-500',
-  tutorial: 'bg-blue-500',
-  entertainment: 'bg-amber-500',
-  conversion: 'bg-green-500',
+  authority: 'var(--brand-primary, #F59E0B)',
+  tutorial: 'var(--info, #F59E0B)',
+  entertainment: 'var(--warning, #fbbf24)',
+  conversion: 'var(--success, #34d399)',
 };
 
 const productColors: Record<string, string> = {
-  pilaster: 'bg-purple-500',
-  genpeli: 'bg-rose-500',
-  invoz: 'bg-cyan-500',
-  holus: 'bg-indigo-500',
+  pilaster: 'var(--brand-accent, #FBBF24)',
+  genpeli: 'var(--danger, #f87171)',
+  invoz: '#06B6D4',
+  holus: 'var(--brand-primary, #F59E0B)',
 };
 
 interface Props {
@@ -32,8 +32,17 @@ export default function PillarBreakdown({ byPillar, byProduct }: Props) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* By Pillar */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+      <div
+        className="rounded-xl p-5"
+        style={{
+          background: 'var(--surface-raised)',
+          border: '1px solid var(--border-default)',
+        }}
+      >
+        <h2
+          className="text-sm font-semibold mb-4"
+          style={{ color: 'var(--text-primary)' }}
+        >
           Content by Pillar
         </h2>
         <div className="space-y-3">
@@ -44,15 +53,18 @@ export default function PillarBreakdown({ byPillar, byProduct }: Props) {
               return (
                 <div key={name}>
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="capitalize text-gray-700 dark:text-gray-300 font-medium">{name}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-400">
+                    <span className="capitalize font-medium" style={{ color: 'var(--text-primary)' }}>{name}</span>
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                       {stats.count} posts · {fmt(stats.total_impressions)} impr · {(stats.avg_engagement_rate * 100).toFixed(1)}% eng
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--surface-2)' }}>
                     <div
-                      className={`h-full rounded-full ${pillarColors[name] ?? 'bg-gray-500'}`}
-                      style={{ width: `${pct}%` }}
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${pct}%`,
+                        background: pillarColors[name] ?? 'var(--text-tertiary)',
+                      }}
                     />
                   </div>
                 </div>
@@ -62,8 +74,17 @@ export default function PillarBreakdown({ byPillar, byProduct }: Props) {
       </div>
 
       {/* By Product */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+      <div
+        className="rounded-xl p-5"
+        style={{
+          background: 'var(--surface-raised)',
+          border: '1px solid var(--border-default)',
+        }}
+      >
+        <h2
+          className="text-sm font-semibold mb-4"
+          style={{ color: 'var(--text-primary)' }}
+        >
           Content by Product
         </h2>
         <div className="space-y-3">
@@ -74,15 +95,18 @@ export default function PillarBreakdown({ byPillar, byProduct }: Props) {
               return (
                 <div key={name}>
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="capitalize text-gray-700 dark:text-gray-300 font-medium">{name}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-400">
+                    <span className="capitalize font-medium" style={{ color: 'var(--text-primary)' }}>{name}</span>
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                       {stats.count} posts · {fmt(stats.total_impressions)} impr · {(stats.avg_engagement_rate * 100).toFixed(1)}% eng
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--surface-2)' }}>
                     <div
-                      className={`h-full rounded-full ${productColors[name] ?? 'bg-gray-500'}`}
-                      style={{ width: `${pct}%` }}
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${pct}%`,
+                        background: productColors[name] ?? 'var(--text-tertiary)',
+                      }}
                     />
                   </div>
                 </div>

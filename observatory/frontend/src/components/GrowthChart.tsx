@@ -50,7 +50,7 @@ export default function GrowthChart({ data }: Props) {
         data={chartData}
         index="date"
         categories={['Followers']}
-        colors={['indigo']}
+        colors={['amber']}
         curveType="natural"
         showXAxis={true}
         showYAxis={true}

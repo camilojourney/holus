@@ -7,15 +7,15 @@
 /* Brand colors sourced from config/brand-visual.yaml */
 /* Fonts: Plus Jakarta Sans (headings/body) + JetBrains Mono (code/data) */
 :root {
-  /* Brand (from brand-visual.yaml light theme — indigo) */
-  --brand-primary: #4F46E5;
-  --brand-accent: #818CF8;
+  /* Brand (from brand-visual.yaml light theme — amber) */
+  --brand-primary: #D97706;
+  --brand-accent: #F59E0B;
   --brand-muted: #94A3B8;
   --brand-success: #059669;
   --brand-danger: #DC2626;
 
   /* Brand — oklch for Tailwind interop */
-  --brand-hue: 264;
+  --brand-hue: 75;
   --brand: oklch(0.55 0.22 var(--brand-hue));
   --brand-light: oklch(0.65 0.18 var(--brand-hue));
   --brand-subtle: oklch(0.96 0.03 var(--brand-hue));
@@ -46,8 +46,8 @@
   --warning-subtle: #fffbeb;
   --danger: #dc2626;
   --danger-subtle: #fef2f2;
-  --info: #4F46E5;
-  --info-subtle: #eef2ff;
+  --info: #D97706;
+  --info-subtle: #fffbeb;
 
   /* Spacing */
   --page-padding: 1.5rem;
@@ -69,9 +69,9 @@
 }
 
 .dark {
-  /* Brand (from brand-visual.yaml dark theme — indigo) */
-  --brand-primary: #6366F1;
-  --brand-accent: #A5B4FC;
+  /* Brand (from brand-visual.yaml dark theme — amber) */
+  --brand-primary: #F59E0B;
+  --brand-accent: #FBBF24;
   --brand-muted: #64748B;
   --brand-success: #34D399;
   --brand-danger: #F87171;
@@ -89,9 +89,9 @@
   --surface-raised: #0F172A;
   --surface-overlay: rgba(0, 0, 0, 0.7);
 
-  /* Text (from brand-visual.yaml dark theme) */
+  /* Text (dark theme — warm secondary) */
   --text-primary: #F8FAFC;
-  --text-secondary: #A5B4FC;
+  --text-secondary: #CBD5E1;
   --text-tertiary: #64748B;
   --text-inverse: #0A0F1E;
 
@@ -106,8 +106,8 @@
   --warning-subtle: rgba(217, 119, 6, 0.15);
   --danger: #f87171;
   --danger-subtle: rgba(220, 38, 38, 0.15);
-  --info: #6366F1;
-  --info-subtle: rgba(99, 102, 241, 0.15);
+  --info: #F59E0B;
+  --info-subtle: rgba(245, 158, 11, 0.15);
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);

@@ -1,13 +1,5 @@
 import type { PlatformStats } from '@/lib/types';
 
-const platformColors: Record<string, string> = {
-  linkedin: 'text-blue-600 dark:text-blue-400',
-  instagram: 'text-pink-600 dark:text-pink-400',
-  twitter: 'text-sky-500 dark:text-sky-400',
-  tiktok: 'text-gray-900 dark:text-white',
-  threads: 'text-gray-700 dark:text-gray-300',
-};
-
 function fmt(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
@@ -26,39 +18,53 @@ export default function PlatformCard({ name, stats }: Props) {
   const isPositive = Number(growth) > 0;
 
   return (
-    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950">
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: 'var(--surface-raised)',
+        border: '1px solid var(--border-default)',
+      }}
+    >
       <div className="flex items-center justify-between mb-3">
-        <span className={`text-sm font-semibold capitalize ${platformColors[name] ?? 'text-gray-700 dark:text-gray-300'}`}>
+        <span
+          className="text-sm font-semibold capitalize"
+          style={{ color: 'var(--brand)' }}
+        >
           {name}
         </span>
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-          isPositive
-            ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400'
-            : 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400'
-        }`}>
+        <span
+          className="text-xs font-medium px-2 py-0.5 rounded-full"
+          style={{
+            background: isPositive ? 'var(--success-subtle)' : 'var(--danger-subtle)',
+            color: isPositive ? 'var(--success)' : 'var(--danger)',
+          }}
+        >
           {isPositive ? '+' : ''}{growth}%
         </span>
       </div>
-      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+      <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
         {fmt(stats.followers)}
       </p>
-      <p className="text-xs text-gray-400 dark:text-gray-400 mt-1">followers</p>
-      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-2 text-xs">
+      <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>followers</p>
+      <div
+        className="mt-3 pt-3 grid grid-cols-2 gap-2 text-xs"
+        style={{ borderTop: '1px solid var(--border-subtle)' }}
+      >
         <div>
-          <span className="text-gray-400 dark:text-gray-400">Posts</span>
-          <p className="font-medium text-gray-700 dark:text-gray-300">{stats.posts_30d}</p>
+          <span style={{ color: 'var(--text-tertiary)' }}>Posts</span>
+          <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{stats.posts_30d}</p>
         </div>
         <div>
-          <span className="text-gray-400 dark:text-gray-400">Impr.</span>
-          <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(stats.impressions_30d)}</p>
+          <span style={{ color: 'var(--text-tertiary)' }}>Impr.</span>
+          <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{fmt(stats.impressions_30d)}</p>
         </div>
         <div>
-          <span className="text-gray-400 dark:text-gray-400">Eng. rate</span>
-          <p className="font-medium text-gray-700 dark:text-gray-300">{(stats.engagement_rate * 100).toFixed(1)}%</p>
+          <span style={{ color: 'var(--text-tertiary)' }}>Eng. rate</span>
+          <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{(stats.engagement_rate * 100).toFixed(1)}%</p>
         </div>
         <div>
-          <span className="text-gray-400 dark:text-gray-400">Top type</span>
-          <p className="font-medium text-gray-700 dark:text-gray-300 truncate">{stats.top_content_type}</p>
+          <span style={{ color: 'var(--text-tertiary)' }}>Top type</span>
+          <p className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{stats.top_content_type}</p>
         </div>
       </div>
     </div>
