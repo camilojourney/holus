@@ -5,23 +5,44 @@ interface Props {
   color?: 'default' | 'green' | 'yellow' | 'red' | 'blue';
 }
 
-const colorMap = {
-  default: 'text-gray-900 dark:text-white',
-  green: 'text-green-600 dark:text-green-400',
-  yellow: 'text-yellow-600 dark:text-yellow-400',
-  red: 'text-red-600 dark:text-red-400',
-  blue: 'text-blue-600 dark:text-blue-400',
+const accentMap = {
+  default: 'var(--text-primary)',
+  green: 'var(--success)',
+  yellow: 'var(--warning)',
+  red: 'var(--danger)',
+  blue: 'var(--info)',
+};
+
+const borderMap = {
+  default: 'var(--border-default)',
+  green: 'var(--success)',
+  yellow: 'var(--warning)',
+  red: 'var(--danger)',
+  blue: 'var(--info)',
 };
 
 export default function KPICard({ title, value, subtitle, color = 'default' }: Props) {
   return (
-    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950 hover:shadow-sm transition-shadow">
-      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+    <div
+      className="card animate-fade-in"
+      style={{
+        borderTop: `3px solid ${borderMap[color]}`,
+      }}
+    >
+      <h3
+        className="text-[0.625rem] font-medium uppercase tracking-widest mb-3"
+        style={{ color: 'var(--text-tertiary)', letterSpacing: '0.08em' }}
+      >
         {title}
+      </h3>
+      <p
+        className="text-3xl font-extrabold tracking-tight leading-none"
+        style={{ color: accentMap[color] }}
+      >
+        {value}
       </p>
-      <p className={`text-2xl font-bold ${colorMap[color]}`}>{value}</p>
       {subtitle && (
-        <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">{subtitle}</p>
+        <p className="text-[0.6875rem] mt-1.5 font-medium" style={{ color: 'var(--text-tertiary)' }}>{subtitle}</p>
       )}
     </div>
   );

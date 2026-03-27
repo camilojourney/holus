@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { generateFollowerData, type FollowerDataPoint } from '@/lib/demo-data';
+import RadioGroup from '@/components/RadioGroup';
 
 const PLATFORMS = ['all', 'linkedin', 'instagram', 'twitter', 'threads', 'tiktok'] as const;
 type Platform = typeof PLATFORMS[number];
@@ -132,23 +133,13 @@ export default function FollowersPage() {
       </div>
 
       {/* Platform filter */}
-      <div role="radiogroup" aria-label="Filter by platform" className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1 w-fit">
-        {PLATFORMS.map((p) => (
-          <button
-            key={p}
-            role="radio"
-            aria-checked={platform === p}
-            onClick={() => setPlatform(p)}
-            className={`px-3 py-2 rounded-md text-xs font-medium capitalize transition-colors ${
-              platform === p
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
-            }`}
-          >
-            {p}
-          </button>
-        ))}
-      </div>
+      <RadioGroup
+        label="Filter by platform"
+        options={PLATFORMS}
+        value={platform}
+        onChange={setPlatform}
+        className="w-fit"
+      />
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -250,12 +241,12 @@ export default function FollowersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-gray-400 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
-                <th className="text-left px-5 py-3 font-medium">Platform</th>
-                <th className="text-right px-4 py-3 font-medium">Current</th>
-                <th className="text-right px-4 py-3 font-medium">New</th>
-                <th className="text-right px-4 py-3 font-medium">Unfollows</th>
-                <th className="text-right px-4 py-3 font-medium">Net</th>
-                <th className="text-right px-5 py-3 font-medium">Growth</th>
+                <th scope="col" className="text-left px-5 py-3 font-medium">Platform</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">Current</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">New</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">Unfollows</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">Net</th>
+                <th scope="col" className="text-right px-5 py-3 font-medium">Growth</th>
               </tr>
             </thead>
             <tbody>

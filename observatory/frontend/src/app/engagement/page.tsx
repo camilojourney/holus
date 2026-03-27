@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { generateEngagementData, type EngagementDataPoint } from '@/lib/demo-data';
+import RadioGroup from '@/components/RadioGroup';
 
 const PLATFORMS = ['all', 'linkedin', 'instagram', 'twitter', 'threads', 'tiktok'] as const;
 type Platform = typeof PLATFORMS[number];
@@ -134,40 +135,19 @@ export default function EngagementPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <div role="radiogroup" aria-label="Filter by platform" className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1">
-          {PLATFORMS.map((p) => (
-            <button
-              key={p}
-              role="radio"
-              aria-checked={platform === p}
-              onClick={() => setPlatform(p)}
-              className={`px-3 py-2 rounded-md text-xs font-medium capitalize transition-colors ${
-                platform === p
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-        <div role="radiogroup" aria-label="Filter by metric" className="flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1">
-          {(['impressions', 'likes', 'comments', 'shares', 'engagement_rate'] as const).map((m) => (
-            <button
-              key={m}
-              role="radio"
-              aria-checked={metric === m}
-              onClick={() => setMetric(m)}
-              className={`px-3 py-2 rounded-md text-xs font-medium capitalize transition-colors ${
-                metric === m
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
-              }`}
-            >
-              {m === 'engagement_rate' ? 'Eng. Rate' : m}
-            </button>
-          ))}
-        </div>
+        <RadioGroup
+          label="Filter by platform"
+          options={PLATFORMS}
+          value={platform}
+          onChange={setPlatform}
+        />
+        <RadioGroup
+          label="Filter by metric"
+          options={['impressions', 'likes', 'comments', 'shares', 'engagement_rate'] as const}
+          value={metric}
+          onChange={setMetric}
+          renderLabel={(m) => m === 'engagement_rate' ? 'Eng. Rate' : m}
+        />
       </div>
 
       {/* KPI cards */}
@@ -212,13 +192,13 @@ export default function EngagementPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-gray-400 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
-                <th className="text-left px-5 py-3 font-medium">Platform</th>
-                <th className="text-right px-4 py-3 font-medium">Impressions</th>
-                <th className="text-right px-4 py-3 font-medium">Likes</th>
-                <th className="text-right px-4 py-3 font-medium">Comments</th>
-                <th className="text-right px-4 py-3 font-medium">Shares</th>
-                <th className="text-right px-4 py-3 font-medium">Posts</th>
-                <th className="text-right px-5 py-3 font-medium">Eng. Rate</th>
+                <th scope="col" className="text-left px-5 py-3 font-medium">Platform</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">Impressions</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">Likes</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">Comments</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">Shares</th>
+                <th scope="col" className="text-right px-4 py-3 font-medium">Posts</th>
+                <th scope="col" className="text-right px-5 py-3 font-medium">Eng. Rate</th>
               </tr>
             </thead>
             <tbody>

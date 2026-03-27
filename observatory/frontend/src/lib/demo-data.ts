@@ -181,17 +181,20 @@ export const demoAgents: Agent[] = [
 
 // --- Health ---
 
+// Use a fixed timestamp to avoid hydration mismatches between server and client renders
+const DEMO_TIMESTAMP = '2026-03-13T12:00:00.000Z';
+
 export const demoHealth: HealthStatus = {
   status: 'healthy',
   kill_switch_active: false,
   services: [
-    { name: 'Observatory API', status: 'up', latency_ms: 12, last_checked: new Date().toISOString() },
-    { name: 'Social Media MCP', status: 'up', latency_ms: 45, last_checked: new Date().toISOString() },
-    { name: 'Pilaster MCP', status: 'up', latency_ms: 38, last_checked: new Date().toISOString() },
-    { name: 'Genpeli MCP', status: 'up', latency_ms: 52, last_checked: new Date().toISOString() },
-    { name: 'Redis Event Bus', status: 'up', latency_ms: 3, last_checked: new Date().toISOString() },
+    { name: 'Observatory API', status: 'up', latency_ms: 12, last_checked: DEMO_TIMESTAMP },
+    { name: 'Social Media MCP', status: 'up', latency_ms: 45, last_checked: DEMO_TIMESTAMP },
+    { name: 'Pilaster MCP', status: 'up', latency_ms: 38, last_checked: DEMO_TIMESTAMP },
+    { name: 'Genpeli MCP', status: 'up', latency_ms: 52, last_checked: DEMO_TIMESTAMP },
+    { name: 'Redis Event Bus', status: 'up', latency_ms: 3, last_checked: DEMO_TIMESTAMP },
   ],
-  timestamp: new Date().toISOString(),
+  timestamp: DEMO_TIMESTAMP,
 };
 
 // --- KPI Metrics ---
@@ -203,7 +206,7 @@ export const demoMetrics: KPIMetrics = {
   total_cost_usd: 3.82,
   sparkline: Array.from({ length: 7 }, (_, i) => ({
     date: new Date(Date.now() - (6 - i) * 86400000).toISOString().slice(0, 10),
-    count: Math.floor(Math.random() * 3) + 1,
+    count: [2, 1, 3, 2, 1, 3, 2][i],
   })),
 };
 
@@ -212,15 +215,18 @@ export const demoMetrics: KPIMetrics = {
 const evalAgents = ['hook-architect', 'blog-writer', 'carousel-architect', 'narrative-specialist', 'tutorial-specialist'];
 const evalNames = ['Hook Architect', 'Blog Writer', 'Carousel Architect', 'Narrative Specialist', 'Tutorial Specialist'];
 
+// Deterministic scores to avoid hydration mismatches from Math.random()
+const evalScores = [8.2, 6.7, 9.1, 7.4, 5.8, 8.8, 6.2, 7.9, 9.3, 5.1, 7.6, 8.5, 6.9, 7.1, 8.0, 9.2, 5.5, 7.3, 8.7, 6.4, 7.8, 9.0, 5.3, 8.1, 6.6, 7.5, 8.9, 5.9, 7.2, 8.4];
+
 export const demoEvaluations: EvaluationRecord[] = Array.from({ length: 30 }, (_, i) => {
   const agentIdx = i % evalAgents.length;
-  const score = 5 + Math.random() * 4.5;
+  const score = evalScores[i];
   return {
     id: `eval-${i}`,
     agent_id: evalAgents[agentIdx],
     agent_name: evalNames[agentIdx],
     date: new Date(Date.now() - i * 86400000 * 0.5).toISOString().slice(0, 10),
-    score: Math.round(score * 10) / 10,
+    score,
     verdict: score >= 7.5 ? 'pass' : score >= 5 ? 'review' : 'fail',
     evaluator: 'written-content-judge',
     notes: score >= 7.5 ? 'Strong hook, clear CTA' : score >= 5 ? 'Needs tighter intro' : 'Off-brand tone',
@@ -266,24 +272,34 @@ export const demoTrajectoryEvents: TrajectoryEvent[] = [
 
 // --- Growth / Results ---
 
+// Deterministic seed-based pseudo-random for stable SSR/CSR rendering
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
 function generateDailyGrowth(): GrowthData['daily_growth'] {
+  const rand = seededRandom(42);
   const days: GrowthData['daily_growth'] = [];
   let totalFollowers = 2847;
   for (let i = 29; i >= 0; i--) {
     const date = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
-    totalFollowers += Math.floor(Math.random() * 18) + 2;
+    totalFollowers += Math.floor(rand() * 18) + 2;
     days.push({
       date,
       total_followers: totalFollowers,
-      posts: Math.random() > 0.5 ? 1 : 0,
-      impressions: Math.floor(Math.random() * 3000) + 500,
+      posts: rand() > 0.5 ? 1 : 0,
+      impressions: Math.floor(rand() * 3000) + 500,
     });
   }
   return days;
 }
 
 export const demoGrowthData: GrowthData = {
-  snapshot_date: new Date().toISOString().slice(0, 10),
+  snapshot_date: '2026-03-13',
   platforms: {
     linkedin: {
       followers: 1842,
@@ -547,6 +563,7 @@ export interface EngagementDataPoint {
 }
 
 export function generateEngagementData(): EngagementDataPoint[] {
+  const rand = seededRandom(101);
   const platforms = ['linkedin', 'instagram', 'twitter', 'threads', 'tiktok'];
   const baselines: Record<string, { impressions: number; likes: number; comments: number; shares: number }> = {
     linkedin: { impressions: 900, likes: 35, comments: 6, shares: 5 },
@@ -561,7 +578,7 @@ export function generateEngagementData(): EngagementDataPoint[] {
     const date = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
     for (const platform of platforms) {
       const b = baselines[platform];
-      const variance = () => 0.5 + Math.random();
+      const variance = () => 0.5 + rand();
       const impressions = Math.floor(b.impressions * variance());
       const likes = Math.floor(b.likes * variance());
       const comments = Math.floor(b.comments * variance());
@@ -575,7 +592,7 @@ export function generateEngagementData(): EngagementDataPoint[] {
         comments,
         shares,
         engagement_rate: impressions > 0 ? totalEngagement / impressions : 0,
-        posts: Math.random() > 0.6 ? 1 : 0,
+        posts: rand() > 0.6 ? 1 : 0,
       });
     }
   }
@@ -594,6 +611,7 @@ export interface FollowerDataPoint {
 }
 
 export function generateFollowerData(): FollowerDataPoint[] {
+  const rand = seededRandom(202);
   const platforms = ['linkedin', 'instagram', 'twitter', 'threads', 'tiktok'];
   const startFollowers: Record<string, number> = {
     linkedin: 1654,
@@ -609,8 +627,8 @@ export function generateFollowerData(): FollowerDataPoint[] {
   for (let i = 29; i >= 0; i--) {
     const date = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
     for (const platform of platforms) {
-      const newFollowers = Math.floor(Math.random() * 12) + 1;
-      const unfollows = Math.floor(Math.random() * 4);
+      const newFollowers = Math.floor(rand() * 12) + 1;
+      const unfollows = Math.floor(rand() * 4);
       const netChange = newFollowers - unfollows;
       current[platform] += netChange;
       data.push({

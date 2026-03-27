@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { TrajectoryEvent } from './types';
-import { trajectoryStreamUrl } from './api';
+import { trajectoryStreamUrl, isDemoMode } from './api';
+import { demoTrajectoryEvents } from './demo-data';
 
 const MAX_EVENTS = 100;
 const MAX_RETRY_INTERVAL_MS = 30_000;
@@ -18,6 +19,13 @@ export function useTrajectoryStream(): {
   const sourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
+    // In demo mode, return static trajectory events without opening an EventSource
+    if (isDemoMode()) {
+      setEvents(demoTrajectoryEvents);
+      setConnected(true);
+      return;
+    }
+
     let cancelled = false;
 
     function connect() {
