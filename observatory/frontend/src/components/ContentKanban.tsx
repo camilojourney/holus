@@ -105,7 +105,7 @@ export default function ContentKanban({ items, onRefresh }: Props) {
                   <button
                     key={item.id}
                     onClick={() => setSelected(item)}
-                    className="w-full text-left bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-3 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-all"
+                    className="w-full text-left bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-3 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm focus:outline-2 focus:outline-indigo-500 focus:outline-offset-1 transition-all"
                   >
                     <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
                       {item.title ?? item.id}
@@ -155,7 +155,7 @@ export default function ContentKanban({ items, onRefresh }: Props) {
               <button
                 key={item.id}
                 onClick={() => setSelected(item)}
-                className="text-left bg-white dark:bg-gray-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2 hover:border-red-400 transition-colors"
+                className="text-left bg-white dark:bg-gray-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2 cursor-pointer hover:border-red-400 focus:outline-2 focus:outline-red-500 focus:outline-offset-1 transition-colors"
               >
                 <p className="text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-1 max-w-48">
                   {item.title ?? item.id}
