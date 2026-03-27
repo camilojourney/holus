@@ -117,7 +117,7 @@ export default async function ResultsPage() {
       )}
 
       {!error && !data && (
-        <p className="text-sm text-gray-400 dark:text-gray-600 py-4">
+        <p className="text-sm text-gray-400 dark:text-gray-400 py-4">
           No results data available. Ensure data/results/growth.json exists.
         </p>
       )}

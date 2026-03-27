@@ -62,7 +62,7 @@ export default async function KnowledgePage() {
                 <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
                   System Memory
                 </h2>
-                <span className="text-xs text-gray-400 dark:text-gray-600">
+                <span className="text-xs text-gray-400 dark:text-gray-400">
                   {new Date(memory.last_modified).toLocaleDateString()}
                 </span>
               </div>
@@ -95,7 +95,7 @@ export default async function KnowledgePage() {
                         </p>
                         <div className="flex items-center gap-3 mt-1.5">
                           {lesson.date && (
-                            <span className="text-xs text-gray-400 dark:text-gray-600">
+                            <span className="text-xs text-gray-400 dark:text-gray-400">
                               {lesson.date}
                             </span>
                           )}
@@ -110,7 +110,7 @@ export default async function KnowledgePage() {
                             </span>
                           )}
                           {lesson.source && (
-                            <span className="text-xs text-gray-400 dark:text-gray-600">
+                            <span className="text-xs text-gray-400 dark:text-gray-400">
                               via {lesson.source.replace(/_/g, ' ')}
                             </span>
                           )}
@@ -132,7 +132,7 @@ export default async function KnowledgePage() {
             </div>
 
             {files.length === 0 ? (
-              <p className="text-sm text-gray-400 dark:text-gray-600 px-5 py-6 text-center">
+              <p className="text-sm text-gray-400 dark:text-gray-400 px-5 py-6 text-center">
                 No knowledge files indexed.
               </p>
             ) : (
@@ -152,7 +152,7 @@ export default async function KnowledgePage() {
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {file.name}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-600 truncate">
+                        <p className="text-xs text-gray-400 dark:text-gray-400 truncate">
                           {file.path}
                         </p>
                       </div>
@@ -160,10 +160,10 @@ export default async function KnowledgePage() {
                         freshness={file.freshness}
                         modifiedAt={file.modified_at}
                       />
-                      <span className="text-xs text-gray-400 dark:text-gray-600 whitespace-nowrap">
+                      <span className="text-xs text-gray-400 dark:text-gray-400 whitespace-nowrap">
                         {new Date(file.modified_at).toLocaleDateString()}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-600 whitespace-nowrap">
+                      <span className="text-xs text-gray-400 dark:text-gray-400 whitespace-nowrap">
                         {(file.size_bytes / 1024).toFixed(1)}KB
                       </span>
                     </div>

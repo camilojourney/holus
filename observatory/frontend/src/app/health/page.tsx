@@ -82,7 +82,7 @@ export default async function HealthPage() {
         )}
 
         {!health && !error && (
-          <p className="text-sm text-gray-400 dark:text-gray-600">Loading health data...</p>
+          <p className="text-sm text-gray-400 dark:text-gray-400">Loading health data...</p>
         )}
       </div>
     </div>

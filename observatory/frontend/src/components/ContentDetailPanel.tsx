@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchContentDetail, patchContent, chooseVisual, contentImageUrl } from '@/lib/api';
 import type { ContentItem, ContentDetail } from '@/lib/types';
 
@@ -41,6 +41,12 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
   const [acting, setActing] = useState<string | null>(null);
   const [selectedVisual, setSelectedVisual] = useState<'a' | 'b'>('a');
   const [scheduleDate, setScheduleDate] = useState('');
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Auto-focus the panel when it opens
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -53,6 +59,41 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
   }, [item.id]);
+
+  // Focus trap: keep Tab cycling within the panel
+  const handleFocusTrap = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const panel = panelRef.current;
+      if (!panel) return;
+
+      const focusable = panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    },
+    [onClose]
+  );
 
   async function handleApprove() {
     setActing('approve');
@@ -158,7 +199,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
           )}
 
           {loading ? (
-            <p className="text-sm text-gray-400 dark:text-gray-600 animate-pulse">Loading detail…</p>
+            <p className="text-sm text-gray-400 dark:text-gray-400 animate-pulse">Loading detail…</p>
           ) : (
             <>
               {/* A/B Visual Comparison */}
@@ -212,7 +253,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                           </div>
                         </button>
                       </div>
-                      <p className="text-xs text-gray-400 dark:text-gray-600 text-center">
+                      <p className="text-xs text-gray-400 dark:text-gray-400 text-center">
                         Click to select which visual to publish with this post
                       </p>
                     </div>
@@ -276,13 +317,13 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
               <section className="grid grid-cols-2 gap-3 text-xs">
                 {d.created_at && (
                   <div>
-                    <p className="text-gray-400 dark:text-gray-600">Created</p>
+                    <p className="text-gray-400 dark:text-gray-400">Created</p>
                     <p className="text-gray-700 dark:text-gray-300 mt-0.5">{new Date(d.created_at).toLocaleDateString()}</p>
                   </div>
                 )}
                 {d.scheduled_for && (
                   <div>
-                    <p className="text-gray-400 dark:text-gray-600">Scheduled</p>
+                    <p className="text-gray-400 dark:text-gray-400">Scheduled</p>
                     <p className="text-gray-700 dark:text-gray-300 mt-0.5">{new Date(d.scheduled_for).toLocaleString()}</p>
                   </div>
                 )}
@@ -299,7 +340,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                           <p className="font-medium text-gray-800 dark:text-gray-200">{step.agent_id}</p>
                           {step.role && <p className="text-gray-500 dark:text-gray-400">{step.role}</p>}
                           {step.model && (
-                            <span className="text-gray-400 dark:text-gray-600 font-mono">{step.model.replace('anthropic/', '')}</span>
+                            <span className="text-gray-400 dark:text-gray-400 font-mono">{step.model.replace('anthropic/', '')}</span>
                           )}
                         </div>
                       </li>
@@ -353,7 +394,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
 
         {!canAct && (
           <div className="sticky bottom-0 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 px-5 py-4">
-            <p className="text-xs text-gray-400 dark:text-gray-600">
+            <p className="text-xs text-gray-400 dark:text-gray-400">
               No actions available for {STATUS_LABEL[status] ?? status} pieces.
             </p>
           </div>

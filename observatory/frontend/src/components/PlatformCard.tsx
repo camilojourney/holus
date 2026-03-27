@@ -42,22 +42,22 @@ export default function PlatformCard({ name, stats }: Props) {
       <p className="text-2xl font-bold text-gray-900 dark:text-white">
         {fmt(stats.followers)}
       </p>
-      <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">followers</p>
+      <p className="text-xs text-gray-400 dark:text-gray-400 mt-1">followers</p>
       <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-2 text-xs">
         <div>
-          <span className="text-gray-400 dark:text-gray-600">Posts</span>
+          <span className="text-gray-400 dark:text-gray-400">Posts</span>
           <p className="font-medium text-gray-700 dark:text-gray-300">{stats.posts_30d}</p>
         </div>
         <div>
-          <span className="text-gray-400 dark:text-gray-600">Impr.</span>
+          <span className="text-gray-400 dark:text-gray-400">Impr.</span>
           <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(stats.impressions_30d)}</p>
         </div>
         <div>
-          <span className="text-gray-400 dark:text-gray-600">Eng. rate</span>
+          <span className="text-gray-400 dark:text-gray-400">Eng. rate</span>
           <p className="font-medium text-gray-700 dark:text-gray-300">{(stats.engagement_rate * 100).toFixed(1)}%</p>
         </div>
         <div>
-          <span className="text-gray-400 dark:text-gray-600">Top type</span>
+          <span className="text-gray-400 dark:text-gray-400">Top type</span>
           <p className="font-medium text-gray-700 dark:text-gray-300 truncate">{stats.top_content_type}</p>
         </div>
       </div>

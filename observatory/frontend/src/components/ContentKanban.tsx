@@ -91,13 +91,13 @@ export default function ContentKanban({ items, onRefresh }: Props) {
               className={`px-4 py-3 border-b border-gray-200 dark:border-gray-800 font-semibold text-sm ${COLUMN_STYLES[col]}`}
             >
               {col}
-              <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-600">
+              <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-400">
                 ({grouped[col].length})
               </span>
             </div>
             <div className="p-3 space-y-2 min-h-24">
               {grouped[col].length === 0 ? (
-                <p className="text-xs text-gray-400 dark:text-gray-600 text-center py-4">
+                <p className="text-xs text-gray-400 dark:text-gray-400 text-center py-4">
                   Empty
                 </p>
               ) : (
@@ -122,7 +122,7 @@ export default function ContentKanban({ items, onRefresh }: Props) {
                         </span>
                       )}
                       {item.platform && (
-                        <span className="text-xs font-mono text-gray-400 dark:text-gray-600">
+                        <span className="text-xs font-mono text-gray-400 dark:text-gray-400">
                           {PLATFORM_LABELS[item.platform] ?? item.platform}
                         </span>
                       )}
@@ -130,7 +130,7 @@ export default function ContentKanban({ items, onRefresh }: Props) {
                         <QualityBadge score={item.quality.quality_score} />
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-600 mt-1.5">
+                    <p className="text-xs text-gray-400 dark:text-gray-400 mt-1.5">
                       {item.content_type?.replace(/_/g, ' ')}
                     </p>
                   </button>

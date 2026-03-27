@@ -25,7 +25,7 @@ Tailwind CSS 4 color tokens. All colors used via Tailwind utility classes.
 | Border | `gray-200` | `gray-800` | Dividers, card borders |
 | Text primary | `gray-900` | `white` | Headings, primary content |
 | Text secondary | `gray-500` | `gray-400` | Labels, metadata, descriptions |
-| Text muted | `gray-400` | `gray-600` | Placeholder text, footer |
+| Text muted | `gray-400` | `gray-400` | Placeholder text, footer (gray-600 fails WCAG AA on dark bg) |
 | Accent | `indigo-600` | `indigo-400` | Active nav, primary actions, links |
 | Active bg | `indigo-50` | `indigo-950` | Active nav item background |
 

@@ -45,7 +45,7 @@ export default function PillarBreakdown({ byPillar, byProduct }: Props) {
                 <div key={name}>
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="capitalize text-gray-700 dark:text-gray-300 font-medium">{name}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-600">
+                    <span className="text-xs text-gray-400 dark:text-gray-400">
                       {stats.count} posts · {fmt(stats.total_impressions)} impr · {(stats.avg_engagement_rate * 100).toFixed(1)}% eng
                     </span>
                   </div>
@@ -75,7 +75,7 @@ export default function PillarBreakdown({ byPillar, byProduct }: Props) {
                 <div key={name}>
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="capitalize text-gray-700 dark:text-gray-300 font-medium">{name}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-600">
+                    <span className="text-xs text-gray-400 dark:text-gray-400">
                       {stats.count} posts · {fmt(stats.total_impressions)} impr · {(stats.avg_engagement_rate * 100).toFixed(1)}% eng
                     </span>
                   </div>

@@ -38,7 +38,7 @@ export default function GrowthChart({ data }: Props) {
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Follower Growth (30d)
         </h2>
-        <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-600">
+        <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-400">
           <span>{min.toLocaleString()}</span>
           <span className="text-gray-300 dark:text-gray-700">→</span>
           <span className="font-medium text-gray-700 dark:text-gray-300">{max.toLocaleString()}</span>
@@ -60,7 +60,7 @@ export default function GrowthChart({ data }: Props) {
               x={p.x}
               y={height - 4}
               textAnchor="middle"
-              className="fill-gray-400 dark:fill-gray-600"
+              className="fill-gray-400 dark:fill-gray-400"
               fontSize="10"
             >
               {p.date.slice(5)}

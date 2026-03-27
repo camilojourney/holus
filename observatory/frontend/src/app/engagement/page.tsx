@@ -180,7 +180,7 @@ export default function EngagementPage() {
           { label: 'Avg Eng. Rate', value: `${avgEngRate}%`, color: Number(avgEngRate) >= 5 ? 'green' : 'yellow' },
         ].map(({ label, value }) => (
           <div key={label} className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-            <p className="text-xs text-gray-400 dark:text-gray-600">{label}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-400">{label}</p>
             <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
           </div>
         ))}
@@ -195,7 +195,7 @@ export default function EngagementPage() {
           </h2>
         </div>
         <MiniChart data={chartValues} color={chartColor} />
-        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-400">
           <span>{dailyAgg[0]?.date.slice(5)}</span>
           <span>{dailyAgg[dailyAgg.length - 1]?.date.slice(5)}</span>
         </div>
@@ -211,7 +211,7 @@ export default function EngagementPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-xs text-gray-400 dark:text-gray-600 border-b border-gray-100 dark:border-gray-800">
+              <tr className="text-xs text-gray-400 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
                 <th className="text-left px-5 py-3 font-medium">Platform</th>
                 <th className="text-right px-4 py-3 font-medium">Impressions</th>
                 <th className="text-right px-4 py-3 font-medium">Likes</th>

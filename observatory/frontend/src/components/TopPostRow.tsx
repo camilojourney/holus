@@ -35,27 +35,27 @@ export default function TopPostRow({ post }: Props) {
           <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 capitalize">
             {post.product}
           </span>
-          <span className="text-xs text-gray-400 dark:text-gray-600">{dateStr}</span>
+          <span className="text-xs text-gray-400 dark:text-gray-400">{dateStr}</span>
         </div>
       </div>
       <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 shrink-0">
         <div className="text-right">
           <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(post.impressions)}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-600">views</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">views</p>
         </div>
         <div className="text-right">
           <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(post.likes)}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-600">likes</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">likes</p>
         </div>
         <div className="text-right">
           <p className="font-medium text-gray-700 dark:text-gray-300">{fmt(post.shares)}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-600">shares</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">shares</p>
         </div>
         <div className="text-right w-12">
           <p className={`font-semibold ${post.engagement_rate >= 0.07 ? 'text-green-600 dark:text-green-400' : post.engagement_rate >= 0.04 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-400'}`}>
             {(post.engagement_rate * 100).toFixed(1)}%
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-600">eng.</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">eng.</p>
         </div>
       </div>
     </div>

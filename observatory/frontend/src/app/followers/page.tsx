@@ -153,27 +153,27 @@ export default function FollowersPage() {
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-600">Total Followers</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">Total Followers</p>
           <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{fmt(currentTotal)}</p>
         </div>
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-600">Net Growth (30d)</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">Net Growth (30d)</p>
           <p className={`text-xl font-bold mt-1 ${totalNetChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
             {totalNetChange >= 0 ? '+' : ''}{fmt(totalNetChange)}
           </p>
         </div>
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-600">Growth Rate</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">Growth Rate</p>
           <p className={`text-xl font-bold mt-1 ${Number(totalGrowthPct) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
             {Number(totalGrowthPct) >= 0 ? '+' : ''}{totalGrowthPct}%
           </p>
         </div>
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-600">New Followers</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">New Followers</p>
           <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">{fmt(totalNewFollowers)}</p>
         </div>
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-600">Unfollows</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">Unfollows</p>
           <p className="text-xl font-bold text-red-500 dark:text-red-400 mt-1">{fmt(totalUnfollows)}</p>
         </div>
       </div>
@@ -184,14 +184,14 @@ export default function FollowersPage() {
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
             Follower Growth (30d){platform !== 'all' ? ` - ${platform}` : ''}
           </h2>
-          <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-600">
+          <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-400">
             <span>{fmt(startTotal)}</span>
             <span className="text-gray-300 dark:text-gray-700">&rarr;</span>
             <span className="font-medium text-gray-700 dark:text-gray-300">{fmt(currentTotal)}</span>
           </div>
         </div>
         <GrowthLine data={dailyFollowers.map((d) => d.followers)} color={chartColor} />
-        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-400">
           <span>{dailyFollowers[0]?.date.slice(5)}</span>
           <span>{dailyFollowers[dailyFollowers.length - 1]?.date.slice(5)}</span>
         </div>
@@ -233,7 +233,7 @@ export default function FollowersPage() {
             );
           })}
         </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-600">
+        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-400">
           <span>{dailyFollowers[0]?.date.slice(5)}</span>
           <span>{dailyFollowers[dailyFollowers.length - 1]?.date.slice(5)}</span>
         </div>
@@ -249,7 +249,7 @@ export default function FollowersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-xs text-gray-400 dark:text-gray-600 border-b border-gray-100 dark:border-gray-800">
+              <tr className="text-xs text-gray-400 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
                 <th className="text-left px-5 py-3 font-medium">Platform</th>
                 <th className="text-right px-4 py-3 font-medium">Current</th>
                 <th className="text-right px-4 py-3 font-medium">New</th>

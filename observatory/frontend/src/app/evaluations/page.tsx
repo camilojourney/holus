@@ -126,7 +126,7 @@ export default async function EvaluationsPage() {
           )}
 
           {evaluations.length === 0 && (
-            <p className="text-sm text-gray-400 dark:text-gray-600 py-4">
+            <p className="text-sm text-gray-400 dark:text-gray-400 py-4">
               No evaluation data yet.
             </p>
           )}
