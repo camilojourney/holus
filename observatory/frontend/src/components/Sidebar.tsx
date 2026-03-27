@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Info,
   BarChart3,
@@ -19,76 +19,132 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
+import HolusLogo from '@/components/HolusLogo';
 
 const nav = [
-  { href: '/about', label: 'About', Icon: Info },
-  { href: '/', label: 'Dashboard', Icon: LayoutDashboard },
-  { href: '/agents', label: 'Agents', Icon: Users },
-  { href: '/content', label: 'Content', Icon: FileText },
-  { href: '/engagement', label: 'Engagement', Icon: BarChart3 },
-  { href: '/followers', label: 'Followers', Icon: UserPlus },
-  { href: '/evaluations', label: 'Evaluations', Icon: Target },
-  { href: '/knowledge', label: 'Knowledge', Icon: BookOpen },
-  { href: '/health', label: 'Health', Icon: Activity },
-  { href: '/results', label: 'Results', Icon: TrendingUp },
+  { href: '/about', label: 'Architecture', Icon: Info, section: null },
+  { href: '/', label: 'Inference Feed', Icon: LayoutDashboard, section: null },
+  { href: '/agents', label: 'Agent Fleet', Icon: Users, section: 'system' },
+  { href: '/content', label: 'Content Pipeline', Icon: FileText, section: 'system' },
+  { href: '/evaluations', label: 'Quality Signals', Icon: Target, section: 'system' },
+  { href: '/engagement', label: 'Engagement', Icon: BarChart3, section: 'signals' },
+  { href: '/followers', label: 'Audience Growth', Icon: UserPlus, section: 'signals' },
+  { href: '/results', label: 'Performance', Icon: TrendingUp, section: 'signals' },
+  { href: '/knowledge', label: 'Knowledge Graph', Icon: BookOpen, section: 'ops' },
+  { href: '/health', label: 'System Diagnostics', Icon: Activity, section: 'ops' },
 ];
+
+const sectionLabels: Record<string, string> = {
+  system: 'Orchestration',
+  signals: 'Market Signals',
+  ops: 'Operations',
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(true);
 
+  useEffect(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'light') {
+      setDark(false);
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   function toggleTheme() {
     const next = !dark;
     setDark(next);
     document.documentElement.classList.toggle('dark', next);
+    localStorage.setItem('theme', next ? 'dark' : 'light');
   }
+
+  let lastSection: string | null = null;
 
   const sidebarContent = (
     <>
-      <div className="px-5 py-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <div>
-          <span className="text-sm font-semibold tracking-widest text-gray-500 dark:text-gray-400 uppercase">
-            Holus
-          </span>
-          <div className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">
-            Observatory
+      {/* Brand header */}
+      <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-default)' }}>
+        <div className="flex items-center gap-2.5">
+          {/* Brand mark */}
+          <HolusLogo size={32} />
+          <div>
+            <div className="text-[0.65rem] font-semibold tracking-[0.15em] uppercase" style={{ color: 'var(--text-tertiary)' }}>
+              Holus
+            </div>
+            <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+              Observatory
+            </div>
           </div>
         </div>
         <button
           onClick={() => setOpen(false)}
-          className="md:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="md:hidden p-1.5 rounded-lg focus-ring"
+          style={{ color: 'var(--text-tertiary)' }}
           aria-label="Close navigation"
         >
           <X size={20} />
         </button>
       </div>
-      <nav aria-label="Main navigation" className="flex-1 px-3 py-4 space-y-1">
-        {nav.map(({ href, label, Icon }) => {
+
+      {/* Navigation */}
+      <nav aria-label="Main navigation" className="flex-1 px-3 py-3 overflow-y-auto">
+        {nav.map(({ href, label, Icon, section }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
+          const showSectionHeader = section !== null && section !== lastSection;
+          lastSection = section;
+
           return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? 'page' : undefined}
-              onClick={() => setOpen(false)}
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                active
-                  ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              <Icon size={18} aria-hidden="true" />
-              {label}
-            </Link>
+            <div key={href}>
+              {showSectionHeader && (
+                <p
+                  className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] mt-5 mb-2 px-3"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  {sectionLabels[section]}
+                </p>
+              )}
+              <Link
+                href={href}
+                aria-current={active ? 'page' : undefined}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium nav-link focus-ring ${
+                  active ? 'shadow-sm' : ''
+                }`}
+                style={{
+                  background: active ? 'var(--brand-subtle)' : 'transparent',
+                  color: active ? 'var(--brand)' : 'var(--text-secondary)',
+                  borderLeft: active ? '3px solid var(--brand)' : '3px solid transparent',
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'var(--surface-2)';
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }
+                }}
+              >
+                <Icon size={16} aria-hidden="true" />
+                {label}
+              </Link>
+            </div>
           );
         })}
       </nav>
-      <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <p className="text-xs text-gray-400 dark:text-gray-600">Read-only</p>
+
+      {/* Footer */}
+      <div className="px-5 py-3 flex items-center justify-between" style={{ borderTop: '1px solid var(--border-default)' }}>
+        <p className="text-[0.6875rem]" style={{ color: 'var(--text-tertiary)' }}>Read-only</p>
         <button
           onClick={toggleTheme}
-          className="p-1.5 rounded-lg text-gray-400 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="p-1.5 rounded-lg transition-colors focus-ring"
+          style={{ color: 'var(--text-tertiary)' }}
           aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {dark ? <Sun size={16} /> : <Moon size={16} />}
@@ -102,16 +158,22 @@ export default function Sidebar() {
       {/* Mobile hamburger button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed top-4 left-4 z-40 md:hidden p-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="fixed top-4 left-4 z-40 md:hidden p-2 rounded-lg shadow-sm focus-ring"
+        style={{
+          background: 'var(--surface-raised)',
+          border: '1px solid var(--border-default)',
+          color: 'var(--text-secondary)',
+        }}
         aria-label="Open navigation"
       >
-        <Menu size={20} className="text-gray-700 dark:text-gray-300" />
+        <Menu size={20} />
       </button>
 
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 md:hidden backdrop-blur-sm"
+          style={{ background: 'var(--surface-overlay)' }}
           onClick={() => setOpen(false)}
           aria-hidden="true"
         />
@@ -119,15 +181,25 @@ export default function Sidebar() {
 
       {/* Mobile slide-over sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-56 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col transform transition-transform md:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-56 flex flex-col transform transition-transform md:hidden ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{
+          background: 'var(--surface-raised)',
+          borderRight: '1px solid var(--border-default)',
+        }}
       >
         {sidebarContent}
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-56 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex-col">
+      <aside
+        className="hidden md:flex w-56 shrink-0 flex-col"
+        style={{
+          background: 'var(--surface-raised)',
+          borderRight: '1px solid var(--border-default)',
+        }}
+      >
         {sidebarContent}
       </aside>
     </>

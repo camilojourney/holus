@@ -1,46 +1,95 @@
 import type { Agent, AgentStatus } from '@/lib/types';
 import Link from 'next/link';
 
-const statusColors: Record<AgentStatus, string> = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  idle: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
-  running: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  error: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-  disabled: 'bg-gray-100 text-gray-400 dark:bg-gray-900 dark:text-gray-600',
-  planned: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+const statusColors: Record<AgentStatus, { bg: string; text: string; dot: string; label: string }> = {
+  active: { bg: 'var(--success-subtle)', text: 'var(--success)', dot: 'var(--success)', label: 'observing' },
+  idle: { bg: 'var(--surface-2)', text: 'var(--text-tertiary)', dot: 'var(--text-tertiary)', label: 'idle' },
+  running: { bg: 'var(--info-subtle)', text: 'var(--info)', dot: 'var(--info)', label: 'reasoning' },
+  error: { bg: 'var(--danger-subtle)', text: 'var(--danger)', dot: 'var(--danger)', label: 'fault' },
+  disabled: { bg: 'var(--surface-2)', text: 'var(--text-tertiary)', dot: 'var(--border-default)', label: 'offline' },
+  planned: { bg: 'var(--warning-subtle)', text: 'var(--warning)', dot: 'var(--warning)', label: 'evaluating' },
+};
+
+const typeIcons: Record<string, string> = {
+  manager: 'M',
+  specialist: 'S',
+  evaluator: 'E',
+  ops: 'O',
 };
 
 interface Props {
   agent: Agent;
+  staggerIndex?: number;
 }
 
-export default function AgentCard({ agent }: Props) {
+export default function AgentCard({ agent, staggerIndex }: Props) {
+  const status = statusColors[agent.status];
+  const isActive = agent.status === 'active' || agent.status === 'running';
+  const staggerClass = staggerIndex !== undefined ? `stagger-${staggerIndex}` : '';
+
   return (
-    <Link href={`/agents/${agent.id}`}>
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-gray-950 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-gray-950">
+    <Link href={`/agents/${agent.id}`} className="focus-ring rounded-xl">
+      <div
+        className={`card card-interactive animate-fade-in group ${staggerClass}`}
+      >
         <div className="flex items-start justify-between mb-3">
-          <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-            {agent.name}
-          </h3>
+          <div className="flex items-center gap-2.5">
+            {/* Agent type badge */}
+            <div
+              className="w-7 h-7 rounded-md flex items-center justify-center text-[0.625rem] font-bold"
+              style={{
+                background: 'var(--brand-subtle)',
+                color: 'var(--brand)',
+              }}
+            >
+              {typeIcons[agent.type] ?? 'A'}
+            </div>
+            <h3
+              className="font-semibold text-sm leading-tight"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {agent.name}
+            </h3>
+          </div>
           <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[agent.status]}`}
+            className="flex items-center gap-1.5 text-[0.6875rem] px-2 py-0.5 rounded-full font-medium"
+            style={{ background: status.bg, color: status.text }}
           >
-            {agent.status}
+            <span
+              className={`status-dot ${isActive ? 'status-dot-active' : ''}`}
+              style={{ background: status.dot }}
+            />
+            {status.label}
           </span>
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{agent.role}</p>
+        <p
+          className="text-xs mb-2 line-clamp-1"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {agent.role}
+        </p>
         <div className="flex items-center gap-2 mt-3">
-          <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+          <span
+            className="text-[0.625rem] px-2 py-0.5 rounded font-medium"
+            style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}
+            title="Model tier used for inference"
+          >
             {agent.model_tier}
           </span>
           {agent.type && (
-            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+            <span
+              className="text-[0.625rem] px-2 py-0.5 rounded font-medium"
+              style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}
+              title="Agent category in the fleet"
+            >
               {agent.type}
             </span>
           )}
         </div>
         {agent.model && (
-          <p className="text-xs text-gray-400 dark:text-gray-600 mt-2 truncate">{agent.model}</p>
+          <p className="text-[0.6875rem] mt-2 truncate font-mono" style={{ color: 'var(--text-tertiary)' }} title="Exact model ID used for last inference">
+            {agent.model}
+          </p>
         )}
       </div>
     </Link>

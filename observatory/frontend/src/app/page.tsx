@@ -25,31 +25,50 @@ export default async function DashboardPage() {
   const { health, agents, metrics, error } = await getData();
 
   return (
-    <div>
+    <div className="page-transition">
       {health?.kill_switch_active && (
         <KillSwitchBanner health={health} compact />
       )}
 
-      <div className="px-6 py-6 space-y-6">
+      <div style={{ padding: 'var(--page-padding)' }} className="space-y-6">
+        {/* Page header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Holus autonomous marketing system — overview
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Inference Feed
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+            Live agent activity, quality drift, and system-wide KPIs
           </p>
         </div>
 
         {error && <ErrorBanner message="Could not reach Observatory API" />}
 
+        {/* System status pill */}
         {health && (
           <div
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium ${
-              health.status === 'healthy'
-                ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300'
-                : health.status === 'degraded'
-                ? 'border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300'
-                : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300'
-            }`}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
+            style={{
+              background: health.status === 'healthy' ? 'var(--success-subtle)'
+                : health.status === 'degraded' ? 'var(--warning-subtle)'
+                : 'var(--danger-subtle)',
+              border: `1px solid ${
+                health.status === 'healthy' ? 'var(--success)'
+                : health.status === 'degraded' ? 'var(--warning)'
+                : 'var(--danger)'
+              }`,
+              color: health.status === 'healthy' ? 'var(--success)'
+                : health.status === 'degraded' ? 'var(--warning)'
+                : 'var(--danger)',
+            }}
           >
+            <span
+              className={`status-dot ${health.status === 'healthy' ? 'status-dot-active' : ''}`}
+              style={{
+                background: health.status === 'healthy' ? 'var(--success)'
+                  : health.status === 'degraded' ? 'var(--warning)'
+                  : 'var(--danger)',
+              }}
+            />
             <span className="capitalize">System: {health.status}</span>
             {health.timestamp && (
               <span className="ml-auto text-xs opacity-60">
@@ -59,15 +78,18 @@ export default async function DashboardPage() {
           </div>
         )}
 
+        {/* KPI Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KPICard
-            title="Cycles this week"
-            value={metrics?.cycles_this_week ?? '—'}
+            title="Inference cycles (7d)"
+            value={metrics?.cycles_this_week ?? '--'}
+            subtitle="observe-reason-act loops"
             color="blue"
+            staggerIndex={1}
           />
           <KPICard
-            title="Success rate"
-            value={metrics ? `${(metrics.success_rate * 100).toFixed(1)}%` : '—'}
+            title="Cycle success rate"
+            value={metrics ? `${(metrics.success_rate * 100).toFixed(1)}%` : '--'}
             color={
               metrics
                 ? metrics.success_rate >= 0.8
@@ -77,11 +99,12 @@ export default async function DashboardPage() {
                   : 'red'
                 : 'default'
             }
+            staggerIndex={2}
           />
           <KPICard
-            title="Avg quality score"
-            value={metrics?.avg_quality_score?.toFixed(1) ?? '—'}
-            subtitle="out of 10"
+            title="Mean judge score"
+            value={metrics?.avg_quality_score?.toFixed(1) ?? '--'}
+            subtitle="7-evaluator weighted avg"
             color={
               metrics
                 ? metrics.avg_quality_score >= 7
@@ -91,30 +114,33 @@ export default async function DashboardPage() {
                   : 'red'
                 : 'default'
             }
+            staggerIndex={3}
           />
           <KPICard
-            title="Total cost"
-            value={metrics ? `$${metrics.total_cost_usd.toFixed(2)}` : '—'}
-            subtitle="this week"
+            title="Inference cost"
+            value={metrics ? `$${metrics.total_cost_usd.toFixed(2)}` : '--'}
+            subtitle="token spend (7d)"
+            staggerIndex={4}
           />
         </div>
 
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            Agents ({agents.length})
+        {/* Agents section */}
+        <section>
+          <h2 className="section-heading">
+            Agent Fleet ({agents.length})
           </h2>
           {agents.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-600 py-4">
-              {error ? 'Unable to load agents.' : 'No agents registered.'}
+            <p className="text-sm py-4" style={{ color: 'var(--text-tertiary)' }}>
+              {error ? 'Fleet data unavailable -- check API connection.' : 'No agents registered in AGENTS.yaml.'}
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {agents.map((agent) => (
-                <AgentCard key={agent.id} agent={agent} />
+              {agents.map((agent, i) => (
+                <AgentCard key={agent.id} agent={agent} staggerIndex={Math.min(i + 1, 12)} />
               ))}
             </div>
           )}
-        </div>
+        </section>
 
         <TrajectoryTimeline />
       </div>

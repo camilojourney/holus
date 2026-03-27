@@ -38,11 +38,11 @@ export default async function ResultsPage() {
     : '0';
 
   return (
-    <div className="px-6 py-6 space-y-6">
+    <div style={{ padding: 'var(--page-padding)' }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Results</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Growth metrics and content performance across all platforms
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Performance</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          Cross-platform growth trajectory and content performance signals
         </p>
       </div>
 
@@ -51,23 +51,23 @@ export default async function ResultsPage() {
       {/* Headline KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
-          title="Total followers"
+          title="Audience size"
           value={fmt(totalFollowers)}
-          subtitle={`+${followerGrowth}% in 30d`}
+          subtitle={`${Number(followerGrowth) >= 0 ? '+' : ''}${followerGrowth}% 30d delta`}
           color="blue"
         />
         <KPICard
-          title="Impressions (30d)"
+          title="Reach (30d)"
           value={fmt(totalImpressions)}
           color="default"
         />
         <KPICard
-          title="Posts (30d)"
+          title="Published (30d)"
           value={totalPosts}
           color="default"
         />
         <KPICard
-          title="Avg engagement"
+          title="Engagement rate"
           value={`${avgEngagement}%`}
           color={Number(avgEngagement) >= 5 ? 'green' : Number(avgEngagement) >= 3 ? 'yellow' : 'red'}
         />
@@ -81,8 +81,8 @@ export default async function ResultsPage() {
       {/* Platform breakdown */}
       {Object.keys(platforms).length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            Platforms
+          <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+            Channel Breakdown
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {Object.entries(platforms).map(([name, stats]) => (
@@ -102,23 +102,34 @@ export default async function ResultsPage() {
 
       {/* Top performing posts */}
       {data && data.top_posts.length > 0 && (
-        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950">
-          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Top Posts
+        <div
+          className="rounded-xl"
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border-default)',
+          }}
+        >
+          <div
+            className="px-5 py-4"
+            style={{ borderBottom: '1px solid var(--border-subtle)' }}
+          >
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Highest-Signal Posts
             </h2>
           </div>
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          <div>
             {data.top_posts.map((post) => (
-              <TopPostRow key={post.id} post={post} />
+              <div key={post.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <TopPostRow post={post} />
+              </div>
             ))}
           </div>
         </div>
       )}
 
       {!error && !data && (
-        <p className="text-sm text-gray-400 dark:text-gray-400 py-4">
-          No results data available. Ensure data/results/growth.json exists.
+        <p className="text-sm py-4" style={{ color: 'var(--text-tertiary)' }}>
+          No trajectory data -- run first cycle to populate growth.json.
         </p>
       )}
     </div>

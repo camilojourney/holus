@@ -1,66 +1,25 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { generateFollowerData, type FollowerDataPoint } from '@/lib/demo-data';
+import { AreaChart, BarChart } from '@tremor/react';
+import { generateFollowerData } from '@/lib/demo-data';
 import RadioGroup from '@/components/RadioGroup';
+
+const platformTremorColor: Record<string, string> = {
+  linkedin: 'blue',
+  instagram: 'pink',
+  twitter: 'cyan',
+  threads: 'gray',
+  tiktok: 'slate',
+};
 
 const PLATFORMS = ['all', 'linkedin', 'instagram', 'twitter', 'threads', 'tiktok'] as const;
 type Platform = typeof PLATFORMS[number];
-
-const platformColors: Record<string, string> = {
-  linkedin: '#2563eb',
-  instagram: '#ec4899',
-  twitter: '#0ea5e9',
-  threads: '#6b7280',
-  tiktok: '#111827',
-};
-
-const platformBadgeClass: Record<string, string> = {
-  linkedin: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400',
-  instagram: 'bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-400',
-  twitter: 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-400',
-  threads: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  tiktok: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-};
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
-}
-
-function GrowthLine({ data, color }: { data: number[]; color: string }) {
-  if (data.length < 2) return null;
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const w = 800;
-  const h = 140;
-  const padding = { top: 8, right: 8, bottom: 4, left: 8 };
-  const chartW = w - padding.left - padding.right;
-  const chartH = h - padding.top - padding.bottom;
-
-  const points = data.map((v, i) => {
-    const x = padding.left + (i / (data.length - 1)) * chartW;
-    const y = padding.top + chartH - ((v - min) / range) * chartH;
-    return { x, y };
-  });
-
-  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  const areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
-
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto" aria-label="Follower growth chart">
-      <defs>
-        <linearGradient id={`fill-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={areaPath} fill={`url(#fill-${color.replace('#', '')})`} />
-      <path d={linePath} fill="none" stroke={color} strokeWidth="2" />
-    </svg>
-  );
 }
 
 export default function FollowersPage() {
@@ -73,7 +32,6 @@ export default function FollowersPage() {
     return rawData.filter((d) => d.platform === platform);
   }, [rawData, platform]);
 
-  // Aggregate followers by date (sum all platforms for "all" view)
   const dailyFollowers = useMemo(() => {
     const byDate: Record<string, { followers: number; new_followers: number; unfollows: number; net_change: number }> = {};
     for (const d of filtered) {
@@ -87,10 +45,9 @@ export default function FollowersPage() {
     }
     return Object.entries(byDate)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, v]) => ({ date, ...v }));
+      .map(([date, v]) => ({ date, dateLabel: date.slice(5), ...v }));
   }, [filtered]);
 
-  // Per-platform summary
   const platformSummary = useMemo(() => {
     const platforms = ['linkedin', 'instagram', 'twitter', 'threads', 'tiktok'];
     return platforms.map((p) => {
@@ -121,14 +78,26 @@ export default function FollowersPage() {
   const totalNewFollowers = dailyFollowers.reduce((s, d) => s + d.new_followers, 0);
   const totalUnfollows = dailyFollowers.reduce((s, d) => s + d.unfollows, 0);
 
-  const chartColor = platform === 'all' ? '#6366f1' : platformColors[platform] ?? '#6366f1';
+  const chartColor = platform === 'all' ? 'amber' : platformTremorColor[platform] ?? 'amber';
+
+  const areaChartData = dailyFollowers.map((d) => ({
+    date: d.dateLabel,
+    Followers: d.followers,
+  }));
+
+  const barChartData = dailyFollowers.map((d) => ({
+    date: d.dateLabel,
+    'Net Change': d.net_change,
+  }));
 
   return (
-    <div className="px-6 py-6 space-y-6">
+    <div style={{ padding: 'var(--page-padding)' }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Follower Tracker</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Follower growth, new follows, and unfollows across platforms (30 days)
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          Audience Growth
+        </h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          Acquisition, churn, and net growth trajectory by channel (30d window)
         </p>
       </div>
 
@@ -143,132 +112,161 @@ export default function FollowersPage() {
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-400">Total Followers</p>
-          <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{fmt(currentTotal)}</p>
-        </div>
-        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-400">Net Growth (30d)</p>
-          <p className={`text-xl font-bold mt-1 ${totalNetChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {totalNetChange >= 0 ? '+' : ''}{fmt(totalNetChange)}
-          </p>
-        </div>
-        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-400">Growth Rate</p>
-          <p className={`text-xl font-bold mt-1 ${Number(totalGrowthPct) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {Number(totalGrowthPct) >= 0 ? '+' : ''}{totalGrowthPct}%
-          </p>
-        </div>
-        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-400">New Followers</p>
-          <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">{fmt(totalNewFollowers)}</p>
-        </div>
-        <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-400">Unfollows</p>
-          <p className="text-xl font-bold text-red-500 dark:text-red-400 mt-1">{fmt(totalUnfollows)}</p>
-        </div>
+        {[
+          { label: 'Total Followers', value: fmt(currentTotal) },
+          { label: 'Net Growth (30d)', value: `${totalNetChange >= 0 ? '+' : ''}${fmt(totalNetChange)}`, semantic: totalNetChange >= 0 ? 'var(--success)' : 'var(--danger)' },
+          { label: 'Growth Rate', value: `${Number(totalGrowthPct) >= 0 ? '+' : ''}${totalGrowthPct}%`, semantic: Number(totalGrowthPct) >= 0 ? 'var(--success)' : 'var(--danger)' },
+          { label: 'New Followers', value: fmt(totalNewFollowers), semantic: 'var(--info)' },
+          { label: 'Unfollows', value: fmt(totalUnfollows), semantic: 'var(--danger)' },
+        ].map(({ label, value, semantic }) => (
+          <div
+            key={label}
+            className="rounded-xl p-4"
+            style={{
+              background: 'var(--surface-raised)',
+              border: '1px solid var(--border-default)',
+            }}
+          >
+            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
+            <p
+              className="text-xl font-bold mt-1"
+              style={{ color: semantic ?? 'var(--text-primary)' }}
+            >
+              {value}
+            </p>
+          </div>
+        ))}
       </div>
 
-      {/* Growth chart */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+      {/* Growth chart — Recharts */}
+      <div
+        className="rounded-xl p-5"
+        style={{
+          background: 'var(--surface-raised)',
+          border: '1px solid var(--border-default)',
+        }}
+      >
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Follower Growth (30d){platform !== 'all' ? ` - ${platform}` : ''}
           </h2>
-          <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-400">
+          <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-tertiary)' }}>
             <span>{fmt(startTotal)}</span>
-            <span className="text-gray-300 dark:text-gray-700">&rarr;</span>
-            <span className="font-medium text-gray-700 dark:text-gray-300">{fmt(currentTotal)}</span>
+            <span style={{ color: 'var(--border-strong)' }}>&rarr;</span>
+            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{fmt(currentTotal)}</span>
           </div>
         </div>
-        <GrowthLine data={dailyFollowers.map((d) => d.followers)} color={chartColor} />
-        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-400">
-          <span>{dailyFollowers[0]?.date.slice(5)}</span>
-          <span>{dailyFollowers[dailyFollowers.length - 1]?.date.slice(5)}</span>
-        </div>
+        <AreaChart
+          className="h-36"
+          data={areaChartData}
+          index="date"
+          categories={['Followers']}
+          colors={[chartColor]}
+          curveType="natural"
+          showXAxis={true}
+          showYAxis={true}
+          showGridLines={true}
+          showLegend={false}
+          autoMinValue={true}
+          valueFormatter={(v: number) => fmt(v)}
+          showAnimation={true}
+        />
       </div>
 
-      {/* Daily net change bar chart */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+      {/* Daily net change bar chart — Recharts */}
+      <div
+        className="rounded-xl p-5"
+        style={{
+          background: 'var(--surface-raised)',
+          border: '1px solid var(--border-default)',
+        }}
+      >
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Daily Net Change
           </h2>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm bg-green-500 opacity-70" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">Gained</span>
+              <div className="w-3 h-3 rounded-sm" style={{ background: 'var(--success)', opacity: 0.7 }} />
+              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Gained</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm bg-red-500 opacity-70" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">Lost</span>
+              <div className="w-3 h-3 rounded-sm" style={{ background: 'var(--danger)', opacity: 0.7 }} />
+              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Lost</span>
             </div>
           </div>
         </div>
-        <div className="flex items-end gap-[2px] h-20">
-          {dailyFollowers.map((d) => {
-            const maxAbs = Math.max(...dailyFollowers.map((dd) => Math.abs(dd.net_change))) || 1;
-            const height = Math.max(2, (Math.abs(d.net_change) / maxAbs) * 64);
-            const isPositive = d.net_change >= 0;
-            return (
-              <div
-                key={d.date}
-                className={`flex-1 rounded-sm ${isPositive ? 'bg-green-500' : 'bg-red-500'}`}
-                style={{
-                  height: `${height}px`,
-                  opacity: 0.7,
-                  alignSelf: 'flex-end',
-                }}
-                title={`${d.date}: ${d.net_change >= 0 ? '+' : ''}${d.net_change}`}
-              />
-            );
-          })}
-        </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-400">
+        <BarChart
+          className="h-20"
+          data={barChartData}
+          index="date"
+          categories={['Net Change']}
+          colors={['emerald']}
+          showXAxis={false}
+          showYAxis={false}
+          showGridLines={false}
+          showLegend={false}
+          valueFormatter={(v: number) => `${v >= 0 ? '+' : ''}${v}`}
+          showAnimation={true}
+        />
+        <div className="flex justify-between mt-2 text-xs" style={{ color: 'var(--text-tertiary)' }}>
           <span>{dailyFollowers[0]?.date.slice(5)}</span>
           <span>{dailyFollowers[dailyFollowers.length - 1]?.date.slice(5)}</span>
         </div>
       </div>
 
       {/* Platform breakdown table */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950">
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+      <div
+        className="rounded-xl"
+        style={{
+          background: 'var(--surface-raised)',
+          border: '1px solid var(--border-default)',
+        }}
+      >
+        <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Platform Breakdown (30d)
           </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-xs text-gray-400 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
-                <th scope="col" className="text-left px-5 py-3 font-medium">Platform</th>
-                <th scope="col" className="text-right px-4 py-3 font-medium">Current</th>
-                <th scope="col" className="text-right px-4 py-3 font-medium">New</th>
-                <th scope="col" className="text-right px-4 py-3 font-medium">Unfollows</th>
-                <th scope="col" className="text-right px-4 py-3 font-medium">Net</th>
-                <th scope="col" className="text-right px-5 py-3 font-medium">Growth</th>
+              <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                {['Platform', 'Current', 'New', 'Unfollows', 'Net', 'Growth'].map((h, i) => (
+                  <th
+                    key={h}
+                    scope="col"
+                    className={`${i === 0 ? 'text-left px-5' : 'text-right px-4'} py-3 text-xs font-medium`}
+                    style={{ color: 'var(--text-tertiary)' }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {platformSummary
                 .sort((a, b) => b.current - a.current)
                 .map((s) => (
-                  <tr key={s.platform} className="border-b border-gray-50 dark:border-gray-900 last:border-0">
+                  <tr key={s.platform} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     <td className="px-5 py-3">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded capitalize ${platformBadgeClass[s.platform] ?? ''}`}>
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded capitalize"
+                        style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}
+                      >
                         {s.platform}
                       </span>
                     </td>
-                    <td className="text-right px-4 py-3 font-medium text-gray-700 dark:text-gray-300">{fmt(s.current)}</td>
-                    <td className="text-right px-4 py-3 text-blue-600 dark:text-blue-400 font-medium">+{fmt(s.new_followers)}</td>
-                    <td className="text-right px-4 py-3 text-red-500 dark:text-red-400 font-medium">-{fmt(s.unfollows)}</td>
+                    <td className="text-right px-4 py-3 font-medium" style={{ color: 'var(--text-primary)' }}>{fmt(s.current)}</td>
+                    <td className="text-right px-4 py-3 font-medium" style={{ color: 'var(--info)' }}>+{fmt(s.new_followers)}</td>
+                    <td className="text-right px-4 py-3 font-medium" style={{ color: 'var(--danger)' }}>-{fmt(s.unfollows)}</td>
                     <td className="text-right px-4 py-3">
-                      <span className={`font-medium ${s.net_change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      <span className="font-medium" style={{ color: s.net_change >= 0 ? 'var(--success)' : 'var(--danger)' }}>
                         {s.net_change >= 0 ? '+' : ''}{fmt(s.net_change)}
                       </span>
                     </td>
                     <td className="text-right px-5 py-3">
-                      <span className={`font-semibold ${Number(s.growth_pct) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      <span className="font-semibold" style={{ color: Number(s.growth_pct) >= 0 ? 'var(--success)' : 'var(--danger)' }}>
                         {Number(s.growth_pct) >= 0 ? '+' : ''}{s.growth_pct}%
                       </span>
                     </td>

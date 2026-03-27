@@ -1,6 +1,7 @@
 import { fetchContent } from '@/lib/api';
 import ContentKanban from '@/components/ContentKanban';
 import ErrorBanner from '@/components/ErrorBanner';
+import PlatformDistribution from '@/components/PlatformDistribution';
 import type { ContentItem } from '@/lib/types';
 
 export const revalidate = 30;
@@ -31,18 +32,18 @@ export default async function ContentPage() {
   }, {});
 
   const countCards = [
-    { label: 'Draft', value: counts.draft, color: 'text-gray-700 dark:text-gray-300' },
-    { label: 'Pending Review', value: counts.review, color: 'text-yellow-700 dark:text-yellow-400' },
-    { label: 'Approved', value: counts.approved, color: 'text-indigo-700 dark:text-indigo-400' },
-    { label: 'Published', value: counts.published, color: 'text-green-700 dark:text-green-400' },
+    { label: 'Drafting', value: counts.draft, color: 'var(--text-secondary)' },
+    { label: 'Awaiting Review', value: counts.review, color: 'var(--warning)' },
+    { label: 'Gate Passed', value: counts.approved, color: 'var(--info)' },
+    { label: 'Live', value: counts.published, color: 'var(--success)' },
   ];
 
   return (
-    <div className="px-6 py-6 space-y-6">
+    <div className="px-6 py-6 space-y-6 page-transition">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Content Pipeline</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Content queue — click any card to preview, approve, or reject
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Content Pipeline</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          Stage gates from draft to publish -- click any card to inspect, calibrate, or reject
         </p>
       </div>
 
@@ -52,13 +53,17 @@ export default async function ContentPage() {
         <>
           {/* Status counts */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {countCards.map(({ label, value, color }) => (
+            {countCards.map(({ label, value, color }, i) => (
               <div
                 key={label}
-                className="border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-white dark:bg-gray-950"
+                className={`rounded-xl px-4 py-3 animate-fade-in stagger-${i + 1}`}
+                style={{
+                  border: '1px solid var(--border-default)',
+                  background: 'var(--surface-raised)',
+                }}
               >
-                <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-                <p className={`text-xl font-bold mt-1 ${color}`}>{value}</p>
+                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
+                <p className="text-xl font-bold mt-1" style={{ color }}>{value}</p>
               </div>
             ))}
           </div>
@@ -67,31 +72,7 @@ export default async function ContentPage() {
 
           {/* Platform distribution */}
           {Object.keys(platformCounts).length > 0 && (
-            <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
-              <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
-                Platform Distribution
-              </h2>
-              <div className="space-y-2">
-                {Object.entries(platformCounts)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([platform, count]) => (
-                    <div key={platform} className="flex items-center gap-3">
-                      <span className="text-xs text-gray-600 dark:text-gray-400 w-32">
-                        {platform.replace(/_/g, '/')}
-                      </span>
-                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2">
-                        <div
-                          className="bg-indigo-500 dark:bg-indigo-400 h-2 rounded-full"
-                          style={{ width: `${(count / items.length) * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400 w-6 text-right">
-                        {count}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </div>
+            <PlatformDistribution platformCounts={platformCounts} />
           )}
         </>
       )}

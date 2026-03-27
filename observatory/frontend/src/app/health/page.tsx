@@ -22,9 +22,9 @@ export default async function HealthPage() {
 
       <div className="px-6 py-6 space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">System Health</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Service status and kill switch state
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>System Diagnostics</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+            Service probes, MCP silo connectivity, and kill switch state
           </p>
         </div>
 
@@ -64,7 +64,7 @@ export default async function HealthPage() {
                   System {health.status}
                 </p>
                 {health.timestamp && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
                     Last checked: {new Date(health.timestamp).toLocaleString()}
                   </p>
                 )}
@@ -73,8 +73,8 @@ export default async function HealthPage() {
 
             {/* Service grid */}
             <div>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                Services
+              <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
+                Service Probes
               </h2>
               <SystemHealthGrid services={health.services ?? []} />
             </div>
@@ -82,7 +82,7 @@ export default async function HealthPage() {
         )}
 
         {!health && !error && (
-          <p className="text-sm text-gray-400 dark:text-gray-400">Loading health data...</p>
+          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Awaiting diagnostic probe response...</p>
         )}
       </div>
     </div>

@@ -34,9 +34,9 @@ export default async function EvaluationsPage() {
   return (
     <div className="px-6 py-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Evaluations</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Quality scores over the last 30 days
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Quality Signals</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          Judge verdicts and quality drift across 7 domain-expert evaluators (30d window)
         </p>
       </div>
 
@@ -49,9 +49,13 @@ export default async function EvaluationsPage() {
             {(['pass', 'review', 'fail'] as const).map((v) => (
               <div
                 key={v}
-                className="border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-4 bg-white dark:bg-gray-950 text-center"
+                className="rounded-xl px-4 py-4 text-center"
+                style={{
+                  border: '1px solid var(--border-default)',
+                  background: 'var(--surface-raised)',
+                }}
               >
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{passCounts[v]}</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{passCounts[v]}</p>
                 <span
                   className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${verdictColors[v]}`}
                 >
@@ -62,46 +66,65 @@ export default async function EvaluationsPage() {
           </div>
 
           {/* Heatmap */}
-          <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-950">
-            <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-4">
-              Quality Heatmap — Agents × Days
+          <div
+            className="rounded-xl p-5"
+            style={{
+              border: '1px solid var(--border-default)',
+              background: 'var(--surface-raised)',
+            }}
+          >
+            <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+              Score Heatmap -- Agents x Days (darker = higher quality)
             </h2>
             <QualityHeatmap evaluations={evaluations} agents={agentIds} />
           </div>
 
           {/* Evaluation table */}
           {evaluations.length > 0 && (
-            <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-950">
-              <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-                <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
-                  Evaluation History ({evaluations.length} records)
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                border: '1px solid var(--border-default)',
+                background: 'var(--surface-raised)',
+              }}
+            >
+              <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <h2 className="font-semibold text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Evaluation Log ({evaluations.length} verdicts)
                 </h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 dark:bg-gray-900">
+                  <thead style={{ background: 'var(--surface-2)' }}>
                     <tr>
                       {['Agent', 'Date', 'Score', 'Verdict', 'Evaluator'].map((h) => (
                         <th
                           key={h}
                           scope="col"
-                          className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                          className="px-4 py-2 text-left text-xs font-medium"
+                          style={{ color: 'var(--text-tertiary)' }}
                         >
                           {h}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50 dark:divide-gray-900">
-                    {evaluations.slice(0, 50).map((ev) => (
-                      <tr key={ev.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
-                        <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300 font-medium">
+                  <tbody>
+                    {evaluations.slice(0, 50).map((ev, idx) => (
+                      <tr
+                        key={ev.id}
+                        className="transition-colors hover:bg-[var(--surface-2)]"
+                        style={{
+                          borderBottom: idx < Math.min(evaluations.length, 50) - 1 ? '1px solid var(--border-subtle)' : undefined,
+                        }}
+                      >
+                        <td className="px-4 py-2 text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                           {ev.agent_name}
                         </td>
-                        <td className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 font-mono">
+                        <td className="px-4 py-2 text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>
                           {ev.date.slice(0, 10)}
                         </td>
-                        <td className="px-4 py-2 text-xs text-gray-700 dark:text-gray-300">
+                        <td className="px-4 py-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
                           {ev.score}/10
                         </td>
                         <td className="px-4 py-2">
@@ -112,10 +135,10 @@ export default async function EvaluationsPage() {
                               {ev.verdict}
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-400">—</span>
+                            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>—</span>
                           )}
                         </td>
-                        <td className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400">
+                        <td className="px-4 py-2 text-xs" style={{ color: 'var(--text-tertiary)' }}>
                           {ev.evaluator ?? '—'}
                         </td>
                       </tr>
@@ -127,8 +150,8 @@ export default async function EvaluationsPage() {
           )}
 
           {evaluations.length === 0 && (
-            <p className="text-sm text-gray-400 dark:text-gray-400 py-4">
-              No evaluation data yet.
+            <p className="text-sm py-4" style={{ color: 'var(--text-tertiary)' }}>
+              No quality signals yet -- run first evaluation cycle to populate.
             </p>
           )}
         </>

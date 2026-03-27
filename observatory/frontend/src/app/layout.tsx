@@ -1,21 +1,47 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import Sidebar from '@/components/Sidebar';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: '--font-plus-jakarta',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
   subsets: ['latin'],
+  weight: ['400', '500'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: 'Holus Observatory',
-  description: 'Real-time visibility into the Holus autonomous marketing system',
+  description: 'Real-time inference monitoring for Holus -- a 32-agent federated AI system with domain-expert quality judges and self-improvement loops.',
+  metadataBase: new URL('https://holus.camilomartinez.co'),
+  openGraph: {
+    title: 'Holus Observatory',
+    description: 'Real-time inference monitoring for a 32-agent federated AI system with quality judges and self-improvement loops.',
+    siteName: 'Holus Observatory',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Holus Observatory -- Multi-Agent Inference Monitor',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Holus Observatory',
+    description: 'Real-time inference monitoring for a 32-agent federated AI system with quality judges and self-improvement loops.',
+    images: ['/og-image.png'],
+  },
 };
 
 export default function RootLayout({
@@ -26,11 +52,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen`}
+        className={`${plusJakarta.variable} ${jetbrainsMono.variable} antialiased min-h-screen`}
+        style={{ background: 'var(--surface-0)', color: 'var(--text-primary)' }}
       >
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-medium focus:outline-none focus:ring-2 focus:ring-offset-2"
+          style={{ background: 'var(--brand)', color: 'var(--text-inverse)' }}
         >
           Skip to content
         </a>

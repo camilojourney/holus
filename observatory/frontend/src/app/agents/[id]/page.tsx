@@ -1,6 +1,7 @@
 import { fetchAgent } from '@/lib/api';
 import { notFound } from 'next/navigation';
 import type { EvalVerdict } from '@/lib/types';
+import AgentSparkline from '@/components/AgentSparkline';
 
 export const revalidate = 30;
 
@@ -47,7 +48,7 @@ export default async function AgentDetailPage({ params }: Props) {
 
       {/* Info card */}
       <div className="card">
-        <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Agent Info</h2>
+        <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Agent Configuration</h2>
         <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {[
             { label: 'Status', value: agent.status },
@@ -55,7 +56,7 @@ export default async function AgentDetailPage({ params }: Props) {
             { label: 'Model tier', value: agent.model_tier },
             { label: 'Model', value: agent.model || '--' },
             { label: 'Version', value: agent.version || '--' },
-            { label: 'Avg quality', value: avgScore ? `${avgScore}/10` : '--' },
+            { label: 'Mean judge score', value: avgScore ? `${avgScore}/10` : '--' },
           ].map(({ label, value }) => (
             <div key={label}>
               <dt className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</dt>
@@ -71,22 +72,9 @@ export default async function AgentDetailPage({ params }: Props) {
       {agent.recent_scores?.length > 0 && (
         <div className="card">
           <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>
-            Recent Quality Scores
+            Quality Trajectory
           </h2>
-          <div className="flex items-end gap-1 h-16">
-            {agent.recent_scores.map((score: number, i: number) => (
-              <div
-                key={i}
-                className="flex-1 rounded-t transition-all"
-                style={{
-                  height: `${(score / 10) * 100}%`,
-                  background: score >= 7 ? 'var(--success)' : score >= 4 ? 'var(--warning)' : 'var(--danger)',
-                  opacity: 0.75,
-                }}
-                title={`${score}/10`}
-              />
-            ))}
-          </div>
+          <AgentSparkline scores={agent.recent_scores} />
           <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
             <span>older</span>
             <span>newer</span>
@@ -104,7 +92,7 @@ export default async function AgentDetailPage({ params }: Props) {
               <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>
                 Capability Breakdown
               </h2>
-              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>No evaluations yet</p>
+              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>No judge evaluations yet -- awaiting first cycle.</p>
             </div>
           );
         }
@@ -231,7 +219,7 @@ export default async function AgentDetailPage({ params }: Props) {
       )}
 
       {agent.cycles?.length === 0 && (
-        <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>No cycle history yet.</p>
+        <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>No inference cycles recorded -- agent has not been dispatched yet.</p>
       )}
     </div>
   );

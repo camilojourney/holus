@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export const metadata = {
-  title: 'Holus Observatory - About',
+  title: 'Holus Observatory - Architecture',
   description: 'Holus is a multi-agent AI marketing system that coordinates 32 specialized agents to create, evaluate, and publish content across platforms.',
 };
 
@@ -22,19 +22,16 @@ const products = [
     name: 'Pilaster',
     tagline: 'AI generation platform with memory',
     url: 'https://pilaster.ai',
-    color: 'text-indigo-600 dark:text-indigo-400',
   },
   {
     name: 'Invoz',
     tagline: 'Speech coaching with 11 acoustic dimensions',
     url: 'https://invoz.io',
-    color: 'text-emerald-600 dark:text-emerald-400',
   },
   {
     name: 'Genpeli',
     tagline: 'AI video editing pipeline',
     url: 'https://frontend-six-rho-96.vercel.app',
-    color: 'text-pink-600 dark:text-pink-400',
   },
 ];
 
@@ -70,40 +67,52 @@ const agentCategories = [
 
 export default function AboutPage() {
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto space-y-12">
+    <div className="px-6 py-8 max-w-4xl mx-auto space-y-12 page-transition">
       {/* Hero */}
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          Live system with 32 AI agents
+        <div
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
+          style={{ background: 'var(--brand-subtle)', color: 'var(--brand)' }}
+        >
+          <span className="status-dot status-dot-active" style={{ background: 'var(--success)' }} />
+          32-agent fleet -- live inference
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+        <h1
+          className="text-4xl font-bold tracking-tight"
+          style={{ color: 'var(--text-primary)' }}
+        >
           Holus Observatory
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          A multi-agent AI marketing system that coordinates 32 specialized agents
-          to create, evaluate, and publish content across platforms, then learns from what works.
+        <p className="text-lg max-w-2xl mx-auto leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          A federated multi-agent system that coordinates 32 specialized agents
+          across observe-reason-act-evaluate loops, routing content through domain-expert judges
+          and feeding quality signals back into strategy calibration.
         </p>
         <div className="flex justify-center gap-3 pt-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+            style={{ background: 'var(--brand)', color: 'var(--text-inverse)' }}
           >
-            View Dashboard <ArrowRight size={16} />
+            Inference Feed <ArrowRight size={16} />
           </Link>
           <Link
             href="/engagement"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+            style={{
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-secondary)',
+            }}
           >
-            <BarChart3 size={16} /> Engagement Tracker
+            <BarChart3 size={16} /> Analyze Drift
           </Link>
         </div>
       </div>
 
       {/* What is this */}
-      <section className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-6">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">What is this?</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+      <section className="card">
+        <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--text-primary)' }}>System Architecture</h2>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
           This is the Observatory, the real-time monitoring dashboard for Holus.
           Holus is a federated AI system that acts as an autonomous marketing strategist
           for a portfolio of AI products. It does not just generate content. It observes platform analytics,
@@ -111,7 +120,7 @@ export default function AboutPage() {
           evaluates every output with domain-expert judges, and feeds results back into
           the next cycle. The Observatory shows this entire loop in real time.
         </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mt-3">
+        <p className="text-sm leading-relaxed mt-3" style={{ color: 'var(--text-secondary)' }}>
           The system uses a federated architecture: Holus holds the brain (strategy, decisions, learning)
           while independent silo services handle execution (video editing, image generation, publishing).
           Communication happens via MCP (Model Context Protocol) tool calls, not shared databases.
@@ -120,17 +129,20 @@ export default function AboutPage() {
 
       {/* The Agent Loop */}
       <section>
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">The Agent Loop</h2>
+        <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>ReAct Loop (Observe-Reason-Act-Evaluate)</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {phases.map(({ Icon, title, description }) => (
-            <div key={title} className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+          {phases.map(({ Icon, title, description }, i) => (
+            <div key={title} className={`card animate-fade-in stagger-${i + 1}`}>
               <div className="flex items-center gap-2.5 mb-2">
-                <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950">
-                  <Icon size={18} className="text-indigo-600 dark:text-indigo-400" />
+                <div
+                  className="p-2 rounded-lg"
+                  style={{ background: 'var(--brand-subtle)' }}
+                >
+                  <Icon size={18} style={{ color: 'var(--brand)' }} />
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>
+                <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{description}</p>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{description}</p>
             </div>
           ))}
         </div>
@@ -138,50 +150,54 @@ export default function AboutPage() {
 
       {/* Agent Architecture */}
       <section>
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">32 Agents, 4 Categories</h2>
+        <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Agent Fleet -- 32 Agents, 4 Categories</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {agentCategories.map(({ label, count, description }) => (
-            <div key={label} className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5">
+            <div key={label} className="card">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900 dark:text-white">{label}</h3>
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{label}</h3>
+                <span
+                  className="text-xs font-medium px-2 py-0.5 rounded-full"
+                  style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}
+                >
                   {count} agents
                 </span>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{description}</p>
             </div>
           ))}
         </div>
         <Link
           href="/agents"
-          className="inline-flex items-center gap-1.5 mt-3 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+          className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+          style={{ color: 'var(--brand)' }}
         >
-          <Users size={14} /> View all agents
+          <Users size={14} /> Inspect full fleet
         </Link>
       </section>
 
       {/* What it promotes */}
       <section>
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Products Holus Promotes</h2>
+        <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Promotion Targets</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {products.map(({ name, tagline, url, color }) => (
+          {products.map(({ name, tagline, url }) => (
             <a
               key={name}
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 transition-colors"
+              className="card card-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
             >
-              <h3 className={`font-semibold ${color}`}>{name}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{tagline}</p>
+              <h3 className="font-semibold" style={{ color: 'var(--brand)' }}>{name}</h3>
+              <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{tagline}</p>
             </a>
           ))}
         </div>
       </section>
 
       {/* Technical Stack */}
-      <section className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-6">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Technical Stack</h2>
+      <section className="card">
+        <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Technical Stack</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
           {[
             ['Orchestration', 'Python + LangGraph'],
@@ -195,8 +211,8 @@ export default function AboutPage() {
             ['State', 'JSONL + YAML (no database)'],
           ].map(([label, value]) => (
             <div key={label}>
-              <p className="text-gray-400 dark:text-gray-600 text-xs">{label}</p>
-              <p className="text-gray-700 dark:text-gray-300 font-medium">{value}</p>
+              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
+              <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{value}</p>
             </div>
           ))}
         </div>
@@ -204,49 +220,57 @@ export default function AboutPage() {
 
       {/* Explore the demo */}
       <section>
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Explore the Demo</h2>
+        <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Observatory Panels</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { href: '/', label: 'Dashboard', desc: 'KPIs, agent status, live events' },
-            { href: '/agents', label: 'Agents', desc: 'All 32 agents and their roles' },
-            { href: '/content', label: 'Content Pipeline', desc: 'Drafts, reviews, published' },
-            { href: '/engagement', label: 'Engagement', desc: 'Likes, comments, shares by platform' },
-            { href: '/followers', label: 'Followers', desc: 'Growth trends by platform' },
-            { href: '/evaluations', label: 'Evaluations', desc: 'Quality scores over time' },
+            { href: '/', label: 'Inference Feed', desc: 'Live KPIs, fleet status, trajectory stream' },
+            { href: '/agents', label: 'Agent Fleet', desc: 'All 32 agents, model tiers, and state' },
+            { href: '/content', label: 'Content Pipeline', desc: 'Draft to publish stage gates' },
+            { href: '/engagement', label: 'Engagement', desc: 'Signal strength by platform' },
+            { href: '/followers', label: 'Audience Growth', desc: 'Acquisition and churn trends' },
+            { href: '/evaluations', label: 'Quality Signals', desc: 'Judge scores and drift analysis' },
           ].map(({ href, label, desc }) => (
             <Link
               key={href}
               href={href}
-              className="border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 transition-colors"
+              className="card card-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
             >
-              <h3 className="font-medium text-sm text-gray-900 dark:text-white">{label}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{desc}</p>
+              <h3 className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{label}</h3>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{desc}</p>
             </Link>
           ))}
         </div>
       </section>
 
       {/* Built by */}
-      <section className="border-t border-gray-200 dark:border-gray-800 pt-6">
+      <section style={{ borderTop: '1px solid var(--border-default)', paddingTop: '1.5rem' }}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
+            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
               Built by Juan Camilo Martinez
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
               AI Engineer. MS Business Analytics, Baruch College.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <a href="https://camilomartinez.co" target="_blank" rel="noopener noreferrer" aria-label="Personal website" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <Globe size={18} />
-            </a>
-            <a href="https://linkedin.com/in/camilomartinez-ai" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <Linkedin size={18} />
-            </a>
-            <a href="https://github.com/camilojourney" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <Github size={18} />
-            </a>
+            {[
+              { href: 'https://camilomartinez.co', label: 'Personal website', Icon: Globe },
+              { href: 'https://linkedin.com/in/camilomartinez-ai', label: 'LinkedIn profile', Icon: Linkedin },
+              { href: 'https://github.com/camilojourney', label: 'GitHub profile', Icon: Github },
+            ].map(({ href, label, Icon }) => (
+              <a
+                key={href}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+                style={{ color: 'var(--text-tertiary)' }}
+              >
+                <Icon size={18} />
+              </a>
+            ))}
           </div>
         </div>
       </section>

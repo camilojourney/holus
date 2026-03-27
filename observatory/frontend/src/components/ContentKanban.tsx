@@ -16,11 +16,11 @@ const STATUS_COLUMN: Record<string, string> = {
 
 const COLUMNS = ['Draft', 'Pending Review', 'Approved', 'Published'];
 
-const COLUMN_STYLES: Record<string, string> = {
-  'Draft': 'text-gray-600 dark:text-gray-400',
-  'Pending Review': 'text-yellow-700 dark:text-yellow-400',
-  'Approved': 'text-indigo-700 dark:text-indigo-400',
-  'Published': 'text-green-700 dark:text-green-400',
+const COLUMN_STYLES: Record<string, React.CSSProperties> = {
+  'Draft': { color: 'var(--text-secondary)' },
+  'Pending Review': { color: 'var(--warning)' },
+  'Approved': { color: 'var(--info)' },
+  'Published': { color: 'var(--success)' },
 };
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -85,29 +85,41 @@ export default function ContentKanban({ items, onRefresh }: Props) {
         {COLUMNS.map((col) => (
           <div
             key={col}
-            className="border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900"
+            className="rounded-xl"
+            style={{
+              border: '1px solid var(--border-default)',
+              background: 'var(--surface-2)',
+            }}
           >
             <div
-              className={`px-4 py-3 border-b border-gray-200 dark:border-gray-800 font-semibold text-sm ${COLUMN_STYLES[col]}`}
+              className="px-4 py-3 font-semibold text-sm"
+              style={{
+                borderBottom: '1px solid var(--border-default)',
+                ...COLUMN_STYLES[col],
+              }}
             >
               {col}
-              <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-400">
+              <span className="ml-2 text-xs font-normal" style={{ color: 'var(--text-tertiary)' }}>
                 ({grouped[col].length})
               </span>
             </div>
             <div className="p-3 space-y-2 min-h-24">
               {grouped[col].length === 0 ? (
-                <p className="text-xs text-gray-400 dark:text-gray-400 text-center py-4">
-                  Empty
+                <p className="text-xs text-center py-4" style={{ color: 'var(--text-tertiary)' }}>
+                  No items in stage
                 </p>
               ) : (
                 grouped[col].map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setSelected(item)}
-                    className="w-full text-left bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-3 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm focus:outline-2 focus:outline-indigo-500 focus:outline-offset-1 transition-all"
+                    className="w-full text-left rounded-lg p-3 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-sm focus-ring transition-all"
+                    style={{
+                      background: 'var(--surface-raised)',
+                      border: '1px solid var(--border-default)',
+                    }}
                   >
-                    <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                    <p className="text-sm font-medium line-clamp-2" style={{ color: 'var(--text-primary)' }}>
                       {item.title ?? item.id}
                     </p>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -122,7 +134,7 @@ export default function ContentKanban({ items, onRefresh }: Props) {
                         </span>
                       )}
                       {item.platform && (
-                        <span className="text-xs font-mono text-gray-400 dark:text-gray-400">
+                        <span className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>
                           {PLATFORM_LABELS[item.platform] ?? item.platform}
                         </span>
                       )}
@@ -130,7 +142,7 @@ export default function ContentKanban({ items, onRefresh }: Props) {
                         <QualityBadge score={item.quality.quality_score} />
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-400 mt-1.5">
+                    <p className="text-xs mt-1.5" style={{ color: 'var(--text-tertiary)' }}>
                       {item.content_type?.replace(/_/g, ' ')}
                     </p>
                   </button>
@@ -155,12 +167,13 @@ export default function ContentKanban({ items, onRefresh }: Props) {
               <button
                 key={item.id}
                 onClick={() => setSelected(item)}
-                className="text-left bg-white dark:bg-gray-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2 cursor-pointer hover:border-red-400 focus:outline-2 focus:outline-red-500 focus:outline-offset-1 transition-colors"
+                className="text-left border border-red-200 dark:border-red-900 rounded-lg px-3 py-2 cursor-pointer hover:border-red-400 focus:outline-2 focus:outline-red-500 focus:outline-offset-1 transition-colors"
+                style={{ background: 'var(--surface-raised)' }}
               >
-                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-1 max-w-48">
+                <p className="text-xs font-medium line-clamp-1 max-w-48" style={{ color: 'var(--text-secondary)' }}>
                   {item.title ?? item.id}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
                   {item.platform} · {item.content_type?.replace(/_/g, ' ')}
                 </p>
               </button>
