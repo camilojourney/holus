@@ -7,13 +7,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from holus.agents.marketing.voice_pipeline import (
-    EnrichedContext,
-    IdeaMetadata,
     VoicePipeline,
     _parse_json_response,
     _parse_voice_sections,
 )
-
 
 # -- Unit tests for parsers ------------------------------------------------
 

@@ -1,3 +1,26 @@
+## Parallelism & Skills
+
+**Always use agents to parallelize work.** Launch multiple Agent() calls for independent tasks.
+
+**Use skills for repo work:**
+
+| Task | Skill |
+|------|-------|
+| Implement, fix bugs, add API | `/code holus` |
+| Write specs | `/specs holus` |
+| Research options | `/research holus` |
+| UX/UI audit + fix | `/ux holus` |
+| Acceptance testing | `/verify holus` |
+| Health check, deps, lint | `/maintenance holus` |
+| Multi-step plans | `/plan holus` |
+| Technical decision | `/consult-engineering holus` |
+| Autonomous systems | `/consult-systems holus` |
+| Business decision | `/consult-business` |
+| Aesthetic quality | `/taste holus` |
+| ML experiment design | `/consult-experiments holus` |
+
+**Agent dispatch:** Claude subagents for research/analysis, Codex for implementation, Gemini for cross-model review.
+
 # Holus
 
 AI marketing strategist for the product portfolio. Decides what content to create,

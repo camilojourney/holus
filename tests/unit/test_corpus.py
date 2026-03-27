@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
-import pytest
+from typing import TYPE_CHECKING
 
 from holus.data.corpus import CorpusDB
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _make_posts_raw(posts: list[dict], creator_dir: Path) -> None:

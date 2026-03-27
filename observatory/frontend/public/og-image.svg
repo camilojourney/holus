@@ -1,0 +1,106 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background: deep navy -->
+  <rect width="1200" height="630" fill="#0A0F1E"/>
+
+  <!-- Subtle grid pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5" opacity="0.4"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- Ambient glow behind logo -->
+  <radialGradient id="glow" cx="240" cy="315" r="200" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.15"/>
+    <stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/>
+  </radialGradient>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Logo: concentric rings at left -->
+  <!-- Outer ring — observe (dashed) -->
+  <circle cx="240" cy="290" r="120" stroke="#FBBF24" stroke-width="2" stroke-dasharray="8 6" opacity="0.5"/>
+  <!-- Middle ring — reason -->
+  <circle cx="240" cy="290" r="85" stroke="#F59E0B" stroke-width="3" opacity="0.75"/>
+  <!-- Inner core — act -->
+  <circle cx="240" cy="290" r="40" fill="#F59E0B"/>
+  <!-- Center highlight -->
+  <circle cx="240" cy="290" r="15" fill="#FBBF24" opacity="0.8"/>
+  <circle cx="240" cy="290" r="6" fill="#ffffff" opacity="0.9"/>
+
+  <!-- Small orbiting dots -->
+  <circle cx="360" cy="290" r="3" fill="#FBBF24" opacity="0.6"/>
+  <circle cx="240" cy="170" r="3" fill="#FBBF24" opacity="0.6"/>
+  <circle cx="140" cy="350" r="2.5" fill="#F59E0B" opacity="0.4"/>
+
+  <!-- Amber accent line -->
+  <rect x="440" y="270" width="60" height="3" rx="1.5" fill="#F59E0B"/>
+
+  <!-- Title: Holus Observatory -->
+  <text x="540" y="260" fill="#F8FAFC" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="52" font-weight="800" letter-spacing="-1">Holus Observatory</text>
+
+  <!-- Subtitle -->
+  <text x="540" y="310" fill="#94A3B8" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="22" font-weight="500">32-agent federated AI system</text>
+
+  <!-- Feature pills -->
+  <!-- Pill 1 -->
+  <rect x="540" y="345" width="145" height="32" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="612" y="366" fill="#CBD5E1" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="13" font-weight="500" text-anchor="middle">Quality Judges</text>
+
+  <!-- Pill 2 -->
+  <rect x="700" y="345" width="155" height="32" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="777" y="366" fill="#CBD5E1" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="13" font-weight="500" text-anchor="middle">Self-Improvement</text>
+
+  <!-- Pill 3 -->
+  <rect x="870" y="345" width="135" height="32" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="937" y="366" fill="#CBD5E1" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="13" font-weight="500" text-anchor="middle">ReAct Loops</text>
+
+  <!-- Dashboard preview mockup (mini) -->
+  <!-- Card outlines at bottom right -->
+  <g opacity="0.3">
+    <!-- Mini KPI cards -->
+    <rect x="540" y="410" width="100" height="50" rx="6" fill="#0F172A" stroke="#1e293b" stroke-width="1"/>
+    <rect x="548" y="418" width="40" height="4" rx="2" fill="#64748B"/>
+    <rect x="548" y="432" width="55" height="10" rx="2" fill="#F59E0B" opacity="0.6"/>
+
+    <rect x="652" y="410" width="100" height="50" rx="6" fill="#0F172A" stroke="#1e293b" stroke-width="1"/>
+    <rect x="660" y="418" width="45" height="4" rx="2" fill="#64748B"/>
+    <rect x="660" y="432" width="50" height="10" rx="2" fill="#34D399" opacity="0.6"/>
+
+    <rect x="764" y="410" width="100" height="50" rx="6" fill="#0F172A" stroke="#1e293b" stroke-width="1"/>
+    <rect x="772" y="418" width="35" height="4" rx="2" fill="#64748B"/>
+    <rect x="772" y="432" width="48" height="10" rx="2" fill="#FBBF24" opacity="0.6"/>
+
+    <rect x="876" y="410" width="100" height="50" rx="6" fill="#0F172A" stroke="#1e293b" stroke-width="1"/>
+    <rect x="884" y="418" width="42" height="4" rx="2" fill="#64748B"/>
+    <rect x="884" y="432" width="52" height="10" rx="2" fill="#CBD5E1" opacity="0.4"/>
+
+    <!-- Mini heatmap -->
+    <rect x="540" y="472" width="436" height="40" rx="6" fill="#0F172A" stroke="#1e293b" stroke-width="1"/>
+    <!-- Heatmap cells -->
+    <rect x="558" y="482" width="8" height="8" rx="1" fill="#34D399" opacity="0.7"/>
+    <rect x="570" y="482" width="8" height="8" rx="1" fill="#34D399" opacity="0.5"/>
+    <rect x="582" y="482" width="8" height="8" rx="1" fill="#FBBF24" opacity="0.6"/>
+    <rect x="594" y="482" width="8" height="8" rx="1" fill="#34D399" opacity="0.8"/>
+    <rect x="606" y="482" width="8" height="8" rx="1" fill="#F87171" opacity="0.5"/>
+    <rect x="618" y="482" width="8" height="8" rx="1" fill="#34D399" opacity="0.6"/>
+    <rect x="630" y="482" width="8" height="8" rx="1" fill="#FBBF24" opacity="0.7"/>
+    <rect x="642" y="482" width="8" height="8" rx="1" fill="#34D399" opacity="0.9"/>
+    <rect x="654" y="482" width="8" height="8" rx="1" fill="#34D399" opacity="0.6"/>
+    <rect x="666" y="482" width="8" height="8" rx="1" fill="#FBBF24" opacity="0.5"/>
+
+    <rect x="558" y="494" width="8" height="8" rx="1" fill="#FBBF24" opacity="0.6"/>
+    <rect x="570" y="494" width="8" height="8" rx="1" fill="#34D399" opacity="0.7"/>
+    <rect x="582" y="494" width="8" height="8" rx="1" fill="#34D399" opacity="0.9"/>
+    <rect x="594" y="494" width="8" height="8" rx="1" fill="#34D399" opacity="0.5"/>
+    <rect x="606" y="494" width="8" height="8" rx="1" fill="#34D399" opacity="0.7"/>
+    <rect x="618" y="494" width="8" height="8" rx="1" fill="#F87171" opacity="0.4"/>
+    <rect x="630" y="494" width="8" height="8" rx="1" fill="#34D399" opacity="0.8"/>
+    <rect x="642" y="494" width="8" height="8" rx="1" fill="#FBBF24" opacity="0.7"/>
+    <rect x="654" y="494" width="8" height="8" rx="1" fill="#34D399" opacity="0.6"/>
+    <rect x="666" y="494" width="8" height="8" rx="1" fill="#34D399" opacity="0.8"/>
+  </g>
+
+  <!-- Bottom amber accent bar -->
+  <rect x="0" y="620" width="1200" height="10" fill="#F59E0B" opacity="0.8"/>
+</svg>

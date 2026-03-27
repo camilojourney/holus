@@ -11,9 +11,9 @@ Usage:
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
-import os
 import re
 from pathlib import Path
 
@@ -102,10 +102,8 @@ def build_sidecar(
     reposts = parse_engagement(post.get("reposts"))
 
     image_bytes = 0
-    try:
+    with contextlib.suppress(OSError):
         image_bytes = image_file.stat().st_size
-    except OSError:
-        pass
 
     sidecar: dict = {
         "id": f"{creator_slug}-{post_index}-{img_index}",

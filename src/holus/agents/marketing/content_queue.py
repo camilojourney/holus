@@ -73,10 +73,7 @@ def _load_queue_file(path: Path) -> dict[str, Any] | None:
     """Load a single queue file (YAML or JSON) and return its data dict, or None on error."""
     try:
         text = path.read_text(encoding="utf-8")
-        if path.suffix == ".json":
-            data = json.loads(text)
-        else:
-            data = yaml.safe_load(text)
+        data = json.loads(text) if path.suffix == ".json" else yaml.safe_load(text)
         return data if isinstance(data, dict) else None
     except Exception:
         return None

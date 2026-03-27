@@ -301,11 +301,10 @@ class TestRetryOnFailure:
         error = _error_response(500, "POST", "http://test:8000/api/v1/publish")
         mock_http.post.side_effect = [error, error, error]
 
-        with patch.object(client, "client", mock_http):
-            with patch.object(client.publish.retry, "wait", return_value=0):
-                request = PublishRequest(content="Will fail", platforms=["linkedin"])
-                with pytest.raises(httpx.HTTPStatusError):
-                    await client.publish(request)
+        with patch.object(client, "client", mock_http), patch.object(client.publish.retry, "wait", return_value=0):
+            request = PublishRequest(content="Will fail", platforms=["linkedin"])
+            with pytest.raises(httpx.HTTPStatusError):
+                await client.publish(request)
 
         assert mock_http.post.call_count == 3
 
@@ -317,10 +316,9 @@ class TestRetryOnFailure:
 
         mock_http.post.side_effect = [error, success]
 
-        with patch.object(client, "client", mock_http):
-            with patch.object(client.schedule_post.retry, "wait", return_value=0):
-                request = ScheduleRequest(content="Retry schedule", platform="linkedin")
-                result = await client.schedule_post(request)
+        with patch.object(client, "client", mock_http), patch.object(client.schedule_post.retry, "wait", return_value=0):
+            request = ScheduleRequest(content="Retry schedule", platform="linkedin")
+            result = await client.schedule_post(request)
 
         assert result.schedule_id == "sched_retry"
         assert mock_http.post.call_count == 2

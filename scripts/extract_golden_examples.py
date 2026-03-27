@@ -2,7 +2,7 @@
 """Extract top-performing golden examples per visual type from classification data.
 
 Reads visual_classifications.jsonl, groups by ideal_visual_type, ranks by
-engagement × teaching_potential, and copies top 5 screenshots + metadata
+engagement x teaching_potential, and copies top 5 screenshots + metadata
 into golden_examples/{type}/ directories.
 
 These golden examples become few-shot prompts for visual generation.
@@ -46,13 +46,13 @@ def main() -> None:
 
     log.info("Visual types found: %s", sorted(by_type.keys()))
 
-    # For each type, rank by engagement × teaching_potential and take top N
+    # For each type, rank by engagement x teaching_potential and take top N
     summary: list[dict] = []
     for vt, posts in sorted(by_type.items()):
         type_dir = GOLDEN_DIR / vt
         type_dir.mkdir(parents=True, exist_ok=True)
 
-        # Score: engagement_total × teaching_potential (favor high engagement + high teaching)
+        # Score: engagement_total x teaching_potential (favor high engagement + high teaching)
         for p in posts:
             p["_score"] = p.get("engagement_total", 0) * p.get("teaching_potential", 5)
 
@@ -74,8 +74,6 @@ def main() -> None:
             # Fall back to screenshot if no real image exists
             real_image_src = None
             screenshot_src = None
-            post_index = ex.get("urn", "").split(":")[-1][:3] if ex.get("urn") else ""
-
             # Search for real image in creator's images/ dir
             images_dir = REF_DIR / ex["creator"] / "images"
             if images_dir.exists():

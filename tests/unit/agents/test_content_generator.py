@@ -14,13 +14,8 @@ import json
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from holus.agents.marketing.content_generator import (
-    FORMAT_INSTRUCTIONS,
     GENERATOR_SYSTEM,
-    _load_few_shot_context,
-    _load_personal_context,
     generate_piece,
 )
 
@@ -366,7 +361,7 @@ def test_personal_context_injection(
         ),
     ):
         mock_call.return_value = VALID_TEXT_POST_JSON
-        result = generate_piece("Idea about debugging", _base_decision(product="holus"))
+        generate_piece("Idea about debugging", _base_decision(product="holus"))
 
     # Personal context should appear in the user message sent to LLM
     user_msg = mock_call.call_args[0][2]
@@ -405,7 +400,7 @@ def test_few_shot_context_loading(
         return_value=few_shot_block,
     ) as mock_few:
         mock_call.return_value = VALID_TEXT_POST_JSON
-        result = generate_piece("Idea about few-shots", _base_decision(format="text_post"))
+        generate_piece("Idea about few-shots", _base_decision(format="text_post"))
 
     # Few-shot block should appear in the user message
     user_msg = mock_call.call_args[0][2]
@@ -492,7 +487,7 @@ def test_revision_loop_skipped_for_carousel(
     """Revision loop should NOT run for carousel format (only text_post, thread, instagram_caption)."""
     mock_call.return_value = VALID_CAROUSEL_JSON
 
-    result = generate_piece("Carousel idea", _base_decision(format="carousel_outline"))
+    generate_piece("Carousel idea", _base_decision(format="carousel_outline"))
 
     # Revision loop should not make any LLM calls for carousel
     mock_rev_post.assert_not_called()

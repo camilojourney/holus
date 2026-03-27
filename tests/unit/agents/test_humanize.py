@@ -12,8 +12,6 @@ import json
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from holus.agents.marketing.humanize import (
     format_personal_context,
     load_personal_context,

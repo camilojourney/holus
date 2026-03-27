@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import json
-import tempfile
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
-from holus.agents.marketing.bandit import Bandit, DEFAULT_ARMS
+if TYPE_CHECKING:
+    from pathlib import Path
+
+from holus.agents.marketing.bandit import DEFAULT_ARMS, Bandit
 
 
 @pytest.fixture

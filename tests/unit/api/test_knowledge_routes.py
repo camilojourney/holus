@@ -48,7 +48,7 @@ def test_list_knowledge(tmp_path, monkeypatch):
 
 
 def test_list_knowledge_empty(tmp_path, monkeypatch):
-    paths = _setup(tmp_path, monkeypatch)
+    _setup(tmp_path, monkeypatch)
 
     from holus.api.app import create_app
 
