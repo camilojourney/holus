@@ -29,7 +29,7 @@ export default async function KnowledgePage() {
   };
 
   return (
-    <div className="px-6 py-6 space-y-6">
+    <div className="px-6 py-6 space-y-6 page-transition">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Knowledge Graph</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -113,8 +113,6 @@ export default async function KnowledgePage() {
                     style={{
                       borderBottom: idx < lessonsData.lessons.length - 1 ? '1px solid var(--border-subtle)' : undefined,
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-2)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '')}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
@@ -190,8 +188,6 @@ export default async function KnowledgePage() {
                       style={{
                         borderBottom: idx < files.length - 1 ? '1px solid var(--border-subtle)' : undefined,
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-2)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = '')}
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>

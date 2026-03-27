@@ -16,7 +16,7 @@ export default async function HealthPage() {
   }
 
   return (
-    <div>
+    <div className="page-transition">
       {/* Kill switch banner — full width at top */}
       {health && <KillSwitchBanner health={health} />}
 

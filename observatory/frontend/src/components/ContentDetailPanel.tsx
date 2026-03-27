@@ -22,8 +22,8 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_COLOR: Record<string, string> = {
   draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
   pending_review: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  approved: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
-  scheduled: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
+  approved: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
+  scheduled: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
   published: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
 };
@@ -157,13 +157,13 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
       onKeyDown={handleFocusTrap}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="absolute inset-0 bg-black/30 dark:bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0" style={{ background: 'var(--surface-overlay)' }} onClick={onClose} />
 
-      <div className="relative h-full w-full max-w-2xl bg-white dark:bg-gray-950 border-l border-gray-200 dark:border-gray-800 shadow-xl overflow-y-auto flex flex-col">
+      <div className="relative h-full w-full max-w-2xl shadow-xl overflow-y-auto flex flex-col" style={{ background: 'var(--surface-raised)', borderLeft: '1px solid var(--border-default)' }}>
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 px-5 py-4 flex items-start gap-3">
+        <div className="sticky top-0 z-10 px-5 py-4 flex items-start gap-3" style={{ background: 'var(--surface-raised)', borderBottom: '1px solid var(--border-default)' }}>
           <div className="flex-1 min-w-0">
-            <p className="text-base font-semibold text-gray-900 dark:text-white leading-snug">
+            <p className="text-base font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
               {d.title ?? d.id}
             </p>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -171,12 +171,12 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                 {STATUS_LABEL[status] ?? status}
               </span>
               {d.platform && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                   {d.platform.replace('_', '/')}
                 </span>
               )}
               {d.content_type && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                   {d.content_type.replace(/_/g, ' ')}
                 </span>
               )}
@@ -187,7 +187,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
               )}
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none" aria-label="Close">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none focus-ring rounded" aria-label="Close">
             ×
           </button>
         </div>
@@ -220,7 +220,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                           onClick={() => setSelectedVisual('a')}
                           className={`rounded-xl overflow-hidden border-2 transition-all ${
                             selectedVisual === 'a'
-                              ? 'border-indigo-500 ring-2 ring-indigo-200 dark:ring-indigo-800'
+                              ? 'border-amber-500 ring-2 ring-amber-200 dark:ring-amber-800'
                               : 'border-gray-200 dark:border-gray-800 hover:border-gray-400'
                           }`}
                         >
@@ -230,7 +230,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                             className="w-full aspect-square object-cover"
                           />
                           <div className={`text-center py-1.5 text-xs font-semibold ${
-                            selectedVisual === 'a' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' : 'bg-gray-50 text-gray-500 dark:bg-gray-900 dark:text-gray-400'
+                            selectedVisual === 'a' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300' : 'bg-gray-50 text-gray-500 dark:bg-gray-900 dark:text-gray-400'
                           }`}>
                             A {selectedVisual === 'a' ? '(selected)' : ''}
                           </div>
@@ -239,7 +239,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                           onClick={() => setSelectedVisual('b')}
                           className={`rounded-xl overflow-hidden border-2 transition-all ${
                             selectedVisual === 'b'
-                              ? 'border-indigo-500 ring-2 ring-indigo-200 dark:ring-indigo-800'
+                              ? 'border-amber-500 ring-2 ring-amber-200 dark:ring-amber-800'
                               : 'border-gray-200 dark:border-gray-800 hover:border-gray-400'
                           }`}
                         >
@@ -249,7 +249,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                             className="w-full aspect-square object-cover"
                           />
                           <div className={`text-center py-1.5 text-xs font-semibold ${
-                            selectedVisual === 'b' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' : 'bg-gray-50 text-gray-500 dark:bg-gray-900 dark:text-gray-400'
+                            selectedVisual === 'b' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300' : 'bg-gray-50 text-gray-500 dark:bg-gray-900 dark:text-gray-400'
                           }`}>
                             B {selectedVisual === 'b' ? '(selected)' : ''}
                           </div>
@@ -310,7 +310,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                     </p>
                   </div>
                   {detail.hashtags && detail.hashtags.length > 0 && (
-                    <p className="mt-2 text-xs text-indigo-600 dark:text-indigo-400">{detail.hashtags.join(' ')}</p>
+                    <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{detail.hashtags.join(' ')}</p>
                   )}
                 </section>
               )}
@@ -337,7 +337,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                   <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Agent Trace</h3>
                   <ol className="space-y-2">
                     {detail.agent_trace.map((step, i) => (
-                      <li key={i} className="flex items-start gap-3 text-xs border-l-2 border-indigo-200 dark:border-indigo-800 pl-3">
+                      <li key={i} className="flex items-start gap-3 text-xs border-l-2 border-amber-200 dark:border-amber-800 pl-3">
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-800 dark:text-gray-200">{step.agent_id}</p>
                           {step.role && <p className="text-gray-500 dark:text-gray-400">{step.role}</p>}
@@ -363,12 +363,12 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                 type="datetime-local"
                 value={scheduleDate}
                 onChange={(e) => setScheduleDate(e.target.value)}
-                className="flex-1 text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                className="flex-1 text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus-ring"
               />
               <button
                 onClick={handleSchedule}
                 disabled={!scheduleDate || !!acting}
-                className="py-1.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-40"
+                className="py-1.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-40 focus-ring"
               >
                 {acting === 'schedule' ? 'Scheduling…' : 'Schedule'}
               </button>
@@ -379,14 +379,14 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
               <button
                 onClick={handleApprove}
                 disabled={!!acting}
-                className="flex-1 py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                className="flex-1 py-2 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors disabled:opacity-50 focus-ring"
               >
                 {acting === 'approve' ? 'Approving…' : 'Approve & Post Now'}
               </button>
               <button
                 onClick={handleReject}
                 disabled={!!acting}
-                className="flex-1 py-2 px-4 rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 text-sm font-semibold transition-colors disabled:opacity-50"
+                className="flex-1 py-2 px-4 rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 text-sm font-semibold transition-colors disabled:opacity-50 focus-ring"
               >
                 {acting === 'reject' ? 'Rejecting…' : 'Reject'}
               </button>

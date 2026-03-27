@@ -3,6 +3,7 @@ interface Props {
   value: string | number;
   subtitle?: string;
   color?: 'default' | 'green' | 'yellow' | 'red' | 'blue';
+  staggerIndex?: number;
 }
 
 const accentMap = {
@@ -21,10 +22,11 @@ const borderMap = {
   blue: 'var(--info)',
 };
 
-export default function KPICard({ title, value, subtitle, color = 'default' }: Props) {
+export default function KPICard({ title, value, subtitle, color = 'default', staggerIndex }: Props) {
+  const staggerClass = staggerIndex !== undefined ? `stagger-${staggerIndex}` : '';
   return (
     <div
-      className="card animate-fade-in"
+      className={`card animate-fade-in ${staggerClass}`}
       style={{
         borderTop: `3px solid ${borderMap[color]}`,
       }}

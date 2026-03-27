@@ -32,7 +32,7 @@ export default async function EvaluationsPage() {
   }
 
   return (
-    <div className="px-6 py-6 space-y-6">
+    <div className="px-6 py-6 space-y-6 page-transition">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Quality Signals</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>

@@ -65,7 +65,11 @@ export default function RadioGroup<T extends string>({
       ref={groupRef}
       role="radiogroup"
       aria-label={label}
-      className={`flex items-center gap-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-1 ${className}`}
+      className={`flex items-center gap-1.5 rounded-lg p-1 ${className}`}
+      style={{
+        background: 'var(--surface-raised)',
+        border: '1px solid var(--border-default)',
+      }}
       onKeyDown={handleKeyDown}
     >
       {options.map((option) => {
@@ -77,11 +81,11 @@ export default function RadioGroup<T extends string>({
             aria-checked={isSelected}
             tabIndex={isSelected ? 0 : -1}
             onClick={() => onChange(option)}
-            className={`px-3 py-2 rounded-md text-xs font-medium capitalize transition-colors ${
-              isSelected
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
-            }`}
+            className="px-3 py-2 rounded-md text-xs font-medium capitalize transition-colors focus-ring"
+            style={{
+              background: isSelected ? 'var(--brand)' : 'transparent',
+              color: isSelected ? 'var(--text-inverse)' : 'var(--text-secondary)',
+            }}
           >
             {renderLabel ? renderLabel(option) : option}
           </button>

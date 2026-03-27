@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
   Brain,
   Eye,
@@ -10,12 +13,8 @@ import {
   Github,
   Linkedin,
   Globe,
+  RotateCcw,
 } from 'lucide-react';
-
-export const metadata = {
-  title: 'Holus Observatory - Architecture',
-  description: 'Holus is a multi-agent AI marketing system that coordinates 32 specialized agents to create, evaluate, and publish content across platforms.',
-};
 
 const products = [
   {
@@ -35,26 +34,34 @@ const products = [
   },
 ];
 
-const phases = [
+const loopSteps = [
   {
     Icon: Eye,
     title: 'Observe',
+    short: 'Read analytics, detect signals',
     description: 'Reads analytics from social media platforms. What performed well? What audience segments are growing? Which content pillars convert?',
+    angle: 0,
   },
   {
     Icon: Brain,
     title: 'Reason',
+    short: 'Strategy via Claude Opus',
     description: 'Claude Opus analyzes patterns across 30 days of data. Decides what content to create, for which product, on which platform.',
+    angle: 90,
   },
   {
     Icon: Zap,
     title: 'Act',
+    short: 'Dispatch to 32 agents',
     description: 'Dispatches to specialized agents: hook writers, blog writers, carousel architects, SEO researchers. Each agent has domain-specific expertise.',
+    angle: 180,
   },
   {
     Icon: Shield,
     title: 'Evaluate',
+    short: '7 domain-expert judges',
     description: '7 domain-expert judges score every piece. Written content, visual content, and brand safety each have dedicated evaluators with custom rubrics.',
+    angle: 270,
   },
 ];
 
@@ -65,10 +72,191 @@ const agentCategories = [
   { label: 'Ops', count: 3, description: 'Code quality, security auditing, knowledge management' },
 ];
 
+function ReactLoopDiagram() {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 4);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
+  const radius = 120;
+  const center = 160;
+
+  return (
+    <div className="relative flex flex-col items-center gap-6 py-8">
+      {/* Circular diagram */}
+      <div className="relative" style={{ width: 320, height: 320 }}>
+        {/* Rotating orbit ring */}
+        <svg
+          width={320}
+          height={320}
+          className="absolute inset-0"
+          style={{ animation: 'react-loop-spin 10s linear infinite' }}
+        >
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="none"
+            stroke="var(--border-default)"
+            strokeWidth="1"
+            strokeDasharray="8 6"
+          />
+          {/* Traveling pulse dot */}
+          <circle
+            cx={center + radius}
+            cy={center}
+            r="4"
+            fill="var(--brand-primary)"
+            style={{ filter: 'drop-shadow(0 0 6px var(--brand-primary))' }}
+          />
+        </svg>
+
+        {/* Static connecting arcs */}
+        <svg width={320} height={320} className="absolute inset-0">
+          {/* Subtle glow ring */}
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="none"
+            stroke="var(--brand-primary)"
+            strokeWidth="0.5"
+            opacity="0.2"
+          />
+          {/* Arrow arcs between nodes */}
+          {[0, 1, 2, 3].map((i) => {
+            const startAngle = (i * 90 - 90 + 20) * (Math.PI / 180);
+            const endAngle = ((i + 1) * 90 - 90 - 20) * (Math.PI / 180);
+            const x1 = center + radius * Math.cos(startAngle);
+            const y1 = center + radius * Math.sin(startAngle);
+            const x2 = center + radius * Math.cos(endAngle);
+            const y2 = center + radius * Math.sin(endAngle);
+            return (
+              <path
+                key={i}
+                d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+                fill="none"
+                stroke={activeStep === i ? 'var(--brand-primary)' : 'var(--border-strong)'}
+                strokeWidth={activeStep === i ? 2 : 1}
+                opacity={activeStep === i ? 0.8 : 0.3}
+                style={{ transition: 'all 0.5s ease' }}
+              />
+            );
+          })}
+        </svg>
+
+        {/* Center label */}
+        <div
+          className="absolute flex flex-col items-center justify-center"
+          style={{
+            top: center - 28,
+            left: center - 40,
+            width: 80,
+            height: 56,
+          }}
+        >
+          <RotateCcw
+            size={20}
+            style={{ color: 'var(--brand-primary)', opacity: 0.6 }}
+          />
+          <span
+            className="text-[10px] font-semibold tracking-widest uppercase mt-1"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
+            ReAct
+          </span>
+        </div>
+
+        {/* Step nodes positioned around the circle */}
+        {loopSteps.map(({ Icon, title, short, angle }, i) => {
+          const rad = (angle - 90) * (Math.PI / 180);
+          const x = center + radius * Math.cos(rad);
+          const y = center + radius * Math.sin(rad);
+          const isActive = activeStep === i;
+
+          return (
+            <button
+              key={title}
+              onClick={() => setActiveStep(i)}
+              className="absolute flex flex-col items-center gap-1 transition-all duration-500 cursor-pointer"
+              style={{
+                left: x - 44,
+                top: y - 34,
+                width: 88,
+                transform: isActive ? 'scale(1.15)' : 'scale(1)',
+                zIndex: isActive ? 10 : 1,
+              }}
+              aria-label={`${title}: ${short}`}
+            >
+              <div
+                className="p-2.5 rounded-xl transition-all duration-500"
+                style={{
+                  background: isActive ? 'var(--brand-primary)' : 'var(--surface-raised)',
+                  border: `2px solid ${isActive ? 'var(--brand-primary)' : 'var(--border-default)'}`,
+                  boxShadow: isActive
+                    ? '0 0 20px rgba(245, 158, 11, 0.3), 0 4px 12px rgba(0,0,0,0.2)'
+                    : 'var(--shadow-sm)',
+                }}
+              >
+                <Icon
+                  size={20}
+                  style={{
+                    color: isActive ? 'var(--text-inverse)' : 'var(--brand-primary)',
+                  }}
+                />
+              </div>
+              <span
+                className="text-xs font-semibold whitespace-nowrap"
+                style={{
+                  color: isActive ? 'var(--brand-primary)' : 'var(--text-secondary)',
+                }}
+              >
+                {title}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active step detail card */}
+      <div
+        className="card max-w-md w-full text-center transition-all duration-500"
+        style={{
+          borderColor: 'var(--brand-primary)',
+          borderWidth: '1px',
+          opacity: 1,
+        }}
+      >
+        <div className="flex items-center justify-center gap-2 mb-2">
+          {(() => {
+            const step = loopSteps[activeStep];
+            const StepIcon = step.Icon;
+            return (
+              <>
+                <StepIcon size={16} style={{ color: 'var(--brand-primary)' }} />
+                <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
+                  {step.title}
+                </span>
+              </>
+            );
+          })()}
+        </div>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          {loopSteps[activeStep].description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function AboutPage() {
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto space-y-12 page-transition">
-      {/* Hero */}
+      {/* Hero with animated ReAct loop */}
       <div className="text-center space-y-4">
         <div
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
@@ -88,7 +276,12 @@ export default function AboutPage() {
           across observe-reason-act-evaluate loops, routing content through domain-expert judges
           and feeding quality signals back into strategy calibration.
         </p>
-        <div className="flex justify-center gap-3 pt-2">
+      </div>
+
+      {/* Animated ReAct Loop Diagram */}
+      <section>
+        <ReactLoopDiagram />
+        <div className="flex justify-center gap-3">
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
@@ -107,7 +300,7 @@ export default function AboutPage() {
             <BarChart3 size={16} /> Analyze Drift
           </Link>
         </div>
-      </div>
+      </section>
 
       {/* What is this */}
       <section className="card">
@@ -125,27 +318,6 @@ export default function AboutPage() {
           while independent silo services handle execution (video editing, image generation, publishing).
           Communication happens via MCP (Model Context Protocol) tool calls, not shared databases.
         </p>
-      </section>
-
-      {/* The Agent Loop */}
-      <section>
-        <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>ReAct Loop (Observe-Reason-Act-Evaluate)</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {phases.map(({ Icon, title, description }, i) => (
-            <div key={title} className={`card animate-fade-in stagger-${i + 1}`}>
-              <div className="flex items-center gap-2.5 mb-2">
-                <div
-                  className="p-2 rounded-lg"
-                  style={{ background: 'var(--brand-subtle)' }}
-                >
-                  <Icon size={18} style={{ color: 'var(--brand)' }} />
-                </div>
-                <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{description}</p>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* Agent Architecture */}

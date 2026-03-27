@@ -79,7 +79,7 @@ export default function EngagementPage() {
   });
 
   return (
-    <div style={{ padding: 'var(--page-padding)' }} className="space-y-6">
+    <div style={{ padding: 'var(--page-padding)' }} className="space-y-6 page-transition">
       <div>
         <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
           Engagement Signals
