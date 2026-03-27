@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="px-6 py-6 space-y-6">
+    <div style={{ padding: 'var(--page-padding)' }} className="space-y-6">
       {/* Page heading skeleton */}
       <div>
         <div className="skeleton h-7 w-40" />
