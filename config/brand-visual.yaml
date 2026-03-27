@@ -3,11 +3,11 @@
 # All rendering templates consume these values via CSS custom properties.
 
 colors:
-  primary: "#6366F1"       # Indigo-500 — AI/tech, hook slide background + CTAs
+  primary: "#F59E0B"       # Amber-500 — Observatory signature, confidence + intelligence
   text: "#F8FAFC"          # Slate-50 — near white, main text on dark backgrounds
   background: "#0A0F1E"    # Deep navy — premium dark base
   surface: "#0F172A"       # Slate-900 — body slide surface
-  accent: "#A5B4FC"        # Indigo-300 — lighter accent for highlights and bullets
+  accent: "#FBBF24"        # Amber-300 — lighter accent for highlights and bullets
   muted: "#64748B"         # Slate-500 — labels, counters, secondary text
   success: "#34D399"       # Emerald-400
   danger: "#F87171"        # Red-400
@@ -85,22 +85,22 @@ rules:
 themes:
   dark:
     colors:
-      primary: "#6366F1"
+      primary: "#F59E0B"
       text: "#F8FAFC"
       background: "#0A0F1E"
       surface: "#0F172A"
-      accent: "#A5B4FC"
+      accent: "#FBBF24"
       muted: "#64748B"
       success: "#34D399"
       danger: "#F87171"
 
   light:
     colors:
-      primary: "#4F46E5"
+      primary: "#D97706"
       text: "#1E293B"
       background: "#FAFAFA"
       surface: "#FFFFFF"
-      accent: "#818CF8"
+      accent: "#F59E0B"
       muted: "#94A3B8"
       success: "#059669"
       danger: "#DC2626"
