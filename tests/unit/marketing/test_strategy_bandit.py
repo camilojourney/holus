@@ -1,6 +1,5 @@
 """Tests for Thompson Sampling strategy bandit."""
 
-
 import pytest
 
 from holus.agents.marketing.strategy_bandit import BanditArm, StrategyBandit
@@ -65,7 +64,11 @@ class TestStrategyBandit:
     def test_suggest_returns_result(self, bandit):
         result = bandit.suggest()
         assert result is not None
-        assert result.arm.arm_id in ["invoz:carousel:linkedin", "genpeli:text_post:linkedin", "invoz:text_post:twitter"]
+        assert result.arm.arm_id in [
+            "invoz:carousel:linkedin",
+            "genpeli:text_post:linkedin",
+            "invoz:text_post:twitter",
+        ]
         assert result.is_exploration  # no data yet
 
     def test_suggest_with_platform_filter(self, bandit):
@@ -105,8 +108,24 @@ class TestStrategyBandit:
 
     def test_backfill(self, bandit):
         entries = [
-            {"task_type": "carousel", "judge_score": 0.8, "metadata": {"product": "invoz", "content_type": "carousel", "platform": "linkedin"}},
-            {"task_type": "text_post", "judge_score": 0.6, "metadata": {"product": "genpeli", "content_type": "text_post", "platform": "linkedin"}},
+            {
+                "task_type": "carousel",
+                "judge_score": 0.8,
+                "metadata": {
+                    "product": "invoz",
+                    "content_type": "carousel",
+                    "platform": "linkedin",
+                },
+            },
+            {
+                "task_type": "text_post",
+                "judge_score": 0.6,
+                "metadata": {
+                    "product": "genpeli",
+                    "content_type": "text_post",
+                    "platform": "linkedin",
+                },
+            },
         ]
         count = bandit.backfill_from_trajectory(entries)
         assert count == 2

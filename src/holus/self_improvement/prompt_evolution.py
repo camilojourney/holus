@@ -116,7 +116,9 @@ class PromptEvolution:
 
             for v_data in meta.get("variants", []):
                 prompt_path = self._pop_dir / f"{v_data['variant_id']}.md"
-                prompt_text = prompt_path.read_text(encoding="utf-8") if prompt_path.exists() else ""
+                prompt_text = (
+                    prompt_path.read_text(encoding="utf-8") if prompt_path.exists() else ""
+                )
                 self._variants.append(PromptVariant.from_dict(v_data, prompt_text))
         except Exception as exc:
             logger.warning("Failed to load population for %s: %s", self.agent_id, exc)
@@ -220,13 +222,20 @@ class PromptEvolution:
                 new_prompt = await self._crossover(best.prompt_text, second.prompt_text)
                 new_id = f"gen{self._generation + 1}_cross{len(survivors)}"
 
-            survivors.append(PromptVariant(
-                variant_id=new_id,
-                prompt_text=new_prompt,
-                parent_ids=[best.variant_id] if mutation_type == "mutation" else [best.variant_id, second.variant_id if len(self._variants) > 1 else best.variant_id],
-                mutation_type=mutation_type,
-                created_at=datetime.now(UTC).isoformat(),
-            ))
+            survivors.append(
+                PromptVariant(
+                    variant_id=new_id,
+                    prompt_text=new_prompt,
+                    parent_ids=[best.variant_id]
+                    if mutation_type == "mutation"
+                    else [
+                        best.variant_id,
+                        second.variant_id if len(self._variants) > 1 else best.variant_id,
+                    ],
+                    mutation_type=mutation_type,
+                    created_at=datetime.now(UTC).isoformat(),
+                )
+            )
             mutations_applied.append(f"{mutation_type}: {new_id}")
 
         killed_count = len(self._variants) - ELITISM_COUNT
@@ -247,7 +256,10 @@ class PromptEvolution:
 
         logger.info(
             "Evolution gen %d for %s: best=%s (%.2f), created %d variants",
-            self._generation, self.agent_id, best.variant_id, best.avg_score,
+            self._generation,
+            self.agent_id,
+            best.variant_id,
+            best.avg_score,
             len(mutations_applied),
         )
         return report

@@ -31,9 +31,7 @@ _DEFAULT_EVAL_PATH = (
     / "eval_history.jsonl"
 )
 
-EVAL_HISTORY_PATH = Path(
-    os.environ.get("EVAL_HISTORY_PATH", str(_DEFAULT_EVAL_PATH))
-)
+EVAL_HISTORY_PATH = Path(os.environ.get("EVAL_HISTORY_PATH", str(_DEFAULT_EVAL_PATH)))
 
 
 def _load_evaluations() -> list[EvaluationResult]:
@@ -127,9 +125,7 @@ async def get_evaluation_summary() -> EvaluationSummary:
     agent_scores: dict[str, list[float]] = defaultdict(list)
     for e in evals:
         agent_scores[e.agent_id].append(e.score)
-    score_by_agent = {
-        agent: sum(scores) / len(scores) for agent, scores in agent_scores.items()
-    }
+    score_by_agent = {agent: sum(scores) / len(scores) for agent, scores in agent_scores.items()}
 
     # 7-day trend
     now = datetime.now(UTC)

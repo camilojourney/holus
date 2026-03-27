@@ -82,7 +82,10 @@ class PerformanceLoop:
 
         logger.info(
             "performance_loop: post=%s arm=%s rate=%.3f won=%s",
-            post_id, arm_id, engagement_rate, won,
+            post_id,
+            arm_id,
+            engagement_rate,
+            won,
         )
         return result
 

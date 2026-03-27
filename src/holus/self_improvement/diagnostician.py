@@ -121,39 +121,56 @@ def _check_judge_coverage(entries: list[dict[str, Any]]) -> tuple[float, list[Di
     """Check what % of content pieces actually got evaluated by domain judges."""
     tasks: list[DiagnosticTask] = []
     content_entries = [
-        e for e in entries
-        if e.get("task_type") in ("content_creation", "text_post", "carousel_outline",
-                                   "thread", "video_script", "instagram_caption")
+        e
+        for e in entries
+        if e.get("task_type")
+        in (
+            "content_creation",
+            "text_post",
+            "carousel_outline",
+            "thread",
+            "video_script",
+            "instagram_caption",
+        )
     ]
     if not content_entries:
         return 1.0, tasks
 
     null_verdicts = [e for e in content_entries if e.get("judge_verdict") is None]
-    zero_scores = [e for e in content_entries if e.get("judge_score") == 0.0 and e.get("judge_feedback", "").startswith("Judge evaluation failed")]
+    zero_scores = [
+        e
+        for e in content_entries
+        if e.get("judge_score") == 0.0
+        and e.get("judge_feedback", "").startswith("Judge evaluation failed")
+    ]
 
     coverage = 1.0 - (len(null_verdicts) / len(content_entries)) if content_entries else 1.0
 
     if null_verdicts:
-        tasks.append(DiagnosticTask(
-            category="CODE_BUG",
-            description=f"Judge returned null verdict on {len(null_verdicts)}/{len(content_entries)} pieces",
-            root_cause="evaluate_with_routing() may have failed silently or wasn't called",
-            evidence=f"Pieces with null verdict: {[e.get('metadata', {}).get('piece_id', '?')[:16] for e in null_verdicts[:5]]}",
-            suggested_fix="Check that judge.evaluate_with_routing() is called in the content pipeline and registry loads correctly",
-            priority="P0" if len(null_verdicts) == len(content_entries) else "P1",
-            file_ref="src/holus/self_improvement/judge.py:evaluate_with_routing()",
-        ))
+        tasks.append(
+            DiagnosticTask(
+                category="CODE_BUG",
+                description=f"Judge returned null verdict on {len(null_verdicts)}/{len(content_entries)} pieces",
+                root_cause="evaluate_with_routing() may have failed silently or wasn't called",
+                evidence=f"Pieces with null verdict: {[e.get('metadata', {}).get('piece_id', '?')[:16] for e in null_verdicts[:5]]}",
+                suggested_fix="Check that judge.evaluate_with_routing() is called in the content pipeline and registry loads correctly",
+                priority="P0" if len(null_verdicts) == len(content_entries) else "P1",
+                file_ref="src/holus/self_improvement/judge.py:evaluate_with_routing()",
+            )
+        )
 
     if zero_scores:
-        tasks.append(DiagnosticTask(
-            category="CODE_BUG",
-            description=f"Judge evaluation failed with JSON parse error on {len(zero_scores)} pieces",
-            root_cause="LLM response wasn't valid JSON — _parse_response() failed",
-            evidence=f"Sample feedback: {zero_scores[0].get('judge_feedback', '')[:200]}",
-            suggested_fix="Check judge prompt instructs JSON-only output; increase retry count or add markdown fence stripping",
-            priority="P1",
-            file_ref="src/holus/self_improvement/judge.py:_parse_response()",
-        ))
+        tasks.append(
+            DiagnosticTask(
+                category="CODE_BUG",
+                description=f"Judge evaluation failed with JSON parse error on {len(zero_scores)} pieces",
+                root_cause="LLM response wasn't valid JSON — _parse_response() failed",
+                evidence=f"Sample feedback: {zero_scores[0].get('judge_feedback', '')[:200]}",
+                suggested_fix="Check judge prompt instructs JSON-only output; increase retry count or add markdown fence stripping",
+                priority="P1",
+                file_ref="src/holus/self_improvement/judge.py:_parse_response()",
+            )
+        )
 
     return coverage, tasks
 
@@ -173,7 +190,9 @@ def _check_dimension_failures(entries: list[dict[str, Any]]) -> tuple[str, list[
         return "", tasks
 
     # Find worst-performing dimensions
-    dim_avgs = {dim: sum(scores) / len(scores) for dim, scores in dim_scores.items() if len(scores) >= 2}
+    dim_avgs = {
+        dim: sum(scores) / len(scores) for dim, scores in dim_scores.items() if len(scores) >= 2
+    }
 
     top_failing = ""
     for dim, avg in sorted(dim_avgs.items(), key=lambda x: x[1]):
@@ -182,14 +201,16 @@ def _check_dimension_failures(entries: list[dict[str, Any]]) -> tuple[str, list[
             total = len(dim_scores[dim])
 
             if fail_count >= SYSTEMIC_FAILURE_MIN:
-                tasks.append(DiagnosticTask(
-                    category="PROMPT_GAP",
-                    description=f"Dimension '{dim}' consistently fails: {fail_count}/{total} below {DIMENSION_FAIL_THRESHOLD}",
-                    root_cause=f"Avg score {avg:.2f}. The producing agent's prompt likely doesn't emphasize {dim}",
-                    evidence=f"Scores: {[round(s, 2) for s in dim_scores[dim][-10:]]}",
-                    suggested_fix=f"Find which agent prompt controls '{dim}' and add explicit instructions for it",
-                    priority="P1",
-                ))
+                tasks.append(
+                    DiagnosticTask(
+                        category="PROMPT_GAP",
+                        description=f"Dimension '{dim}' consistently fails: {fail_count}/{total} below {DIMENSION_FAIL_THRESHOLD}",
+                        root_cause=f"Avg score {avg:.2f}. The producing agent's prompt likely doesn't emphasize {dim}",
+                        evidence=f"Scores: {[round(s, 2) for s in dim_scores[dim][-10:]]}",
+                        suggested_fix=f"Find which agent prompt controls '{dim}' and add explicit instructions for it",
+                        priority="P1",
+                    )
+                )
         if not top_failing:
             top_failing = dim
 
@@ -213,15 +234,17 @@ def _check_platform_failures(entries: list[dict[str, Any]]) -> list[DiagnosticTa
         fail_count = sum(1 for v in verdicts if v in ("FAIL", "PARTIAL"))
         total = len(verdicts)
         if total >= 3 and fail_count / total > 0.5:
-            tasks.append(DiagnosticTask(
-                category="PROMPT_GAP",
-                description=f"{platform} content fails {fail_count}/{total} times ({fail_count/total:.0%})",
-                root_cause="Platform-specific repurpose prompt or format instructions may be inadequate",
-                evidence=f"Verdicts: {verdicts[-10:]}",
-                suggested_fix=f"Review repurpose.py PLATFORM_RULES for {platform} and the platform-adapter prompt",
-                priority="P1",
-                file_ref="src/holus/agents/marketing/repurpose.py",
-            ))
+            tasks.append(
+                DiagnosticTask(
+                    category="PROMPT_GAP",
+                    description=f"{platform} content fails {fail_count}/{total} times ({fail_count / total:.0%})",
+                    root_cause="Platform-specific repurpose prompt or format instructions may be inadequate",
+                    evidence=f"Verdicts: {verdicts[-10:]}",
+                    suggested_fix=f"Review repurpose.py PLATFORM_RULES for {platform} and the platform-adapter prompt",
+                    priority="P1",
+                    file_ref="src/holus/agents/marketing/repurpose.py",
+                )
+            )
 
     return tasks
 
@@ -239,15 +262,17 @@ def _check_feedback_loop(entries: list[dict[str, Any]]) -> list[DiagnosticTask]:
             break
 
     if not has_feedback_injection and len(entries) > 10:
-        tasks.append(DiagnosticTask(
-            category="MISSING_TOOL",
-            description="Judge feedback is not fed back to content generators",
-            root_cause="No code path loads previous judge feedback during observe/reason phase",
-            evidence=f"Checked {len(entries)} entries — none reference prior feedback in reasoning",
-            suggested_fix="In marketing agent observe(), load last cycle's judge feedback from trajectory and inject into prompts",
-            priority="P1",
-            file_ref="src/holus/agents/marketing/agent.py",
-        ))
+        tasks.append(
+            DiagnosticTask(
+                category="MISSING_TOOL",
+                description="Judge feedback is not fed back to content generators",
+                root_cause="No code path loads previous judge feedback during observe/reason phase",
+                evidence=f"Checked {len(entries)} entries — none reference prior feedback in reasoning",
+                suggested_fix="In marketing agent observe(), load last cycle's judge feedback from trajectory and inject into prompts",
+                priority="P1",
+                file_ref="src/holus/agents/marketing/agent.py",
+            )
+        )
 
     return tasks
 
@@ -276,15 +301,17 @@ def _check_failure_streaks(entries: list[dict[str, Any]]) -> list[DiagnosticTask
                 streak = 0
 
         if max_streak >= 3:
-            tasks.append(DiagnosticTask(
-                category="PROMPT_GAP",
-                description=f"Agent '{agent}' has {max_streak}-failure streak",
-                root_cause="Prompt optimizer should auto-trigger but isn't connected to orchestrator",
-                evidence=f"Max consecutive FAIL/PARTIAL: {max_streak}",
-                suggested_fix=f"Auto-trigger PromptOptimizer for agent '{agent}' in improvement_cycle()",
-                priority="P2",
-                file_ref="src/holus/agents/marketing/orchestrator.py",
-            ))
+            tasks.append(
+                DiagnosticTask(
+                    category="PROMPT_GAP",
+                    description=f"Agent '{agent}' has {max_streak}-failure streak",
+                    root_cause="Prompt optimizer should auto-trigger but isn't connected to orchestrator",
+                    evidence=f"Max consecutive FAIL/PARTIAL: {max_streak}",
+                    suggested_fix=f"Auto-trigger PromptOptimizer for agent '{agent}' in improvement_cycle()",
+                    priority="P2",
+                    file_ref="src/holus/agents/marketing/orchestrator.py",
+                )
+            )
 
     return tasks
 
@@ -313,14 +340,16 @@ def _check_content_quality_signals(entries: list[dict[str, Any]]) -> list[Diagno
 
     for issue, count in feedback_themes.most_common(5):
         if count >= 2:
-            tasks.append(DiagnosticTask(
-                category="PROMPT_GAP" if issue != "FORMAT_MISMATCH" else "CODE_BUG",
-                description=f"Recurring feedback theme: {issue} ({count} occurrences)",
-                root_cause=f"Judge feedback mentions '{issue}' pattern across {count} pieces",
-                evidence=f"Frequency: {count} in last 30 days",
-                suggested_fix=f"Search judge_feedback in trajectory for '{issue}' examples, then fix the producing agent/code",
-                priority="P2",
-            ))
+            tasks.append(
+                DiagnosticTask(
+                    category="PROMPT_GAP" if issue != "FORMAT_MISMATCH" else "CODE_BUG",
+                    description=f"Recurring feedback theme: {issue} ({count} occurrences)",
+                    root_cause=f"Judge feedback mentions '{issue}' pattern across {count} pieces",
+                    evidence=f"Frequency: {count} in last 30 days",
+                    suggested_fix=f"Search judge_feedback in trajectory for '{issue}' examples, then fix the producing agent/code",
+                    priority="P2",
+                )
+            )
 
     return tasks
 
@@ -366,7 +395,11 @@ def run_diagnostic(days: int = 30) -> DiagnosticReport:
     report.medium.extend(_check_content_quality_signals(entries))
 
     # 7. Avg score
-    scored = [e for e in entries if isinstance(e.get("judge_score"), (int, float)) and e["judge_score"] > 0]
+    scored = [
+        e
+        for e in entries
+        if isinstance(e.get("judge_score"), (int, float)) and e["judge_score"] > 0
+    ]
     if scored:
         report.avg_score = sum(e["judge_score"] for e in scored) / len(scored)
 
@@ -391,7 +424,9 @@ def format_report(report: DiagnosticReport) -> str:
         "## Health",
         f"- Entries analyzed: {report.entries_analyzed}",
         f"- Judge coverage: {report.judge_coverage:.0%}",
-        f"- Avg judge score: {report.avg_score:.2f}" if report.avg_score > 0 else "- Avg judge score: N/A",
+        f"- Avg judge score: {report.avg_score:.2f}"
+        if report.avg_score > 0
+        else "- Avg judge score: N/A",
         f"- Top failing dimension: {report.top_failing_dimension or 'N/A'}",
         "",
     ]
@@ -459,7 +494,7 @@ def append_to_next_md(report: DiagnosticReport) -> int:
         # Extract existing section text for dedup checking
         section_start = content.index(section_header)
         # Find the next ## heading after our section (or EOF)
-        rest = content[section_start + len(section_header):]
+        rest = content[section_start + len(section_header) :]
         next_heading = rest.find("\n## ")
         section_text = rest if next_heading == -1 else rest[:next_heading]
     else:
@@ -490,7 +525,7 @@ def append_to_next_md(report: DiagnosticReport) -> int:
     if section_header in content:
         # Insert new lines at the end of the section
         section_start = content.index(section_header)
-        rest = content[section_start + len(section_header):]
+        rest = content[section_start + len(section_header) :]
         next_heading = rest.find("\n## ")
         if next_heading == -1:
             # Section is at the end — just append
@@ -539,8 +574,10 @@ def main() -> None:
     print(f"Tasks appended to NEXT.md: {appended}")
 
     # Summary counts
-    print(f"\nFindings: {len(report.critical)} critical, {len(report.high)} high, "
-          f"{len(report.medium)} medium, {len(report.suggestions)} suggestions")
+    print(
+        f"\nFindings: {len(report.critical)} critical, {len(report.high)} high, "
+        f"{len(report.medium)} medium, {len(report.suggestions)} suggestions"
+    )
     if report.critical:
         print("\n⚠ CRITICAL ISSUES FOUND — address before next content cycle")
 

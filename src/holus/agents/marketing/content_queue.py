@@ -7,9 +7,11 @@ Status machine: pending_review → pending_humanization → humanized → approv
 
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field
@@ -58,6 +60,44 @@ class QueuedContent(BaseModel):
 QUEUE_DIR = Path("data/content-queue")
 
 
+def _iter_queue_files(queue_dir: Path | None = None) -> list[Path]:
+    """Return sorted queue files (.yaml and .json) from the content queue directory."""
+    d = queue_dir or QUEUE_DIR
+    if not d.exists():
+        return []
+    files = list(d.glob("*.yaml")) + list(d.glob("*.json"))
+    return sorted(files)
+
+
+def _load_queue_file(path: Path) -> dict[str, Any] | None:
+    """Load a single queue file (YAML or JSON) and return its data dict, or None on error."""
+    try:
+        text = path.read_text(encoding="utf-8")
+        if path.suffix == ".json":
+            data = json.loads(text)
+        else:
+            data = yaml.safe_load(text)
+        return data if isinstance(data, dict) else None
+    except Exception:
+        return None
+
+
+def _find_piece_file(piece_id: str) -> Path | None:
+    """Find the queue file for a given piece_id (checks both .yaml and .json)."""
+    yaml_path = QUEUE_DIR / f"{piece_id}.yaml"
+    if yaml_path.exists():
+        return yaml_path
+    json_path = QUEUE_DIR / f"{piece_id}.json"
+    if json_path.exists():
+        return json_path
+    # Fallback: scan files for matching piece_id field
+    for path in _iter_queue_files():
+        data = _load_queue_file(path)
+        if data and data.get("piece_id") == piece_id:
+            return path
+    return None
+
+
 def enqueue(content: QueuedContent) -> Path:
     """Save content to the approval queue.
 
@@ -88,9 +128,11 @@ def list_pending() -> list[QueuedContent]:
         return []
 
     pending = []
-    for file_path in sorted(QUEUE_DIR.glob("*.yaml")):
+    for file_path in _iter_queue_files():
         try:
-            data = yaml.safe_load(file_path.read_text())
+            data = _load_queue_file(file_path)
+            if data is None:
+                continue
             if data.get("status") == "pending_review":
                 # Parse datetime string back to datetime object
                 if isinstance(data.get("generated_at"), str):
@@ -113,9 +155,11 @@ def list_approved() -> list[QueuedContent]:
         return []
 
     approved = []
-    for file_path in sorted(QUEUE_DIR.glob("*.yaml")):
+    for file_path in _iter_queue_files():
         try:
-            data = yaml.safe_load(file_path.read_text())
+            data = _load_queue_file(file_path)
+            if data is None:
+                continue
             if data.get("status") == "approved":
                 if isinstance(data.get("generated_at"), str):
                     data["generated_at"] = datetime.fromisoformat(data["generated_at"])
@@ -141,11 +185,13 @@ def humanize(piece_id: str, humanized_text: str) -> QueuedContent:
         FileNotFoundError: If piece doesn't exist
         ValueError: If status is wrong or edit distance exceeds limit
     """
-    path = QUEUE_DIR / f"{piece_id}.yaml"
-    if not path.exists():
+    path = _find_piece_file(piece_id)
+    if path is None:
         raise FileNotFoundError(f"Content piece {piece_id} not found")
 
-    data = yaml.safe_load(path.read_text())
+    data = _load_queue_file(path)
+    if data is None:
+        raise FileNotFoundError(f"Content piece {piece_id} could not be loaded")
 
     if data["status"] not in ("pending_review", "pending_humanization"):
         raise ValueError(
@@ -185,11 +231,13 @@ def approve(piece_id: str) -> None:
         FileNotFoundError: If piece doesn't exist
         ValueError: If content hasn't been humanized
     """
-    path = QUEUE_DIR / f"{piece_id}.yaml"
-    if not path.exists():
+    path = _find_piece_file(piece_id)
+    if path is None:
         raise FileNotFoundError(f"Content piece {piece_id} not found")
 
-    data = yaml.safe_load(path.read_text())
+    data = _load_queue_file(path)
+    if data is None:
+        raise FileNotFoundError(f"Content piece {piece_id} could not be loaded")
 
     # SPEC-032: Only humanized content can be approved
     if data["status"] != "humanized":
@@ -209,11 +257,14 @@ def reject(piece_id: str, reason: str = "") -> None:
         piece_id: ID of the content piece to reject
         reason: Optional reason for rejection
     """
-    path = QUEUE_DIR / f"{piece_id}.yaml"
-    if not path.exists():
+    path = _find_piece_file(piece_id)
+    if path is None:
         raise FileNotFoundError(f"Content piece {piece_id} not found")
 
-    data = yaml.safe_load(path.read_text())
+    data = _load_queue_file(path)
+    if data is None:
+        raise FileNotFoundError(f"Content piece {piece_id} could not be loaded")
+
     data["status"] = "rejected"
     data["rejection_reason"] = reason
     path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
@@ -226,11 +277,14 @@ def mark_published(piece_id: str, post_id: str) -> None:
         piece_id: ID of the content piece
         post_id: Post ID returned by the social-media API
     """
-    path = QUEUE_DIR / f"{piece_id}.yaml"
-    if not path.exists():
+    path = _find_piece_file(piece_id)
+    if path is None:
         raise FileNotFoundError(f"Content piece {piece_id} not found")
 
-    data = yaml.safe_load(path.read_text())
+    data = _load_queue_file(path)
+    if data is None:
+        raise FileNotFoundError(f"Content piece {piece_id} could not be loaded")
+
     data["status"] = "published"
     data["post_id"] = post_id
     data["published_at"] = datetime.now(tz=UTC).isoformat()
@@ -249,9 +303,11 @@ def expire_stale() -> list[str]:
     cutoff = datetime.now(tz=UTC) - timedelta(hours=EXPIRY_HOURS)
     expired_ids = []
 
-    for file_path in QUEUE_DIR.glob("*.yaml"):
+    for file_path in _iter_queue_files():
         try:
-            data = yaml.safe_load(file_path.read_text())
+            data = _load_queue_file(file_path)
+            if data is None:
+                continue
             if data.get("status") not in ("pending_review", "pending_humanization"):
                 continue
             generated = data.get("generated_at", "")
@@ -279,9 +335,11 @@ def list_humanizable() -> list[QueuedContent]:
         return []
 
     items = []
-    for file_path in sorted(QUEUE_DIR.glob("*.yaml")):
+    for file_path in _iter_queue_files():
         try:
-            data = yaml.safe_load(file_path.read_text())
+            data = _load_queue_file(file_path)
+            if data is None:
+                continue
             if data.get("status") in ("pending_review", "pending_humanization"):
                 if isinstance(data.get("generated_at"), str):
                     data["generated_at"] = datetime.fromisoformat(data["generated_at"])

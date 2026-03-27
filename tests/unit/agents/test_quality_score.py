@@ -202,7 +202,9 @@ class TestAntiPatternPhrases:
         assert len(violations) >= 3
 
     def test_clean_text_no_anti_patterns(self) -> None:
-        piece = _make_piece(text="I spent 6 months building an AI pipeline. 3 things broke along the way.")
+        piece = _make_piece(
+            text="I spent 6 months building an AI pipeline. 3 things broke along the way."
+        )
         result = score_content(piece)
         violations = [v for v in result.violations if v.check == "anti_pattern"]
         assert len(violations) == 0
@@ -637,13 +639,17 @@ class TestExpandedAiSlopPhrases:
     """Tests for the 30 new AI-giveaway phrases added in Cycle 80."""
 
     def test_detects_its_important_to_note(self) -> None:
-        piece = _make_piece(text="It's important to note that AI pipelines fail silently in production.")
+        piece = _make_piece(
+            text="It's important to note that AI pipelines fail silently in production."
+        )
         result = score_content(piece)
         violations = [v for v in result.violations if v.check == "anti_pattern"]
         assert any("it's important to note" in v.message.lower() for v in violations)
 
     def test_detects_that_being_said(self) -> None:
-        piece = _make_piece(text="Pilaster handles 10K requests daily. That being said, scaling is tricky.")
+        piece = _make_piece(
+            text="Pilaster handles 10K requests daily. That being said, scaling is tricky."
+        )
         result = score_content(piece)
         violations = [v for v in result.violations if v.check == "anti_pattern"]
         assert any("that being said" in v.message.lower() for v in violations)
@@ -667,7 +673,9 @@ class TestExpandedAiSlopPhrases:
         assert any("paradigm shift" in v.message.lower() for v in violations)
 
     def test_detects_a_testament_to(self) -> None:
-        piece = _make_piece(text="This is a testament to the team's dedication to quality engineering.")
+        piece = _make_piece(
+            text="This is a testament to the team's dedication to quality engineering."
+        )
         result = score_content(piece)
         violations = [v for v in result.violations if v.check == "anti_pattern"]
         assert any("a testament to" in v.message.lower() for v in violations)

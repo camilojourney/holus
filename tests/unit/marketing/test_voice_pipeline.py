@@ -17,6 +17,7 @@ from holus.agents.marketing.voice_pipeline import (
 
 # -- Unit tests for parsers ------------------------------------------------
 
+
 def test_parse_voice_sections_standard() -> None:
     text = """
 [HOOK]
@@ -71,6 +72,7 @@ def test_parse_json_response_fenced() -> None:
 
 
 # -- Integration-style tests with mocked LLM -------------------------------
+
 
 @pytest.fixture
 def mock_loader() -> MagicMock:

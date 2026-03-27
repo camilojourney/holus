@@ -18,11 +18,10 @@ Activation methods:
 
 from __future__ import annotations
 
-import functools
 import logging
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
@@ -176,46 +175,6 @@ class KillSwitch:
                     logger.warning("Malformed kill switch state at %s", key_str)
         return result
 
-    # -- Auto-trigger (circuit breaker) --------------------------------------
-
-    def auto_trigger_on_loss(
-        self,
-        agent_name: str,
-        daily_loss_pct: float,
-        threshold: float = 0.05,
-    ) -> bool:
-        """Automatically activate kill switch if daily drawdown exceeds threshold.
-
-        Returns ``True`` if the kill switch was triggered.
-        """
-        if daily_loss_pct >= threshold:
-            self.activate(
-                scope=agent_name,
-                reason=f"Daily loss {daily_loss_pct:.1%} exceeded threshold {threshold:.1%}",
-                activated_by="circuit_breaker",
-            )
-            return True
-        return False
-
-    def auto_trigger_on_crash_count(
-        self,
-        agent_name: str,
-        crash_count: int,
-        max_crashes: int = 3,
-    ) -> bool:
-        """Automatically activate kill switch after repeated crashes.
-
-        Returns ``True`` if the kill switch was triggered.
-        """
-        if crash_count >= max_crashes:
-            self.activate(
-                scope=agent_name,
-                reason=f"Agent crashed {crash_count} times (limit {max_crashes})",
-                activated_by="circuit_breaker",
-            )
-            return True
-        return False
-
     # -- Internals -----------------------------------------------------------
 
     def _key_for(self, scope: str) -> str:
@@ -224,43 +183,3 @@ class KillSwitch:
         if scope in DOMAIN_AGENTS:
             return f"{self.DOMAIN_PREFIX}{scope}"
         return f"{self.AGENT_PREFIX}{scope}"
-
-
-# ---------------------------------------------------------------------------
-# Decorator
-# ---------------------------------------------------------------------------
-
-
-def check_kill_switch(kill_switch: KillSwitch, agent_name: str):
-    """Decorator that checks the kill switch before executing a function.
-
-    Raises ``KillSwitchActive`` if the agent is halted.
-
-    Usage::
-
-        ks = KillSwitch(redis_client)
-
-        @check_kill_switch(ks, "marketing-agent")
-        def generate_content(decision):
-            ...
-    """
-
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if kill_switch.is_active(agent_name):
-                state = (
-                    kill_switch.get_state(agent_name)
-                    or kill_switch.get_state("global")
-                    or KillSwitchState(
-                        activated_at=datetime.now(UTC),
-                        reason="Unknown",
-                        scope=agent_name,
-                    )
-                )
-                raise KillSwitchActive(agent_name, state)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator

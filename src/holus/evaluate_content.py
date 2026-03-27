@@ -57,9 +57,11 @@ def _load_pending_pieces(piece_id: str | None = None) -> list[dict[str, Any]]:
         return []
 
     pieces: list[dict[str, Any]] = []
-    for path in sorted(QUEUE_DIR.glob("*.yaml")):
+    all_files = list(QUEUE_DIR.glob("*.yaml")) + list(QUEUE_DIR.glob("*.json"))
+    for path in sorted(all_files):
         try:
-            data = yaml.safe_load(path.read_text())
+            text = path.read_text(encoding="utf-8")
+            data = json.loads(text) if path.suffix == ".json" else yaml.safe_load(text)
         except Exception:
             continue
 
@@ -159,7 +161,9 @@ def _print_summary(total: int, passed: int, partial: int, failed: int, elapsed: 
     print(f"  {BOLD}EVALUATION SUMMARY{RESET}")
     print("=" * 60)
     print(f"  Evaluated: {total} piece(s) in {elapsed:.1f}s")
-    print(f"  {GREEN}PASS: {passed}{RESET}  |  {YELLOW}PARTIAL: {partial}{RESET}  |  {RED}FAIL: {failed}{RESET}")
+    print(
+        f"  {GREEN}PASS: {passed}{RESET}  |  {YELLOW}PARTIAL: {partial}{RESET}  |  {RED}FAIL: {failed}{RESET}"
+    )
     print()
 
 
@@ -213,9 +217,8 @@ def main() -> None:
         platform = piece.get("platform", "unknown")
         topic = piece.get("topic", "")
 
-        task = (
-            f"Create a {content_type} post for {platform}."
-            + (f" Topic: {topic}" if topic else "")
+        task = f"Create a {content_type} post for {platform}." + (
+            f" Topic: {topic}" if topic else ""
         )
 
         try:

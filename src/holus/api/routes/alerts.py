@@ -32,9 +32,7 @@ _DEFAULT_EVAL_PATH = (
     / "eval_history.jsonl"
 )
 
-EVAL_HISTORY_PATH = Path(
-    os.environ.get("EVAL_HISTORY_PATH", str(_DEFAULT_EVAL_PATH))
-)
+EVAL_HISTORY_PATH = Path(os.environ.get("EVAL_HISTORY_PATH", str(_DEFAULT_EVAL_PATH)))
 
 
 # -- Models ------------------------------------------------------------------
@@ -90,7 +88,8 @@ def _load_entries() -> list[dict[str, Any]]:
 
 
 def _check_score_regression(
-    entries: list[dict[str, Any]], skill_filter: str = "",
+    entries: list[dict[str, Any]],
+    skill_filter: str = "",
 ) -> list[Alert]:
     """Score drops > 10 points below 7-day rolling average."""
     alerts: list[Alert] = []
@@ -128,19 +127,27 @@ def _check_score_regression(
         last = recent[-1]
 
         if last < avg - 10:
-            alerts.append(Alert(
-                type="SCORE_REGRESSION",
-                severity="WARNING",
-                skill=skill,
-                message=f"{skill}: last score {last:.0f} is {avg - last:.0f}pts below 7-day avg ({avg:.0f})",
-                details={"last_score": last, "rolling_avg": round(avg, 1), "delta": round(last - avg, 1)},
-            ))
+            alerts.append(
+                Alert(
+                    type="SCORE_REGRESSION",
+                    severity="WARNING",
+                    skill=skill,
+                    message=f"{skill}: last score {last:.0f} is {avg - last:.0f}pts below 7-day avg ({avg:.0f})",
+                    details={
+                        "last_score": last,
+                        "rolling_avg": round(avg, 1),
+                        "delta": round(last - avg, 1),
+                    },
+                )
+            )
 
     return alerts
 
 
 def _check_consecutive_failures(
-    entries: list[dict[str, Any]], skill_filter: str = "", threshold: float = 70,
+    entries: list[dict[str, Any]],
+    skill_filter: str = "",
+    threshold: float = 70,
 ) -> list[Alert]:
     """3+ consecutive scores below threshold."""
     alerts: list[Alert] = []
@@ -161,13 +168,15 @@ def _check_consecutive_failures(
                 break
 
         if consecutive >= 3:
-            alerts.append(Alert(
-                type="CONSECUTIVE_FAILURES",
-                severity="CRITICAL",
-                skill=skill,
-                message=f"{skill}: {consecutive} consecutive scores below {threshold}",
-                details={"consecutive_count": consecutive, "threshold": threshold},
-            ))
+            alerts.append(
+                Alert(
+                    type="CONSECUTIVE_FAILURES",
+                    severity="CRITICAL",
+                    skill=skill,
+                    message=f"{skill}: {consecutive} consecutive scores below {threshold}",
+                    details={"consecutive_count": consecutive, "threshold": threshold},
+                )
+            )
 
     return alerts
 
@@ -180,13 +189,15 @@ def _check_stalls(entries: list[dict[str, Any]], skill_filter: str = "") -> list
         if skill_filter and skill.lower() != skill_filter.lower():
             continue
         if e.get("score", 100) == 0:
-            alerts.append(Alert(
-                type="STALL",
-                severity="CRITICAL",
-                skill=skill,
-                message=f"{skill}: score 0 (likely stall/empty output)",
-                details={"cid": e.get("cid", "unknown")},
-            ))
+            alerts.append(
+                Alert(
+                    type="STALL",
+                    severity="CRITICAL",
+                    skill=skill,
+                    message=f"{skill}: score 0 (likely stall/empty output)",
+                    details={"cid": e.get("cid", "unknown")},
+                )
+            )
     return alerts
 
 
@@ -220,21 +231,25 @@ def _compute_trends(entries: list[dict[str, Any]], skill_filter: str = "") -> li
                         day_scores.append(float(e["score"]))
                 except (KeyError, ValueError):
                     continue
-            rolling_7d.append({
-                "date": target_date.isoformat(),
-                "avg_score": round(sum(day_scores) / len(day_scores), 1) if day_scores else 0.0,
-                "count": len(day_scores),
-            })
+            rolling_7d.append(
+                {
+                    "date": target_date.isoformat(),
+                    "avg_score": round(sum(day_scores) / len(day_scores), 1) if day_scores else 0.0,
+                    "count": len(day_scores),
+                }
+            )
 
-        trends.append(SkillTrend(
-            skill=skill,
-            total_runs=len(scores),
-            avg_score=round(sum(scores) / len(scores), 1),
-            last_score=scores[-1],
-            min_score=min(scores),
-            max_score=max(scores),
-            rolling_7d=rolling_7d,
-        ))
+        trends.append(
+            SkillTrend(
+                skill=skill,
+                total_runs=len(scores),
+                avg_score=round(sum(scores) / len(scores), 1),
+                last_score=scores[-1],
+                min_score=min(scores),
+                max_score=max(scores),
+                rolling_7d=rolling_7d,
+            )
+        )
 
     return trends
 

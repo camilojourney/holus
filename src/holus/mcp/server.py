@@ -20,9 +20,7 @@ from holus.integrations.social_media.client import PublishRequest, SocialMediaCl
 
 # Configuration and Environment Validation
 POSTING_API_KEY = os.environ.get("POSTING_API_KEY")
-SOCIAL_MEDIA_API_BASE_URL = os.environ.get(
-    "SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000"
-)
+SOCIAL_MEDIA_API_BASE_URL = os.environ.get("SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000")
 
 mcp = FastMCP("holus")
 

@@ -1,0 +1,32 @@
+{
+  "cid": "PLAN-20260326-383e52d9",
+  "repo": "holus",
+  "goal": "Megasprint: audit every file, attack every gap, 120 agents in 1 hour",
+  "status": "PENDING",
+  "created": "2026-03-26T00:00:00Z",
+  "phases": [
+    {
+      "id": 1,
+      "name": "Coherence Audit",
+      "status": "PENDING",
+      "agents": 40,
+      "duration_estimate": "15min"
+    },
+    {
+      "id": 2,
+      "name": "Attack Every Gap",
+      "status": "PENDING",
+      "agents": 60,
+      "duration_estimate": "30min"
+    },
+    {
+      "id": 3,
+      "name": "Quality + Ship",
+      "status": "PENDING",
+      "agents": 20,
+      "duration_estimate": "15min"
+    }
+  ],
+  "total_agents": 120,
+  "total_duration_estimate": "60min"
+}

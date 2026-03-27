@@ -37,16 +37,32 @@ KNOWLEDGE_REQUESTS_DIR = Path(".self-improvement/knowledge/requests")
 
 # Keywords that indicate capability gaps (not prompt quality issues)
 CAPABILITY_KEYWORDS = [
-    "no tool", "cannot", "unable to", "not supported", "missing",
-    "no api", "not implemented", "no integration", "no mcp",
-    "not available", "blocked", "no access",
+    "no tool",
+    "cannot",
+    "unable to",
+    "not supported",
+    "missing",
+    "no api",
+    "not implemented",
+    "no integration",
+    "no mcp",
+    "not available",
+    "blocked",
+    "no access",
 ]
 
 # Keywords that indicate data/knowledge gaps
 DATA_KEYWORDS = [
-    "don't know", "no data", "no information", "unclear",
-    "need context", "missing knowledge", "no profile",
-    "no examples", "no benchmark", "no reference",
+    "don't know",
+    "no data",
+    "no information",
+    "unclear",
+    "need context",
+    "missing knowledge",
+    "no profile",
+    "no examples",
+    "no benchmark",
+    "no reference",
 ]
 
 
@@ -127,15 +143,17 @@ def detect_gaps(
             common_words.update(fb.lower().split())
         top_words = [w for w, _ in common_words.most_common(5) if len(w) > 3]
 
-        gaps.append({
-            "type": failure_class,
-            "platform": platform,
-            "content_type": content_type,
-            "evidence_count": len(entries),
-            "common_feedback": top_words,
-            "first_seen": min(e.get("timestamp", "") for e in entries),
-            "last_seen": max(e.get("timestamp", "") for e in entries),
-        })
+        gaps.append(
+            {
+                "type": failure_class,
+                "platform": platform,
+                "content_type": content_type,
+                "evidence_count": len(entries),
+                "common_feedback": top_words,
+                "first_seen": min(e.get("timestamp", "") for e in entries),
+                "last_seen": max(e.get("timestamp", "") for e in entries),
+            }
+        )
 
     return sorted(gaps, key=lambda g: g["evidence_count"], reverse=True)
 

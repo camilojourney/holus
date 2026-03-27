@@ -18,11 +18,32 @@ interface TooltipState {
   score?: number;
 }
 
+/**
+ * Continuous color scale: red (0) -> yellow (5) -> green (10).
+ * Uses oklch interpolation for perceptually uniform gradients.
+ * Falls back to surface-2 for missing data.
+ */
 function scoreStyle(score?: number): React.CSSProperties {
   if (score === undefined) return { background: 'var(--surface-2)' };
-  if (score >= 7) return { background: 'var(--success)' };
-  if (score >= 4) return { background: 'var(--warning)' };
-  return { background: 'var(--danger)' };
+  // Clamp to 0-10
+  const s = Math.max(0, Math.min(10, score));
+  // Interpolate hue: 25 (red) -> 85 (yellow) -> 145 (green)
+  // Lightness: 0.55 at edges, 0.65 at midpoint (yellow pops more)
+  // Chroma: 0.18 throughout
+  let hue: number;
+  let lightness: number;
+  if (s <= 5) {
+    // red (25) -> yellow (85)
+    const t = s / 5;
+    hue = 25 + t * 60;
+    lightness = 0.55 + t * 0.10;
+  } else {
+    // yellow (85) -> green (145)
+    const t = (s - 5) / 5;
+    hue = 85 + t * 60;
+    lightness = 0.65 - t * 0.10;
+  }
+  return { background: `oklch(${lightness.toFixed(2)} 0.18 ${hue.toFixed(0)})` };
 }
 
 function getLast30Days(): string[] {
@@ -212,19 +233,23 @@ export default function QualityHeatmap({ evaluations, agents, days = 30 }: Props
             })}
           </div>
         ))}
-        {/* Legend */}
+        {/* Legend — continuous gradient */}
         <div className="flex items-center gap-4 mt-4 pl-32">
-          {[
-            { style: { background: 'var(--success)' }, label: '7\u201310 Pass' },
-            { style: { background: 'var(--warning)' }, label: '4\u20137 Review' },
-            { style: { background: 'var(--danger)' }, label: '0\u20134 Fail' },
-            { style: { background: 'var(--surface-2)' }, label: 'No data' },
-          ].map(({ style, label }) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm" style={style} />
-              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{label}</span>
-            </div>
-          ))}
+          <div className="flex items-center gap-2">
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>0</span>
+            <div
+              className="h-3 rounded-sm"
+              style={{
+                width: '120px',
+                background: 'linear-gradient(to right, oklch(0.55 0.18 25), oklch(0.65 0.18 85), oklch(0.55 0.18 145))',
+              }}
+            />
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>10</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm" style={{ background: 'var(--surface-2)' }} />
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>No data</span>
+          </div>
         </div>
       </div>
     </div>

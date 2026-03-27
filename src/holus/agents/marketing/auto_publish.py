@@ -202,22 +202,24 @@ def _trigger_reflexion(item: dict[str, Any], score: float) -> None:
         )
 
         tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
-        tl.append(TrajectoryEntry(
-            agent_id="auto-publish",
-            task_type="reflexion",
-            task_summary=f"Reflection on rejected {fmt}: {topic}",
-            status="success",
-            judge_score=score,
-            judge_verdict="FAIL",
-            judge_feedback=reflection,
-            metadata={
-                "schema_version": 2,
-                "failure_class": "quality_issue",
-                "platform": platform,
-                "content_type": fmt,
-                "original_feedback": feedback,
-            },
-        ))
+        tl.append(
+            TrajectoryEntry(
+                agent_id="auto-publish",
+                task_type="reflexion",
+                task_summary=f"Reflection on rejected {fmt}: {topic}",
+                status="success",
+                judge_score=score,
+                judge_verdict="FAIL",
+                judge_feedback=reflection,
+                metadata={
+                    "schema_version": 2,
+                    "failure_class": "quality_issue",
+                    "platform": platform,
+                    "content_type": fmt,
+                    "original_feedback": feedback,
+                },
+            )
+        )
 
         logger.info("Reflexion stored for rejected piece: %s", topic[:50])
 
@@ -266,22 +268,24 @@ def process_human_rejection(piece_id: str, reason: str) -> dict[str, Any]:
 
     # Log to trajectory as human feedback
     tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
-    tl.append(TrajectoryEntry(
-        agent_id="human-reviewer",
-        task_type="content_rejection",
-        task_summary=f"Human rejected {piece_id}: {reason[:200]}",
-        status="success",
-        judge_score=judge_score,
-        judge_feedback=reason,
-        metadata={
-            "schema_version": 2,
-            "piece_id": piece_id,
-            "rejection_reason": reason,
-            "rejected_by": "human",
-            "judge_calibration_needed": calibration_needed,
-            "failure_class": "quality_issue",
-        },
-    ))
+    tl.append(
+        TrajectoryEntry(
+            agent_id="human-reviewer",
+            task_type="content_rejection",
+            task_summary=f"Human rejected {piece_id}: {reason[:200]}",
+            status="success",
+            judge_score=judge_score,
+            judge_feedback=reason,
+            metadata={
+                "schema_version": 2,
+                "piece_id": piece_id,
+                "rejection_reason": reason,
+                "rejected_by": "human",
+                "judge_calibration_needed": calibration_needed,
+                "failure_class": "quality_issue",
+            },
+        )
+    )
 
     # Also trigger reflexion
     if file_path:
@@ -290,7 +294,8 @@ def process_human_rejection(piece_id: str, reason: str) -> dict[str, Any]:
 
     logger.info(
         "Human rejection processed: %s (calibration_needed=%s)",
-        piece_id, calibration_needed,
+        piece_id,
+        calibration_needed,
     )
 
     return {
@@ -318,20 +323,24 @@ async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
         # Carousels without rendered PDF → skip (don't publish text-only "Swipe →")
         content_type = item.get("content_type", "")
         if content_type == "carousel_outline" and not item.get("pdf_path"):
-            results.append({
-                "piece_id": piece_id,
-                "action": "skipped",
-                "reason": "carousel without rendered PDF",
-            })
+            results.append(
+                {
+                    "piece_id": piece_id,
+                    "action": "skipped",
+                    "reason": "carousel without rendered PDF",
+                }
+            )
             continue
 
         # No judge score → skip (leave for manual review)
         if score is None:
-            results.append({
-                "piece_id": piece_id,
-                "action": "skipped",
-                "reason": "no judge score",
-            })
+            results.append(
+                {
+                    "piece_id": piece_id,
+                    "action": "skipped",
+                    "reason": "no judge score",
+                }
+            )
             continue
 
         if score >= PASS_THRESHOLD and verdict != "FAIL":
@@ -342,53 +351,65 @@ async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
             else:
                 publish_id = await _publish_piece(item)
                 if publish_id:
-                    _update_item(file_path, {
-                        "status": "published",
-                        "post_id": publish_id,
-                        "published_at": datetime.now(tz=UTC).isoformat(),
-                        "auto_published": True,
-                    })
+                    _update_item(
+                        file_path,
+                        {
+                            "status": "published",
+                            "post_id": publish_id,
+                            "published_at": datetime.now(tz=UTC).isoformat(),
+                            "auto_published": True,
+                        },
+                    )
                     action = "published"
                     _send_telegram_notification(item, "auto_published", score)
                 else:
                     action = "publish_failed"
 
-            results.append({
-                "piece_id": piece_id,
-                "action": action,
-                "score": score,
-                "publish_id": publish_id if not dry_run else None,
-            })
+            results.append(
+                {
+                    "piece_id": piece_id,
+                    "action": action,
+                    "score": score,
+                    "publish_id": publish_id if not dry_run else None,
+                }
+            )
 
         elif score >= PARTIAL_THRESHOLD:
             # PARTIAL: needs human review
             _send_telegram_notification(item, "needs_review", score)
-            results.append({
-                "piece_id": piece_id,
-                "action": "needs_review",
-                "score": score,
-                "reason": item.get("judge_feedback", "")[:200],
-            })
+            results.append(
+                {
+                    "piece_id": piece_id,
+                    "action": "needs_review",
+                    "score": score,
+                    "reason": item.get("judge_feedback", "")[:200],
+                }
+            )
 
         else:
             # FAIL: auto-reject
             if not dry_run:
-                _update_item(file_path, {
-                    "status": "rejected",
-                    "rejection_reason": f"Auto-rejected: judge score {score:.2f} < {PARTIAL_THRESHOLD}",
-                    "rejected_at": datetime.now(tz=UTC).isoformat(),
-                    "auto_rejected": True,
-                })
+                _update_item(
+                    file_path,
+                    {
+                        "status": "rejected",
+                        "rejection_reason": f"Auto-rejected: judge score {score:.2f} < {PARTIAL_THRESHOLD}",
+                        "rejected_at": datetime.now(tz=UTC).isoformat(),
+                        "auto_rejected": True,
+                    },
+                )
                 _send_telegram_notification(item, "auto_rejected", score)
                 # Reflexion: learn from the failure
                 _trigger_reflexion(item, score)
 
-            results.append({
-                "piece_id": piece_id,
-                "action": "rejected" if not dry_run else "would_reject",
-                "score": score,
-                "reason": item.get("judge_feedback", "")[:200],
-            })
+            results.append(
+                {
+                    "piece_id": piece_id,
+                    "action": "rejected" if not dry_run else "would_reject",
+                    "score": score,
+                    "reason": item.get("judge_feedback", "")[:200],
+                }
+            )
 
     logger.info(
         "Auto-publish processed %d items: %s",

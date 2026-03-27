@@ -77,7 +77,9 @@ def _generate_bar_svg(
         'stroke="#334155" stroke-width="2" />'
     )
 
-    for index, (label, raw_value, numeric_value) in enumerate(zip(labels, raw_values, numeric_values, strict=True)):
+    for index, (label, raw_value, numeric_value) in enumerate(
+        zip(labels, raw_values, numeric_values, strict=True)
+    ):
         height = 0.0 if max_value == 0 else (numeric_value / max_value) * chart_height
         x = chart_left + slot_width * index + (slot_width - bar_width) / 2
         y = axis_y - height
@@ -144,7 +146,9 @@ def _generate_line_svg(
         'stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />'
     )
 
-    for index, ((x, y), label, raw_value) in enumerate(zip(points, labels, raw_values, strict=True)):
+    for index, ((x, y), label, raw_value) in enumerate(
+        zip(points, labels, raw_values, strict=True)
+    ):
         fill = color_accent if highlight_index == index else _MUTED_COLOR
         parts.append(
             f'<circle cx="{x:.2f}" cy="{y:.2f}" r="8" fill="{escape(fill)}" stroke="#0f172a" stroke-width="3" />'
@@ -166,7 +170,7 @@ def _generate_line_svg(
 
 def _generate_metric_svg(value_text: str, subtitle: str, color_accent: str) -> str:
     return (
-        f'{_svg_open()}'
+        f"{_svg_open()}"
         f"{_background_panel()}"
         '<text x="400" y="170" text-anchor="middle" font-family="Inter, sans-serif" '
         f'font-size="120" font-weight="800" fill="{escape(color_accent)}">{escape(value_text)}</text>'

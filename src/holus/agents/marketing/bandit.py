@@ -46,10 +46,7 @@ class Bandit:
                 pass
         # Bootstrap with default arms
         return {
-            "arms": {
-                arm: {"wins": 0, "trials": 0}
-                for arm in DEFAULT_ARMS
-            },
+            "arms": {arm: {"wins": 0, "trials": 0} for arm in DEFAULT_ARMS},
             "total_trials": 0,
         }
 
@@ -62,7 +59,7 @@ class Bandit:
     def _epsilon(self) -> float:
         total = self._state.get("total_trials", 0)
         if total < 10:
-            return 1.0   # pure exploration
+            return 1.0  # pure exploration
         if total < 30:
             return 0.3
         return 0.1

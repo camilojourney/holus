@@ -3,7 +3,7 @@ id: storyteller
 version: 1.0.0
 category: written-authority
 model_tier: operational
-evaluated_by: voice-guardian
+evaluated_by: written-content-judge
 ---
 
 # Storyteller

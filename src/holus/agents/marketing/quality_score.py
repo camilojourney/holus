@@ -397,9 +397,7 @@ def _check_specificity(text: str) -> QualityViolation | None:
     if number_count == 0 and proper_noun_count == 0:
         return QualityViolation(
             check="specificity_generic",
-            message=(
-                "No numbers and no proper nouns found — content is generic with no evidence"
-            ),
+            message=("No numbers and no proper nouns found — content is generic with no evidence"),
             penalty=20,
         )
     if number_count == 1 and proper_noun_count == 0:
@@ -447,9 +445,7 @@ def _check_sentence_length_variance(text: str) -> QualityViolation | None:
     return None
 
 
-def _check_single_sentence_paragraphs(
-    text: str, platform: Platform
-) -> QualityViolation | None:
+def _check_single_sentence_paragraphs(text: str, platform: Platform) -> QualityViolation | None:
     """Check that LinkedIn posts have enough short, punchy paragraphs.
 
     Top LinkedIn creators use 30%+ single-sentence paragraphs for scanability.
@@ -507,10 +503,7 @@ def _check_opening_word_diversity(text: str) -> QualityViolation | None:
         used = sorted({w for w in first_words if w in generic_openers})
         return QualityViolation(
             check="repetitive_openers",
-            message=(
-                f"Opening words are repetitive ({', '.join(used)}). "
-                "Vary paragraph starts."
-            ),
+            message=(f"Opening words are repetitive ({', '.join(used)}). Vary paragraph starts."),
             penalty=10,
         )
     return None
@@ -560,10 +553,7 @@ def _check_consecutive_same_length(text: str) -> QualityViolation | None:
             if streak >= 3:
                 return QualityViolation(
                     check="mechanical_rhythm",
-                    message=(
-                        "3+ consecutive sentences with similar length "
-                        "— mechanical rhythm."
-                    ),
+                    message=("3+ consecutive sentences with similar length — mechanical rhythm."),
                     penalty=10,
                 )
         else:

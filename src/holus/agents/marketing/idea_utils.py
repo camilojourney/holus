@@ -52,12 +52,12 @@ def _strip_fences(raw: str) -> str:
 def _strip_markdown(text: str) -> str:
     """Strip markdown formatting that social platforms render as literal characters."""
     # **bold** or __bold__ -> just the text
-    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
-    text = re.sub(r'__(.+?)__', r'\1', text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
+    text = re.sub(r"__(.+?)__", r"\1", text)
     # *italic* -> just the text (but not bullet points like "* item")
-    text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'\1', text)
+    text = re.sub(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)", r"\1", text)
     # # headings -> just the text
-    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r"^#{1,6}\s+", "", text, flags=re.MULTILINE)
     return text
 
 
@@ -79,7 +79,7 @@ def _load_prompt(agent_id: str, fallback: str) -> tuple[str, str]:
 def _strip_word_counts(obj: Any) -> Any:
     """Strip word count annotations the LLM sometimes includes (e.g., '(24 words)')."""
     if isinstance(obj, str):
-        return re.sub(r'\s*\(\d+\s*words?\)', '', obj).strip()
+        return re.sub(r"\s*\(\d+\s*words?\)", "", obj).strip()
     if isinstance(obj, list):
         return [_strip_word_counts(item) for item in obj]
     if isinstance(obj, dict):

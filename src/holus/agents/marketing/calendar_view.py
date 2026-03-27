@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -28,9 +29,11 @@ def list_all(queue_dir: Path = QUEUE_DIR) -> list[dict[str, Any]]:
         return []
 
     items: list[dict[str, Any]] = []
-    for file_path in sorted(queue_dir.glob("*.yaml")):
+    all_files = list(queue_dir.glob("*.yaml")) + list(queue_dir.glob("*.json"))
+    for file_path in sorted(all_files):
         try:
-            data = yaml.safe_load(file_path.read_text())
+            text = file_path.read_text(encoding="utf-8")
+            data = json.loads(text) if file_path.suffix == ".json" else yaml.safe_load(text)
             if data:
                 items.append(data)
         except Exception:

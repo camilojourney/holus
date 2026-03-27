@@ -3,7 +3,7 @@ id: voice-guardian
 version: 1.0.0
 category: written-authority
 model_tier: classification
-evaluated_by: null
+evaluated_by: brand-safety-judge
 gate: true
 ---
 

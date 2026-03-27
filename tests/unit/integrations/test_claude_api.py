@@ -151,7 +151,11 @@ class TestHolusClaudeClient:
 
     @patch("holus.integrations.claude_api.client.anthropic.Anthropic")
     def test_init_custom_model_map(self, mock_anthropic_cls: MagicMock) -> None:
-        custom = {"strategic": "custom-opus", "operational": "custom-sonnet", "classification": "custom-haiku"}
+        custom = {
+            "strategic": "custom-opus",
+            "operational": "custom-sonnet",
+            "classification": "custom-haiku",
+        }
         client = HolusClaudeClient(model_map=custom)
         assert client._model_map == custom
 
@@ -222,7 +226,9 @@ class TestHolusClaudeClient:
         assert call_kwargs["temperature"] == 1.0  # Required for thinking
 
     @patch("holus.integrations.claude_api.client.anthropic.Anthropic")
-    def test_call_extended_thinking_non_strategic_ignored(self, mock_anthropic_cls: MagicMock) -> None:
+    def test_call_extended_thinking_non_strategic_ignored(
+        self, mock_anthropic_cls: MagicMock
+    ) -> None:
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
         mock_client.messages.create.return_value = _make_response()
@@ -388,10 +394,20 @@ class TestBatchAPI:
         client = HolusClaudeClient()
         prompt = _make_prompt()
 
-        result = client.batch_submit([
-            {"custom_id": "req_1", "cached_prompt": prompt, "messages": [{"role": "user", "content": "a"}]},
-            {"custom_id": "req_2", "cached_prompt": prompt, "messages": [{"role": "user", "content": "b"}]},
-        ])
+        result = client.batch_submit(
+            [
+                {
+                    "custom_id": "req_1",
+                    "cached_prompt": prompt,
+                    "messages": [{"role": "user", "content": "a"}],
+                },
+                {
+                    "custom_id": "req_2",
+                    "cached_prompt": prompt,
+                    "messages": [{"role": "user", "content": "b"}],
+                },
+            ]
+        )
 
         assert result.id == "batch_123"
         call_kwargs = mock_client.messages.batches.create.call_args[1]

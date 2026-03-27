@@ -19,7 +19,9 @@ def client() -> TestClient:
 
 def test_ingest_text(client: TestClient, tmp_path: Path) -> None:
     with patch("holus.api.routes.ingest._PENDING_PATH", tmp_path / "pending.json"):
-        resp = client.post("/api/holus/ingest", data={"text": "I built a voice pipeline for LinkedIn"})
+        resp = client.post(
+            "/api/holus/ingest", data={"text": "I built a voice pipeline for LinkedIn"}
+        )
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "queued"

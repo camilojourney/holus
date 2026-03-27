@@ -263,12 +263,9 @@ class MarketingAgent(BaseAgent):
             generated: list[dict[str, Any]] = final_state.get("generated_content", [])
 
             ctx.content_created = len(generated)
-            ctx.content_posted = sum(
-                1 for r in post_results if r.get("status") == "pending_review"
-            )
+            ctx.content_posted = sum(1 for r in post_results if r.get("status") == "pending_review")
             ctx.content_failed = sum(
-                1 for r in post_results
-                if r.get("status") in ("failed", "auto_rejected")
+                1 for r in post_results if r.get("status") in ("failed", "auto_rejected")
             )
 
             # ------------------------------------------------------------------
@@ -480,12 +477,18 @@ class MarketingAgent(BaseAgent):
                 if feedback and verdict and verdict in ("FAIL", "PARTIAL"):
                     dims = entry.get("metadata", {}).get("dimension_scores", {})
                     platform = entry.get("metadata", {}).get("platform", "")
-                    recent.append({
-                        "platform": platform,
-                        "verdict": verdict,
-                        "feedback": feedback[:300],
-                        "weak_dims": {k: v for k, v in dims.items() if isinstance(v, (int, float)) and v < 0.6},
-                    })
+                    recent.append(
+                        {
+                            "platform": platform,
+                            "verdict": verdict,
+                            "feedback": feedback[:300],
+                            "weak_dims": {
+                                k: v
+                                for k, v in dims.items()
+                                if isinstance(v, (int, float)) and v < 0.6
+                            },
+                        }
+                    )
 
             if not recent:
                 return ""
@@ -501,9 +504,7 @@ class MarketingAgent(BaseAgent):
             logger.warning("Failed to load prior judge feedback", exc_info=True)
             return ""
 
-    def _format_generation_feedback(
-        self, platform: str, *, prior_feedback: str = ""
-    ) -> str:
+    def _format_generation_feedback(self, platform: str, *, prior_feedback: str = "") -> str:
         """Extract platform-specific generation feedback from prior judge results.
 
         Filters the full prior_judge_feedback (loaded in observe) to entries
@@ -1215,12 +1216,21 @@ class MarketingAgent(BaseAgent):
                 piece_data["visual_attachment_path"] = str(output_path)
                 piece_data["visual_format"] = ext
 
-                # Update queue YAML on disk (act already wrote it without visual data)
+                # Update queue file on disk (act already wrote it without visual data)
                 queue_file = Path("data/content-queue") / f"{piece_id}.yaml"
+                if not queue_file.exists():
+                    queue_file = Path("data/content-queue") / f"{piece_id}.json"
                 if queue_file.exists():
+                    import json as _json
+
                     import yaml
 
-                    queue_data = yaml.safe_load(queue_file.read_text()) or {}
+                    _text = queue_file.read_text(encoding="utf-8")
+                    queue_data = (
+                        _json.loads(_text)
+                        if queue_file.suffix == ".json"
+                        else yaml.safe_load(_text)
+                    ) or {}
                     if ext == "pdf":
                         queue_data["rendered_pdf_path"] = str(output_path)
                         queue_data["media_type"] = "document"
@@ -1362,7 +1372,8 @@ class MarketingAgent(BaseAgent):
     def _queue_files(self) -> list[Path]:
         if not self._QUEUE_DIR.exists():
             return []
-        return sorted(self._QUEUE_DIR.glob("*.yaml"))
+        files = list(self._QUEUE_DIR.glob("*.yaml")) + list(self._QUEUE_DIR.glob("*.json"))
+        return sorted(files)
 
     def _ensure_queue_dir(self) -> Path:
         self._QUEUE_DIR.mkdir(parents=True, exist_ok=True)
@@ -1591,7 +1602,7 @@ class MarketingAgent(BaseAgent):
 
     _PLATFORM_CTA_HINTS: ClassVar[dict[str, str]] = {
         "linkedin": "Professional CTAs: questions that invite discussion, polls, or direct profile visits.",
-        "instagram": "Instagram CTAs: \"Link in bio\", save/share prompts, comment triggers. Never direct URLs in captions.",
+        "instagram": 'Instagram CTAs: "Link in bio", save/share prompts, comment triggers. Never direct URLs in captions.',
         "threads": "Threads CTAs: short engagement hooks, repost prompts, casual questions.",
     }
 
@@ -1636,9 +1647,7 @@ class MarketingAgent(BaseAgent):
         story_prompt = loader.get_prompt("storyteller")
         feedback_section = ""
         if prior_feedback and prior_feedback != "No prior feedback for this platform.":
-            feedback_section = (
-                f"\n\nPrior judge feedback (avoid these mistakes):\n{prior_feedback}"
-            )
+            feedback_section = f"\n\nPrior judge feedback (avoid these mistakes):\n{prior_feedback}"
         story_input = (
             f"{self._GENERATION_PREFIX}"
             f"Content brief:\n"

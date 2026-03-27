@@ -66,7 +66,6 @@ PLATFORMS: dict[str, PlatformConfig] = {
         optimal_posting_times=["07:00-09:00 ET", "11:30-13:00 ET", "17:00-18:00 ET"],
         hashtag_limit=3,
         risk_tier="low",  # LinkedIn = established, auto-queue
-
     ),
     "twitter": PlatformConfig(
         platform_id="twitter",
@@ -90,7 +89,6 @@ PLATFORMS: dict[str, PlatformConfig] = {
         optimal_posting_times=["08:00-10:00 ET", "12:00-13:00 ET"],
         hashtag_limit=2,
         risk_tier="low",
-
     ),
     "twitter_x": None,  # type: ignore[dict-item]  # Alias — resolved below
     "instagram": PlatformConfig(
@@ -116,7 +114,6 @@ PLATFORMS: dict[str, PlatformConfig] = {
         hashtag_limit=15,
         emoji_policy="moderate",
         risk_tier="high",  # Instagram = visual-first, higher brand risk
-
     ),
     "threads": PlatformConfig(
         platform_id="threads",
@@ -140,7 +137,6 @@ PLATFORMS: dict[str, PlatformConfig] = {
         optimal_posting_times=["08:00-10:00 ET", "20:00-22:00 ET"],
         hashtag_limit=0,
         risk_tier="low",
-
     ),
     "tiktok": PlatformConfig(
         platform_id="tiktok",
@@ -165,7 +161,6 @@ PLATFORMS: dict[str, PlatformConfig] = {
         hashtag_limit=5,
         emoji_policy="liberal",
         risk_tier="high",  # TikTok = video-only, high production risk
-
     ),
     "facebook": PlatformConfig(
         platform_id="facebook",
@@ -188,7 +183,6 @@ PLATFORMS: dict[str, PlatformConfig] = {
         optimal_posting_times=["09:00-11:00 ET", "13:00-15:00 ET"],
         hashtag_limit=3,
         risk_tier="low",
-
     ),
 }
 
@@ -222,6 +216,7 @@ def get_reward_weights(platform: str) -> dict[str, float]:
 # ---------------------------------------------------------------------------
 # Content config (externalized in config/content.yaml)
 # ---------------------------------------------------------------------------
+
 
 def load_content_config() -> dict[str, Any]:
     """Load content configuration from config/content.yaml.

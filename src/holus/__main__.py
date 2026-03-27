@@ -170,14 +170,10 @@ def _run_health_check() -> None:
     results["watchdog"] = {
         "alert": watchdog.alert,
         "silence_hours": (
-            watchdog.silence_hours
-            if watchdog.silence_hours != float("inf")
-            else "infinity"
+            watchdog.silence_hours if watchdog.silence_hours != float("inf") else "infinity"
         ),
         "last_success_at": (
-            watchdog.last_success_at.isoformat()
-            if watchdog.last_success_at is not None
-            else None
+            watchdog.last_success_at.isoformat() if watchdog.last_success_at is not None else None
         ),
         "last_error": watchdog.last_error,
     }

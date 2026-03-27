@@ -255,7 +255,7 @@ function ReactLoopDiagram() {
 
 export default function AboutPage() {
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto space-y-12 page-transition">
+    <div className="max-w-4xl mx-auto space-y-12 page-transition" style={{ padding: 'var(--page-padding)' }}>
       {/* Hero with animated ReAct loop */}
       <div className="text-center space-y-4">
         <div

@@ -4,6 +4,7 @@ Tests the full OBSERVE → REASON → ACT → EVALUATE loop with mocked MCP.
 Verifies: analytics read, ContentDecision with platform=linkedin,
 quality gate, content queuing, trajectory logging.
 """
+
 from __future__ import annotations
 
 import json
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 # -- Fixtures ----------------------------------------------------------------
+
 
 def _make_mock_analytics() -> dict[str, Any]:
     """Realistic analytics response from social-media MCP."""
@@ -61,6 +63,7 @@ def _make_mock_top_posts() -> dict[str, Any]:
 
 
 # -- Tests -------------------------------------------------------------------
+
 
 class TestLinkedInPipelineE2E:
     """SPEC-031: Full OBSERVE → REASON → ACT → EVALUATE with mocked MCP."""
@@ -240,7 +243,9 @@ class TestLinkedInPipelineE2E:
         )
 
         good_score = score_content(good_piece)
-        assert good_score.passed, f"Good content should pass quality gate, got score={good_score.score}"
+        assert good_score.passed, (
+            f"Good content should pass quality gate, got score={good_score.score}"
+        )
 
     def test_trajectory_entry_structure(self, tmp_path: Path):
         """Trajectory entries have the expected structure."""

@@ -49,6 +49,65 @@
   --info: #D97706;
   --info-subtle: #fffbeb;
 
+  /* Pillar colors */
+  --pillar-engineering-bg: #dbeafe;
+  --pillar-engineering-text: #1d4ed8;
+  --pillar-building-bg: #f3e8ff;
+  --pillar-building-text: #7c3aed;
+  --pillar-bilingual-bg: #ffedd5;
+  --pillar-bilingual-text: #c2410c;
+  --pillar-systems-bg: #cffafe;
+  --pillar-systems-text: #0e7490;
+  --pillar-default-bg: #f3f4f6;
+  --pillar-default-text: #4b5563;
+
+  /* Verdict/status semantic colors */
+  --verdict-pass-bg: #dcfce7;
+  --verdict-pass-text: #15803d;
+  --verdict-review-bg: #fef9c3;
+  --verdict-review-text: #854d0e;
+  --verdict-fail-bg: #fee2e2;
+  --verdict-fail-text: #b91c1c;
+  --status-draft-bg: #f3f4f6;
+  --status-draft-text: #374151;
+  --status-pending-bg: #fef9c3;
+  --status-pending-text: #854d0e;
+  --status-approved-bg: #fffbeb;
+  --status-approved-text: #92400e;
+  --status-published-bg: #dcfce7;
+  --status-published-text: #166534;
+  --status-rejected-bg: #fee2e2;
+  --status-rejected-text: #991b1b;
+
+  /* Rejected section */
+  --rejected-border: #fecaca;
+  --rejected-bg: #fef2f2;
+  --rejected-text: #dc2626;
+  --rejected-text-muted: #f87171;
+
+  /* Button colors */
+  --button-schedule-bg: #2563eb;
+  --button-schedule-hover: #1d4ed8;
+  --button-approve-bg: #d97706;
+  --button-approve-hover: #b45309;
+  --button-reject-border: #fca5a5;
+  --button-reject-text: #dc2626;
+  --button-reject-hover-bg: #fef2f2;
+
+  /* Health status */
+  --health-ok-bg: #f0fdf4;
+  --health-ok-border: #bbf7d0;
+  --health-ok-dot: #22c55e;
+  --health-ok-text: #15803d;
+  --health-warn-bg: #fefce8;
+  --health-warn-border: #fef08a;
+  --health-warn-dot: #eab308;
+  --health-warn-text: #854d0e;
+  --health-err-bg: #fef2f2;
+  --health-err-border: #fecaca;
+  --health-err-dot: #ef4444;
+  --health-err-text: #b91c1c;
+
   /* Spacing */
   --page-padding: 1.5rem;
   --section-gap: 1.5rem;
@@ -108,6 +167,65 @@
   --danger-subtle: rgba(220, 38, 38, 0.15);
   --info: #F59E0B;
   --info-subtle: rgba(245, 158, 11, 0.15);
+
+  /* Pillar colors (dark) */
+  --pillar-engineering-bg: rgba(59, 130, 246, 0.2);
+  --pillar-engineering-text: #93c5fd;
+  --pillar-building-bg: rgba(139, 92, 246, 0.2);
+  --pillar-building-text: #c4b5fd;
+  --pillar-bilingual-bg: rgba(249, 115, 22, 0.2);
+  --pillar-bilingual-text: #fdba74;
+  --pillar-systems-bg: rgba(6, 182, 212, 0.2);
+  --pillar-systems-text: #67e8f9;
+  --pillar-default-bg: rgba(107, 114, 128, 0.2);
+  --pillar-default-text: #9ca3af;
+
+  /* Verdict/status semantic colors (dark) */
+  --verdict-pass-bg: rgba(34, 197, 94, 0.15);
+  --verdict-pass-text: #86efac;
+  --verdict-review-bg: rgba(234, 179, 8, 0.15);
+  --verdict-review-text: #fde047;
+  --verdict-fail-bg: rgba(239, 68, 68, 0.15);
+  --verdict-fail-text: #fca5a5;
+  --status-draft-bg: rgba(107, 114, 128, 0.2);
+  --status-draft-text: #d1d5db;
+  --status-pending-bg: rgba(234, 179, 8, 0.15);
+  --status-pending-text: #fde047;
+  --status-approved-bg: rgba(245, 158, 11, 0.15);
+  --status-approved-text: #fbbf24;
+  --status-published-bg: rgba(34, 197, 94, 0.15);
+  --status-published-text: #86efac;
+  --status-rejected-bg: rgba(239, 68, 68, 0.15);
+  --status-rejected-text: #fca5a5;
+
+  /* Rejected section (dark) */
+  --rejected-border: rgba(239, 68, 68, 0.3);
+  --rejected-bg: rgba(239, 68, 68, 0.08);
+  --rejected-text: #f87171;
+  --rejected-text-muted: rgba(248, 113, 113, 0.6);
+
+  /* Button colors (dark) */
+  --button-schedule-bg: #2563eb;
+  --button-schedule-hover: #3b82f6;
+  --button-approve-bg: #d97706;
+  --button-approve-hover: #f59e0b;
+  --button-reject-border: rgba(239, 68, 68, 0.4);
+  --button-reject-text: #f87171;
+  --button-reject-hover-bg: rgba(239, 68, 68, 0.1);
+
+  /* Health status (dark) */
+  --health-ok-bg: rgba(34, 197, 94, 0.08);
+  --health-ok-border: rgba(34, 197, 94, 0.3);
+  --health-ok-dot: #22c55e;
+  --health-ok-text: #86efac;
+  --health-warn-bg: rgba(234, 179, 8, 0.08);
+  --health-warn-border: rgba(234, 179, 8, 0.3);
+  --health-warn-dot: #eab308;
+  --health-warn-text: #fde047;
+  --health-err-bg: rgba(239, 68, 68, 0.08);
+  --health-err-border: rgba(239, 68, 68, 0.3);
+  --health-err-dot: #ef4444;
+  --health-err-text: #fca5a5;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
@@ -308,4 +426,65 @@ body {
 
 .page-transition {
   animation: page-enter 0.25s ease-out;
+}
+
+/* Slide-in panel animation */
+@keyframes panel-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes panel-backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel-slide-in {
+  animation: panel-slide-in 300ms ease-out;
+}
+
+.panel-backdrop {
+  animation: panel-backdrop-fade 300ms ease-out;
+}
+
+/* KPI tooltip */
+.kpi-tooltip {
+  position: relative;
+}
+
+.kpi-tooltip-content {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: normal;
+  width: max-content;
+  max-width: 220px;
+  text-align: center;
+  z-index: 50;
+  pointer-events: none;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-md);
+  transition: opacity var(--transition-fast), visibility var(--transition-fast);
+}
+
+.kpi-tooltip:hover .kpi-tooltip-content {
+  visibility: visible;
+  opacity: 1;
 }

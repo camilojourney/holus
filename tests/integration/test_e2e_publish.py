@@ -212,7 +212,8 @@ async def test_threshold_boundary_at_pass(temp_queue: Path):
 async def test_threshold_boundary_below_pass(temp_queue: Path):
     """Score just below PASS_THRESHOLD should go to needs_review."""
     _write_queue_item(
-        temp_queue, "below-001",
+        temp_queue,
+        "below-001",
         judge_score=PASS_THRESHOLD - 0.01,
         judge_verdict="PARTIAL",
     )

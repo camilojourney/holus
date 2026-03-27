@@ -63,10 +63,7 @@ def _analyze_why_it_works(post: dict[str, Any]) -> str:
     if re.search(r"(?:step|tip|lesson|rule|mistake)\s*\d", text, re.IGNORECASE):
         reasons.append("Numbered list structure")
 
-    if any(
-        word in text.lower()
-        for word in ("built", "shipped", "launched", "created", "made")
-    ):
+    if any(word in text.lower() for word in ("built", "shipped", "launched", "created", "made")):
         reasons.append("Builder story with real details")
 
     if re.search(r"https?://", text):
@@ -115,9 +112,7 @@ class FewShotMaterializer:
         """
         stats = self._corpus.stats()
         content_types: list[str] = [
-            row["content_type"]
-            for row in stats.get("by_content_type", [])
-            if row["content_type"]
+            row["content_type"] for row in stats.get("by_content_type", []) if row["content_type"]
         ]
 
         result: dict[str, int] = {}
@@ -194,9 +189,7 @@ class FewShotMaterializer:
             files = sorted(candidate_dir.glob("top-*.json"), reverse=True)
             if not files:
                 continue
-            data: list[dict[str, Any]] = json.loads(
-                files[0].read_text(encoding="utf-8")
-            )
+            data: list[dict[str, Any]] = json.loads(files[0].read_text(encoding="utf-8"))
             return data[:limit]
 
         logger.warning("No materialized examples found for %r", content_type)

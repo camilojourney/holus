@@ -44,9 +44,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     logger.info("Observatory API starting up")
     logger.info("  trajectory.jsonl:    %s (exists=%s)", TRAJECTORY_PATH, TRAJECTORY_PATH.exists())
-    logger.info("  eval_history.jsonl:  %s (exists=%s)", EVAL_HISTORY_PATH, EVAL_HISTORY_PATH.exists())
+    logger.info(
+        "  eval_history.jsonl:  %s (exists=%s)", EVAL_HISTORY_PATH, EVAL_HISTORY_PATH.exists()
+    )
     logger.info("  AGENTS.yaml:         %s (exists=%s)", AGENTS_YAML, AGENTS_YAML.exists())
-    logger.info("  content-queue/:      %s (exists=%s)", CONTENT_QUEUE_DIR, CONTENT_QUEUE_DIR.exists())
+    logger.info(
+        "  content-queue/:      %s (exists=%s)", CONTENT_QUEUE_DIR, CONTENT_QUEUE_DIR.exists()
+    )
     logger.info("  knowledge/current/:  %s (exists=%s)", KNOWLEDGE_DIR, KNOWLEDGE_DIR.exists())
     logger.info("  guardrails.yaml:     %s (exists=%s)", GUARDRAILS_YAML, GUARDRAILS_YAML.exists())
 
@@ -70,7 +74,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:3000", "http://localhost:5173"],
-        allow_methods=["GET"],
+        allow_methods=["GET", "PATCH", "PUT", "POST", "DELETE"],
         allow_headers=["*"],
     )
 
@@ -87,7 +91,7 @@ def create_app() -> FastAPI:
     app.include_router(results.router, prefix=prefix)
     app.include_router(improvement.router, prefix=prefix)
     app.include_router(telegram_gate.router)  # prefix already set in router
-    app.include_router(ingest.router)          # prefix already set in router
+    app.include_router(ingest.router)  # prefix already set in router
 
     return app
 

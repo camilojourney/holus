@@ -28,10 +28,13 @@ class TestTemplateEngine:
 
     def test_render_insight_template(self):
         engine = self._make_engine()
-        html = engine.render("single_image/insight", {
-            "headline": "Test Headline",
-            "body": "Test body text",
-        })
+        html = engine.render(
+            "single_image/insight",
+            {
+                "headline": "Test Headline",
+                "body": "Test body text",
+            },
+        )
         assert "Test Headline" in html
         assert "Test body text" in html
         assert "--brand-color-primary" in html  # brand CSS injected
@@ -39,29 +42,38 @@ class TestTemplateEngine:
 
     def test_render_hook_slide(self):
         engine = self._make_engine()
-        html = engine.render("carousel/hook_slide", {
-            "headline": "Hook Title",
-            "subheadline": "Subtitle here",
-        })
+        html = engine.render(
+            "carousel/hook_slide",
+            {
+                "headline": "Hook Title",
+                "subheadline": "Subtitle here",
+            },
+        )
         assert "Hook Title" in html
         assert "Subtitle here" in html
         assert "--brand-color-primary" in html
 
     def test_render_body_slide(self):
         engine = self._make_engine()
-        html = engine.render("carousel/body_slide", {
-            "title": "Body Title",
-            "body": "Body content here",
-        })
+        html = engine.render(
+            "carousel/body_slide",
+            {
+                "title": "Body Title",
+                "body": "Body content here",
+            },
+        )
         assert "Body Title" in html
         assert "Body content here" in html
 
     def test_render_cta_slide(self):
         engine = self._make_engine()
-        html = engine.render("carousel/cta_slide", {
-            "headline": "Follow me!",
-            "cta_text": "Subscribe Now",
-        })
+        html = engine.render(
+            "carousel/cta_slide",
+            {
+                "headline": "Follow me!",
+                "cta_text": "Subscribe Now",
+            },
+        )
         assert "Follow me!" in html
         assert "Subscribe Now" in html
 
@@ -113,30 +125,39 @@ class TestTemplateEngine:
 
     def test_render_with_stat_variables(self):
         engine = self._make_engine()
-        html = engine.render("single_image/insight", {
-            "headline": "Revenue",
-            "stat_value": "$1.2M",
-            "stat_label": "Annual Revenue",
-        })
+        html = engine.render(
+            "single_image/insight",
+            {
+                "headline": "Revenue",
+                "stat_value": "$1.2M",
+                "stat_label": "Annual Revenue",
+            },
+        )
         assert "$1.2M" in html
         assert "Annual Revenue" in html
 
     def test_render_with_quote_variables(self):
         engine = self._make_engine()
-        html = engine.render("single_image/insight", {
-            "headline": "Wisdom",
-            "quote": "The best time to plant a tree was 20 years ago.",
-            "quote_author": "Chinese Proverb",
-        })
+        html = engine.render(
+            "single_image/insight",
+            {
+                "headline": "Wisdom",
+                "quote": "The best time to plant a tree was 20 years ago.",
+                "quote_author": "Chinese Proverb",
+            },
+        )
         assert "The best time to plant a tree was 20 years ago." in html
         assert "Chinese Proverb" in html
 
     def test_render_body_slide_with_bullets(self):
         engine = self._make_engine()
-        html = engine.render("carousel/body_slide", {
-            "title": "Key Points",
-            "bullet_points": ["First point", "Second point", "Third point"],
-        })
+        html = engine.render(
+            "carousel/body_slide",
+            {
+                "title": "Key Points",
+                "bullet_points": ["First point", "Second point", "Third point"],
+            },
+        )
         assert "First point" in html
         assert "Second point" in html
         assert "Third point" in html

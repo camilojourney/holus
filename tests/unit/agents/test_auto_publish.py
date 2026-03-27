@@ -28,6 +28,7 @@ from holus.agents.marketing.auto_publish import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def queue_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Create a temp content-queue directory and patch QUEUE_DIR."""
@@ -76,6 +77,7 @@ def _make_item(
 # _get_judge_score
 # ---------------------------------------------------------------------------
 
+
 class TestGetJudgeScore:
     def test_direct_field_float(self) -> None:
         assert _get_judge_score({"judge_score": 0.85}) == 0.85
@@ -101,6 +103,7 @@ class TestGetJudgeScore:
 # _get_judge_verdict
 # ---------------------------------------------------------------------------
 
+
 class TestGetJudgeVerdict:
     def test_direct_field(self) -> None:
         assert _get_judge_verdict({"judge_verdict": "PASS"}) == "PASS"
@@ -115,6 +118,7 @@ class TestGetJudgeVerdict:
 # ---------------------------------------------------------------------------
 # _load_pending_with_scores
 # ---------------------------------------------------------------------------
+
 
 class TestLoadPending:
     def test_empty_dir(self, queue_dir: Path) -> None:
@@ -163,6 +167,7 @@ class TestLoadPending:
 # _update_item
 # ---------------------------------------------------------------------------
 
+
 class TestUpdateItem:
     def test_update_yaml(self, tmp_path: Path) -> None:
         p = tmp_path / "item.yaml"
@@ -184,6 +189,7 @@ class TestUpdateItem:
 # ---------------------------------------------------------------------------
 # _trigger_reflexion
 # ---------------------------------------------------------------------------
+
 
 class TestTriggerReflexion:
     def test_logs_reflexion(self, tmp_path: Path) -> None:
@@ -218,6 +224,7 @@ class TestTriggerReflexion:
 # ---------------------------------------------------------------------------
 # process_queue — verdict routing
 # ---------------------------------------------------------------------------
+
 
 class TestProcessQueueVerdicts:
     @pytest.mark.asyncio()
@@ -313,7 +320,8 @@ class TestProcessQueueVerdicts:
     @pytest.mark.asyncio()
     async def test_carousel_without_pdf_skipped(self, queue_dir: Path) -> None:
         _write_yaml_item(
-            queue_dir, "carousel",
+            queue_dir,
+            "carousel",
             _make_item(content_type="carousel_outline", score=0.9),
         )
         results = await process_queue()
@@ -323,7 +331,8 @@ class TestProcessQueueVerdicts:
     @pytest.mark.asyncio()
     async def test_carousel_with_pdf_publishes(self, queue_dir: Path) -> None:
         _write_yaml_item(
-            queue_dir, "carousel",
+            queue_dir,
+            "carousel",
             _make_item(content_type="carousel_outline", score=0.9, pdf_path="/tmp/c.pdf"),
         )
         with (
@@ -350,6 +359,7 @@ class TestProcessQueueVerdicts:
 # ---------------------------------------------------------------------------
 # process_queue — dry-run mode
 # ---------------------------------------------------------------------------
+
 
 class TestDryRunMode:
     @pytest.mark.asyncio()
@@ -387,6 +397,7 @@ class TestDryRunMode:
 # process_queue — publish failure
 # ---------------------------------------------------------------------------
 
+
 class TestPublishFailure:
     @pytest.mark.asyncio()
     async def test_publish_failure_returns_publish_failed(self, queue_dir: Path) -> None:
@@ -403,6 +414,7 @@ class TestPublishFailure:
 # ---------------------------------------------------------------------------
 # process_queue — multiple items
 # ---------------------------------------------------------------------------
+
 
 class TestMultipleItems:
     @pytest.mark.asyncio()
@@ -431,6 +443,7 @@ class TestMultipleItems:
 # ---------------------------------------------------------------------------
 # process_human_rejection
 # ---------------------------------------------------------------------------
+
 
 class TestProcessHumanRejection:
     def test_rejects_and_logs(self, queue_dir: Path) -> None:
@@ -485,6 +498,7 @@ class TestProcessHumanRejection:
 # ---------------------------------------------------------------------------
 # Threshold constants
 # ---------------------------------------------------------------------------
+
 
 class TestThresholds:
     def test_pass_threshold(self) -> None:

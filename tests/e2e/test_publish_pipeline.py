@@ -60,7 +60,9 @@ def _read_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text())
 
 
-def _humanize_and_approve(piece_id: str, text: str = "I built an AI image platform with memory. Here is what I learned.") -> None:
+def _humanize_and_approve(
+    piece_id: str, text: str = "I built an AI image platform with memory. Here is what I learned."
+) -> None:
     """SPEC-032: content must be humanized before approval."""
     # Humanized text must differ slightly but stay within 40% edit distance
     humanized = text.rstrip(".") + "!" if len(text) < 40 else text.rstrip(".") + " — edited."
@@ -149,7 +151,9 @@ class TestFullPublishPipeline:
 
     def test_approve_changes_status(self, queue_dir):
         enqueue(_make_content(piece_id="ap1"))
-        humanize("ap1", "I built an AI image platform with memory. Here is what I learned — edited.")
+        humanize(
+            "ap1", "I built an AI image platform with memory. Here is what I learned — edited."
+        )
         approve("ap1")
 
         data = _read_yaml(queue_dir / "ap1.yaml")

@@ -3,7 +3,7 @@ id: cta-strategist
 version: 1.0.0
 category: written-authority
 model_tier: operational
-evaluated_by: voice-guardian
+evaluated_by: engagement-judge
 ---
 
 # CTA Strategist

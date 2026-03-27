@@ -112,11 +112,6 @@ def _call(model: str, system: str, user: str) -> str:
         return ""
 
 
-def _call_sync(system: str, user: str) -> str:
-    """Synchronous LLM call for use in sync contexts."""
-    return _call("anthropic/claude-sonnet-4-6", system, user)
-
-
 class RevisionLoop:
     """Generate → Critique → Revise loop for content quality."""
 

@@ -13,9 +13,27 @@ def queue_dir(tmp_path):
     """Create a temp content-queue with sample items."""
     now = datetime.now(UTC).isoformat()
     items = [
-        {"topic": "MCP vs SKILLS — Two Paradigms for AI Agents", "content_type": "text_post", "platform": "linkedin", "generated_at": now, "status": "published"},
-        {"topic": "Why AI Agents Fail After Week One", "content_type": "carousel_outline", "platform": "linkedin", "generated_at": now, "status": "pending_review"},
-        {"topic": "Building a Self-Improving Content Engine", "content_type": "text_post", "platform": "twitter_x", "generated_at": now, "status": "published"},
+        {
+            "topic": "MCP vs SKILLS — Two Paradigms for AI Agents",
+            "content_type": "text_post",
+            "platform": "linkedin",
+            "generated_at": now,
+            "status": "published",
+        },
+        {
+            "topic": "Why AI Agents Fail After Week One",
+            "content_type": "carousel_outline",
+            "platform": "linkedin",
+            "generated_at": now,
+            "status": "pending_review",
+        },
+        {
+            "topic": "Building a Self-Improving Content Engine",
+            "content_type": "text_post",
+            "platform": "twitter_x",
+            "generated_at": now,
+            "status": "published",
+        },
     ]
     for i, item in enumerate(items):
         path = tmp_path / f"linkedin-test-{i}.json"

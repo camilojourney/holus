@@ -143,9 +143,7 @@ async def repurpose_content(
         # Get platform-specific feedback for this target
         platform_feedback = ""
         if prior_feedback and format_feedback_fn:
-            platform_feedback = format_feedback_fn(
-                target.value, prior_feedback=prior_feedback
-            )
+            platform_feedback = format_feedback_fn(target.value, prior_feedback=prior_feedback)
 
         adapted_text = _adapt_for_platform(
             original_text=original_text,

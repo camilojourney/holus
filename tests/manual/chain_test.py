@@ -45,6 +45,7 @@ def call_specialist(agent_id: str, model: str, user_input: str, max_tokens: int 
 
 def main() -> None:
     import sys
+
     # Force unbuffered output
     sys.stdout.reconfigure(line_buffering=True)
 
@@ -84,6 +85,7 @@ def main() -> None:
         print(f"\n  [JSON parse failed: {e}]")
         # Try to find hook text in the output
         import re
+
         match = re.search(r'"text":\s*"([^"]+)"', hook_output)
         if match:
             best_hook = match.group(1)
@@ -129,7 +131,9 @@ def main() -> None:
         f"---\n{full_post}\n---\n\n"
         f"Apply all checks from brand.yaml anti_patterns and voice-profile.md."
     )
-    guardian_output = call_specialist("voice-guardian", "claude-haiku-4-5-20251001", guardian_input, max_tokens=800)
+    guardian_output = call_specialist(
+        "voice-guardian", "claude-haiku-4-5-20251001", guardian_input, max_tokens=800
+    )
     print(guardian_output[:600])
 
     # Determine gate result

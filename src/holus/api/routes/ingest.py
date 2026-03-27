@@ -42,6 +42,7 @@ _INVOZ_URL = "http://127.0.0.1:8001/api/v1/analyze/upload"
 
 # -- Response model --------------------------------------------------------
 
+
 class IngestResponse(BaseModel):
     post_id: str
     input_type: str
@@ -52,13 +53,20 @@ class IngestResponse(BaseModel):
 
 # -- Text extraction helpers -----------------------------------------------
 
+
 async def _extract_from_audio(file: UploadFile) -> str:
     """Audio file → transcript via Invoz/Whisper."""
     audio_bytes = await file.read()
     async with httpx.AsyncClient(timeout=60.0) as client:
         resp = await client.post(
             _INVOZ_URL,
-            files={"audio": (file.filename or "audio.ogg", audio_bytes, file.content_type or "audio/ogg")},
+            files={
+                "audio": (
+                    file.filename or "audio.ogg",
+                    audio_bytes,
+                    file.content_type or "audio/ogg",
+                )
+            },
         )
         resp.raise_for_status()
         data = resp.json()
@@ -81,11 +89,14 @@ async def _extract_from_video(file: UploadFile) -> str:
 async def _extract_from_url(url: str) -> str:
     """URL → readable text via simple fetch + strip."""
     async with httpx.AsyncClient(timeout=30.0) as client:
-        resp = await client.get(url, follow_redirects=True, headers={"User-Agent": "HolusIngest/1.0"})
+        resp = await client.get(
+            url, follow_redirects=True, headers={"User-Agent": "HolusIngest/1.0"}
+        )
         resp.raise_for_status()
         text = resp.text
         # Very basic HTML strip — good enough for raw idea extraction
         import re
+
         text = re.sub(r"<[^>]+>", " ", text)
         text = re.sub(r"\s+", " ", text).strip()
         return text[:4000]  # cap at 4k chars
@@ -110,6 +121,7 @@ def _queue_for_pipeline(post_id: str, text: str, input_type: str) -> None:
 
 
 # -- Route -----------------------------------------------------------------
+
 
 @router.post("/ingest", response_model=IngestResponse)
 async def ingest(
@@ -175,7 +187,9 @@ async def ingest(
         # Queue for voice pipeline
         _queue_for_pipeline(post_id, extracted_text, detected_type)
 
-        logger.info("ingest: post_id=%s type=%s chars=%d", post_id, detected_type, len(extracted_text))
+        logger.info(
+            "ingest: post_id=%s type=%s chars=%d", post_id, detected_type, len(extracted_text)
+        )
 
         return IngestResponse(
             post_id=post_id,

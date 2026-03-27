@@ -26,8 +26,8 @@ _COLORS = {
     "dark_surface": "#141414",
     "white": "#ffffff",
     "off_white": "#f0ede8",
-    "accent": "#e8d5b7",      # warm gold
-    "accent_2": "#c084fc",    # purple
+    "accent": "#e8d5b7",  # warm gold
+    "accent_2": "#c084fc",  # purple
     "text_muted": "#888888",
     "brand_blue": "#1a1a2e",
 }
@@ -127,9 +127,9 @@ def _render_html(hook: str, body_preview: str, arm_id: str, author: str = "Juan 
   body {{
     width: {_WIDTH}px;
     height: {_HEIGHT}px;
-    background: {style['bg']};
+    background: {style["bg"]};
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: {style['text_color']};
+    color: {style["text_color"]};
     overflow: hidden;
   }}
   .card {{
@@ -143,13 +143,13 @@ def _render_html(hook: str, body_preview: str, arm_id: str, author: str = "Juan 
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -0.02em;
-    color: {style['text_color']};
+    color: {style["text_color"]};
     margin-bottom: 40px;
   }}
   .body {{
-    font-size: {style['font_size_body']};
+    font-size: {style["font_size_body"]};
     line-height: 1.7;
-    color: {style['text_color']};
+    color: {style["text_color"]};
     opacity: 0.85;
     font-weight: 400;
     margin-bottom: 40px;
@@ -166,12 +166,12 @@ def _render_html(hook: str, body_preview: str, arm_id: str, author: str = "Juan 
   .author {{
     font-size: 20px;
     font-weight: 600;
-    color: {style['accent_color']};
+    color: {style["accent_color"]};
   }}
   .dot {{
     width: 6px; height: 6px;
     border-radius: 50%;
-    background: {style['accent_color']};
+    background: {style["accent_color"]};
   }}
   .linkedin {{
     font-size: 18px;
@@ -229,7 +229,7 @@ def generate_cards(
         page = browser.new_page(viewport={"width": _WIDTH, "height": _HEIGHT})
 
         for i, arm_id in enumerate(arms):
-            variant = variants[i] if i < len(variants) else f"V{i+1}"
+            variant = variants[i] if i < len(variants) else f"V{i + 1}"
             html = _render_html(hook, body, arm_id, author)
 
             # Write HTML to temp file
@@ -245,11 +245,13 @@ def generate_cards(
 
             Path(tmp_path).unlink(missing_ok=True)
 
-            results.append({
-                "arm_id": arm_id,
-                "path": str(out_path),
-                "variant": variant,
-            })
+            results.append(
+                {
+                    "arm_id": arm_id,
+                    "path": str(out_path),
+                    "variant": variant,
+                }
+            )
 
         browser.close()
 

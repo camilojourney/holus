@@ -167,6 +167,7 @@ class JudgeAgent:
 
         if not use_proxy:
             import anthropic
+
             self._client = anthropic.Anthropic(api_key=api_key)
         else:
             self._client = None
@@ -175,6 +176,7 @@ class JudgeAgent:
     # Includes both built-in and requests-specific exception types.
     try:
         import requests as _req_exc
+
         _TRANSIENT_EXCEPTIONS: tuple[type[Exception], ...] = (
             ConnectionError,
             TimeoutError,
@@ -232,15 +234,20 @@ class JudgeAgent:
             except self._TRANSIENT_EXCEPTIONS as exc:
                 last_exc = exc
                 if attempt < max_retries - 1:
-                    delay = retry_delay * (2 ** attempt)
+                    delay = retry_delay * (2**attempt)
                     logger.warning(
                         "Judge transient error (attempt %d/%d), retrying in %.1fs: %s",
-                        attempt + 1, max_retries, delay, exc,
+                        attempt + 1,
+                        max_retries,
+                        delay,
+                        exc,
                     )
                     time.sleep(delay)
                 else:
                     logger.warning(
-                        "Judge failed after %d attempts: %s", max_retries, exc,
+                        "Judge failed after %d attempts: %s",
+                        max_retries,
+                        exc,
                     )
 
             except Exception as exc:
@@ -368,9 +375,7 @@ class JudgeAgent:
             from holus.agents.registry import AgentRegistry
 
             root = repo_root or Path(__file__).parents[3]
-            registry = AgentRegistry(
-                yaml_path=root / "agents" / "AGENTS.yaml"
-            )
+            registry = AgentRegistry(yaml_path=root / "agents" / "AGENTS.yaml")
         except (FileNotFoundError, Exception):
             logger.warning("Could not load agent registry; falling back to generic evaluation")
             return self.evaluate(task=task, task_type=content_type.lower(), output=output)

@@ -60,7 +60,9 @@ from holus.agents.marketing.visual_pipeline import (  # noqa: F401, E402
 # ---------------------------------------------------------------------------
 
 
-def _evaluate_piece(raw_idea: str, fmt: str, platform: str, generated: dict[str, Any]) -> dict[str, Any] | None:
+def _evaluate_piece(
+    raw_idea: str, fmt: str, platform: str, generated: dict[str, Any]
+) -> dict[str, Any] | None:
     """Evaluate a generated piece with JudgeAgent. Non-blocking on failure."""
     try:
         from holus.self_improvement.judge import JudgeAgent
@@ -85,6 +87,7 @@ def _evaluate_piece(raw_idea: str, fmt: str, platform: str, generated: dict[str,
         platform_rubric = None
         try:
             from holus.agents.marketing.platform_config import get_judge_rubric
+
             platform_rubric = get_judge_rubric(platform)
         except Exception:
             pass
@@ -107,24 +110,26 @@ def _evaluate_piece(raw_idea: str, fmt: str, platform: str, generated: dict[str,
         from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
         tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
-        tl.append(TrajectoryEntry(
-            agent_id="idea-runner",
-            task_type=fmt,
-            task_summary=f"{fmt} for {platform}: {raw_idea[:100]}",
-            status="success",
-            judge_verdict=evaluation.verdict.value,
-            judge_score=evaluation.score,
-            judge_feedback=evaluation.feedback,
-            model_used="anthropic/claude-sonnet-4-6",
-            metadata={
-                "schema_version": 2,
-                "platform": platform,
-                "content_type": content_type,
-                "format": fmt,
-                "idea": raw_idea[:200],
-                "dimension_scores": evaluation.dimension_scores,
-            },
-        ))
+        tl.append(
+            TrajectoryEntry(
+                agent_id="idea-runner",
+                task_type=fmt,
+                task_summary=f"{fmt} for {platform}: {raw_idea[:100]}",
+                status="success",
+                judge_verdict=evaluation.verdict.value,
+                judge_score=evaluation.score,
+                judge_feedback=evaluation.feedback,
+                model_used="anthropic/claude-sonnet-4-6",
+                metadata={
+                    "schema_version": 2,
+                    "platform": platform,
+                    "content_type": content_type,
+                    "format": fmt,
+                    "idea": raw_idea[:200],
+                    "dimension_scores": evaluation.dimension_scores,
+                },
+            )
+        )
 
         return evaluation.to_dict()
 
@@ -210,6 +215,7 @@ def save_piece(
         pdf_path = queue_dir / pdf_filename
         try:
             from holus.visual.carousel_builder import build_carousel_pdf
+
             build_carousel_pdf(generated, pdf_path)
             data["pdf_path"] = str(pdf_path)
             print(f"  → PDF rendered: {pdf_path.name}")
@@ -247,7 +253,9 @@ def save_piece(
     if final_visual_spec:
         data["visual_type"] = final_visual_spec.get("type", "unknown")
 
-    filename = f"{decision.get('platform', 'linkedin')}-{decision.get('format', 'post')}-{piece_id}.json"
+    filename = (
+        f"{decision.get('platform', 'linkedin')}-{decision.get('format', 'post')}-{piece_id}.json"
+    )
     path = queue_dir / filename
     path.write_text(json.dumps(data, indent=2))
     return path
@@ -277,7 +285,7 @@ def run_from_idea(raw_idea: str) -> list[dict[str, Any]]:
     for _i, decision in enumerate(decisions, 1):
         fmt = decision.get("format", "text_post")
         platform = decision.get("platform", "linkedin")
-        print(f"\nStep 2/{len(decisions)+1}: Generating {fmt} for {platform}...")
+        print(f"\nStep 2/{len(decisions) + 1}: Generating {fmt} for {platform}...")
         generated = generate_piece(raw_idea, decision)
 
         # Step 2.5: Judge evaluates the generated content
@@ -297,16 +305,18 @@ def run_from_idea(raw_idea: str) -> list[dict[str, Any]]:
         print(f"  → Hook: {hook}/10  Voice: {voice}  Chars: {char}")
         print(f"  → Saved: {path}")
 
-        results.append({
-            "piece_id": path.stem,
-            "platform": platform,
-            "format": fmt,
-            "queue_path": str(path),
-            "hook_score": hook,
-            "voice_check": voice,
-            "judge_verdict": judge_result["verdict"] if judge_result else None,
-            "judge_score": judge_result["score"] if judge_result else None,
-        })
+        results.append(
+            {
+                "piece_id": path.stem,
+                "platform": platform,
+                "format": fmt,
+                "queue_path": str(path),
+                "hook_score": hook,
+                "voice_check": voice,
+                "judge_verdict": judge_result["verdict"] if judge_result else None,
+                "judge_score": judge_result["score"] if judge_result else None,
+            }
+        )
 
     print(f"\nDone. {len(results)} piece(s) in data/content-queue/")
     print("Review in Observatory → localhost:3000/content\n")
@@ -327,9 +337,11 @@ def run_from_bandit(raw_idea: str, *, platform: str | None = None) -> list[dict[
         suggestion = bandit.suggest(platform=platform)
 
         if suggestion:
-            print(f"\n🎰 Bandit suggests: {suggestion.arm.arm_id} "
-                  f"(θ={suggestion.sampled_theta:.2f}, "
-                  f"{'exploration' if suggestion.is_exploration else 'exploitation'})")
+            print(
+                f"\n🎰 Bandit suggests: {suggestion.arm.arm_id} "
+                f"(θ={suggestion.sampled_theta:.2f}, "
+                f"{'exploration' if suggestion.is_exploration else 'exploitation'})"
+            )
 
             # Inject bandit suggestion into the idea as a hint
             bandit_hint = (

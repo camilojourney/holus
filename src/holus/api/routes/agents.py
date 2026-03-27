@@ -34,7 +34,9 @@ def _load_agents_yaml() -> dict[str, Any]:
         raise HTTPException(status_code=503, detail="agents registry unavailable") from exc
 
 
-def _build_agent_info(agent_id: str, meta: dict[str, Any], entries: list[dict[str, Any]]) -> AgentInfo:
+def _build_agent_info(
+    agent_id: str, meta: dict[str, Any], entries: list[dict[str, Any]]
+) -> AgentInfo:
     """Build AgentInfo from AGENTS.yaml metadata and trajectory entries."""
     now = datetime.now(UTC)
     cutoff_7d = now - timedelta(days=7)
@@ -99,7 +101,9 @@ async def list_agents() -> list[AgentInfo]:
     return result
 
 
-def _aggregate_dimension_scores(agent_id: str, trajectory: list[dict[str, Any]], limit: int = 30) -> dict[str, float]:
+def _aggregate_dimension_scores(
+    agent_id: str, trajectory: list[dict[str, Any]], limit: int = 30
+) -> dict[str, float]:
     """Aggregate dimension_scores from the last *limit* trajectory entries for this agent.
 
     Each trajectory entry may contain a ``dimension_scores`` dict
@@ -107,7 +111,8 @@ def _aggregate_dimension_scores(agent_id: str, trajectory: list[dict[str, Any]],
     We average each dimension across the most recent *limit* entries that have them.
     """
     agent_entries = [
-        e for e in trajectory
+        e
+        for e in trajectory
         if e.get("agent_id") == agent_id and isinstance(e.get("dimension_scores"), dict)
     ]
     # Sort by timestamp descending, take last N
@@ -171,9 +176,7 @@ async def get_agent_metrics(agent_id: str) -> AgentMetrics:
     success_rate = (successes / total_runs) if total_runs > 0 else 0.0
 
     quality_scores = [
-        e["quality_score"]
-        for e in agent_entries
-        if e.get("quality_score") is not None
+        e["quality_score"] for e in agent_entries if e.get("quality_score") is not None
     ]
     avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else None
 

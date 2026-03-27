@@ -55,7 +55,12 @@ class AssembledContent:
 # Specialist pipelines per content type
 PIPELINES: dict[str, list[str]] = {
     "text_post": ["hook-architect", "storyteller", "cta-strategist", "voice-guardian"],
-    "carousel_outline": ["hook-architect", "carousel-architect", "cta-strategist", "voice-guardian"],
+    "carousel_outline": [
+        "hook-architect",
+        "carousel-architect",
+        "cta-strategist",
+        "voice-guardian",
+    ],
     "thread": ["hook-architect", "storyteller", "cta-strategist", "voice-guardian"],
     "video_script": ["hook-architect", "storyteller", "cta-strategist"],
     "instagram_caption": ["hook-architect", "cta-strategist"],
@@ -83,9 +88,10 @@ def _enrich_for_platform(text: str, content_type: str, platform: str) -> str:
     platform_lower = platform.lower() if platform else ""
 
     # Only enrich formats that lack built-in hashtag generation
-    needs_hashtags = (
-        content_type == "video_script"
-        and platform_lower in ("instagram", "tiktok", "facebook")
+    needs_hashtags = content_type == "video_script" and platform_lower in (
+        "instagram",
+        "tiktok",
+        "facebook",
     )
     if not needs_hashtags:
         return text
@@ -124,7 +130,29 @@ def _derive_hashtags(text: str, limit: int) -> list[str]:
     unique_words: list[str] = []
     for w in words:
         low = w.lower()
-        if low not in seen and low not in {"this", "that", "here", "when", "what", "with", "from", "your", "they", "will", "have", "been", "just", "most", "some", "more", "than", "also", "only", "each", "does"}:
+        if low not in seen and low not in {
+            "this",
+            "that",
+            "here",
+            "when",
+            "what",
+            "with",
+            "from",
+            "your",
+            "they",
+            "will",
+            "have",
+            "been",
+            "just",
+            "most",
+            "some",
+            "more",
+            "than",
+            "also",
+            "only",
+            "each",
+            "does",
+        }:
             seen.add(low)
             unique_words.append(w)
 
@@ -195,8 +223,12 @@ class SpecialistDispatcher:
             for spec_id in parallel_specialists:
                 task_desc = SPECIALIST_TASKS.get(spec_id, "Generate content.")
                 prompt = self._build_specialist_prompt(
-                    specialist_id=spec_id, idea=idea, platform=platform,
-                    content_type=content_type, pillar=pillar, task=task_desc,
+                    specialist_id=spec_id,
+                    idea=idea,
+                    platform=platform,
+                    content_type=content_type,
+                    pillar=pillar,
+                    task=task_desc,
                     chain_context="",
                 )
                 tasks.append(self._call_specialist(spec_id, prompt))
@@ -211,8 +243,12 @@ class SpecialistDispatcher:
         for spec_id in sequential_specialists:
             task_desc = SPECIALIST_TASKS.get(spec_id, "Generate content.")
             prompt = self._build_specialist_prompt(
-                specialist_id=spec_id, idea=idea, platform=platform,
-                content_type=content_type, pillar=pillar, task=task_desc,
+                specialist_id=spec_id,
+                idea=idea,
+                platform=platform,
+                content_type=content_type,
+                pillar=pillar,
+                task=task_desc,
                 chain_context=chain_context,
             )
             output_text = await self._call_specialist(spec_id, prompt)

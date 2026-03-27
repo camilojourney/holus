@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import sys
 import time
@@ -30,10 +31,11 @@ QUEUE_DIR = Path("data/content-queue")
 
 
 def _list_queue_files() -> list[Path]:
-    """Return sorted YAML files in the content queue."""
+    """Return sorted YAML and JSON files in the content queue."""
     if not QUEUE_DIR.exists():
         return []
-    return sorted(QUEUE_DIR.glob("*.yaml"))
+    files = list(QUEUE_DIR.glob("*.yaml")) + list(QUEUE_DIR.glob("*.json"))
+    return sorted(files)
 
 
 def _print_summary(before_count: int) -> None:
@@ -54,7 +56,10 @@ def _print_summary(before_count: int) -> None:
 
     for path in new_files:
         try:
-            data = yaml.safe_load(path.read_text())
+            text_content = path.read_text()
+            data = (
+                json.loads(text_content) if path.suffix == ".json" else yaml.safe_load(text_content)
+            )
             platform = data.get("platform", "?")
             topic = data.get("topic", "?")
             text = data.get("text", "")

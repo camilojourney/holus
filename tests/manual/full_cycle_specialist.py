@@ -4,6 +4,7 @@
 Runs: preflight → observe → reason → act (specialist chain) → evaluate
 Saves all output to data/test-runs/specialist-chain/
 """
+
 from __future__ import annotations
 
 import json
@@ -28,6 +29,7 @@ os.environ.setdefault("ANTHROPIC_API_KEY", "dummy-key-for-proxy")
 OUTPUT_DIR = HOLUS_ROOT / "data" / "test-runs" / "specialist-chain"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+
 async def run_cycle():
     print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Starting full cycle with specialist chain...")
 
@@ -49,7 +51,9 @@ async def run_cycle():
 
     agent = MarketingAgent(config=config)
 
-    print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Agent created (model={config.sonnet_model}). Running...")
+    print(
+        f"[{datetime.now(tz=UTC):%H:%M:%S}] Agent created (model={config.sonnet_model}). Running..."
+    )
     print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Proxy: {config.anthropic_base_url}")
     t0 = time.time()
 
@@ -59,6 +63,7 @@ async def run_cycle():
     except Exception as e:
         print(f"[{datetime.now(tz=UTC):%H:%M:%S}] CYCLE ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         result = {"error": str(e)}
 
@@ -68,7 +73,9 @@ async def run_cycle():
     # Save result
     result_file = OUTPUT_DIR / "cycle_result.json"
     with open(result_file, "w") as f:
-        json.dump(result if isinstance(result, dict) else {"raw": str(result)}, f, indent=2, default=str)
+        json.dump(
+            result if isinstance(result, dict) else {"raw": str(result)}, f, indent=2, default=str
+        )
     print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Result saved to {result_file}")
 
     # Check content queue
@@ -99,6 +106,7 @@ async def run_cycle():
 
     # Copy queue items to output dir
     import shutil
+
     for qf in queue_files:
         shutil.copy2(qf, OUTPUT_DIR / qf.name)
 
@@ -108,6 +116,8 @@ async def run_cycle():
 
     return result
 
+
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(run_cycle())

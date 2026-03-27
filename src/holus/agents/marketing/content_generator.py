@@ -184,6 +184,7 @@ def _get_format_instructions(fmt: str, platform: str) -> str:
 
     if fmt == "video_script" and platform in ("instagram", "tiktok", "facebook"):
         from holus.agents.marketing.platform_config import get_platform_config
+
         config = get_platform_config(platform)
         base += f"""
 <platform_enrichment>
@@ -276,7 +277,13 @@ Write the {fmt} for this idea. Return JSON only.
     try:
         result = json.loads(cleaned)
     except (json.JSONDecodeError, TypeError):
-        result = {"text": raw, "headline": raw_idea[:60], "hashtags": [], "hook_score": "?", "voice_check": "?"}
+        result = {
+            "text": raw,
+            "headline": raw_idea[:60],
+            "hashtags": [],
+            "hook_score": "?",
+            "voice_check": "?",
+        }
 
     # Strip word count annotations the LLM sometimes includes (e.g., "(24 words)")
     result = _strip_word_counts(result)

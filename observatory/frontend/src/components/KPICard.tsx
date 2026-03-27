@@ -2,6 +2,7 @@ interface Props {
   title: string;
   value: string | number;
   subtitle?: string;
+  tooltip?: string;
   color?: 'default' | 'green' | 'yellow' | 'red' | 'blue';
   staggerIndex?: number;
 }
@@ -22,15 +23,20 @@ const borderMap = {
   blue: 'var(--info)',
 };
 
-export default function KPICard({ title, value, subtitle, color = 'default', staggerIndex }: Props) {
+export default function KPICard({ title, value, subtitle, tooltip, color = 'default', staggerIndex }: Props) {
   const staggerClass = staggerIndex !== undefined ? `stagger-${staggerIndex}` : '';
   return (
     <div
-      className={`card animate-fade-in ${staggerClass}`}
+      className={`card animate-fade-in ${staggerClass} ${tooltip ? 'kpi-tooltip' : ''}`}
       style={{
         borderTop: `3px solid ${borderMap[color]}`,
       }}
     >
+      {tooltip && (
+        <div className="kpi-tooltip-content">
+          {tooltip}
+        </div>
+      )}
       <h3
         className="text-[0.625rem] font-medium uppercase tracking-widest mb-3"
         style={{ color: 'var(--text-tertiary)', letterSpacing: '0.08em' }}

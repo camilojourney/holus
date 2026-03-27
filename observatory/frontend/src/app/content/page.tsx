@@ -39,7 +39,7 @@ export default async function ContentPage() {
   ];
 
   return (
-    <div className="px-6 py-6 space-y-6 page-transition">
+    <div style={{ padding: 'var(--page-padding)' }} className="space-y-6 page-transition">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Content Pipeline</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>

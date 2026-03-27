@@ -104,8 +104,15 @@ def _load_visual_variety_config() -> dict[str, Any]:
         else:
             logger.warning("visual-variety.yaml not found, using defaults")
             _visual_variety_cache["config"] = {
-                "weights": {"flowchart": 1.0, "architecture": 1.0, "comparison": 1.0,
-                            "data_viz": 1.0, "code_card": 0.8, "research_card": 0.8, "insight": 0.5},
+                "weights": {
+                    "flowchart": 1.0,
+                    "architecture": 1.0,
+                    "comparison": 1.0,
+                    "data_viz": 1.0,
+                    "code_card": 0.8,
+                    "research_card": 0.8,
+                    "insight": 0.5,
+                },
                 "recency_penalty": 0.5,
                 "recency_window_days": 3,
                 "topic_signals": {},
@@ -151,7 +158,9 @@ def _pick_visual_type(post_text: str, *, override: str | None = None) -> str:
                 created = datetime.fromisoformat(created_str)
                 if created >= cutoff:
                     # Check visual_type field first, then fall back to visual_spec.type
-                    vtype = data.get("visual_type") or (data.get("visual_spec", {}) or {}).get("type")
+                    vtype = data.get("visual_type") or (data.get("visual_spec", {}) or {}).get(
+                        "type"
+                    )
                     if vtype and vtype in weights:
                         weights[vtype] *= recency_penalty
             except Exception:
@@ -171,7 +180,11 @@ def _pick_visual_type(post_text: str, *, override: str | None = None) -> str:
 
 
 def _generate_visual_spec(
-    post_text: str, fmt: str, platform: str, *, temperature: float = 0.3,
+    post_text: str,
+    fmt: str,
+    platform: str,
+    *,
+    temperature: float = 0.3,
     visual_type: str | None = None,
 ) -> dict[str, Any] | None:
     """Have Sonnet design a visual spec for the post. Returns spec dict or None."""
@@ -187,7 +200,9 @@ def _generate_visual_spec(
 You MUST use visual type: {chosen_type}. Design the best possible {chosen_type} for this content.
 
 Return JSON only."""
-        raw = _call("anthropic/claude-sonnet-4-6", VISUAL_DESIGNER_SYSTEM, user_msg, temperature=temperature)
+        raw = _call(
+            "anthropic/claude-sonnet-4-6", VISUAL_DESIGNER_SYSTEM, user_msg, temperature=temperature
+        )
         cleaned = _strip_fences(raw)
         spec: dict[str, Any] = json.loads(cleaned)
         return spec
@@ -248,6 +263,7 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
             asyncio.get_running_loop()
             # We're in an async context — use nest_asyncio or thread
             import concurrent.futures
+
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 png_bytes = pool.submit(asyncio.run, _do_render()).result(timeout=30)
         except RuntimeError:

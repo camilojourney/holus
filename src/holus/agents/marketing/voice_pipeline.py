@@ -23,9 +23,9 @@ from holus.core.prompt_loader import PromptLoader
 logger = logging.getLogger(__name__)
 
 # Models
-_MODEL_INJECT = "anthropic/claude-sonnet-4-6"   # idea-injector + context-builder
-_MODEL_WRITE = "anthropic/claude-sonnet-4-6"    # voice-writer (Opus-quality via proxy)
-_MAX_RETRIES = 1                                 # retry once on VOICE_CHECK FAIL
+_MODEL_INJECT = "anthropic/claude-sonnet-4-6"  # idea-injector + context-builder
+_MODEL_WRITE = "anthropic/claude-sonnet-4-6"  # voice-writer (Opus-quality via proxy)
+_MAX_RETRIES = 1  # retry once on VOICE_CHECK FAIL
 
 
 @dataclass
@@ -59,8 +59,8 @@ class VoicePipelineResult:
     hook: str
     body: str
     cta: str
-    voice_check: str          # "PASS" or "FAIL: <reason>"
-    full_post: str            # hook + body + cta assembled
+    voice_check: str  # "PASS" or "FAIL: <reason>"
+    full_post: str  # hook + body + cta assembled
     metadata: IdeaMetadata
     context: EnrichedContext
     retried: bool = False
@@ -108,6 +108,7 @@ def _parse_json_response(text: str) -> dict[str, Any]:
 
 def _parse_voice_sections(text: str) -> tuple[str, str, str, str]:
     """Parse [HOOK], [BODY], [CTA], [VOICE_CHECK] from voice-writer output."""
+
     def extract(tag: str) -> str:
         pattern = rf"\[{tag}\]\s*(.*?)(?=\[(?:HOOK|BODY|CTA|VOICE_CHECK)\]|$)"
         match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
@@ -132,7 +133,9 @@ class VoicePipeline:
         """Run the full pipeline from raw idea to post."""
         # Step 1: Idea injector
         metadata = self._inject(raw_idea)
-        logger.info("idea-injector: pillar=%s product=%s", metadata.content_pillar, metadata.product_angle)
+        logger.info(
+            "idea-injector: pillar=%s product=%s", metadata.content_pillar, metadata.product_angle
+        )
 
         # Step 2: Context builder
         context = self._enrich(metadata)
@@ -169,7 +172,11 @@ class VoicePipeline:
                     CardVariant(arm_id=c["arm_id"], path=c["path"], variant=c["variant"])
                     for c in raw_cards
                 ]
-                logger.info("generated %d card variants: %s", len(result.cards), [c.variant for c in result.cards])
+                logger.info(
+                    "generated %d card variants: %s",
+                    len(result.cards),
+                    [c.variant for c in result.cards],
+                )
             except Exception as exc:
                 logger.warning("card generation failed (non-fatal): %s", exc)
 
@@ -253,7 +260,9 @@ class VoicePipeline:
             f"angle: {context.angle}",
         ]
         if anti_pattern_constraint:
-            user_parts.append(f"anti_pattern_constraint: DO NOT use '{anti_pattern_constraint}' or anything similar")
+            user_parts.append(
+                f"anti_pattern_constraint: DO NOT use '{anti_pattern_constraint}' or anything similar"
+            )
 
         text = _call_llm("\n".join([system]), "\n".join(user_parts), model=_MODEL_WRITE)
         hook, body, cta, voice_check = _parse_voice_sections(text)

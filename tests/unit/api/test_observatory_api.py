@@ -365,7 +365,9 @@ class TestHealthEndpoint:
         assert resp.status_code == 200
         assert resp.json()["kill_switch_active"] is True
 
-    def test_health_file_existence_flags(self, client: TestClient, sample_trajectory_file: Path, tmp_path: Path):
+    def test_health_file_existence_flags(
+        self, client: TestClient, sample_trajectory_file: Path, tmp_path: Path
+    ):
         agents_yaml = tmp_path / "agents" / "AGENTS.yaml"
         agents_yaml.parent.mkdir()
         agents_yaml.write_text("agents: {}", encoding="utf-8")
@@ -507,7 +509,9 @@ class TestKnowledgeEndpoint:
         for f in data["files"]:
             assert f["content"] is None
 
-    def test_knowledge_file_detail_has_content(self, client: TestClient, sample_knowledge_dir: Path):
+    def test_knowledge_file_detail_has_content(
+        self, client: TestClient, sample_knowledge_dir: Path
+    ):
         with patch("holus.api.routes.knowledge.KNOWLEDGE_DIR", sample_knowledge_dir):
             resp = client.get("/api/v1/knowledge/lessons.md")
         assert resp.status_code == 200
@@ -600,7 +604,9 @@ class TestCORSHeaders:
 
 
 class TestContentDetailEndpoint:
-    def test_get_content_detail_returns_full_piece(self, client: TestClient, sample_content_queue: Path):
+    def test_get_content_detail_returns_full_piece(
+        self, client: TestClient, sample_content_queue: Path
+    ):
         with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
             resp = client.get("/api/v1/content/post-001")
         assert resp.status_code == 200
@@ -616,7 +622,9 @@ class TestContentDetailEndpoint:
             resp = client.get("/api/v1/content/nonexistent-id")
         assert resp.status_code == 404
 
-    def test_get_content_calendar_returns_days(self, client: TestClient, sample_content_queue: Path):
+    def test_get_content_calendar_returns_days(
+        self, client: TestClient, sample_content_queue: Path
+    ):
         with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
             resp = client.get("/api/v1/content/calendar?days=7")
         assert resp.status_code == 200
@@ -670,7 +678,9 @@ class TestContentDetailEndpoint:
         # "review" in sample_content_queue should become "pending_review"
         assert "pending_review" in statuses
 
-    def test_content_image_not_found_no_visual(self, client: TestClient, sample_content_queue: Path):
+    def test_content_image_not_found_no_visual(
+        self, client: TestClient, sample_content_queue: Path
+    ):
         with patch("holus.api.routes.content.CONTENT_QUEUE_DIR", sample_content_queue):
             resp = client.get("/api/v1/content/post-001/image")
         assert resp.status_code == 404
@@ -775,6 +785,7 @@ class TestImprovementEndpoint:
     def test_score_trends_with_data(self, client: TestClient, tmp_path: Path):
         traj_file = tmp_path / "trajectory.jsonl"
         from datetime import UTC, datetime
+
         ts = datetime.now(UTC).isoformat()
         entries = [
             {"timestamp": ts, "agent_id": "a", "judge_score": 8.0},
@@ -945,7 +956,8 @@ class TestConfigEndpoint:
         config_dir = tmp_path / "config"
         config_dir.mkdir()
         (config_dir / "content.yaml").write_text(
-            yaml.dump({"languages": ["en"]}), encoding="utf-8",
+            yaml.dump({"languages": ["en"]}),
+            encoding="utf-8",
         )
         with patch("holus.api.routes.config.CONFIG_DIR", config_dir):
             resp = client.put(

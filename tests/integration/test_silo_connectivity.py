@@ -17,9 +17,7 @@ class TestSiloConnectivity:
     @pytest.mark.asyncio
     async def test_social_media_health(self):
         """Social media API (port 8000) responds to health check."""
-        async with httpx.AsyncClient(
-            base_url="http://localhost:8000", timeout=5.0
-        ) as client:
+        async with httpx.AsyncClient(base_url="http://localhost:8000", timeout=5.0) as client:
             try:
                 response = await client.get("/api/v1/health")
             except httpx.ConnectError:
@@ -33,9 +31,7 @@ class TestSiloConnectivity:
     @pytest.mark.asyncio
     async def test_genpeli_health(self):
         """Genpeli API (port 8100) responds to health check."""
-        async with httpx.AsyncClient(
-            base_url="http://localhost:8100", timeout=5.0
-        ) as client:
+        async with httpx.AsyncClient(base_url="http://localhost:8100", timeout=5.0) as client:
             try:
                 response = await client.get("/api/v1/health")
             except httpx.ConnectError:
@@ -49,9 +45,7 @@ class TestSiloConnectivity:
     @pytest.mark.asyncio
     async def test_pilaster_health(self):
         """Pilaster API (port 8200) responds to health check."""
-        async with httpx.AsyncClient(
-            base_url="http://localhost:8200", timeout=5.0
-        ) as client:
+        async with httpx.AsyncClient(base_url="http://localhost:8200", timeout=5.0) as client:
             try:
                 response = await client.get("/api/v1/health")
             except httpx.ConnectError:

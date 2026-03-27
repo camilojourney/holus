@@ -30,6 +30,7 @@ _PENDING_PATH = Path(__file__).parents[4] / "data" / "pending-approvals.json"
 
 # -- Models ----------------------------------------------------------------
 
+
 class ApproveRequest(BaseModel):
     post_id: str
     variant: Literal["A", "B", "C"]
@@ -59,6 +60,7 @@ class ApprovalStatus(BaseModel):
 
 # -- State helpers ---------------------------------------------------------
 
+
 def _load_pending() -> dict[str, Any]:
     if _PENDING_PATH.exists():
         try:
@@ -76,6 +78,7 @@ def _save_pending(data: dict[str, Any]) -> None:
 
 # -- Routes ----------------------------------------------------------------
 
+
 @router.post("/approve", response_model=ApprovalStatus)
 async def approve_variant(req: ApproveRequest) -> ApprovalStatus:
     """Approve a specific variant for publishing.
@@ -84,7 +87,9 @@ async def approve_variant(req: ApproveRequest) -> ApprovalStatus:
     """
     pending = _load_pending()
     if req.post_id not in pending:
-        raise HTTPException(status_code=404, detail=f"Post {req.post_id} not found in pending queue")
+        raise HTTPException(
+            status_code=404, detail=f"Post {req.post_id} not found in pending queue"
+        )
 
     pending[req.post_id]["status"] = "approved"
     pending[req.post_id]["chosen_variant"] = req.variant

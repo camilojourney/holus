@@ -1,4 +1,4 @@
-"""Holus self-improvement subsystem: judge, prompt optimizer, reflexion, learning."""
+"""Holus self-improvement subsystem: judge, learning loop, diagnostics."""
 
 from holus.self_improvement.judge import JudgeAgent, JudgeVerdict
 from holus.self_improvement.learning_loop import (
@@ -7,18 +7,12 @@ from holus.self_improvement.learning_loop import (
     WeeklyLearningLoop,
     run_learning_loop,
 )
-from holus.self_improvement.prompt_optimizer import PromptOptimizer, PromptVersion
-from holus.self_improvement.reflexion import ReflexionLoop, ReflexionState
 
 __all__ = [
     "Insight",
     "JudgeAgent",
     "JudgeVerdict",
     "LearningReport",
-    "PromptOptimizer",
-    "PromptVersion",
-    "ReflexionLoop",
-    "ReflexionState",
     "WeeklyLearningLoop",
     "run_learning_loop",
 ]

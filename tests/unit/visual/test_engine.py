@@ -178,10 +178,12 @@ class TestRenderPdf:
         engine = PlaywrightEngine(mock_template_engine)
         engine._browser = mock_browser
 
-        result = await engine.render_pdf([
-            "<html>Page 1</html>",
-            "<html>Page 2</html>",
-        ])
+        result = await engine.render_pdf(
+            [
+                "<html>Page 1</html>",
+                "<html>Page 2</html>",
+            ]
+        )
         assert result.success is True
         # Verify set_content was called with combined HTML
         call_args = mock_page.set_content.call_args
@@ -236,9 +238,13 @@ class TestRenderCarousel:
 
         spec = CarouselSpec(
             slides=[
-                SlideSpec(template="carousel/hook_slide", variables={"headline": "H"}, slide_number=1),
+                SlideSpec(
+                    template="carousel/hook_slide", variables={"headline": "H"}, slide_number=1
+                ),
                 SlideSpec(template="carousel/body_slide", variables={"title": "B"}, slide_number=2),
-                SlideSpec(template="carousel/cta_slide", variables={"cta_text": "C"}, slide_number=3),
+                SlideSpec(
+                    template="carousel/cta_slide", variables={"cta_text": "C"}, slide_number=3
+                ),
             ],
         )
         results = await engine.render_carousel(spec)
@@ -254,7 +260,9 @@ class TestRenderCarousel:
 
         spec = CarouselSpec(
             slides=[
-                SlideSpec(template="carousel/hook_slide", variables={"headline": "H"}, slide_number=1),
+                SlideSpec(
+                    template="carousel/hook_slide", variables={"headline": "H"}, slide_number=1
+                ),
                 SlideSpec(template="carousel/body_slide", variables={"title": "B"}, slide_number=2),
             ],
         )
@@ -277,10 +285,12 @@ class TestCombineHtmlPages:
         assert result == "<html>Single</html>"
 
     def test_multiple_pages_have_page_breaks(self):
-        result = PlaywrightEngine._combine_html_pages([
-            "<div>Page 1</div>",
-            "<div>Page 2</div>",
-        ])
+        result = PlaywrightEngine._combine_html_pages(
+            [
+                "<div>Page 1</div>",
+                "<div>Page 2</div>",
+            ]
+        )
         assert "page-break-before: always;" in result
         assert "Page 1" in result
         assert "Page 2" in result

@@ -29,7 +29,7 @@ export default async function KnowledgePage() {
   };
 
   return (
-    <div className="px-6 py-6 space-y-6 page-transition">
+    <div style={{ padding: 'var(--page-padding)' }} className="space-y-6 page-transition">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Knowledge Graph</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -137,7 +137,7 @@ export default async function KnowledgePage() {
                             </span>
                           )}
                           {lesson.category && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
+                            <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--warning-subtle)', color: 'var(--warning)' }}>
                               {lesson.category}
                             </span>
                           )}

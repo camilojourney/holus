@@ -73,9 +73,11 @@ class BanditArm:
         kappa_n = self.kappa_0 + self.n
         mu_n = (self.kappa_0 * self.mu_0 + self.n * self.mean) / kappa_n
         alpha_n = self.alpha_0 + self.n / 2
-        beta_n = self.beta_0 + self.sum_sq / 2 + (
-            self.kappa_0 * self.n * (self.mean - self.mu_0) ** 2
-        ) / (2 * kappa_n)
+        beta_n = (
+            self.beta_0
+            + self.sum_sq / 2
+            + (self.kappa_0 * self.n * (self.mean - self.mu_0) ** 2) / (2 * kappa_n)
+        )
 
         # Sample variance from Inverse-Gamma
         # Use Gamma(alpha, 1/beta) then invert
@@ -216,7 +218,9 @@ class StrategyBandit:
             # Keep top performers + at least 1 unexplored
             unexplored = [a for a in candidates if a.n < MIN_OBSERVATIONS_TO_ACTIVATE]
             explored = [a for a in candidates if a.n >= MIN_OBSERVATIONS_TO_ACTIVATE]
-            candidates = explored[:max_arms - 1] + unexplored[:1] if unexplored else explored[:max_arms]
+            candidates = (
+                explored[: max_arms - 1] + unexplored[:1] if unexplored else explored[:max_arms]
+            )
 
         # Thompson Sampling: sample theta from each arm's posterior
         best_arm = None

@@ -324,16 +324,20 @@ class TestSpecConverterIntegration:
     def test_all_return_render_spec(self):
         """Every converter returns RenderSpec."""
         specs = [
-            data_viz_to_spec({
-                "chart_type": "line",
-                "title": "Test",
-                "data_points": [{"label": "a", "value": 1}],
-            }),
-            before_after_to_spec({
-                "headline": "Test",
-                "before_description": "old",
-                "after_description": "new",
-            }),
+            data_viz_to_spec(
+                {
+                    "chart_type": "line",
+                    "title": "Test",
+                    "data_points": [{"label": "a", "value": 1}],
+                }
+            ),
+            before_after_to_spec(
+                {
+                    "headline": "Test",
+                    "before_description": "old",
+                    "after_description": "new",
+                }
+            ),
             insight_to_spec("test insight"),
         ]
         for spec in specs:
@@ -342,16 +346,20 @@ class TestSpecConverterIntegration:
     def test_all_use_single_image_templates(self):
         """All converters target single_image/ templates."""
         specs = [
-            data_viz_to_spec({
-                "chart_type": "bar",
-                "title": "T",
-                "data_points": [{"label": "x", "value": 1}],
-            }),
-            before_after_to_spec({
-                "headline": "H",
-                "before_description": "b",
-                "after_description": "a",
-            }),
+            data_viz_to_spec(
+                {
+                    "chart_type": "bar",
+                    "title": "T",
+                    "data_points": [{"label": "x", "value": 1}],
+                }
+            ),
+            before_after_to_spec(
+                {
+                    "headline": "H",
+                    "before_description": "b",
+                    "after_description": "a",
+                }
+            ),
             insight_to_spec("text"),
         ]
         for spec in specs:

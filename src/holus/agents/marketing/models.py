@@ -298,7 +298,9 @@ class BrandVisualIdentity(BaseModel):
     themes: dict[str, ThemeColors] = Field(default_factory=dict)
     font_pairings: dict[str, FontPairing] = Field(default_factory=dict)
 
-    def to_css_variables(self, theme_name: str | None = None, font_pairing: str | None = None) -> str:
+    def to_css_variables(
+        self, theme_name: str | None = None, font_pairing: str | None = None
+    ) -> str:
         """Generate CSS custom properties from brand config."""
         colors = self.colors
         if theme_name is not None and theme_name in self.themes:
@@ -320,12 +322,8 @@ class BrandVisualIdentity(BaseModel):
         for field_name, value in colors.model_dump().items():
             css_name = field_name.replace("_", "-")
             lines.append(f"  --brand-color-{css_name}: {value};")
-        lines.append(
-            f'  --brand-font-primary: "{headline_font}", system-ui, sans-serif;'
-        )
-        lines.append(
-            f'  --brand-font-secondary: "{body_font}", system-ui, sans-serif;'
-        )
+        lines.append(f'  --brand-font-primary: "{headline_font}", system-ui, sans-serif;')
+        lines.append(f'  --brand-font-secondary: "{body_font}", system-ui, sans-serif;')
         weights = dict(self.typography.weights)
         weights["headline"] = headline_weight
         weights["body"] = body_weight

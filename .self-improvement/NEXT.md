@@ -1,6 +1,6 @@
 # NEXT.md — Holus Task Priority Queue
 
-Last updated: 2026-03-20
+Last updated: 2026-03-26
 
 ## Priority Guide
 - **P0** — Blocking. Nothing else works until this is fixed.
@@ -11,7 +11,7 @@ Last updated: 2026-03-20
 
 ---
 
-## Spec Status (as of 2026-03-20)
+## Spec Status (as of 2026-03-26)
 
 | Spec | Name | Status |
 |------|------|--------|
@@ -107,7 +107,7 @@ This sprint closes the loop from "system built" to "system producing real output
 
 - [x] [BUILD] Create `just generate` command — Runs ONE marketing agent cycle in generate-only mode (no publishing). Requires ANTHROPIC_API_KEY. Agent executes: observe (load brand, knowledge, niche research) → reason (Opus decides what to write) → act (Sonnet writes LinkedIn post + repurposes) → evaluate (log trajectory). Output goes to `data/content-queue/` for review. This is the first time the agent produces real content.
 - [x] [REVIEW] First real agent run — **UNBLOCKED (Cycle 77).** Fixed preflight to accept proxy dummy keys (ANTHROPIC_BASE_URL=localhost:8080). First generation produced 5 pieces (LinkedIn/Twitter/Instagram/Threads/Facebook) about genpeli automation. Quality scores: 100/100/100/70/100. Topic: builder story about video editing pipeline. 378s total cycle time.
-- [ ] [BUILD] Prompt tuning based on first run — Review first real output in `data/content-queue/`. Adjust prompts in `prompts.py` for better voice match, hook quality, and content depth. Threads scored 70 (2 violations). This is iterative — may take 2-3 cycles of generate → review → tune.
+- [x] [BUILD] Prompt tuning based on first run — Analyzed 3 content batches (15 pieces). Fixed 5 issues: LinkedIn "I" opening rule, 900-1500 char target, contrastive voice examples, Threads anti-pattern removal, LinkedIn I-opening quality gate. Also fixed pre-existing integration test routing bug (case mismatch). 5 new tests, 1626 total. (Cycle 77)
 
 ### P2 — Review & Publishing Pipeline
 
@@ -164,7 +164,7 @@ and clean up accumulated tech debt. The content pipeline (idea-runner) is produc
 ### P3 — Carry-Forward (Blocked)
 
 - [x] [REVIEW] First real agent run — **DONE (Cycle 77).** Proxy key fix unblocked generation.
-- [ ] [BUILD] Prompt tuning based on first run — Unblocked. Review output in `data/content-queue/`.
+- [x] [BUILD] Prompt tuning based on first run — **DONE (Cycle 77).** 5 prompt/quality fixes + integration test routing bug fix. See Sprint 3 P1.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
 
 ---
@@ -203,7 +203,7 @@ Goal: Eliminate the PROXY_URL duplication across 8 files, add test coverage for 
 ### P3 — Carry-Forward (Blocked)
 
 - [x] [REVIEW] First real agent run — **DONE (Cycle 77).** Proxy key fix unblocked generation.
-- [ ] [BUILD] Prompt tuning based on first run — Unblocked. Review output in `data/content-queue/`.
+- [x] [BUILD] Prompt tuning based on first run — **DONE (Cycle 77).** See Sprint 3 P1.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
 
 ---
@@ -239,7 +239,7 @@ events system), and reduce mypy error count. Clean codebase = faster future deve
 ### P3 — Carry-Forward (Blocked)
 
 - [x] [REVIEW] First real agent run — **DONE (Cycle 77).** Proxy key fix unblocked generation.
-- [ ] [BUILD] Prompt tuning based on first run — Unblocked. Review output in `data/content-queue/`.
+- [x] [BUILD] Prompt tuning based on first run — **DONE (Cycle 77).** See Sprint 3 P1.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
 
 ---
@@ -281,7 +281,7 @@ Goal: Reduce mypy errors from 104 → 0 across all 27 affected files. Clean type
 ### P3 — Carry-Forward (Blocked)
 
 - [x] [REVIEW] First real agent run — **DONE (Cycle 77).** Proxy key fix unblocked generation.
-- [ ] [BUILD] Prompt tuning based on first run — Unblocked. Review output in `data/content-queue/`.
+- [x] [BUILD] Prompt tuning based on first run — **DONE (Cycle 77).** See Sprint 3 P1.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.** Review brief at `data/brand-review-brief.md`. Carried from Sprint 3.
 
 ---
@@ -294,22 +294,24 @@ proposes fixes. Camilo reviews and implements. Each cycle gets better.
 
 **Key context:**
 - Registry path bug fixed (commit 4b3aa2f) — 7 domain evaluators now load
-- First real content generated (5 pieces, all scored 100/100 by rubber-stamp fallback)
+- First real content generated (3 batches × 5 platforms = 15 pieces + 1 original = 16 pieces)
 - Preflight fixed for proxy (commit b2c1635)
 - Research done: LLM-as-judge best practices, self-improving agent systems, content quality loops
 - Spec 036 (System Diagnostician) written
+- **First real judge evaluation (Cycle 78):** 16 pieces evaluated — 10 PASS, 5 PARTIAL, 1 FAIL
+- **Key finding:** Threads (3/3 PARTIAL) and Twitter (1 FAIL, 1 PARTIAL) produce truncated content
 
 ### P0 — Make Judges Actually Run
 
 - [x] [FIX] Registry path off-by-one (parents[2] → parents[3]) — All 7 domain evaluators were silently skipped. Fixed in commit 4b3aa2f.
-- [ ] [BUILD] Run domain evaluators on today's 5 content pieces — Use evaluate_with_routing() on the 5 pieces in data/content-queue/. Log real scores to trajectory. First time real judges evaluate real content.
-- [ ] [BUILD] Add `just evaluate-content` command — Runs all 7 domain evaluators on pending content. Shows dimension scores, evidence, suggestions. No publishing.
+- [x] [BUILD] Run domain evaluators on content pieces — Evaluated 16 pieces in data/content-queue/ using evaluate_with_routing(). Logged real scores to trajectory.jsonl. Results: 10 PASS (62.5%), 5 PARTIAL (31.25%), 1 FAIL (6.25%). LinkedIn/Facebook/Instagram all PASS. Threads truncated (3 PARTIAL), Twitter mixed (1 PASS, 1 PARTIAL, 1 FAIL — truncation). (Cycle 78)
+- [x] [BUILD] Add `just evaluate-content` command — Already existed: `evaluate_content.py` module + justfile recipe. Verified working in Cycle 78.
 
 ### P1 — Feed Judge Feedback Back to Generators
 
-- [ ] [BUILD] Feedback injection in observe phase — Load last cycle's judge feedback from trajectory. Inject into generation prompt so agent learns from mistakes.
-- [ ] [BUILD] Expand AI slop detection in quality_score.py — Add 20+ AI-giveaway phrases, readability check (Flesch-Kincaid > 12), specificity check (0 numbers/names = reject).
-- [ ] [BUILD] Fix Twitter thread formatting — repurpose.py _claude_adapt() for Twitter needs thread-splitting instruction.
+- [x] [BUILD] Feedback injection in observe phase — Judge feedback now injected into all 3 generation paths: SONNET_CONTENT_PROMPT (monolithic), specialist chain (storyteller), REPURPOSE_PROMPT (per-platform). `_format_generation_feedback()` filters by platform. 19 new tests. (Cycle 79)
+- [x] [BUILD] Expand AI slop detection in quality_score.py — Added 30 new AI-giveaway phrases (70+ total), Flesch-Kincaid grade level gate (>12 = reject, penalty 15), syllable counter helper. Specificity check already existed from Cycle 50. 24 new tests (86 total). (Cycle 80)
+- [ ] [BUILD] Fix Threads/Twitter truncation — repurpose.py _claude_adapt() produces truncated output for Threads (3/3 PARTIAL, all end mid-sentence) and Twitter (1 FAIL, unfinished draft). Need: enforce minimum completeness check + increase max_tokens for short-form adaptation.
 
 ### P2 — System Diagnostician (SPEC-036)
 
@@ -326,5 +328,5 @@ proposes fixes. Camilo reviews and implements. Each cycle gets better.
 
 ### P4 — Carry-Forward
 
-- [ ] [BUILD] Prompt tuning based on first run output.
+- [x] [BUILD] Prompt tuning based on first run output — **DONE (Cycle 77).** See Sprint 3 P1.
 - [~] [REVIEW] Brand.yaml completion — **BLOCKED: Needs Camilo session.**

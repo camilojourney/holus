@@ -11,13 +11,15 @@ from holus.self_improvement.judge import JudgeAgent, JudgeVerdict
 
 
 def _valid_judge_response(verdict: str = "PASS", score: float = 0.85) -> str:
-    return json.dumps({
-        "verdict": verdict,
-        "score": score,
-        "dimension_scores": {"correctness": 0.9, "completeness": 0.8},
-        "feedback": "Good output.",
-        "pass_threshold_met": score >= 0.8,
-    })
+    return json.dumps(
+        {
+            "verdict": verdict,
+            "score": score,
+            "dimension_scores": {"correctness": 0.9, "completeness": 0.8},
+            "feedback": "Good output.",
+            "pass_threshold_met": score >= 0.8,
+        }
+    )
 
 
 class TestParseResponse:
@@ -63,7 +65,9 @@ class TestRetryLogic:
 
         with patch.object(judge, "_call_llm", side_effect=_mock_call):
             result = judge.evaluate(
-                task="test", task_type="default", output="output",
+                task="test",
+                task_type="default",
+                output="output",
                 retry_delay=0.01,  # Fast for tests
             )
 
@@ -83,7 +87,9 @@ class TestRetryLogic:
 
         with patch.object(judge, "_call_llm", side_effect=_mock_call):
             result = judge.evaluate(
-                task="test", task_type="default", output="output",
+                task="test",
+                task_type="default",
+                output="output",
                 retry_delay=0.01,
             )
 
@@ -103,7 +109,9 @@ class TestRetryLogic:
 
         with patch.object(judge, "_call_llm", side_effect=_mock_call):
             result = judge.evaluate(
-                task="test", task_type="default", output="output",
+                task="test",
+                task_type="default",
+                output="output",
                 retry_delay=0.01,
             )
 
@@ -114,8 +122,11 @@ class TestRetryLogic:
         judge = JudgeAgent()
         with patch.object(judge, "_call_llm", side_effect=TimeoutError("timeout")):
             result = judge.evaluate(
-                task="test", task_type="default", output="output",
-                max_retries=2, retry_delay=0.01,
+                task="test",
+                task_type="default",
+                output="output",
+                max_retries=2,
+                retry_delay=0.01,
             )
 
         assert result.verdict == JudgeVerdict.FAIL
@@ -133,7 +144,9 @@ class TestRetryLogic:
 
         with patch.object(judge, "_call_llm", side_effect=_mock_call):
             result = judge.evaluate(
-                task="test", task_type="default", output="output",
+                task="test",
+                task_type="default",
+                output="output",
                 retry_delay=0.01,
             )
 
@@ -154,8 +167,11 @@ class TestRetryLogic:
 
         with patch.object(judge, "_call_llm", side_effect=_mock_call):
             result = judge.evaluate(
-                task="test", task_type="default", output="output",
-                max_retries=3, retry_delay=0.01,
+                task="test",
+                task_type="default",
+                output="output",
+                max_retries=3,
+                retry_delay=0.01,
             )
 
         assert result.verdict == JudgeVerdict.PASS
@@ -169,7 +185,10 @@ class TestCallLlm:
         mock_resp.status_code = 503
         mock_resp.text = "Service Unavailable"
 
-        with patch("requests.post", return_value=mock_resp), pytest.raises(ConnectionError, match="503"):
+        with (
+            patch("requests.post", return_value=mock_resp),
+            pytest.raises(ConnectionError, match="503"),
+        ):
             judge._call_llm("test message")
 
     def test_http_4xx_raises_http_error(self):

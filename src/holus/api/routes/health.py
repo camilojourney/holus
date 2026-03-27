@@ -43,10 +43,10 @@ def _is_kill_switch_active() -> bool:
 
 
 def _count_content_queue() -> int:
-    """Count YAML files in the content queue directory."""
+    """Count YAML and JSON files in the content queue directory."""
     if not CONTENT_QUEUE_DIR.exists():
         return 0
-    return len(list(CONTENT_QUEUE_DIR.glob("*.yaml")))
+    return len(list(CONTENT_QUEUE_DIR.glob("*.yaml"))) + len(list(CONTENT_QUEUE_DIR.glob("*.json")))
 
 
 def _error_rate_last_hour() -> float | None:
@@ -111,11 +111,7 @@ async def metrics() -> KPIMetrics:
     successes = sum(1 for e in entries if e.get("outcome") == "success")
     success_rate = (successes / total_cycles) if total_cycles > 0 else 0.0
 
-    quality_scores = [
-        e["quality_score"]
-        for e in entries
-        if e.get("quality_score") is not None
-    ]
+    quality_scores = [e["quality_score"] for e in entries if e.get("quality_score") is not None]
     avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else None
 
     costs = [e["cost_usd"] for e in entries if e.get("cost_usd") is not None]

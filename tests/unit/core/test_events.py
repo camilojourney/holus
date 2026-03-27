@@ -194,9 +194,7 @@ class TestEventBusSubscribe:
     def test_subscribe_starts_listener_thread(self, bus):
         callback = MagicMock()
         bus.subscribe(["chan1"], callback)
-        bus._mock_pubsub.run_in_thread.assert_called_once_with(
-            sleep_time=0.1, daemon=True
-        )
+        bus._mock_pubsub.run_in_thread.assert_called_once_with(sleep_time=0.1, daemon=True)
 
     def test_unsubscribe_stops_thread(self, bus):
         callback = MagicMock()
@@ -295,9 +293,7 @@ class TestEventBusReadStream:
     def test_read_stream_defaults(self, bus):
         bus._mock_redis.xrange.return_value = []
         bus.read_stream("chan")
-        bus._mock_redis.xrange.assert_called_once_with(
-            "holus:stream:chan", min="-", count=500
-        )
+        bus._mock_redis.xrange.assert_called_once_with("holus:stream:chan", min="-", count=500)
 
     def test_read_stream_redis_error_returns_empty(self, bus):
         bus._mock_redis.xrange.side_effect = redis.RedisError("timeout")
@@ -440,17 +436,13 @@ class TestEventBusInit:
         with patch("holus.core.events.redis.Redis.from_url") as mock_from_url:
             mock_from_url.return_value = MagicMock()
             EventBus()
-            mock_from_url.assert_called_once_with(
-                "redis://localhost:6379", decode_responses=True
-            )
+            mock_from_url.assert_called_once_with("redis://localhost:6379", decode_responses=True)
 
     def test_custom_redis_url(self):
         with patch("holus.core.events.redis.Redis.from_url") as mock_from_url:
             mock_from_url.return_value = MagicMock()
             EventBus("redis://custom:6380")
-            mock_from_url.assert_called_once_with(
-                "redis://custom:6380", decode_responses=True
-            )
+            mock_from_url.assert_called_once_with("redis://custom:6380", decode_responses=True)
 
     def test_initial_state(self):
         with patch("holus.core.events.redis.Redis.from_url") as mock_from_url:

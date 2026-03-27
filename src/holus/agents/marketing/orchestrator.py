@@ -60,27 +60,90 @@ async def content_cycle(idea: str | None = None) -> dict[str, Any]:
 
 
 async def analytics_cycle() -> dict[str, Any]:
-    """Fetch engagement data for published content."""
+    """Fetch engagement data for published content, then update bandit weights."""
     from holus.agents.marketing.analytics_collector import collect_analytics
 
     logger.info("=== ANALYTICS CYCLE START (%s) ===", datetime.now(UTC).isoformat())
 
     results = await collect_analytics()
 
+    # Close the feedback loop: update bandit weights from engagement data
+    bandit_updates = 0
+    if results:
+        bandit_updates = _update_bandit_weights(results)
+
     summary = {
         "pieces_collected": len(results),
         "avg_engagement": (
-            sum(r.get("engagement_signal", 0) for r in results) / len(results)
-            if results else 0
+            sum(r.get("engagement_signal", 0) for r in results) / len(results) if results else 0
         ),
         "avg_reward": (
-            sum(r.get("blended_reward", 0) for r in results) / len(results)
-            if results else 0
+            sum(r.get("blended_reward", 0) for r in results) / len(results) if results else 0
         ),
+        "bandit_updates": bandit_updates,
     }
 
     logger.info("Analytics cycle complete: %s", summary)
     return summary
+
+
+def _update_bandit_weights(results: list[dict[str, Any]]) -> int:
+    """Update strategy bandit and visual bandit from analytics results.
+
+    Returns the number of arms successfully updated.
+    """
+    updated = 0
+
+    # Strategy bandit: continuous reward per product:content_type:platform arm
+    try:
+        from holus.agents.marketing.strategy_bandit import StrategyBandit
+
+        strategy_bandit = StrategyBandit()
+        for r in results:
+            product = r.get("product", "unknown")
+            content_type = r.get("content_type", "unknown")
+            platform = r.get("platform", "unknown")
+            reward = r.get("blended_reward", 0)
+
+            if product == "unknown" or content_type == "unknown":
+                continue
+
+            arm_id = f"{product}:{content_type}:{platform}"
+            strategy_bandit.update(arm_id, reward)
+            updated += 1
+            logger.info(
+                "Strategy bandit updated: arm=%s reward=%.4f",
+                arm_id,
+                reward,
+            )
+    except Exception as exc:
+        logger.warning("Strategy bandit update failed (non-blocking): %s", exc)
+
+    # Visual bandit: binary win/loss per visual treatment arm
+    try:
+        from holus.agents.marketing.performance_loop import PerformanceLoop
+
+        perf_loop = PerformanceLoop()
+        for r in results:
+            visual_arm = r.get("arm_id")
+            post_id = r.get("post_id")
+            if not visual_arm or not post_id:
+                continue
+
+            perf_loop.process(
+                post_id=post_id,
+                arm_id=visual_arm,
+                engagement_data={
+                    "impressions": r.get("views", 0),
+                    "reactions": r.get("likes", 0),
+                    "comments": r.get("comments", 0),
+                    "shares": r.get("shares", 0),
+                },
+            )
+    except Exception as exc:
+        logger.warning("Visual bandit update failed (non-blocking): %s", exc)
+
+    return updated
 
 
 async def improvement_cycle() -> dict[str, Any]:
@@ -120,14 +183,17 @@ async def improvement_cycle() -> dict[str, Any]:
         else:
             logger.info(
                 "Prompt evolution gate: %d/%d entries (need 100)",
-                total_entries, 100,
+                total_entries,
+                100,
             )
 
     # 3. Log gap summary
     gap_dir = Path(".self-improvement/capability-requests")
     knowledge_gap_dir = Path(".self-improvement/knowledge/requests")
     capability_gaps = len(list(gap_dir.glob("*.md"))) if gap_dir.exists() else 0
-    knowledge_gaps = len(list(knowledge_gap_dir.glob("*.md"))) - 1 if knowledge_gap_dir.exists() else 0  # -1 for README
+    knowledge_gaps = (
+        len(list(knowledge_gap_dir.glob("*.md"))) - 1 if knowledge_gap_dir.exists() else 0
+    )  # -1 for README
 
     # 4. System diagnostic (SPEC-036)
     diagnostic_findings = 0
@@ -137,14 +203,18 @@ async def improvement_cycle() -> dict[str, Any]:
 
         diag_report = run_diagnostic(days=30)
         diagnostic_findings = (
-            len(diag_report.critical) + len(diag_report.high)
-            + len(diag_report.medium) + len(diag_report.suggestions)
+            len(diag_report.critical)
+            + len(diag_report.high)
+            + len(diag_report.medium)
+            + len(diag_report.suggestions)
         )
         if diagnostic_findings > 0:
             save_diagnostic(diag_report)
             logger.info(
                 "Diagnostic: %d critical, %d high, %d medium findings",
-                len(diag_report.critical), len(diag_report.high), len(diag_report.medium),
+                len(diag_report.critical),
+                len(diag_report.high),
+                len(diag_report.medium),
             )
     except Exception as exc:
         logger.warning("System diagnostic failed (non-blocking): %s", exc)
@@ -156,7 +226,8 @@ async def improvement_cycle() -> dict[str, Any]:
         for agent_id, streak_len in streaks.items():
             logger.warning(
                 "Failure streak: agent '%s' has %d consecutive FAIL/PARTIAL",
-                agent_id, streak_len,
+                agent_id,
+                streak_len,
             )
     except Exception as exc:
         logger.warning("Failure streak detection failed (non-blocking): %s", exc)

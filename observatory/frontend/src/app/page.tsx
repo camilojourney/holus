@@ -84,12 +84,14 @@ export default async function DashboardPage() {
             title="Inference cycles (7d)"
             value={metrics?.cycles_this_week ?? '--'}
             subtitle="observe-reason-act loops"
+            tooltip="Total observe-reason-act loops completed in the last 7 days across all 32 agents"
             color="blue"
             staggerIndex={1}
           />
           <KPICard
             title="Cycle success rate"
             value={metrics ? `${(metrics.success_rate * 100).toFixed(1)}%` : '--'}
+            tooltip="Percentage of observe-reason-act cycles that completed without error in the last 7 days"
             color={
               metrics
                 ? metrics.success_rate >= 0.8
@@ -105,6 +107,7 @@ export default async function DashboardPage() {
             title="Mean judge score"
             value={metrics?.avg_quality_score?.toFixed(1) ?? '--'}
             subtitle="7-evaluator weighted avg"
+            tooltip="Weighted average score (0-10) from 7 domain-expert evaluators across all content pieces this week"
             color={
               metrics
                 ? metrics.avg_quality_score >= 7
@@ -120,6 +123,7 @@ export default async function DashboardPage() {
             title="Inference cost"
             value={metrics ? `$${metrics.total_cost_usd.toFixed(2)}` : '--'}
             subtitle="token spend (7d)"
+            tooltip="Total LLM token spend across all agent inference calls in the last 7 days (Opus + Sonnet combined)"
             staggerIndex={4}
           />
         </div>

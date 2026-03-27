@@ -67,7 +67,11 @@ class TemplateEngine:
         normalized_variables = self._normalize_variables(template_name, variables)
         theme_name = normalized_variables.pop("theme", None)
         font_pairing_name = normalized_variables.pop("font_pairing", None)
-        fp_str = str(font_pairing_name) if isinstance(font_pairing_name, str) and font_pairing_name else None
+        fp_str = (
+            str(font_pairing_name)
+            if isinstance(font_pairing_name, str) and font_pairing_name
+            else None
+        )
         if isinstance(theme_name, str) and theme_name:
             themed_identity = self._brand_loader.load_theme(theme_name)
             brand_css = themed_identity.to_css_variables(font_pairing=fp_str)
@@ -91,6 +95,7 @@ class TemplateEngine:
         bg_gradient = normalized_variables.get("background_gradient")
         if isinstance(bg_gradient, str) and bg_gradient:
             from holus.visual.gradients import resolve_gradient
+
             normalized_variables["background_gradient"] = resolve_gradient(bg_gradient)
 
         # Load style files
@@ -99,14 +104,15 @@ class TemplateEngine:
         supplementary_css = ""
         if template_name.startswith("carousel/"):
             supplementary_css = (
-                self._load_style("slide.css") + "\n"
-                + self._load_style("carousel.css") + "\n"
+                self._load_style("slide.css")
+                + "\n"
+                + self._load_style("carousel.css")
+                + "\n"
                 + self._load_style("effects.css")
             )
         elif template_name.startswith("single_image/"):
             supplementary_css = (
-                self._load_style("single.css") + "\n"
-                + self._load_style("effects.css")
+                self._load_style("single.css") + "\n" + self._load_style("effects.css")
             )
 
         context: dict[str, str | int | float | bool | list[str]] = {
@@ -157,7 +163,11 @@ class TemplateEngine:
             if "bullet_points" not in normalized_variables and "bullets" in normalized_variables:
                 normalized_variables["bullet_points"] = normalized_variables["bullets"]
 
-        if template_name == "carousel/summary_slide" and "takeaways" not in normalized_variables and "items" in normalized_variables:
+        if (
+            template_name == "carousel/summary_slide"
+            and "takeaways" not in normalized_variables
+            and "items" in normalized_variables
+        ):
             normalized_variables["takeaways"] = normalized_variables["items"]
 
         return normalized_variables

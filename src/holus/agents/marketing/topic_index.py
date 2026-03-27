@@ -51,13 +51,15 @@ class TopicIndex:
                 if generated_at and generated_at > cutoff.isoformat():
                     topic = data.get("topic", "")
                     if topic:
-                        topics.append({
-                            "topic": topic,
-                            "format": data.get("content_type", "unknown"),
-                            "platform": data.get("platform", "unknown"),
-                            "date": generated_at[:10],
-                            "status": data.get("status", "unknown"),
-                        })
+                        topics.append(
+                            {
+                                "topic": topic,
+                                "format": data.get("content_type", "unknown"),
+                                "platform": data.get("platform", "unknown"),
+                                "date": generated_at[:10],
+                                "status": data.get("status", "unknown"),
+                            }
+                        )
             except (json.JSONDecodeError, OSError):
                 continue
 
@@ -94,7 +96,9 @@ class TopicIndex:
             if similarity >= threshold:
                 logger.info(
                     "Duplicate detected: '%s' ≈ '%s' (similarity %.2f)",
-                    new_topic[:50], existing[:50], similarity,
+                    new_topic[:50],
+                    existing[:50],
+                    similarity,
                 )
                 return True
 

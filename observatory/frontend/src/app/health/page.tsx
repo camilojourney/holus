@@ -20,7 +20,7 @@ export default async function HealthPage() {
       {/* Kill switch banner — full width at top */}
       {health && <KillSwitchBanner health={health} />}
 
-      <div className="px-6 py-6 space-y-6">
+      <div style={{ padding: 'var(--page-padding)' }} className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>System Diagnostics</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -34,32 +34,34 @@ export default async function HealthPage() {
           <>
             {/* Overall status */}
             <div
-              className={`border rounded-xl px-5 py-4 flex items-center gap-4 ${
-                health.status === 'healthy'
-                  ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
-                  : health.status === 'degraded'
-                  ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950'
-                  : 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'
-              }`}
+              className="rounded-xl px-5 py-4 flex items-center gap-4"
+              style={{
+                border: `1px solid ${
+                  health.status === 'healthy' ? 'var(--health-ok-border)'
+                    : health.status === 'degraded' ? 'var(--health-warn-border)'
+                    : 'var(--health-err-border)'
+                }`,
+                background: health.status === 'healthy' ? 'var(--health-ok-bg)'
+                  : health.status === 'degraded' ? 'var(--health-warn-bg)'
+                  : 'var(--health-err-bg)',
+              }}
             >
               <div
-                className={`w-3 h-3 rounded-full ${
-                  health.status === 'healthy'
-                    ? 'bg-green-500'
-                    : health.status === 'degraded'
-                    ? 'bg-yellow-500'
-                    : 'bg-red-500'
-                }`}
+                className="w-3 h-3 rounded-full"
+                style={{
+                  background: health.status === 'healthy' ? 'var(--health-ok-dot)'
+                    : health.status === 'degraded' ? 'var(--health-warn-dot)'
+                    : 'var(--health-err-dot)',
+                }}
               />
               <div>
                 <p
-                  className={`font-semibold capitalize ${
-                    health.status === 'healthy'
-                      ? 'text-green-700 dark:text-green-300'
-                      : health.status === 'degraded'
-                      ? 'text-yellow-700 dark:text-yellow-300'
-                      : 'text-red-700 dark:text-red-300'
-                  }`}
+                  className="font-semibold capitalize"
+                  style={{
+                    color: health.status === 'healthy' ? 'var(--health-ok-text)'
+                      : health.status === 'degraded' ? 'var(--health-warn-text)'
+                      : 'var(--health-err-text)',
+                  }}
                 >
                   System {health.status}
                 </p>

@@ -47,14 +47,73 @@ def full_outline() -> dict:
     """A carousel using every new slide type + full design block."""
     return _make_outline(
         [
-            {"type": "hook", "variables": {"headline": "Why AI Agents Fail", "subheadline": "And how to fix them"}},
-            {"type": "body", "variables": {"title": "The Problem", "body": "Most agents lack feedback loops.", "bullet_points": ["→ No eval", "→ No memory", "→ No improvement"]}},
-            {"type": "stat", "variables": {"stat_value": "73%", "stat_label": "of agents stall after week 1", "context": "Without self-improvement, agents plateau fast.", "trend": "down"}},
-            {"type": "quote", "variables": {"quote_text": "The best agent is the one that improves itself.", "attribution": "Camilo Martinez", "attribution_title": "AI Engineer"}},
-            {"type": "comparison", "variables": {"left_title": "Without Eval", "left_items": ["Blind deployments", "Silent failures", "No learning"], "right_title": "With Eval", "right_items": ["Scored outputs", "Auto-fix loops", "Continuous improvement"]}},
-            {"type": "centered", "variables": {"text": "Build the loop first.", "subtext": "Everything else follows."}},
-            {"type": "split_left", "variables": {"title": "The Architecture", "body": "Observe → Reason → Act → Evaluate", "bullet_points": ["→ ReAct pattern", "→ Domain judges"]}},
-            {"type": "summary", "variables": {"title": "Key Takeaways", "items": ["Eval gates catch regressions", "Memory compounds quality", "Self-improvement is the moat"]}},
+            {
+                "type": "hook",
+                "variables": {
+                    "headline": "Why AI Agents Fail",
+                    "subheadline": "And how to fix them",
+                },
+            },
+            {
+                "type": "body",
+                "variables": {
+                    "title": "The Problem",
+                    "body": "Most agents lack feedback loops.",
+                    "bullet_points": ["→ No eval", "→ No memory", "→ No improvement"],
+                },
+            },
+            {
+                "type": "stat",
+                "variables": {
+                    "stat_value": "73%",
+                    "stat_label": "of agents stall after week 1",
+                    "context": "Without self-improvement, agents plateau fast.",
+                    "trend": "down",
+                },
+            },
+            {
+                "type": "quote",
+                "variables": {
+                    "quote_text": "The best agent is the one that improves itself.",
+                    "attribution": "Camilo Martinez",
+                    "attribution_title": "AI Engineer",
+                },
+            },
+            {
+                "type": "comparison",
+                "variables": {
+                    "left_title": "Without Eval",
+                    "left_items": ["Blind deployments", "Silent failures", "No learning"],
+                    "right_title": "With Eval",
+                    "right_items": ["Scored outputs", "Auto-fix loops", "Continuous improvement"],
+                },
+            },
+            {
+                "type": "centered",
+                "variables": {
+                    "text": "Build the loop first.",
+                    "subtext": "Everything else follows.",
+                },
+            },
+            {
+                "type": "split_left",
+                "variables": {
+                    "title": "The Architecture",
+                    "body": "Observe → Reason → Act → Evaluate",
+                    "bullet_points": ["→ ReAct pattern", "→ Domain judges"],
+                },
+            },
+            {
+                "type": "summary",
+                "variables": {
+                    "title": "Key Takeaways",
+                    "items": [
+                        "Eval gates catch regressions",
+                        "Memory compounds quality",
+                        "Self-improvement is the moat",
+                    ],
+                },
+            },
             {"type": "cta", "variables": {"headline": "What feedback loop does your agent have?"}},
         ],
         design={
@@ -158,7 +217,16 @@ class TestCarouselE2E:
     @pytest.mark.asyncio
     async def test_each_gradient_renders(self, tmp_path):
         """Each gradient preset produces a valid render."""
-        for grad in ("dark_navy", "indigo_mesh", "warm_sunset", "cool_ocean", "bold_fire", "frosted_glass", "aurora", "minimal_light"):
+        for grad in (
+            "dark_navy",
+            "indigo_mesh",
+            "warm_sunset",
+            "cool_ocean",
+            "bold_fire",
+            "frosted_glass",
+            "aurora",
+            "minimal_light",
+        ):
             outline = _make_outline(
                 [
                     {"type": "hook", "variables": {"headline": f"Grad: {grad}"}},

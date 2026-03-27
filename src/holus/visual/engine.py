@@ -322,7 +322,10 @@ class PlaywrightEngine:
             except ImportError:
                 # Last resort: just return the first page
                 import logging
-                logging.getLogger(__name__).warning("No PDF merge library available (pypdf/PyPDF2). Returning first slide only.")
+
+                logging.getLogger(__name__).warning(
+                    "No PDF merge library available (pypdf/PyPDF2). Returning first slide only."
+                )
                 return pdf_list[0]
 
         import io
@@ -336,106 +339,6 @@ class PlaywrightEngine:
         output = io.BytesIO()
         writer.write(output)
         return output.getvalue()
-
-    @staticmethod
-    def _extract_body(html: str) -> tuple[str, str]:
-        """Extract <head> styles and <body> content from a full HTML document.
-
-        Returns (head_content, body_content). If no <body> found, returns
-        empty head and the original HTML.
-        """
-        import re
-
-        # Extract everything between <head> and </head>
-        head_match = re.search(r"<head[^>]*>(.*?)</head>", html, re.DOTALL | re.IGNORECASE)
-        head_content = head_match.group(1) if head_match else ""
-
-        # Extract everything between <body> and </body>
-        body_match = re.search(r"<body[^>]*>(.*?)</body>", html, re.DOTALL | re.IGNORECASE)
-        body_content = body_match.group(1) if body_match else html
-
-        return head_content, body_content
-
-    @staticmethod
-    def _combine_carousel_html(
-        pages: list[str],
-        width: int = 1080,
-        height: int = 1350,
-    ) -> str:
-        """Combine multiple carousel slide HTML pages for PDF rendering.
-
-        Each slide template renders a full HTML document. We extract the <body>
-        content from each and combine them into a single document with CSS
-        page-break rules so Playwright produces one PDF page per slide.
-        """
-        # Collect all unique styles from slide heads, and body content from each
-        all_styles: list[str] = []
-        sections: list[str] = []
-        seen_styles: set[str | int] = set()
-
-        for i, page_html in enumerate(pages):
-            head_content, body_content = PlaywrightEngine._extract_body(page_html)
-
-            # Collect unique <style> blocks from head
-            import re
-            for style_match in re.finditer(r"<style[^>]*>(.*?)</style>", head_content, re.DOTALL):
-                style_text = style_match.group(1).strip()
-                style_hash = hash(style_text)
-                if style_hash not in seen_styles:
-                    seen_styles.add(style_hash)
-                    all_styles.append(style_text)
-
-            # Collect <link> tags (fonts etc) — deduplicate by href
-            for link_match in re.finditer(r'<link[^>]+href="([^"]+)"[^>]*>', head_content):
-                href = link_match.group(1)
-                if href not in seen_styles:
-                    seen_styles.add(href)
-                    all_styles.append(f"/* link: {href} */")
-                    sections.insert(0, "")  # placeholder, links go in head below
-
-            break_style = "page-break-before: always;" if i > 0 else ""
-            sections.append(
-                f'<div class="carousel-pdf-page" style="'
-                f"width: {width}px; height: {height}px; "
-                f"overflow: hidden; position: relative; {break_style}"
-                f'">{body_content}</div>'
-            )
-
-        # Extract link tags from first page for fonts
-        link_tags = ""
-        import re
-        if pages:
-            link_tags = "\n".join(re.findall(r'<link[^>]+>', pages[0]))
-
-        return f"""<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-{link_tags}
-<style>
-@page {{
-  size: {width}px {height}px;
-  margin: 0;
-}}
-html, body {{
-  margin: 0;
-  padding: 0;
-  width: {width}px;
-}}
-.carousel-pdf-page {{
-  page-break-after: always;
-  box-sizing: border-box;
-}}
-.carousel-pdf-page:last-child {{
-  page-break-after: auto;
-}}
-{chr(10).join(all_styles)}
-</style>
-</head>
-<body>
-{"".join(sections)}
-</body>
-</html>"""
 
     @staticmethod
     def _combine_html_pages(pages: list[str]) -> str:

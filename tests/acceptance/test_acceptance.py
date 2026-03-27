@@ -7,6 +7,7 @@ and SPEC-031 (LinkedIn Content Pipeline).
 Each test references its AC-NNN number and has at least 2 assertions.
 External APIs (httpx, Redis) are mocked throughout.
 """
+
 from __future__ import annotations
 
 import json
@@ -167,17 +168,21 @@ class TestSpec012KnowledgeLearning:
 
         # Write 3 marketing-agent entries and 2 code-improver entries
         for _i in range(3):
-            logger.append(TrajectoryEntry(
-                agent_id="marketing-agent",
-                task_type="content_creation",
-                status="success",
-            ))
+            logger.append(
+                TrajectoryEntry(
+                    agent_id="marketing-agent",
+                    task_type="content_creation",
+                    status="success",
+                )
+            )
         for _i in range(2):
-            logger.append(TrajectoryEntry(
-                agent_id="code-improver",
-                task_type="code_review",
-                status="success",
-            ))
+            logger.append(
+                TrajectoryEntry(
+                    agent_id="code-improver",
+                    task_type="code_review",
+                    status="success",
+                )
+            )
 
         filtered = logger.read_filtered(agent_id="marketing-agent")
 
@@ -197,25 +202,31 @@ class TestSpec012KnowledgeLearning:
         # 7 success, 2 failure, 1 error = 10 entries total
         # Total cost = 1.50: 7*0.10 + 2*0.20 + 1*0.40 = 0.70+0.40+0.40 = 1.50
         for _i in range(7):
-            logger.append(TrajectoryEntry(
-                agent_id="marketing-agent",
-                task_type="content_creation",
-                status="success",
-                cost_usd=0.10,
-            ))
+            logger.append(
+                TrajectoryEntry(
+                    agent_id="marketing-agent",
+                    task_type="content_creation",
+                    status="success",
+                    cost_usd=0.10,
+                )
+            )
         for _i in range(2):
-            logger.append(TrajectoryEntry(
+            logger.append(
+                TrajectoryEntry(
+                    agent_id="marketing-agent",
+                    task_type="content_creation",
+                    status="failure",
+                    cost_usd=0.20,
+                )
+            )
+        logger.append(
+            TrajectoryEntry(
                 agent_id="marketing-agent",
                 task_type="content_creation",
-                status="failure",
-                cost_usd=0.20,
-            ))
-        logger.append(TrajectoryEntry(
-            agent_id="marketing-agent",
-            task_type="content_creation",
-            status="error",
-            cost_usd=0.40,
-        ))
+                status="error",
+                cost_usd=0.40,
+            )
+        )
 
         summary = logger.summary(agent_id="marketing-agent")
 
@@ -461,12 +472,16 @@ class TestSpec028ObservatoryAPI:
         entries = []
         for i in range(120):
             ts = f"2026-03-19T{10 + (i // 60):02d}:{i % 60:02d}:00+00:00"
-            entries.append(json.dumps({
-                "timestamp": ts,
-                "agent_id": "marketing-agent",
-                "action": "create",
-                "outcome": "success",
-            }))
+            entries.append(
+                json.dumps(
+                    {
+                        "timestamp": ts,
+                        "agent_id": "marketing-agent",
+                        "action": "create",
+                        "outcome": "success",
+                    }
+                )
+            )
         traj_file.write_text("\n".join(entries) + "\n")
 
         # Patch the trajectory path to our temp file

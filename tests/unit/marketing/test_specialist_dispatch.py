@@ -35,7 +35,9 @@ class TestAssembledContent:
         outputs = [
             SpecialistOutput(specialist_id="hook-architect", output="73% of agents fail."),
             SpecialistOutput(specialist_id="storyteller", output="Here's why they break down."),
-            SpecialistOutput(specialist_id="cta-strategist", output="What's your agent's feedback loop?"),
+            SpecialistOutput(
+                specialist_id="cta-strategist", output="What's your agent's feedback loop?"
+            ),
             SpecialistOutput(specialist_id="voice-guardian", output="PASS — voice is consistent."),
         ]
 
@@ -123,8 +125,12 @@ class TestPlatformEnrichment:
         """Full pipeline: _assemble adds hashtags for Instagram video_script."""
         outputs = [
             SpecialistOutput(specialist_id="hook-architect", output="Building Agents That Learn"),
-            SpecialistOutput(specialist_id="storyteller", output="Most frameworks are static loops."),
-            SpecialistOutput(specialist_id="cta-strategist", output="What does your agent remember?"),
+            SpecialistOutput(
+                specialist_id="storyteller", output="Most frameworks are static loops."
+            ),
+            SpecialistOutput(
+                specialist_id="cta-strategist", output="What does your agent remember?"
+            ),
         ]
         dispatcher = SpecialistDispatcher()
         content = dispatcher._assemble(outputs, "video_script", "instagram")

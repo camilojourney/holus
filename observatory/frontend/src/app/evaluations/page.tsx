@@ -5,10 +5,10 @@ import type { EvalVerdict, EvaluationRecord, Agent } from '@/lib/types';
 
 export const revalidate = 30;
 
-const verdictColors: Record<EvalVerdict, string> = {
-  pass: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-  review: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-  fail: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+const verdictStyles: Record<EvalVerdict, React.CSSProperties> = {
+  pass: { background: 'var(--verdict-pass-bg)', color: 'var(--verdict-pass-text)' },
+  review: { background: 'var(--verdict-review-bg)', color: 'var(--verdict-review-text)' },
+  fail: { background: 'var(--verdict-fail-bg)', color: 'var(--verdict-fail-text)' },
 };
 
 export default async function EvaluationsPage() {
@@ -32,7 +32,7 @@ export default async function EvaluationsPage() {
   }
 
   return (
-    <div className="px-6 py-6 space-y-6 page-transition">
+    <div style={{ padding: 'var(--page-padding)' }} className="space-y-6 page-transition">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Quality Signals</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -57,7 +57,8 @@ export default async function EvaluationsPage() {
               >
                 <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{passCounts[v]}</p>
                 <span
-                  className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${verdictColors[v]}`}
+                  className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium"
+                  style={verdictStyles[v]}
                 >
                   {v}
                 </span>
@@ -130,7 +131,8 @@ export default async function EvaluationsPage() {
                         <td className="px-4 py-2">
                           {ev.verdict ? (
                             <span
-                              className={`text-xs px-1.5 py-0.5 rounded font-medium ${verdictColors[ev.verdict]}`}
+                              className="text-xs px-1.5 py-0.5 rounded font-medium"
+                              style={verdictStyles[ev.verdict]}
                             >
                               {ev.verdict}
                             </span>

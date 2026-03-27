@@ -93,6 +93,7 @@ class ContentItem(BaseModel):
 
 class ContentDetail(ContentItem):
     """Full content piece including text and agent trace."""
+
     text: str | None = None
     hashtags: list[str] = []
     char_count: int | None = None

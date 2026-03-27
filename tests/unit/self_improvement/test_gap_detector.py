@@ -37,7 +37,7 @@ class TestDetectGaps:
                 "judge_score": 0.3,
                 "judge_feedback": f"Failed: {failure_class}",
                 "task_type": content_type,
-                "timestamp": f"2026-03-{10+i}T00:00:00Z",
+                "timestamp": f"2026-03-{10 + i}T00:00:00Z",
                 "metadata": {
                     "platform": platform,
                     "content_type": content_type,
@@ -61,10 +61,9 @@ class TestDetectGaps:
         assert len(gaps) == 0
 
     def test_multiple_gap_types(self):
-        entries = (
-            self._make_entries(4, "tiktok", "video_reel", "capability_gap")
-            + self._make_entries(3, "instagram", "story", "data_gap")
-        )
+        entries = self._make_entries(
+            4, "tiktok", "video_reel", "capability_gap"
+        ) + self._make_entries(3, "instagram", "story", "data_gap")
         gaps = detect_gaps(entries, min_failures=3)
         assert len(gaps) == 2
 
@@ -75,8 +74,12 @@ class TestDetectGaps:
                 "judge_score": 0.3,
                 "judge_feedback": "weak hook",
                 "task_type": "text_post",
-                "timestamp": f"2026-03-{10+i}T00:00:00Z",
-                "metadata": {"platform": "linkedin", "content_type": "text_post", "failure_class": "quality_issue"},
+                "timestamp": f"2026-03-{10 + i}T00:00:00Z",
+                "metadata": {
+                    "platform": "linkedin",
+                    "content_type": "text_post",
+                    "failure_class": "quality_issue",
+                },
             }
             for i in range(4)
         ]

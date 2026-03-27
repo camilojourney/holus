@@ -112,8 +112,7 @@ class CorpusDB:
         """
         self._conn.execute("DELETE FROM posts_fts")
         self._conn.execute(
-            "INSERT INTO posts_fts(id, creator, text) "
-            "SELECT id, creator, text FROM posts"
+            "INSERT INTO posts_fts(id, creator, text) SELECT id, creator, text FROM posts"
         )
         self._conn.commit()
 
@@ -156,9 +155,7 @@ class CorpusDB:
             comments = _safe_int(entry.get("comments", 0))
             reposts = _safe_int(entry.get("reposts", 0))
             engagement_total = (
-                reactions * _WEIGHT_REACTION
-                + comments * _WEIGHT_COMMENT
-                + reposts * _WEIGHT_REPOST
+                reactions * _WEIGHT_REACTION + comments * _WEIGHT_COMMENT + reposts * _WEIGHT_REPOST
             )
 
             self._conn.execute(

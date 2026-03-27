@@ -78,12 +78,14 @@ async def get_platforms() -> list[dict[str, Any]]:
     result = []
     for pid in list_platforms():
         cfg = get_platform_config(pid)
-        result.append({
-            "id": cfg.platform_id,
-            "name": cfg.display_name,
-            "char_limit": cfg.char_limit,
-            "risk_tier": get_effective_risk_tier(pid),
-            "hashtag_limit": cfg.hashtag_limit,
-            "supported_formats": cfg.supported_formats,
-        })
+        result.append(
+            {
+                "id": cfg.platform_id,
+                "name": cfg.display_name,
+                "char_limit": cfg.char_limit,
+                "risk_tier": get_effective_risk_tier(pid),
+                "hashtag_limit": cfg.hashtag_limit,
+                "supported_formats": cfg.supported_formats,
+            }
+        )
     return result

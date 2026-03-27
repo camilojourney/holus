@@ -54,7 +54,9 @@ async def score_trends(days: int = 30) -> dict[str, Any]:
     """Score trends over time — judge and engagement scores by day."""
     entries = _read_trajectory(days)
 
-    daily: dict[str, dict[str, list[float]]] = defaultdict(lambda: {"judge": [], "engagement": [], "reward": []})
+    daily: dict[str, dict[str, list[float]]] = defaultdict(
+        lambda: {"judge": [], "engagement": [], "reward": []}
+    )
 
     for e in entries:
         date = e.get("timestamp", "")[:10]
@@ -73,14 +75,22 @@ async def score_trends(days: int = 30) -> dict[str, Any]:
     trends = []
     for date in sorted(daily):
         d = daily[date]
-        trends.append({
-            "date": date,
-            "avg_judge_score": round(sum(d["judge"]) / len(d["judge"]), 3) if d["judge"] else None,
-            "avg_engagement": round(sum(d["engagement"]) / len(d["engagement"]), 3) if d["engagement"] else None,
-            "avg_reward": round(sum(d["reward"]) / len(d["reward"]), 3) if d["reward"] else None,
-            "n_judge": len(d["judge"]),
-            "n_engagement": len(d["engagement"]),
-        })
+        trends.append(
+            {
+                "date": date,
+                "avg_judge_score": round(sum(d["judge"]) / len(d["judge"]), 3)
+                if d["judge"]
+                else None,
+                "avg_engagement": round(sum(d["engagement"]) / len(d["engagement"]), 3)
+                if d["engagement"]
+                else None,
+                "avg_reward": round(sum(d["reward"]) / len(d["reward"]), 3)
+                if d["reward"]
+                else None,
+                "n_judge": len(d["judge"]),
+                "n_engagement": len(d["engagement"]),
+            }
+        )
 
     return {"days": days, "trends": trends, "total_entries": len(entries)}
 
@@ -104,20 +114,24 @@ async def gaps() -> dict[str, Any]:
     capability_gaps: list[dict[str, str]] = []
     if CAPABILITY_GAPS_DIR.exists():
         for path in CAPABILITY_GAPS_DIR.glob("*.md"):
-            capability_gaps.append({
-                "file": path.name,
-                "size": str(path.stat().st_size),
-            })
+            capability_gaps.append(
+                {
+                    "file": path.name,
+                    "size": str(path.stat().st_size),
+                }
+            )
 
     knowledge_gaps: list[dict[str, str]] = []
     if KNOWLEDGE_GAPS_DIR.exists():
         for path in KNOWLEDGE_GAPS_DIR.glob("*.md"):
             if path.name == "README.md":
                 continue
-            knowledge_gaps.append({
-                "file": path.name,
-                "size": str(path.stat().st_size),
-            })
+            knowledge_gaps.append(
+                {
+                    "file": path.name,
+                    "size": str(path.stat().st_size),
+                }
+            )
 
     return {
         "capability_gaps": capability_gaps,
@@ -147,14 +161,16 @@ async def drift_check(days: int = 30) -> dict[str, Any]:
         peak = max(values)
         avg = sum(values) / len(values)
         if peak - avg >= 0.1:
-            alerts.append({
-                "agent_id": agent_id,
-                "peak_score": round(peak, 3),
-                "avg_score": round(avg, 3),
-                "drift": round(peak - avg, 3),
-                "n_observations": len(scores),
-                "status": "DRIFTING",
-            })
+            alerts.append(
+                {
+                    "agent_id": agent_id,
+                    "peak_score": round(peak, 3),
+                    "avg_score": round(avg, 3),
+                    "drift": round(peak - avg, 3),
+                    "n_observations": len(scores),
+                    "status": "DRIFTING",
+                }
+            )
 
     return {
         "alerts": alerts,
@@ -170,10 +186,14 @@ async def improvement_summary() -> dict[str, Any]:
 
     # Count by type
     judge_scored = sum(1 for e in entries if e.get("judge_score") is not None)
-    engagement_scored = sum(1 for e in entries if e.get("metadata", {}).get("engagement_signal") is not None)
+    engagement_scored = sum(
+        1 for e in entries if e.get("metadata", {}).get("engagement_signal") is not None
+    )
     paired = sum(
-        1 for e in entries
-        if e.get("judge_score") is not None and e.get("metadata", {}).get("engagement_signal") is not None
+        1
+        for e in entries
+        if e.get("judge_score") is not None
+        and e.get("metadata", {}).get("engagement_signal") is not None
     )
 
     # Activation gates status

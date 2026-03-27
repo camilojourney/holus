@@ -94,7 +94,12 @@ class TestAutoSvgInjection:
 
     def test_stat_slide_no_sparkline_if_provided(self):
         outline = {
-            "slides": [{"type": "stat", "variables": {"stat_value": "73%", "sparkline_svg": "<svg>custom</svg>"}}],
+            "slides": [
+                {
+                    "type": "stat",
+                    "variables": {"stat_value": "73%", "sparkline_svg": "<svg>custom</svg>"},
+                }
+            ],
         }
         result = _normalize_outline(outline)
         assert result["slides"][0]["variables"]["sparkline_svg"] == "<svg>custom</svg>"
@@ -244,10 +249,13 @@ class TestSummarySlideTemplate:
 
     def test_render_summary_slide(self):
         engine = self._make_engine()
-        html = engine.render("carousel/summary_slide", {
-            "title": "Key Takeaways",
-            "takeaways": ["Point A", "Point B", "Point C"],
-        })
+        html = engine.render(
+            "carousel/summary_slide",
+            {
+                "title": "Key Takeaways",
+                "takeaways": ["Point A", "Point B", "Point C"],
+            },
+        )
         assert "Key Takeaways" in html
         assert "Point A" in html
         assert "Point B" in html
@@ -255,42 +263,57 @@ class TestSummarySlideTemplate:
 
     def test_summary_slide_has_numbered_items(self):
         engine = self._make_engine()
-        html = engine.render("carousel/summary_slide", {
-            "takeaways": ["First", "Second"],
-        })
+        html = engine.render(
+            "carousel/summary_slide",
+            {
+                "takeaways": ["First", "Second"],
+            },
+        )
         assert "summary-number" in html
         assert "summary-text" in html
 
     def test_summary_slide_default_title(self):
         engine = self._make_engine()
-        html = engine.render("carousel/summary_slide", {
-            "takeaways": ["Item"],
-        })
+        html = engine.render(
+            "carousel/summary_slide",
+            {
+                "takeaways": ["Item"],
+            },
+        )
         assert "Key Takeaways" in html
 
     def test_summary_slide_with_label(self):
         engine = self._make_engine()
-        html = engine.render("carousel/summary_slide", {
-            "label": "SUMMARY",
-            "takeaways": ["Item"],
-        })
+        html = engine.render(
+            "carousel/summary_slide",
+            {
+                "label": "SUMMARY",
+                "takeaways": ["Item"],
+            },
+        )
         assert "SUMMARY" in html
 
     def test_summary_slide_with_author(self):
         engine = self._make_engine()
-        html = engine.render("carousel/summary_slide", {
-            "takeaways": ["Item"],
-            "author_name": "Camilo",
-        })
+        html = engine.render(
+            "carousel/summary_slide",
+            {
+                "takeaways": ["Item"],
+                "author_name": "Camilo",
+            },
+        )
         assert "Camilo" in html
 
     def test_summary_slide_empty_takeaways(self):
         """Renders without error even if takeaways is empty."""
         engine = self._make_engine()
-        html = engine.render("carousel/summary_slide", {
-            "title": "Nothing here",
-            "takeaways": [],
-        })
+        html = engine.render(
+            "carousel/summary_slide",
+            {
+                "title": "Nothing here",
+                "takeaways": [],
+            },
+        )
         assert "Nothing here" in html
         # No list items rendered (summary-text appears in CSS but not as HTML element content)
         assert "<li>" not in html
@@ -298,9 +321,12 @@ class TestSummarySlideTemplate:
     def test_summary_slide_no_takeaways_key(self):
         """Renders without error if takeaways is not provided."""
         engine = self._make_engine()
-        html = engine.render("carousel/summary_slide", {
-            "title": "Empty Summary",
-        })
+        html = engine.render(
+            "carousel/summary_slide",
+            {
+                "title": "Empty Summary",
+            },
+        )
         assert "Empty Summary" in html
 
 
@@ -374,7 +400,9 @@ class TestRenderCarouselPdf:
 
         spec = CarouselSpec(
             slides=[
-                SlideSpec(template="carousel/hook_slide", variables={"headline": "H"}, slide_number=1),
+                SlideSpec(
+                    template="carousel/hook_slide", variables={"headline": "H"}, slide_number=1
+                ),
                 SlideSpec(template="carousel/body_slide", variables={"title": "B"}, slide_number=2),
             ],
         )
@@ -421,7 +449,9 @@ class TestRenderCarouselPdf:
 
         spec = CarouselSpec(
             slides=[
-                SlideSpec(template="carousel/hook_slide", variables={"headline": "H"}, slide_number=1),
+                SlideSpec(
+                    template="carousel/hook_slide", variables={"headline": "H"}, slide_number=1
+                ),
                 SlideSpec(template="carousel/body_slide", variables={"title": "B"}, slide_number=2),
             ],
         )
@@ -459,7 +489,9 @@ class TestRenderCarouselPdf:
         mock_page.close.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_multi_slide_rendered_individually(self, mock_browser, mock_page, mock_template_engine):
+    async def test_multi_slide_rendered_individually(
+        self, mock_browser, mock_page, mock_template_engine
+    ):
         engine = PlaywrightEngine(mock_template_engine)
         engine._browser = mock_browser
 
@@ -480,44 +512,6 @@ class TestRenderCarouselPdf:
         merge_mock.assert_called_once()
         assert len(merge_mock.call_args[0][0]) == 3
         assert result.success is True
-
-
-# ---------------------------------------------------------------------------
-# _combine_carousel_html static method
-# ---------------------------------------------------------------------------
-
-
-class TestCombineCarouselHtml:
-    """Test the carousel-specific HTML combiner."""
-
-    def test_single_page(self):
-        result = PlaywrightEngine._combine_carousel_html(["<div>Page 1</div>"])
-        assert "Page 1" in result
-        assert "1080px" in result
-        assert "1350px" in result
-        assert "@page" in result
-
-    def test_multiple_pages_have_breaks(self):
-        result = PlaywrightEngine._combine_carousel_html([
-            "<div>Page 1</div>",
-            "<div>Page 2</div>",
-        ])
-        assert "page-break-before: always;" in result
-        assert "Page 1" in result
-        assert "Page 2" in result
-
-    def test_custom_dimensions(self):
-        result = PlaywrightEngine._combine_carousel_html(
-            ["<div>Test</div>"],
-            width=1200,
-            height=1500,
-        )
-        assert "1200px" in result
-        assert "1500px" in result
-
-    def test_has_zero_margin_page_rule(self):
-        result = PlaywrightEngine._combine_carousel_html(["<div>Test</div>"])
-        assert "margin: 0" in result
 
 
 # ---------------------------------------------------------------------------
@@ -564,9 +558,17 @@ class TestCarouselEdgeCases:
             "slides": [
                 {"type": t, "variables": {}}
                 for t in [
-                    "hook", "body", "summary", "cta",
-                    "split_left", "split_right", "centered",
-                    "quote", "stat", "comparison", "data",
+                    "hook",
+                    "body",
+                    "summary",
+                    "cta",
+                    "split_left",
+                    "split_right",
+                    "centered",
+                    "quote",
+                    "stat",
+                    "comparison",
+                    "data",
                 ]
             ]
         }

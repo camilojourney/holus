@@ -553,9 +553,7 @@ class TestGetPostAnalytics:
 
             assert result["views"] == 1200
             assert result["engagement_rate"] == 0.057
-            mock_httpx_client.get.assert_called_once_with(
-                "/api/v1/analytics/posts/post_42/latest"
-            )
+            mock_httpx_client.get.assert_called_once_with("/api/v1/analytics/posts/post_42/latest")
 
     @pytest.mark.asyncio
     async def test_get_post_analytics_not_found(self, client, mock_httpx_client):
@@ -563,12 +561,17 @@ class TestGetPostAnalytics:
         mock_response = MagicMock()
         mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
             "Not Found",
-            request=httpx.Request("GET", "http://localhost:8000/api/v1/analytics/posts/missing/latest"),
+            request=httpx.Request(
+                "GET", "http://localhost:8000/api/v1/analytics/posts/missing/latest"
+            ),
             response=httpx.Response(404),
         )
         mock_httpx_client.get.return_value = mock_response
 
-        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+        with (
+            patch.object(client, "client", mock_httpx_client),
+            pytest.raises(httpx.HTTPStatusError),
+        ):
             await client.get_post_analytics("missing")
 
 
@@ -595,7 +598,10 @@ class TestErrorHandling:
         """get_analytics raises on connection timeout."""
         mock_httpx_client.get.side_effect = httpx.TimeoutException("Connection timed out")
 
-        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.TimeoutException):
+        with (
+            patch.object(client, "client", mock_httpx_client),
+            pytest.raises(httpx.TimeoutException),
+        ):
             await client.get_analytics()
 
     @pytest.mark.asyncio
@@ -609,7 +615,10 @@ class TestErrorHandling:
         )
         mock_httpx_client.get.return_value = mock_response
 
-        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+        with (
+            patch.object(client, "client", mock_httpx_client),
+            pytest.raises(httpx.HTTPStatusError),
+        ):
             await client.get_top_posts()
 
     @pytest.mark.asyncio
@@ -631,7 +640,10 @@ class TestErrorHandling:
         )
         mock_httpx_client.get.return_value = mock_response
 
-        with patch.object(client, "client", mock_httpx_client), pytest.raises(httpx.HTTPStatusError):
+        with (
+            patch.object(client, "client", mock_httpx_client),
+            pytest.raises(httpx.HTTPStatusError),
+        ):
             await client.get_status("missing_id")
 
     @pytest.mark.asyncio

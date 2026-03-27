@@ -1,1 +1,0 @@
-"""ComfyUI image generation integration."""

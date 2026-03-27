@@ -123,7 +123,9 @@ class TestInit:
             patch("holus.agents.base.redis.Redis.from_url"),
             patch("holus.agents.base.EventBus"),
             patch("holus.agents.base.KillSwitch"),
-            patch.object(HolusConfig, "load", return_value=HolusConfig(redis_url="redis://localhost:6379")) as mock_load,
+            patch.object(
+                HolusConfig, "load", return_value=HolusConfig(redis_url="redis://localhost:6379")
+            ) as mock_load,
         ):
             _StubAgent(config=None)
             mock_load.assert_called_once_with(agent_name="stub-agent")
@@ -163,7 +165,13 @@ class TestModelTier:
 class TestSystemPrompt:
     def test_default_prompt_fallback(self, agent: _StubAgent):
         """When PromptLoader has no prompt, returns default string."""
-        with patch.object(type(agent), "prompt_loader", new_callable=lambda: property(lambda self: MagicMock(get_prompt=MagicMock(return_value=None)))):
+        with patch.object(
+            type(agent),
+            "prompt_loader",
+            new_callable=lambda: property(
+                lambda self: MagicMock(get_prompt=MagicMock(return_value=None))
+            ),
+        ):
             assert "stub-agent" in agent.system_prompt
 
     def test_prompt_loader_returns_custom(self, agent: _StubAgent):
@@ -314,7 +322,9 @@ class TestEvaluateSelf:
             patch("holus.self_improvement.judge.JudgeAgent") as mock_judge_cls,
         ):
             mock_judge_cls.return_value.evaluate_with_routing.return_value = mock_eval
-            result = agent._evaluate_self({"output": "test content", "content_type": "linkedin_post"})
+            result = agent._evaluate_self(
+                {"output": "test content", "content_type": "linkedin_post"}
+            )
 
         assert result == {"verdict": "PASS", "score": 0.85}
         mock_log.assert_called_once()
@@ -325,7 +335,9 @@ class TestEvaluateSelf:
     def test_evaluate_self_judge_error_non_blocking(self, agent: _StubAgent):
         with (
             patch("holus.agents.base.BaseAgent._log_trajectory"),
-            patch("holus.self_improvement.judge.JudgeAgent", side_effect=RuntimeError("judge down")),
+            patch(
+                "holus.self_improvement.judge.JudgeAgent", side_effect=RuntimeError("judge down")
+            ),
         ):
             result = agent._evaluate_self({"output": "content"})
         assert result is None
@@ -351,7 +363,9 @@ class TestLogTrajectory:
             mock_tl.append.assert_called_once()
 
     def test_log_trajectory_error_non_blocking(self, agent: _StubAgent):
-        with patch("holus.memory.trajectory.TrajectoryLogger", side_effect=RuntimeError("disk full")):
+        with patch(
+            "holus.memory.trajectory.TrajectoryLogger", side_effect=RuntimeError("disk full")
+        ):
             # Should not raise
             agent._log_trajectory(task_type="test", task_summary="test")
 

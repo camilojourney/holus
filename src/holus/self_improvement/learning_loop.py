@@ -140,17 +140,20 @@ class WeeklyLearningLoop:
         drift_agents = self._detect_drift(all_entries)
         if drift_agents:
             for agent_id in drift_agents:
-                insights.append(Insight(
-                    pattern=f"DRIFT DETECTED: {agent_id} — 30-day avg dropped 0.1+ from peak",
-                    confidence="medium",
-                    sample_size=len(recent),
-                    source="trajectory",
-                ))
+                insights.append(
+                    Insight(
+                        pattern=f"DRIFT DETECTED: {agent_id} — 30-day avg dropped 0.1+ from peak",
+                        confidence="medium",
+                        sample_size=len(recent),
+                        source="trajectory",
+                    )
+                )
             logger.warning("Drift detected for agents: %s", drift_agents)
 
         # 7 — Detect capability/data gaps from failure patterns
         try:
             from holus.self_improvement.gap_detector import detect_gaps, write_gap_request
+
             gap_entries = [e.to_dict() for e in recent]
             detected_gaps = detect_gaps(gap_entries, min_failures=3)
             for gap in detected_gaps:
@@ -420,7 +423,9 @@ class WeeklyLearningLoop:
         Returns list of agent_ids that need prompt optimization.
         """
         cutoff_30d = (datetime.now(UTC) - timedelta(days=window_days)).isoformat()
-        recent_30d = [e for e in all_entries if e.timestamp >= cutoff_30d and e.judge_score is not None]
+        recent_30d = [
+            e for e in all_entries if e.timestamp >= cutoff_30d and e.judge_score is not None
+        ]
 
         if len(recent_30d) < 10:
             return []

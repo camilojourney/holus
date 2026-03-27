@@ -19,19 +19,19 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: 'Rejected',
 };
 
-const STATUS_COLOR: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  pending_review: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  approved: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
-  scheduled: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
-  published: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+const STATUS_STYLE: Record<string, React.CSSProperties> = {
+  draft: { background: 'var(--status-draft-bg)', color: 'var(--status-draft-text)' },
+  pending_review: { background: 'var(--status-pending-bg)', color: 'var(--status-pending-text)' },
+  approved: { background: 'var(--status-approved-bg)', color: 'var(--status-approved-text)' },
+  scheduled: { background: 'var(--status-approved-bg)', color: 'var(--status-approved-text)' },
+  published: { background: 'var(--status-published-bg)', color: 'var(--status-published-text)' },
+  rejected: { background: 'var(--status-rejected-bg)', color: 'var(--status-rejected-text)' },
 };
 
-const VERDICT_COLOR: Record<string, string> = {
-  PASS: 'text-green-600 dark:text-green-400',
-  PARTIAL: 'text-yellow-600 dark:text-yellow-400',
-  FAIL: 'text-red-600 dark:text-red-400',
+const VERDICT_STYLE: Record<string, React.CSSProperties> = {
+  PASS: { color: 'var(--verdict-pass-text)' },
+  PARTIAL: { color: 'var(--verdict-review-text)' },
+  FAIL: { color: 'var(--verdict-fail-text)' },
 };
 
 export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
@@ -125,10 +125,10 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
       onKeyDown={handleFocusTrap}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="absolute inset-0" style={{ background: 'var(--surface-overlay)' }} onClick={onClose} />
+      <div className="absolute inset-0 panel-backdrop" style={{ background: 'var(--surface-overlay)' }} onClick={onClose} />
 
       <div
-        className="relative h-full w-full max-w-2xl shadow-xl overflow-y-auto flex flex-col"
+        className="relative h-full w-full max-w-2xl shadow-xl overflow-y-auto flex flex-col panel-slide-in"
         style={{ background: 'var(--surface-raised)', borderLeft: '1px solid var(--border-default)' }}
       >
         <div
@@ -140,15 +140,15 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
               {d.title ?? d.id}
             </p>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[status] ?? STATUS_COLOR.draft}`}>
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={STATUS_STYLE[status] ?? STATUS_STYLE.draft}>
                 {STATUS_LABEL[status] ?? status}
               </span>
               {d.platform && <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{d.platform.replace('_', '/')}</span>}
               {d.content_type && <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{d.content_type.replace(/_/g, ' ')}</span>}
               {detail?.judge_verdict && (
                 <span
-                  className={`text-xs font-bold ${VERDICT_COLOR[detail.judge_verdict] ?? ''}`}
-                  style={!VERDICT_COLOR[detail.judge_verdict] ? { color: 'var(--text-tertiary)' } : undefined}
+                  className="text-xs font-bold"
+                  style={VERDICT_STYLE[detail.judge_verdict] ?? { color: 'var(--text-tertiary)' }}
                 >
                   {detail.judge_verdict} {detail.judge_score !== undefined ? `(${detail.judge_score.toFixed(2)})` : ''}
                 </span>
@@ -160,7 +160,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
 
         <div className="flex-1 px-5 py-4 space-y-5">
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">{error}</p>
+            <p className="text-sm rounded-lg px-3 py-2" style={{ color: 'var(--verdict-fail-text)', background: 'var(--verdict-fail-bg)', border: '1px solid var(--rejected-border)' }}>{error}</p>
           )}
 
           {loading ? (
@@ -177,8 +177,8 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           onClick={() => setSelectedVisual('a')}
-                          className={`rounded-xl overflow-hidden border-2 transition-all ${selectedVisual === 'a' ? 'border-amber-500 ring-2 ring-amber-200 dark:ring-amber-800' : ''}`}
-                          style={selectedVisual !== 'a' ? { borderColor: 'var(--border-default)' } : undefined}
+                          className="rounded-xl overflow-hidden border-2 transition-all"
+                          style={{ borderColor: selectedVisual === 'a' ? 'var(--brand)' : 'var(--border-default)', boxShadow: selectedVisual === 'a' ? '0 0 0 2px var(--brand-muted-oklch)' : 'none' }}
                         >
                           <img src={contentImageUrl(item.id, 'a')} alt="Visual variant A" className="w-full aspect-square object-cover" />
                           <div className="text-center py-1.5 text-xs font-semibold" style={{ background: selectedVisual === 'a' ? 'var(--warning-subtle)' : 'var(--surface-2)', color: selectedVisual === 'a' ? 'var(--warning)' : 'var(--text-tertiary)' }}>
@@ -187,8 +187,8 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                         </button>
                         <button
                           onClick={() => setSelectedVisual('b')}
-                          className={`rounded-xl overflow-hidden border-2 transition-all ${selectedVisual === 'b' ? 'border-amber-500 ring-2 ring-amber-200 dark:ring-amber-800' : ''}`}
-                          style={selectedVisual !== 'b' ? { borderColor: 'var(--border-default)' } : undefined}
+                          className="rounded-xl overflow-hidden border-2 transition-all"
+                          style={{ borderColor: selectedVisual === 'b' ? 'var(--brand)' : 'var(--border-default)', boxShadow: selectedVisual === 'b' ? '0 0 0 2px var(--brand-muted-oklch)' : 'none' }}
                         >
                           <img src={contentImageUrl(item.id, 'b')} alt="Visual variant B" className="w-full aspect-square object-cover" />
                           <div className="text-center py-1.5 text-xs font-semibold" style={{ background: selectedVisual === 'b' ? 'var(--warning-subtle)' : 'var(--surface-2)', color: selectedVisual === 'b' ? 'var(--warning)' : 'var(--text-tertiary)' }}>
@@ -217,7 +217,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                       </div>
                     )}
                     {d.quality.voice_check && (
-                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${d.quality.voice_check === 'PASS' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'}`}>
+                      <span className="text-xs px-2 py-0.5 rounded font-medium" style={d.quality.voice_check === 'PASS' ? { background: 'var(--verdict-pass-bg)', color: 'var(--verdict-pass-text)' } : { background: 'var(--verdict-fail-bg)', color: 'var(--verdict-fail-text)' }}>
                         Voice: {d.quality.voice_check}
                       </span>
                     )}
@@ -238,7 +238,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                     <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{detail.text}</p>
                   </div>
                   {detail.hashtags && detail.hashtags.length > 0 && (
-                    <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{detail.hashtags.join(' ')}</p>
+                    <p className="mt-2 text-xs" style={{ color: 'var(--brand)' }}>{detail.hashtags.join(' ')}</p>
                   )}
                 </section>
               )}
@@ -263,7 +263,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                   <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-tertiary)' }}>Agent Trace</h3>
                   <ol className="space-y-2">
                     {detail.agent_trace.map((step, i) => (
-                      <li key={i} className="flex items-start gap-3 text-xs border-l-2 border-amber-200 dark:border-amber-800 pl-3">
+                      <li key={i} className="flex items-start gap-3 text-xs pl-3" style={{ borderLeft: '2px solid var(--brand-muted-oklch)' }}>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>{step.agent_id}</p>
                           {step.role && <p style={{ color: 'var(--text-tertiary)' }}>{step.role}</p>}
@@ -288,15 +288,15 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                 className="flex-1 text-sm rounded-lg px-3 py-1.5 focus-ring"
                 style={{ border: '1px solid var(--border-default)', background: 'var(--surface-2)', color: 'var(--text-secondary)' }}
               />
-              <button onClick={handleSchedule} disabled={!scheduleDate || !!acting} className="py-1.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-40 focus-ring">
+              <button onClick={handleSchedule} disabled={!scheduleDate || !!acting} className="py-1.5 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 focus-ring" style={{ background: 'var(--button-schedule-bg)', color: 'var(--text-inverse)' }}>
                 {acting === 'schedule' ? 'Scheduling...' : 'Schedule'}
               </button>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={handleApprove} disabled={!!acting} className="flex-1 py-2 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors disabled:opacity-50 focus-ring">
+              <button onClick={handleApprove} disabled={!!acting} className="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 focus-ring" style={{ background: 'var(--button-approve-bg)', color: 'var(--text-inverse)' }}>
                 {acting === 'approve' ? 'Approving...' : 'Approve & Post Now'}
               </button>
-              <button onClick={handleReject} disabled={!!acting} className="flex-1 py-2 px-4 rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 text-sm font-semibold transition-colors disabled:opacity-50 focus-ring">
+              <button onClick={handleReject} disabled={!!acting} className="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 focus-ring" style={{ border: '1px solid var(--button-reject-border)', color: 'var(--button-reject-text)' }}>
                 {acting === 'reject' ? 'Rejecting...' : 'Reject'}
               </button>
             </div>

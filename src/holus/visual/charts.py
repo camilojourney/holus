@@ -195,6 +195,7 @@ def _register(name: str) -> Callable[..., Any]:
         _PATTERN_REGISTRY[name] = name
         _PATTERN_REGISTRY[f"_fn_{name}"] = fn
         return fn
+
     return decorator
 
 
@@ -228,9 +229,7 @@ def _grid(
             x = 25 + col * 50
             y = 25 + row * 42
             opacity = 0.06 + (row * 0.02)
-            dots.append(
-                f'<circle cx="{x}" cy="{y}" r="3" fill="{color}" opacity="{opacity:.2f}"/>'
-            )
+            dots.append(f'<circle cx="{x}" cy="{y}" r="3" fill="{color}" opacity="{opacity:.2f}"/>')
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" '
         'width="400" height="500" role="img" aria-label="Decorative grid">'
@@ -280,8 +279,7 @@ def _blocks(
         (160, 400, 120, 70, accent, 0.09),
     ]
     elements = [
-        f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="12" '
-        f'fill="{c}" opacity="{o}"/>'
+        f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="12" fill="{c}" opacity="{o}"/>'
         for x, y, w, h, c, o in rects
     ]
     return (
@@ -747,10 +745,7 @@ def comparison_table_svg(
         winner = item.get("winner", "tie")
 
         # Row background
-        elements.append(
-            f'<rect x="0" y="{y}" width="{width}" height="{row_h}" '
-            f'fill="{bg}"/>'
-        )
+        elements.append(f'<rect x="0" y="{y}" width="{width}" height="{row_h}" fill="{bg}"/>')
 
         # Dimension label (center)
         elements.append(

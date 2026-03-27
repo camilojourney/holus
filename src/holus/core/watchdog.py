@@ -186,7 +186,9 @@ def _load_summaries(trajectory_path: Path) -> list[dict[str, Any]]:
             except json.JSONDecodeError:
                 continue
     except OSError as exc:
-        logger.warning("watchdog: failed to read trajectory", path=str(trajectory_path), error=str(exc))
+        logger.warning(
+            "watchdog: failed to read trajectory", path=str(trajectory_path), error=str(exc)
+        )
 
     return summaries
 
@@ -207,6 +209,7 @@ def _parse_cycle_timestamp(entry: dict[str, Any]) -> datetime | None:
             duration = entry.get("duration_seconds")
             if duration is not None:
                 from datetime import timedelta
+
                 dt = dt + timedelta(seconds=float(duration))
             return dt
         except ValueError:

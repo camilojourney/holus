@@ -268,9 +268,7 @@ class TestResilientLoopException:
         last = summaries[-1]
         error_msg = last.get("error") or ""
         # Error must encode which phase failed
-        assert "creating" in error_msg, (
-            f"Expected phase name in error message, got: {error_msg!r}"
-        )
+        assert "creating" in error_msg, f"Expected phase name in error message, got: {error_msg!r}"
         assert "graph blew up" in error_msg
 
     @pytest.mark.asyncio
@@ -317,9 +315,7 @@ class TestPartialStateSave:
     """When a cycle fails after ainvoke returns partial state, recovery file is written."""
 
     @pytest.mark.asyncio
-    async def test_partial_state_saved_on_failure_after_invoke(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_partial_state_saved_on_failure_after_invoke(self, tmp_path: Path) -> None:
         """If ainvoke succeeds but a later step fails, _save_partial_state is called."""
         trajectory_path = tmp_path / "trajectory.jsonl"
         good_health = _make_health_result(blocking_ok=True)
@@ -371,9 +367,7 @@ class TestPartialStateSave:
         # ainvoke raises before assigning to final_state — this is expected behavior.
         # The guard `if final_state:` prevents saving empty state.
         # So test that no spurious save happened with empty state:
-        assert all(
-            bool(state) for state, _ in save_calls
-        ), "Should never save empty state"
+        assert all(bool(state) for state, _ in save_calls), "Should never save empty state"
 
     def test_save_partial_state_writes_recovery_file(self, tmp_path: Path) -> None:
         """_save_partial_state writes a JSON file with expected keys."""
@@ -499,10 +493,9 @@ class TestConsecutiveFailureAlert:
 
             await agent.run()
 
-        assert any(
-            "BUILD_PAUSED" in record.message
-            for record in caplog.records
-        ), "Expected BUILD_PAUSED alert in logs after 3 consecutive failures"
+        assert any("BUILD_PAUSED" in record.message for record in caplog.records), (
+            "Expected BUILD_PAUSED alert in logs after 3 consecutive failures"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -547,7 +540,9 @@ class TestHealthCliOutput:
 
         assert "preflight" in output, "Missing 'preflight' key in health output"
         assert "watchdog" in output, "Missing 'watchdog' key in health output"
-        assert "last_trajectory_entry" in output, "Missing 'last_trajectory_entry' key in health output"
+        assert "last_trajectory_entry" in output, (
+            "Missing 'last_trajectory_entry' key in health output"
+        )
 
         assert "blocking_ok" in output["preflight"]
         assert "available_silos" in output["preflight"]

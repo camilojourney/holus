@@ -129,9 +129,10 @@ def _count_paired_observations() -> int:
         for line in fh:
             try:
                 entry = json.loads(line.strip())
-                if entry.get("judge_score") is not None and entry.get("metadata", {}).get(
-                    "engagement_signal"
-                ) is not None:
+                if (
+                    entry.get("judge_score") is not None
+                    and entry.get("metadata", {}).get("engagement_signal") is not None
+                ):
                     count += 1
             except (json.JSONDecodeError, AttributeError):
                 continue
@@ -179,27 +180,30 @@ async def collect_analytics(*, max_age_days: int = 8) -> list[dict[str, Any]]:
             reward = compute_blended_reward(judge_score, engagement, n_paired_observations=n_paired)
 
             # Log to trajectory
-            tl.append(TrajectoryEntry(
-                agent_id="analytics-collector",
-                task_type="engagement_collection",
-                task_summary=f"Analytics for {piece_id} on {platform}",
-                status="success",
-                judge_score=judge_score,
-                metadata={
-                    "schema_version": 2,
-                    "piece_id": piece_id,
-                    "post_id": post_id,
-                    "platform": platform,
-                    "analytics_raw": {
-                        k: v for k, v in analytics.items()
-                        if isinstance(v, (int, float, str)) and k != "raw_response"
+            tl.append(
+                TrajectoryEntry(
+                    agent_id="analytics-collector",
+                    task_type="engagement_collection",
+                    task_summary=f"Analytics for {piece_id} on {platform}",
+                    status="success",
+                    judge_score=judge_score,
+                    metadata={
+                        "schema_version": 2,
+                        "piece_id": piece_id,
+                        "post_id": post_id,
+                        "platform": platform,
+                        "analytics_raw": {
+                            k: v
+                            for k, v in analytics.items()
+                            if isinstance(v, (int, float, str)) and k != "raw_response"
+                        },
+                        "engagement_signal": round(engagement, 4),
+                        "blended_reward": round(reward, 4),
+                        "n_paired_observations": n_paired,
+                        "reward_alpha": max(0.3, 1.0 - n_paired / 100) if n_paired < 100 else 0.3,
                     },
-                    "engagement_signal": round(engagement, 4),
-                    "blended_reward": round(reward, 4),
-                    "n_paired_observations": n_paired,
-                    "reward_alpha": max(0.3, 1.0 - n_paired / 100) if n_paired < 100 else 0.3,
-                },
-            ))
+                )
+            )
 
             # Mark piece as analytics-collected
             file_path = piece["_file_path"]
@@ -215,16 +219,22 @@ async def collect_analytics(*, max_age_days: int = 8) -> list[dict[str, Any]]:
             else:
                 path.write_text(json.dumps(data, indent=2))
 
-            results.append({
-                "piece_id": piece_id,
-                "platform": platform,
-                "engagement_signal": round(engagement, 4),
-                "blended_reward": round(reward, 4),
-                "views": analytics.get("views", 0),
-                "likes": analytics.get("likes", 0),
-                "comments": analytics.get("comments", 0),
-                "shares": analytics.get("shares", 0),
-            })
+            results.append(
+                {
+                    "piece_id": piece_id,
+                    "post_id": post_id,
+                    "platform": platform,
+                    "product": piece.get("product", "unknown"),
+                    "content_type": piece.get("content_type", "unknown"),
+                    "arm_id": piece.get("arm_id"),
+                    "engagement_signal": round(engagement, 4),
+                    "blended_reward": round(reward, 4),
+                    "views": analytics.get("views", 0),
+                    "likes": analytics.get("likes", 0),
+                    "comments": analytics.get("comments", 0),
+                    "shares": analytics.get("shares", 0),
+                }
+            )
 
             n_paired += 1  # Increment for next calculation
 

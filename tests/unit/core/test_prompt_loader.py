@@ -59,12 +59,12 @@ def _write_agents_yaml(tmp_path: Path, prompt_rel: str = "specialists/test/my-ag
 @pytest.fixture
 def repo_root(tmp_path: Path) -> Path:
     """Minimal repo layout:
-      tmp_path/
-        agents/
-          AGENTS.yaml
-          specialists/test/my-agent.md   (layer 2)
-        config/
-          prompts/                       (empty — no layer 1 by default)
+    tmp_path/
+      agents/
+        AGENTS.yaml
+        specialists/test/my-agent.md   (layer 2)
+      config/
+        prompts/                       (empty — no layer 1 by default)
     """
     # Create agents/AGENTS.yaml
     _write_agents_yaml(tmp_path, prompt_rel="specialists/test/my-agent.md")
@@ -181,7 +181,9 @@ class TestLayer3:
         assert "layer 3" in caplog.text
         assert "ghost-agent" in caplog.text
 
-    def test_layer3_empty_fallback_returns_empty(self, loader: PromptLoader, repo_root: Path) -> None:
+    def test_layer3_empty_fallback_returns_empty(
+        self, loader: PromptLoader, repo_root: Path
+    ) -> None:
         agents_yaml = repo_root / "agents" / "AGENTS.yaml"
         data = yaml.safe_load(agents_yaml.read_text())
         data["agents"]["empty-agent"] = {
@@ -198,9 +200,7 @@ class TestLayer3:
         result = fresh_loader.get_prompt("empty-agent")
         assert result == ""
 
-    def test_unknown_agent_falls_through_to_layer3(
-        self, loader: PromptLoader
-    ) -> None:
+    def test_unknown_agent_falls_through_to_layer3(self, loader: PromptLoader) -> None:
         """An agent ID not in AGENTS.yaml has no canonical path — falls to layer 3."""
         result = loader.get_prompt("completely-unknown-agent", fallback="safe fallback")
         assert result == "safe fallback"

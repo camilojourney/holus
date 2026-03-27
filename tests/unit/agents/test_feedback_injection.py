@@ -90,9 +90,7 @@ def tmp_config(tmp_path: Path) -> dict[str, Any]:
     """Create minimal config for MarketingAgent instantiation."""
     products_path = tmp_path / "config" / "products.yaml"
     products_path.parent.mkdir(parents=True, exist_ok=True)
-    products_path.write_text(
-        yaml.dump({"products": {"pilaster": {"name": "Pilaster"}}})
-    )
+    products_path.write_text(yaml.dump({"products": {"pilaster": {"name": "Pilaster"}}}))
 
     knowledge_dir = tmp_path / ".self-improvement" / "knowledge" / "current"
     knowledge_dir.mkdir(parents=True, exist_ok=True)
@@ -202,10 +200,7 @@ class TestFormatGenerationFeedback:
 
     def test_twitter_platform_match(self, tmp_config: dict[str, Any]) -> None:
         agent = _make_agent(tmp_config["tmp_path"])
-        prior = (
-            "- [TWITTER — FAIL] Unfinished draft.\n"
-            "  Weak dimensions: completeness=0.20"
-        )
+        prior = "- [TWITTER — FAIL] Unfinished draft.\n  Weak dimensions: completeness=0.20"
         result = agent._format_generation_feedback("twitter", prior_feedback=prior)
         assert "FAIL" in result
         assert "Unfinished" in result
@@ -459,12 +454,14 @@ class TestLoadPriorJudgeFeedback:
         agent = _make_agent(tmp_config["tmp_path"])
         entries = []
         for i in range(10):
-            entries.append({
-                "judge_verdict": "FAIL",
-                "judge_score": 0.3,
-                "judge_feedback": f"Failure number {i}.",
-                "metadata": {"platform": "threads", "dimension_scores": {}},
-            })
+            entries.append(
+                {
+                    "judge_verdict": "FAIL",
+                    "judge_score": 0.3,
+                    "judge_feedback": f"Failure number {i}.",
+                    "metadata": {"platform": "threads", "dimension_scores": {}},
+                }
+            )
         _write_trajectory(tmp_config["trajectory_path"], entries)
 
         result = agent._load_prior_judge_feedback()

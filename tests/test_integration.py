@@ -906,11 +906,7 @@ class TestAuthorityEngineE2E:
 
         # Find the first agent-level entry (from TrajectoryLogger inside evaluate()).
         # CycleContext transition events also appear in the same file; skip those.
-        agent_entries = [
-            json.loads(ln)
-            for ln in traj_lines
-            if "agent_id" in json.loads(ln)
-        ]
+        agent_entries = [json.loads(ln) for ln in traj_lines if "agent_id" in json.loads(ln)]
         assert agent_entries, "Expected at least one agent-level trajectory entry"
         first_entry = agent_entries[0]
         assert first_entry["agent_id"] == "marketing-agent"

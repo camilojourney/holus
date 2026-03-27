@@ -84,14 +84,16 @@ def _parse_agent_trace(raw: dict[str, Any]) -> list[AgentTraceStep]:
     for step in trace:
         if not isinstance(step, dict):
             continue
-        steps.append(AgentTraceStep(
-            agent_id=step.get("agent_id", "unknown"),
-            model=step.get("model"),
-            role=step.get("role"),
-            at=_parse_dt(step.get("at")),
-            quality_score=str(step.get("quality_score", "")) or None,
-            verdict=step.get("verdict"),
-        ))
+        steps.append(
+            AgentTraceStep(
+                agent_id=step.get("agent_id", "unknown"),
+                model=step.get("model"),
+                role=step.get("role"),
+                at=_parse_dt(step.get("at")),
+                quality_score=str(step.get("quality_score", "")) or None,
+                verdict=step.get("verdict"),
+            )
+        )
     return steps
 
 
@@ -153,7 +155,9 @@ async def list_content() -> ContentResponse:
     for path, raw in files:
         try:
             # Handle list-of-items YAML format (legacy)
-            raw_items = raw.get("items", [raw]) if not raw.get("piece_id") and not raw.get("id") else [raw]
+            raw_items = (
+                raw.get("items", [raw]) if not raw.get("piece_id") and not raw.get("id") else [raw]
+            )
             for r in raw_items:
                 if isinstance(r, dict):
                     items.append(_raw_to_item(r, path.stem))
@@ -199,10 +203,7 @@ async def get_content_calendar(
         if d in date_range:
             date_range[d].append(item)
 
-    calendar = [
-        CalendarDay(date=d, items=day_items)
-        for d, day_items in sorted(date_range.items())
-    ]
+    calendar = [CalendarDay(date=d, items=day_items) for d, day_items in sorted(date_range.items())]
     return ContentCalendarResponse(calendar=calendar)
 
 

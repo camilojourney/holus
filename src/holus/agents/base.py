@@ -180,9 +180,7 @@ class BaseAgent(abc.ABC):
         try:
             from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
-            tl = TrajectoryLogger(
-                Path(".self-improvement/memory/trajectory.jsonl")
-            )
+            tl = TrajectoryLogger(Path(".self-improvement/memory/trajectory.jsonl"))
             entry = TrajectoryEntry(
                 agent_id=self.agent_name,
                 task_type=task_type,

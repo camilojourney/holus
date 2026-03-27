@@ -6,6 +6,7 @@ Tests the platform-aware specialist chain on Instagram:
 
 Uses the 'experience' account set (English, @camiloexperience).
 """
+
 from __future__ import annotations
 
 import json
@@ -82,7 +83,9 @@ async def run_cycle():
         result = await original_reason(state)
         # Override with our Instagram decisions
         result["content_decisions"] = [d.model_dump(mode="json") for d in instagram_decisions]
-        print(f"[{datetime.now(tz=UTC):%H:%M:%S}] Injected {len(instagram_decisions)} Instagram decisions")
+        print(
+            f"[{datetime.now(tz=UTC):%H:%M:%S}] Injected {len(instagram_decisions)} Instagram decisions"
+        )
         return result
 
     agent.reason = mock_reason
@@ -97,6 +100,7 @@ async def run_cycle():
     except Exception as e:
         print(f"[{datetime.now(tz=UTC):%H:%M:%S}] CYCLE ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         result = {"error": str(e)}
 
@@ -106,13 +110,17 @@ async def run_cycle():
     # Save result
     result_file = OUTPUT_DIR / "cycle_result.json"
     with open(result_file, "w") as f:
-        json.dump(result if isinstance(result, dict) else {"raw": str(result)}, f, indent=2, default=str)
+        json.dump(
+            result if isinstance(result, dict) else {"raw": str(result)}, f, indent=2, default=str
+        )
 
     # Check content queue for Instagram items
     queue_dir = HOLUS_ROOT / "data" / "content-queue"
     queue_files = list(queue_dir.glob("*.yaml")) if queue_dir.exists() else []
     ig_files = [f for f in queue_files if "instagram" in f.read_text().lower()]
-    print(f"\n[{datetime.now(tz=UTC):%H:%M:%S}] Content queue: {len(queue_files)} total, {len(ig_files)} Instagram")
+    print(
+        f"\n[{datetime.now(tz=UTC):%H:%M:%S}] Content queue: {len(queue_files)} total, {len(ig_files)} Instagram"
+    )
 
     for qf in ig_files:
         print(f"\n--- {qf.name} ---")
@@ -123,6 +131,7 @@ async def run_cycle():
 
         # Copy to output dir
         import shutil
+
         shutil.copy2(qf, OUTPUT_DIR / qf.name)
 
     # Verify specialist chain was used
@@ -130,8 +139,12 @@ async def run_cycle():
     if traj_file.exists():
         lines = traj_file.read_text().strip().split("\n")
         recent = [json.loads(line) for line in lines[-5:]]
-        chain_used = sum(1 for e in recent if "specialist-chain" in e.get("execution", {}).get("model", ""))
-        print(f"\n[{datetime.now(tz=UTC):%H:%M:%S}] Trajectory: {len(lines)} total, {chain_used} specialist-chain in last 5")
+        chain_used = sum(
+            1 for e in recent if "specialist-chain" in e.get("execution", {}).get("model", "")
+        )
+        print(
+            f"\n[{datetime.now(tz=UTC):%H:%M:%S}] Trajectory: {len(lines)} total, {chain_used} specialist-chain in last 5"
+        )
 
     print(f"\n[{datetime.now(tz=UTC):%H:%M:%S}] === DONE ===")
     print(f"Total time: {elapsed:.1f}s")
@@ -142,4 +155,5 @@ async def run_cycle():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(run_cycle())

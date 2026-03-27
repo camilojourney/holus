@@ -30,27 +30,27 @@ const PLATFORM_LABELS: Record<string, string> = {
   threads: 'TH',
 };
 
-const PILLAR_COLORS: Record<string, string> = {
-  ai_engineering: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  building_in_public: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-  bilingual_ai: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
-  systems_thinking: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300',
+const PILLAR_STYLES: Record<string, React.CSSProperties> = {
+  ai_engineering: { background: 'var(--pillar-engineering-bg)', color: 'var(--pillar-engineering-text)' },
+  building_in_public: { background: 'var(--pillar-building-bg)', color: 'var(--pillar-building-text)' },
+  bilingual_ai: { background: 'var(--pillar-bilingual-bg)', color: 'var(--pillar-bilingual-text)' },
+  systems_thinking: { background: 'var(--pillar-systems-bg)', color: 'var(--pillar-systems-text)' },
 };
 
 function QualityBadge({ score, check }: { score?: number; check?: string }) {
   if (!score && !check) return null;
-  const color =
+  const style: React.CSSProperties =
     score !== undefined
       ? score >= 75
-        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+        ? { background: 'var(--verdict-pass-bg)', color: 'var(--verdict-pass-text)' }
         : score >= 55
-          ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
-          : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+          ? { background: 'var(--verdict-review-bg)', color: 'var(--verdict-review-text)' }
+          : { background: 'var(--verdict-fail-bg)', color: 'var(--verdict-fail-text)' }
       : check === 'PASS'
-        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-        : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+        ? { background: 'var(--verdict-pass-bg)', color: 'var(--verdict-pass-text)' }
+        : { background: 'var(--verdict-fail-bg)', color: 'var(--verdict-fail-text)' };
   return (
-    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${color}`}>
+    <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={style}>
       {score !== undefined ? score : check}
     </span>
   );
@@ -113,7 +113,7 @@ export default function ContentKanban({ items, onRefresh }: Props) {
                   <button
                     key={item.id}
                     onClick={() => setSelected(item)}
-                    className="w-full text-left rounded-lg p-3 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-sm focus-ring transition-all"
+                    className="w-full text-left rounded-lg p-3 cursor-pointer hover:shadow-sm focus-ring transition-all"
                     style={{
                       background: 'var(--surface-raised)',
                       border: '1px solid var(--border-default)',
@@ -125,10 +125,8 @@ export default function ContentKanban({ items, onRefresh }: Props) {
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {item.content_pillar && (
                         <span
-                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                            PILLAR_COLORS[item.content_pillar] ??
-                            'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                          }`}
+                          className="text-xs px-1.5 py-0.5 rounded font-medium"
+                          style={PILLAR_STYLES[item.content_pillar] ?? { background: 'var(--pillar-default-bg)', color: 'var(--pillar-default-text)' }}
                         >
                           {item.content_pillar.replace(/_/g, ' ')}
                         </span>
@@ -155,10 +153,10 @@ export default function ContentKanban({ items, onRefresh }: Props) {
 
       {/* Rejected pieces — collapsible at bottom */}
       {grouped['Rejected'].length > 0 && (
-        <div className="border border-red-200 dark:border-red-900 rounded-xl bg-red-50 dark:bg-gray-900">
-          <div className="px-4 py-3 border-b border-red-200 dark:border-red-900 font-semibold text-sm text-red-600 dark:text-red-400">
+        <div className="rounded-xl" style={{ border: '1px solid var(--rejected-border)', background: 'var(--rejected-bg)' }}>
+          <div className="px-4 py-3 font-semibold text-sm" style={{ borderBottom: '1px solid var(--rejected-border)', color: 'var(--rejected-text)' }}>
             Rejected
-            <span className="ml-2 text-xs font-normal text-red-400 dark:text-red-700">
+            <span className="ml-2 text-xs font-normal" style={{ color: 'var(--rejected-text-muted)' }}>
               ({grouped['Rejected'].length})
             </span>
           </div>
@@ -167,8 +165,8 @@ export default function ContentKanban({ items, onRefresh }: Props) {
               <button
                 key={item.id}
                 onClick={() => setSelected(item)}
-                className="text-left border border-red-200 dark:border-red-900 rounded-lg px-3 py-2 cursor-pointer hover:border-red-400 focus:outline-2 focus:outline-red-500 focus:outline-offset-1 transition-colors"
-                style={{ background: 'var(--surface-raised)' }}
+                className="text-left rounded-lg px-3 py-2 cursor-pointer focus-ring transition-colors"
+                style={{ background: 'var(--surface-raised)', border: '1px solid var(--rejected-border)' }}
               >
                 <p className="text-xs font-medium line-clamp-1 max-w-48" style={{ color: 'var(--text-secondary)' }}>
                   {item.title ?? item.id}

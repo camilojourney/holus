@@ -87,11 +87,13 @@ def test_empty_color_uses_default() -> None:
 
 
 def test_data_viz_to_spec_svg_content() -> None:
-    spec = data_viz_to_spec({
-        "chart_type": "bar",
-        "title": "Growth",
-        "data_points": [{"label": "Q1", "value": 10}],
-    })
+    spec = data_viz_to_spec(
+        {
+            "chart_type": "bar",
+            "title": "Growth",
+            "data_points": [{"label": "Q1", "value": 10}],
+        }
+    )
 
     assert "svg_content" in spec.variables
     assert spec.template == "single_image/data_viz"
