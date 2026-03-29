@@ -66,6 +66,31 @@ just audit            # run security sentinel
 - NEVER modify `config/guardrails.yaml` without explicit human approval.
 - ALWAYS use Pydantic models at silo boundaries. No raw dicts.
 
+## Type
+A — Autonomous Marketing Agent (ReAct loop, 32 agents, Observatory API)
+
+## Structure
+| Path | Purpose |
+|------|---------|
+| `src/holus/` | Main Python package |
+| `src/holus/agents/` | Agent implementations (marketing, finance, coordinator) |
+| `src/holus/api/` | Observatory FastAPI API |
+| `src/holus/core/` | Shared infra (config, kill_switch, models) |
+| `src/holus/memory/` | Memory and learning components |
+| `src/holus/visual/` | Visual content generation |
+| `agents/` | Agent prompt definitions (.md + YAML frontmatter) |
+| `config/` | YAML configs (base, guardrails, products) |
+| `infra/` | Build scripts (build-cycle, build-sprint, init-db, launchd) |
+| `infrastructure/` | Monitoring configs (prometheus, grafana, otel, alerts) |
+| `knowledge/current/` | Accumulated domain knowledge |
+| `observatory/` | Observatory frontend (Next.js dashboard) |
+| `scripts/` | Standalone utility scripts |
+| `tests/` | Test suite |
+| `specs/` | Feature specifications (NNN-name.md) |
+| `docs/` | Documentation (decisions/, playbooks/, vision.md, roadmap.md) |
+| `pre-registrations/` | Type A: pre-registered hypotheses |
+| `discussions/` | Type A: research discussions |
+
 ## Context
 
 - Architecture: @ARCHITECTURE.md

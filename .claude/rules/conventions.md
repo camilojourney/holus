@@ -1,0 +1,6 @@
+- Python 3.12+, uv for package management
+- All agents defined in agents/AGENTS.yaml + agents/*.md
+- Pydantic models at silo boundaries, no raw dicts
+- Tests via pytest, run with just check
+- Silo communication via MCP only, never import silo packages
+- Config in config/*.yaml, env vars override via config.py
