@@ -413,3 +413,7 @@ rotate-logs:
     @find logs -maxdepth 1 -name "*.log" -size +10M -exec sh -c 'mv {} logs/archive/$$(basename {}).$(date +%Y%m%d)' \;
     @find logs/archive -mtime +7 -delete 2>/dev/null || true
     @echo "Logs rotated."
+
+# Verify repo integrity before committing (checks duplicates, specs, schema, dead modules)
+verify:
+    python3 /Users/mini/.openclaw/workspace/github/~Projects/system/shared/scripts/repo_verify.py --repo holus --skip tests || [ $? -eq 2 ]
