@@ -23,8 +23,9 @@
 
 # Holus
 
-AI marketing strategist for the product portfolio. Decides what content to create,
-calls silo tools to produce it, tracks what works, and improves strategy over time.
+Thought-to-content studio for the product portfolio. One thought from a person or
+online source becomes platform-native text, images, carousels, reviewed queue
+items, scheduled/published posts, and learning signals.
 
 ## Commands
 
@@ -38,26 +39,28 @@ just audit            # run security sentinel
 
 ## What Holus Does
 
-1. Reads analytics from social-media-automatization (what performed well)
-2. Reads product state (what's new in Pilaster, genpeli, invoz)
-3. Decides what content to create and for which product
-4. Calls silo tools (genpeli MCP, pilaster MCP, social-media MCP) to execute
-5. Tracks results. Adjusts strategy.
+1. Ingests a thought from text, a person, or a URL.
+2. Normalizes it into a useful source thought with source metadata.
+3. Plans one content set for the requested platform activations.
+4. Generates platform-native text, images, and carousels.
+5. Keeps human review as the default gate.
+6. Schedules or publishes explicitly through Holus Social API.
+7. Reads performance snapshots from Holus Social API and improves strategy.
 
 ## Silo Tools (MCP servers Holus calls)
 
 | Tool | Repo | What it does for Holus |
 |------|------|----------------------|
-| `genpeli-mcp` | genpeli | Create and edit videos |
-| `social-media-mcp` | social-media-automatization | Post content + read analytics |
-| `pilaster-mcp` | pilaster | Generate images, run workflows |
+| `holus-social-api` | Holus Social API | Schedule/post content + read analytics |
+| `pilaster-mcp` | pilaster | Future optional AI-image adapter |
+| `genpeli-mcp` | genpeli | Future optional video adapter |
 
 ## What Holus Does NOT Do
 
 - Trading (pythia + milo are completely separate, never touched by Holus)
-- Store social media analytics (that data lives in social-media-automatization)
-- Publish content directly (social-media-automatization does that)
-- Generate videos itself (genpeli does that)
+- Store platform analytics permanently (that data lives in Holus Social API)
+- Post silently during review; publish/schedule must be explicit
+- Depend on Genpeli/video for the current text, image, and carousel workflow
 
 ## Rules
 
@@ -100,3 +103,18 @@ A — Autonomous Marketing Agent (ReAct loop, 32 agents, Observatory API)
 - Env template: @.env.example
 
 @import .claude/rules/workflow.md
+
+<!-- graphify:start -->
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- When `graphify-out/graph.json` exists and the user asks how code is structured, wired, called, or where behavior lives, first run `graphify query "<question>"`. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. Answer from query output; read at most one source file only if the query is thin or missing a named symbol.
+- Before editing a source file, run `graphify query` or `graphify path` to surface dependents/callers/importers. Include connected files in the change set or explicitly call out what else must change.
+- Do not re-read multiple source files after a good query unless the user asks for line-level proof.
+- Skip graphify for trivial one-line edits already in context, pure shell/commit/run tasks, and external/non-repo research.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw file browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost).
+<!-- graphify:end -->

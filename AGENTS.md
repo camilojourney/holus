@@ -132,3 +132,19 @@ The MCP boundary is the contract. If a silo's MCP is down, Holus waits.
 2. **Analytics stay in the silo.** social-media-automatization owns all analytics data. Holus reads it via MCP, never stores it permanently.
 3. **Trading is isolated.** pythia and milo-to-the-moon are never referenced, called, or monitored by Holus. They are separate businesses.
 4. **Human approval for publishing.** Phase 1: all publish actions require human review before execution. Phase 2+: autonomous with weekly human review.
+
+## graphify
+
+When the user types `/graphify`, invoke the graphify skill before doing anything else.
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- When `graphify-out/graph.json` exists and the user asks how code is structured, wired, called, or where behavior lives, first run `graphify query "<question>"`. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. Answer from query output; read at most one source file only if the query is thin or missing a named symbol.
+- Before editing a source file, run `graphify query` or `graphify path` to surface dependents/callers/importers. Include connected files in the change set or explicitly call out what else must change.
+- Do not re-read multiple source files after a good query unless the user asks for line-level proof.
+- Skip graphify for trivial one-line edits already in context, pure shell/commit/run tasks, and external/non-repo research.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw file browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost).
+<!-- graphify:end -->

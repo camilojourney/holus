@@ -98,3 +98,12 @@ data/examples/
 *.temp
 .worktrees/
 p2p3-final-review/
+
+# graphify — commit graph.json; ignore heavy viz outputs
+graphify-out/*.html
+graphify-out/*.svg
+graphify-out/*.graphml
+graphify-out/wiki/
+graphify-out/GRAPH_REPORT.md
+graphify-out/cypher.txt
+!graphify-out/graph.json
