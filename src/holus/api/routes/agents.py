@@ -34,6 +34,14 @@ def _load_agents_yaml() -> dict[str, Any]:
         raise HTTPException(status_code=503, detail="agents registry unavailable") from exc
 
 
+def _as_string_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value if item is not None]
+    return [str(value)]
+
+
 def _build_agent_info(
     agent_id: str, meta: dict[str, Any], entries: list[dict[str, Any]]
 ) -> AgentInfo:
@@ -74,7 +82,7 @@ def _build_agent_info(
     model_map = {
         "strategic": "claude-opus-4-6",
         "operational": "claude-sonnet-4-6",
-        "classification": "claude-haiku-4-5-20251001",
+        "classification": "claude-sonnet-4-6",  # haiku slower than sonnet via SDK
     }
     model = model_map.get(model_tier, model_tier)
 
@@ -83,6 +91,15 @@ def _build_agent_info(
         name=meta.get("name", agent_id),
         model=model,
         role=meta.get("role", ""),
+        type=meta.get("type", "agent"),
+        category=meta.get("category"),
+        status=meta.get("status", "active"),
+        model_tier=model_tier,
+        version=str(meta.get("version")) if meta.get("version") is not None else None,
+        prompt_path=meta.get("prompt"),
+        is_gate=bool(meta.get("gate", False)),
+        evaluated_by=_as_string_list(meta.get("evaluated_by")),
+        evaluates_with=_as_string_list(meta.get("evaluates_with")),
         last_run=last_run,
         last_status=last_status,
         run_count_7d=run_count_7d,
@@ -153,6 +170,15 @@ async def get_agent(agent_id: str) -> AgentDetailResponse:
         name=info.name,
         model=info.model,
         role=info.role,
+        type=info.type,
+        category=info.category,
+        status=info.status,
+        model_tier=info.model_tier,
+        version=info.version,
+        prompt_path=info.prompt_path,
+        is_gate=info.is_gate,
+        evaluated_by=info.evaluated_by,
+        evaluates_with=info.evaluates_with,
         last_run=info.last_run,
         last_status=info.last_status,
         run_count_7d=info.run_count_7d,

@@ -1,6 +1,6 @@
 # Holus Agent Registry — single source of truth
 # Every agent MUST be listed here.
-# Total: 35 agents (1 manager + 25 specialists + 7 evaluators + 2 ops)
+# Total: 41 agents (1 manager + 30 specialists + 8 evaluators + 2 ops)
 
 agents:
   # MANAGERS (1)
@@ -136,6 +136,26 @@ agents:
     prompt: "specialists/content/voice-writer.md"
     evaluated_by: written-content-judge
 
+  content-job-classifier:
+    role: "Classifies the strategic job before any format or visual decision"
+    type: specialist
+    category: content
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/content/content-job-classifier.md"
+    evaluated_by: written-content-judge
+
+  format-router:
+    role: "Routes each idea to text, deterministic visual, carousel, AI image, or video"
+    type: specialist
+    category: content
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/content/format-router.md"
+    evaluated_by: platform-fit-judge
+
   idea-planner:
     role: "Content strategist — plans which formats to create from a raw idea"
     type: specialist
@@ -165,6 +185,37 @@ agents:
     version: "1.0.0"
     prompt: "specialists/visual/visual-designer.md"
     evaluated_by: visual-content-judge
+
+  visual-necessity-gate:
+    role: "Says whether a visual is needed and forbids wrong visual formats"
+    type: specialist
+    category: visual
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/visual/visual-necessity-gate.md"
+    evaluated_by: semantic-visual-judge
+    gate: true
+
+  deterministic-artifact-planner:
+    role: "Plans charts, diagrams, tables, PDFs, and HTML artifacts for exact rendering"
+    type: specialist
+    category: visual
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/visual/deterministic-artifact-planner.md"
+    evaluated_by: visual-content-judge
+
+  ai-image-director:
+    role: "Directs AI image prompts only for metaphor, story artifact, and product-scene cases"
+    type: specialist
+    category: visual
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/visual/ai-image-director.md"
+    evaluated_by: semantic-visual-judge
 
   # SPECIALISTS — Video Content (3) — 15% of output
   script-writer:
@@ -320,6 +371,17 @@ agents:
     version: "1.0.0"
     prompt: "evaluators/visual-content-judge.md"
     rubric: [visual_hierarchy, brand_alignment, info_clarity, scroll_stop_power, slide_pacing]
+
+  semantic-visual-judge:
+    role: "Evaluates whether a visual artifact communicates the intended content job"
+    type: evaluator
+    category: visual
+    model_tier: classification
+    status: active
+    version: "1.0.0"
+    prompt: "evaluators/semantic-visual-judge.md"
+    rubric: [content_job_fit, format_fit, semantic_clarity, artifact_usefulness, forbidden_format_check]
+    gate: true
 
   video-content-judge:
     role: "Expert evaluation of video content"

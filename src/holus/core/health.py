@@ -149,16 +149,16 @@ def run_preflight_checks(
 
     1. Kill switch (blocking) — global Redis kill switch must not be active.
     2. LLM reachable (blocking) — Anthropic API must respond.
-    3. Social Media MCP (blocking) — primary output channel.
-    4. Pilaster MCP (non-blocking) — image generation; removed from silos on failure.
-    5. Genpeli MCP (non-blocking) — video generation; removed from silos on failure.
+    3. Holus Social API (blocking) — primary output channel.
+    4. Pilaster MCP (non-blocking) — future optional image adapter; removed from silos on failure.
+    5. Genpeli MCP (non-blocking) — future optional video adapter; removed from silos on failure.
     6. Trajectory log writable (blocking) — data integrity requires write access.
     7. Run lock (blocking) — no concurrent cycle is already running.
 
     Args:
         redis_url: Override Redis URL (default: ``REDIS_URL`` env var or localhost).
         anthropic_api_key: Override Anthropic API key (default: ``ANTHROPIC_API_KEY``).
-        social_media_api_base_url: Override Social Media API base URL.
+        social_media_api_base_url: Override Holus Social API base URL.
         pilaster_api_base_url: Override Pilaster API base URL.
         genpeli_api_base_url: Override Genpeli API base URL.
         trajectory_path: Override trajectory file path.
@@ -173,8 +173,10 @@ def run_preflight_checks(
 
     _redis_url = redis_url or os.environ.get("REDIS_URL", "redis://localhost:6379")
     _anthropic_key = anthropic_api_key or os.environ.get("ANTHROPIC_API_KEY", "")
-    _social_url = social_media_api_base_url or os.environ.get(
-        "SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000"
+    _social_url = (
+        social_media_api_base_url
+        or os.environ.get("HOLUS_SOCIAL_API_BASE_URL")
+        or os.environ.get("SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000")
     )
     _pilaster_url = pilaster_api_base_url or os.environ.get(
         "PILASTER_API_BASE_URL", "http://localhost:8001"
@@ -249,17 +251,17 @@ def run_preflight_checks(
             )
 
     # ------------------------------------------------------------------
-    # 3. Social Media MCP (blocking)
+    # 3. Holus Social API (blocking)
     # ------------------------------------------------------------------
     try:
         with httpx.Client(timeout=5.0) as client:
             client.get(f"{_social_url}/health")
     except Exception as exc:
-        logger.error("Preflight: Social Media MCP unreachable — blocking cycle", error=str(exc))
+        logger.error("Preflight: Holus Social API unreachable — blocking cycle", error=str(exc))
         return HealthResult(
             blocking_ok=False,
             available_silos=[],
-            warnings=[f"Social Media MCP not reachable: {exc}"],
+            warnings=[f"Holus Social API not reachable: {exc}"],
         )
 
     # ------------------------------------------------------------------

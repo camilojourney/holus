@@ -1,0 +1,29 @@
+[mcp_servers.pilaster]
+args = [
+    "-C",
+    "/Users/mini/.openclaw/workspace/github/pilaster",
+    "exec",
+    "tsx",
+    "mcp-server.ts",
+]
+command = "pnpm"
+env_vars = [
+    "PILASTER_API_KEY",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+]
+
+[mcp_servers.social-media]
+args = [
+    "--directory",
+    "/Users/mini/.openclaw/workspace/github/social-media-automatization",
+    "run",
+    "python",
+    "-m",
+    "mcp_server",
+]
+command = "uv"
+env_vars = ["POSTING_API_KEY"]
+
+[mcp_servers.social-media.env]
+API_BASE_URL = "http://localhost:8000"

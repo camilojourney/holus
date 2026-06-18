@@ -1,8 +1,8 @@
 """Analytics collector — fetches post-publish engagement data into trajectory.
 
-Reads published content from the queue, fetches engagement metrics from
-social-media-automatization, computes the engagement reward signal, and
-writes the result back to trajectory.jsonl.
+Reads published content from the queue, fetches engagement metrics from Holus
+Social API, computes the engagement reward signal, and writes the result back
+to trajectory.jsonl.
 
 This closes the feedback loop: generate → judge → publish → collect → learn.
 
@@ -144,7 +144,7 @@ async def collect_analytics(*, max_age_days: int = 8) -> list[dict[str, Any]]:
 
     Returns list of {piece_id, platform, engagement_signal, blended_reward}.
     """
-    from holus.integrations.social_media import SocialMediaClient
+    from holus.integrations.holus_social_api import HolusSocialAPIClient
     from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
     pieces = _load_published_pieces(max_age_days=max_age_days)
@@ -158,12 +158,12 @@ async def collect_analytics(*, max_age_days: int = 8) -> list[dict[str, Any]]:
 
     import os
 
-    api_key = os.environ.get("POSTING_API_KEY", "")
+    api_key = os.environ.get("HOLUS_SOCIAL_API_KEY") or os.environ.get("POSTING_API_KEY", "")
     if not api_key:
-        logger.error("POSTING_API_KEY not set — cannot collect analytics")
+        logger.error("HOLUS_SOCIAL_API_KEY not set — cannot collect analytics")
         return []
 
-    async with SocialMediaClient(api_key=api_key) as client:
+    async with HolusSocialAPIClient(api_key=api_key) as client:
         for piece in pieces:
             post_id = piece["post_id"]
             platform = piece.get("platform", "linkedin")

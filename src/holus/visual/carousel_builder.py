@@ -55,15 +55,16 @@ def _normalize_outline(outline: dict[str, Any]) -> dict[str, Any]:
             design_vars["background_gradient"] = design["gradient"]
         if design.get("effect") and design["effect"] != "none":
             design_vars["visual_effect"] = design["effect"]
+        brand_identity = design.get("brand_identity")
+        if isinstance(brand_identity, dict) and brand_identity.get("author_name"):
+            design_vars["author_name"] = brand_identity["author_name"]
+        if isinstance(brand_identity, dict) and brand_identity.get("brand_handle"):
+            design_vars["brand_handle"] = brand_identity["brand_handle"]
 
     normalized: list[dict[str, Any]] = []
     for slide in slides:
         slide_type = slide.get("type", "body")
         variables = dict(slide.get("variables", {}))
-
-        # Inject author name into hook and CTA slides for brand attribution
-        if slide_type in ("hook", "cta") and "author_name" not in variables:
-            variables["author_name"] = "Juan Camilo Martinez"
 
         # Merge design decisions (slide-level overrides win)
         for key, value in design_vars.items():

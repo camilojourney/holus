@@ -98,7 +98,7 @@ async def approve_variant(req: ApproveRequest) -> ApprovalStatus:
     logger.info("telegram_gate: approved post=%s variant=%s", req.post_id, req.variant)
 
     # TODO: trigger publisher → social-media-mcp.schedule_post(post_id, variant)
-    # This will be wired when social-media MCP connection is confirmed
+    # This will be wired when Holus Social API scheduling is confirmed
 
     return ApprovalStatus(
         post_id=req.post_id,

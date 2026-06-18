@@ -13,6 +13,15 @@ class AgentInfo(BaseModel):
     name: str
     model: str
     role: str
+    type: str = "agent"
+    category: str | None = None
+    status: str = "active"
+    model_tier: str = "operational"
+    version: str | None = None
+    prompt_path: str | None = None
+    is_gate: bool = False
+    evaluated_by: list[str] = []
+    evaluates_with: list[str] = []
     last_run: datetime | None = None
     last_status: str | None = None  # "success" | "error" | "running" | None
     run_count_7d: int = 0
@@ -25,6 +34,15 @@ class AgentDetailResponse(BaseModel):
     name: str
     model: str
     role: str
+    type: str = "agent"
+    category: str | None = None
+    status: str = "active"
+    model_tier: str = "operational"
+    version: str | None = None
+    prompt_path: str | None = None
+    is_gate: bool = False
+    evaluated_by: list[str] = []
+    evaluates_with: list[str] = []
     last_run: datetime | None = None
     last_status: str | None = None
     run_count_7d: int = 0
@@ -77,8 +95,21 @@ class ContentQuality(BaseModel):
     violations: list[str] = []
 
 
+class PostingDestination(BaseModel):
+    platform: str
+    account: str
+    handle: str | None = None
+    profile_url: str | None = None
+    language: str = "en"
+    status: str = "configured_default"
+    approval_required: bool = True
+    rationale: str | None = None
+    lineage: str | None = None
+
+
 class ContentItem(BaseModel):
     id: str
+    group_id: str | None = None
     title: str | None = None
     content_type: str
     platform: str | None = None
@@ -88,7 +119,10 @@ class ContentItem(BaseModel):
     scheduled_for: datetime | None = None
     agent_id: str | None = None
     idea_source: str | None = None
+    source_type: str | None = None
+    source_url: str | None = None
     quality: ContentQuality | None = None
+    posting_destination: PostingDestination | None = None
 
 
 class ContentDetail(ContentItem):
@@ -100,8 +134,10 @@ class ContentDetail(ContentItem):
     agent_trace: list[AgentTraceStep] = []
     image_url: str | None = None
     image_b_url: str | None = None
+    pdf_url: str | None = None
     visual_spec: dict[str, Any] | None = None
     visual_spec_b: dict[str, Any] | None = None
+    thought_essence: dict[str, Any] | None = None
     judge_score: float | None = None
     judge_verdict: str | None = None
 
@@ -109,6 +145,36 @@ class ContentDetail(ContentItem):
 class ContentPatchRequest(BaseModel):
     status: str | None = None  # "approved" | "rejected" | "scheduled"
     scheduled_at: str | None = None  # ISO8601
+
+
+class ContentCreateRequest(BaseModel):
+    thought: str
+    platforms: list[str] | None = None
+    source_type: str | None = None  # "text" | "url"
+    source_url: str | None = None
+
+
+class ContentPublishRequest(BaseModel):
+    dry_run: bool = False
+
+
+class ContentScheduleRequest(BaseModel):
+    scheduled_at: str
+    dry_run: bool = False
+
+
+class ContentPublishResponse(BaseModel):
+    piece: ContentDetail
+    dry_run: bool = False
+    payload: dict[str, Any]
+    publish_id: str | None = None
+    schedule_id: str | None = None
+    status: str
+
+
+class ContentCreateResponse(BaseModel):
+    group_id: str
+    items: list[ContentItem]
 
 
 class ContentStatusCounts(BaseModel):

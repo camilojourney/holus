@@ -1,4 +1,4 @@
-"""Content queue for human approval before social media posting.
+"""Content queue for human approval before Holus Social API posting.
 
 SPEC-032: Adds humanization gate between quality judge and publishing.
 Status machine: pending_review → pending_humanization → humanized → approved → published
@@ -272,7 +272,7 @@ def mark_published(piece_id: str, post_id: str) -> None:
 
     Args:
         piece_id: ID of the content piece
-        post_id: Post ID returned by the social-media API
+        post_id: Post ID returned by Holus Social API
     """
     path = _find_piece_file(piece_id)
     if path is None:

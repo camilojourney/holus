@@ -8,6 +8,7 @@ Covers:
 - PATCH /api/v1/content/{id} — approve a content piece
 - PATCH /api/v1/content/{id} — reject a content piece
 - GET /api/v1/content/{id}/image — serve rendered PNG
+- GET /api/v1/content/{id}/pdf — serve rendered carousel PDF
 - PATCH /api/v1/content/{id}/visual-choice — choose A/B variant
 """
 
@@ -15,7 +16,7 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -158,6 +159,28 @@ def piece_with_image(content_queue_dir: Path, tmp_path: Path) -> tuple[Path, Pat
     return p, img_path
 
 
+@pytest.fixture
+def piece_with_pdf(content_queue_dir: Path, tmp_path: Path) -> tuple[Path, Path]:
+    """Write a carousel content piece that references a rendered PDF."""
+    pdf_path = tmp_path / "rendered" / "piece-005.pdf"
+    pdf_path.parent.mkdir(parents=True, exist_ok=True)
+    pdf_path.write_bytes(b"%PDF-1.4\n% Holus test carousel\n")
+
+    data = {
+        "piece_id": "piece-005",
+        "topic": "Workflow carousel",
+        "content_type": "carousel_outline",
+        "platform": "linkedin",
+        "status": "pending_review",
+        "text": "Slide 1: the workflow is the product.",
+        "rendered_pdf_path": str(pdf_path),
+        "visual_spec": {"format": "pdf", "renderer": "holus/visual-renderer"},
+    }
+    p = content_queue_dir / "piece-005.yaml"
+    p.write_text(yaml.dump(data, default_flow_style=False), encoding="utf-8")
+    return p, pdf_path
+
+
 def _patch_queue_dir(content_queue_dir: Path):
     """Return a patch context manager for CONTENT_QUEUE_DIR."""
     return patch("holus.api.routes.content.CONTENT_QUEUE_DIR", content_queue_dir)
@@ -213,6 +236,174 @@ class TestListContent:
         assert resp.json()["items"] == []
 
 
+class TestCreateContentFromThought:
+    """POST /api/v1/content/from-thought."""
+
+    def test_create_from_thought_renders_visual_previews(self, client, content_queue_dir):
+        """Instagram image and LinkedIn carousel drafts get rendered assets."""
+        with _patch_queue_dir(content_queue_dir):
+            resp = client.post(
+                "/api/v1/content/from-thought",
+                json={
+                    "thought": "Holus should turn one honest founder thought into native social content.",
+                    "platforms": [
+                        "linkedin_text",
+                        "instagram_image",
+                        "linkedin_carousel",
+                        "instagram_carousel",
+                    ],
+                },
+            )
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data["items"]) == 4
+
+        ids_by_platform_type = {
+            (item["platform"], item["content_type"]): item["id"] for item in data["items"]
+        }
+        assert set(ids_by_platform_type) == {
+            ("linkedin", "text_post"),
+            ("instagram", "image_caption"),
+            ("linkedin", "carousel_outline"),
+            ("instagram", "carousel_outline"),
+        }
+
+        with _patch_queue_dir(content_queue_dir):
+            image_detail = client.get(
+                f"/api/v1/content/{ids_by_platform_type[('instagram', 'image_caption')]}"
+            ).json()
+            carousel_detail = client.get(
+                f"/api/v1/content/{ids_by_platform_type[('linkedin', 'carousel_outline')]}"
+            ).json()
+            instagram_carousel_detail = client.get(
+                f"/api/v1/content/{ids_by_platform_type[('instagram', 'carousel_outline')]}"
+            ).json()
+            linkedin_detail = client.get(
+                f"/api/v1/content/{ids_by_platform_type[('linkedin', 'text_post')]}"
+            ).json()
+
+        assert image_detail["image_url"].endswith("/image")
+        assert image_detail["posting_destination"]["platform"] == "instagram"
+        assert image_detail["posting_destination"]["handle"] == "@camiloexperience"
+        assert image_detail["posting_destination"]["approval_required"] is True
+        assert carousel_detail["visual_spec"]["format"] == "pdf"
+        assert image_detail["visual_spec"]["renderer"] in {
+            "holus/visual-renderer",
+            "holus/local-preview",
+        }
+        assert image_detail["visual_spec"]["style_profile"]["profile_id"]
+        assert image_detail["visual_spec"]["style_profile"]["visual_type"]
+        assert image_detail["visual_spec"]["style_profile"]["theme"]
+        image_prompt = image_detail["visual_spec"]["prompt_contract"]
+        assert {
+            "purpose",
+            "subject",
+            "action",
+            "setting",
+            "composition",
+            "camera_angle",
+            "style",
+            "palette",
+            "lighting",
+            "mood",
+            "typography",
+            "text_placement",
+            "variation_seed",
+        }.issubset(image_prompt)
+        assert len(image_prompt["variation_seed"]) == 12
+        creative_contract = image_detail["visual_spec"]["creative_contract"]
+        assert {
+            "platform_format",
+            "aspect_ratio",
+            "safe_zone",
+            "content_job",
+            "hook_pattern",
+            "layout_archetype",
+            "typography_hierarchy",
+            "density",
+            "visual_metaphor",
+            "reader_action",
+            "rhythm",
+            "freshness_axis",
+        }.issubset(creative_contract)
+        assert carousel_detail["visual_spec"]["style_profile"]["profile_id"]
+        assert carousel_detail["visual_spec"]["prompt_contract"]["composition"]
+        assert len(carousel_detail["visual_spec"]["carousel_slides"]) == 5
+        assert carousel_detail["pdf_url"].endswith("/pdf")
+        assert carousel_detail["visual_spec"]["platform_export"] == "linkedin_document_pdf"
+        assert instagram_carousel_detail["visual_spec"]["platform_export"] == (
+            "instagram_multi_image_carousel"
+        )
+        assert instagram_carousel_detail["pdf_url"].endswith("/pdf")
+        assert linkedin_detail["thought_essence"]["thesis"]
+        assert linkedin_detail["image_url"] is None
+        assert image_detail["source_type"] == "text"
+        assert [step["agent_id"] for step in image_detail["agent_trace"]] == [
+            "idea-injector",
+            "context-builder",
+            "idea-planner",
+            "visual-designer",
+            "brand-designer",
+            "platform-adapter",
+            "voice-guardian",
+        ]
+
+        with _patch_queue_dir(content_queue_dir):
+            image_resp = client.get(
+                f"/api/v1/content/{ids_by_platform_type[('instagram', 'image_caption')]}/image"
+            )
+
+        assert image_resp.status_code == 200
+        assert image_resp.headers["content-type"] == "image/png"
+
+    def test_create_from_thought_rejects_unsupported_channel(self, client, content_queue_dir):
+        """Unsupported platform channels return 400 instead of being ignored."""
+        with _patch_queue_dir(content_queue_dir):
+            resp = client.post(
+                "/api/v1/content/from-thought",
+                json={
+                    "thought": "This should not silently drop the requested platform.",
+                    "platforms": ["linkedin_text", "unknown_channel"],
+                },
+            )
+
+        assert resp.status_code == 400
+        assert "unknown_channel" in resp.json()["detail"]
+
+    def test_create_from_url_stores_source_metadata(self, client, content_queue_dir):
+        """URL thoughts extract source text and keep URL metadata on every variant."""
+        with (
+            _patch_queue_dir(content_queue_dir),
+            patch(
+                "holus.agents.marketing.thought_pipeline.ThoughtContentPipeline._extract_from_url",
+                new=AsyncMock(return_value="A public thought about turning one source into native content."),
+            ),
+        ):
+            resp = client.post(
+                "/api/v1/content/from-thought",
+                json={
+                    "thought": "",
+                    "source_type": "url",
+                    "source_url": "https://example.com/thought",
+                    "platforms": ["linkedin_text", "instagram_image"],
+                },
+            )
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data["items"]) == 2
+
+        records = [
+            yaml.safe_load(path.read_text(encoding="utf-8"))
+            for path in sorted(content_queue_dir.glob("*.yaml"))
+        ]
+        assert len({record["group_id"] for record in records}) == 1
+        assert {record["source_type"] for record in records} == {"url"}
+        assert {record["source_url"] for record in records} == {"https://example.com/thought"}
+        assert all("public thought" in record["topic"] for record in records)
+
+
 class TestGetContentDetail:
     """GET /api/v1/content/{piece_id}."""
 
@@ -233,6 +424,9 @@ class TestGetContentDetail:
         assert data["char_count"] == 280
         assert data["judge_score"] == 8.5
         assert data["judge_verdict"] == "publish"
+        assert data["posting_destination"]["platform"] == "linkedin"
+        assert data["posting_destination"]["handle"] == "@camiloexperience"
+        assert data["posting_destination"]["approval_required"] is True
 
         # Quality block
         assert data["quality"]["hook_score"] == "8/10"
@@ -256,16 +450,23 @@ class TestGetContentDetail:
             resp = client.get("/api/v1/content/piece-001")
         assert resp.status_code == 200
 
+    def test_get_content_detail_includes_pdf_url(self, client, content_queue_dir, piece_with_pdf):
+        """Carousel details expose a PDF URL for the review UI."""
+        with _patch_queue_dir(content_queue_dir):
+            resp = client.get("/api/v1/content/piece-005")
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["image_url"] is None
+        assert data["pdf_url"] == "/api/v1/content/piece-005/pdf"
+
 
 class TestPatchContent:
     """PATCH /api/v1/content/{piece_id}."""
 
     def test_patch_content_approve(self, client, content_queue_dir, sample_yaml_piece):
-        """Approving updates the YAML file and returns the updated detail."""
-        with (
-            _patch_queue_dir(content_queue_dir),
-            patch("holus.api.routes.content._attempt_post") as mock_post,
-        ):
+        """Approving updates the YAML file without publishing."""
+        with _patch_queue_dir(content_queue_dir):
             resp = client.patch(
                 "/api/v1/content/piece-001",
                 json={"status": "approved"},
@@ -275,19 +476,14 @@ class TestPatchContent:
         data = resp.json()
         assert data["status"] == "approved"
 
-        # Verify _attempt_post was called
-        mock_post.assert_called_once()
-
         # Verify YAML file was updated on disk
         updated = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
         assert updated["status"] == "approved"
+        assert "post_id" not in updated
 
     def test_patch_content_reject(self, client, content_queue_dir, sample_yaml_piece):
-        """Rejecting updates the file; does NOT call _attempt_post."""
-        with (
-            _patch_queue_dir(content_queue_dir),
-            patch("holus.api.routes.content._attempt_post") as mock_post,
-        ):
+        """Rejecting updates the file without publishing."""
+        with _patch_queue_dir(content_queue_dir):
             resp = client.patch(
                 "/api/v1/content/piece-001",
                 json={"status": "rejected"},
@@ -295,14 +491,13 @@ class TestPatchContent:
 
         assert resp.status_code == 200
         assert resp.json()["status"] == "rejected"
-        mock_post.assert_not_called()
 
         updated = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
         assert updated["status"] == "rejected"
 
     def test_patch_content_json_file(self, client, content_queue_dir, sample_json_piece):
         """Patching a JSON-backed piece writes JSON correctly."""
-        with _patch_queue_dir(content_queue_dir), patch("holus.api.routes.content._attempt_post"):
+        with _patch_queue_dir(content_queue_dir):
             resp = client.patch(
                 "/api/v1/content/piece-002",
                 json={"status": "approved"},
@@ -332,6 +527,47 @@ class TestPatchContent:
         assert resp.status_code == 200
         updated = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
         assert updated["scheduled_at"] == "2026-04-01T12:00:00Z"
+
+
+class TestPublishAndScheduleContent:
+    """Explicit Holus Social API publish/schedule endpoints."""
+
+    def test_publish_dry_run_uses_platforms_payload(self, client, content_queue_dir, sample_yaml_piece):
+        """Dry-run publish returns the payload and does not update the queue file."""
+        with _patch_queue_dir(content_queue_dir):
+            resp = client.post("/api/v1/content/piece-001/publish", json={"dry_run": True})
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["dry_run"] is True
+        assert data["payload"]["platforms"] == ["linkedin"]
+        assert "targets" not in data["payload"]
+        assert data["status"] == "dry_run"
+
+        updated = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
+        assert updated["status"] == "pending_review"
+        assert "post_id" not in updated
+
+    def test_schedule_dry_run_stores_no_local_status(
+        self, client, content_queue_dir, sample_yaml_piece
+    ):
+        """Dry-run schedule returns the payload without changing local review state."""
+        with _patch_queue_dir(content_queue_dir):
+            resp = client.post(
+                "/api/v1/content/piece-001/schedule",
+                json={"scheduled_at": "2026-04-01T12:00:00Z", "dry_run": True},
+            )
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["dry_run"] is True
+        assert data["payload"]["platforms"] == ["linkedin"]
+        assert data["payload"]["scheduled_at"] == "2026-04-01T12:00:00Z"
+        assert data["status"] == "dry_run"
+
+        updated = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
+        assert updated["status"] == "pending_review"
+        assert updated["scheduled_at"] == "2026-03-25T14:00:00Z"
 
 
 class TestContentImage:
@@ -366,6 +602,33 @@ class TestContentImage:
             resp = client.get("/api/v1/content/piece-001/image")
         assert resp.status_code == 404
         assert "no visual" in resp.json()["detail"].lower()
+
+
+class TestContentPdf:
+    """GET /api/v1/content/{piece_id}/pdf."""
+
+    def test_content_pdf(self, client, content_queue_dir, piece_with_pdf):
+        """Serves the rendered carousel PDF for a content piece."""
+        with _patch_queue_dir(content_queue_dir):
+            resp = client.get("/api/v1/content/piece-005/pdf")
+
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "application/pdf"
+        assert "inline" in resp.headers["content-disposition"]
+        assert resp.content.startswith(b"%PDF-")
+
+    def test_content_pdf_not_found_piece(self, client, content_queue_dir):
+        """Returns 404 when piece does not exist."""
+        with _patch_queue_dir(content_queue_dir):
+            resp = client.get("/api/v1/content/nonexistent/pdf")
+        assert resp.status_code == 404
+
+    def test_content_pdf_no_carousel(self, client, content_queue_dir, sample_yaml_piece):
+        """Returns 404 when piece exists but has no rendered PDF."""
+        with _patch_queue_dir(content_queue_dir):
+            resp = client.get("/api/v1/content/piece-001/pdf")
+        assert resp.status_code == 404
+        assert "no carousel pdf" in resp.json()["detail"].lower()
 
 
 class TestVisualChoice:

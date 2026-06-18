@@ -1,12 +1,14 @@
 # Holus Architecture
 
-**What Holus is:** An AI marketing strategist agent that promotes the product portfolio.
-It decides what content to create, calls specialized silo tools to produce it,
-and learns from results to improve strategy over time.
+**What Holus is:** A thought-to-content studio for the product portfolio.
+It ingests one thought from a person or online source, transforms it into useful
+platform-native formats, creates text/image/carousel assets, reviews them, posts
+or schedules through Holus Social API, and learns from results.
 
 **What Holus is not:** A unified codebase that replaces the individual repos.
-Not a trading system. Not a content publisher. Not a video generator.
-Those are silos. Holus uses them as tools.
+Not a trading system. Not an account owner. Not a silent publisher. Not a video
+generator for the current build. Holus Social API owns posting and analytics;
+Genpeli/video is deferred.
 
 **Last updated:** 2026-03-12
 **Update cadence:** Only on major structural changes.
@@ -17,26 +19,26 @@ Those are silos. Holus uses them as tools.
 
 ```
                         HOLUS
-                  (marketing strategist)
+                   (Thought Studio)
                           |
-          ┌───────────────┼───────────────┐
-          ▼               ▼               ▼
-    genpeli-mcp    social-media-mcp   pilaster-mcp
-    (edit videos)  (post + analytics) (generate images
-          │               │            + characters
-          ▼               ▼            + short video)
-       genpeli      social-media-         │
-                    automatization        ▼
-                                     pilaster.ai
-                                         │
-                                    ┌────┼────┐
-                                    ▼    ▼    ▼
-                                ComfyUI Repl. Runway
-                                (swappable backends)
+  thought source -> normalize -> content set -> variants -> visuals -> review
+                          |
+                          ▼
+                  Holus Social API
+              (schedule/post + analytics)
+                          |
+                          ▼
+                  social platforms
+
+  Future optional adapters:
+    Pilaster for AI image generation
+    Genpeli for video
 ```
 
-Holus holds the BRAIN (strategy, decisions, learning).
-The silos hold the HANDS (execution, data, publishing).
+Holus holds the BRAIN and studio state: source metadata, decisions, generated
+variants, visual assets, review state, and learning.
+Holus Social API holds the publishing HANDS: accounts, posting queue, platform
+analytics, and performance snapshots.
 
 Data never flows back into Holus permanently.
 Holus reads silo data to make decisions, but the source of truth stays in the silo.
@@ -87,34 +89,38 @@ Each evaluator has its own rubric dimensions (not generic correctness/completene
 
 ---
 
-## The Agent Loop (ReAct)
+## The Thought Studio Loop
 
-Holus runs as an episodic agent — triggered weekly by cron or manually via Telegram.
+Holus runs as a thought-to-content pipeline through the API, CLI, or future agent cycles.
 
 ```
-OBSERVE
-  → call social-media-mcp: get_analytics(last_7_days)
-  → read config/products.yaml: what is new in Pilaster, genpeli, invoz?
-  → read .self-improvement/MEMORY.md: what have we learned?
+INGEST
+  -> accept thought text or URL at /api/v1/content/from-thought
+  -> store source_type, source_url, and raw source metadata
 
-REASON  (Claude Opus — strategy decisions)
-  → "Tutorial posts outperform promo posts 4:1"
-  → "Pilaster shipped workflow diff view — good tutorial topic"
-  → "LinkedIn performing better than Instagram for this audience"
-  → "This week: create ComfyUI diff tutorial targeting LinkedIn + TikTok"
+NORMALIZE
+  -> extract useful text from the source
+  -> create one Thought with traceable lineage
 
-ACT
-  → call pilaster-mcp: generate_image(brief="workflow diff comparison screenshot")
-  → call genpeli-mcp: create_video(brief="...", images=[...], voice="camilo")
-  → call social-media-mcp: schedule_post(video_url, platforms=["linkedin","tiktok"])
+PLAN
+  -> choose PlatformActivation rows such as linkedin_text, instagram_image,
+     linkedin_carousel, threads_text, twitter_x_thread
 
-EVALUATE
-  → run JudgeAgent on each generated piece (domain-specific evaluator routing)
-  → log what was decided, why, and judge scores → trajectory.jsonl
-  → write weekly report → .self-improvement/reports/marketing/YYYY-MM-DD.md
+GENERATE
+  -> create ContentVariant rows for each platform
+  -> render VisualAsset files into data/rendered-content for image/carousel outputs
 
-NEXT CYCLE
-  → analytics from this week's posts feed into next week's OBSERVE
+REVIEW
+  -> run judges and preserve human review as the default gate
+  -> PATCH approval/rejection/scheduled state locally only
+
+PUBLISH OR SCHEDULE
+  -> explicit endpoint calls HolusSocialAPIClient with platforms payload
+  -> dry-run returns the payload without posting
+
+LEARN
+  -> read PerformanceSnapshot data from Holus Social API
+  -> update trajectory, memory, lessons, and next cycle planning
 ```
 
 ---
@@ -124,7 +130,25 @@ NEXT CYCLE
 Each silo is an independent repo that owns its own data and execution.
 Holus communicates with silos via MCP (Model Context Protocol) tool calls.
 
-### genpeli (video editing silo)
+### Holus Social API (publishing + analytics boundary)
+
+**What it owns:** Social accounts, posting queue, scheduling, platform analytics,
+top posts, and performance snapshots.
+**What Holus calls:**
+```python
+holus_social.publish(content, platforms, media_url, media_type) -> PublishResult
+holus_social.schedule_post(content, platforms, scheduled_at) -> ScheduleResult
+holus_social.get_analytics(days: int, platform: str) -> AnalyticsReport
+holus_social.get_top_posts(limit: int, metric: str) -> list[Post]
+```
+**Data stays in:** Holus Social API storage. Holus records references and snapshots
+only when needed for learning.
+
+Legacy environment aliases remain supported:
+`SOCIAL_MEDIA_API_BASE_URL` -> `HOLUS_SOCIAL_API_BASE_URL`,
+`POSTING_API_KEY` -> `HOLUS_SOCIAL_API_KEY`.
+
+### Genpeli (future video adapter)
 
 **What it is:** An AI video editing pipeline for human footage. Takes raw video,
 removes silences and fillers, burns word-by-word captions, normalizes audio,
@@ -139,21 +163,10 @@ genpeli.get_video_preview(job_id: str) → PreviewResult
 genpeli.approve_video(job_id: str) → ApprovalResult
 genpeli.reject_video(job_id: str, reason: str) → RejectionResult
 ```
-**Data stays in:** genpeli's own storage.
+**Data stays in:** Genpeli's own storage. This integration is deferred until
+the text/image/carousel workflow is solid.
 
-### social-media-automatization (publishing + analytics silo)
-
-**What it owns:** All social media accounts, posting queue, platform analytics.
-**What Holus calls:**
-```python
-social_media.schedule_post(content, platforms, scheduled_at) → PostResult
-social_media.get_analytics(days: int, platform: str) → AnalyticsReport
-social_media.get_top_posts(limit: int, metric: str) → List[Post]
-```
-**Data stays in:** social-media-automatization's own database.
-**Analytics live here, not in Holus.** Holus reads them, never stores them.
-
-### pilaster (image generation platform silo)
+### Pilaster (future optional AI-image adapter)
 
 **What it is:** An AI image generation platform with memory. Backend-agnostic —
 ComfyUI, Replicate, Runway, or any future engine are swappable backends.
@@ -222,15 +235,17 @@ products:
 
 | Thing | Lives in | Why |
 |-------|---------|-----|
-| Social media analytics | social-media-automatization | Source of truth — Holus reads, never stores |
-| Video files | genpeli / R2 | genpeli owns video creation |
-| Image files | pilaster / R2 | pilaster owns image generation |
+| Thought source metadata | `data/content-queue/*.yaml` | Each generated item keeps source_type/source_url/source_raw_input |
+| Rendered image/carousel files | `data/rendered-content` | Holus visual engine owns current PNG/PDF outputs |
+| Social media analytics | Holus Social API | Source of truth; Holus reads, never stores permanently |
+| Future video files | genpeli / R2 | Genpeli owns future video creation |
+| Future AI image files | pilaster / R2 | Pilaster can become an optional AI-image adapter |
 | Character LoRAs + references | pilaster / Supabase + R2 | pilaster owns visual identity |
 | Generation templates | pilaster / Supabase | pilaster owns reusable presets |
 | Marketing strategy decisions | `.self-improvement/` | Holus owns the strategy layer |
 | Product definitions | `config/products.yaml` | Single source for what Holus promotes |
 | Content performance patterns | `.self-improvement/MEMORY.md` | Learned by Holus over time |
-| Posting queue + accounts | social-media-automatization | Never centralized in Holus |
+| Posting queue + accounts | Holus Social API | Never centralized in Holus |
 | Agent definitions | `agents/AGENTS.yaml` + `agents/*.md` | Single registry for all 32 agents |
 | Judge evaluations | `trajectory.jsonl` metadata | Per-piece quality scores from domain evaluators |
 | Observatory data | FastAPI reads from all above files | No new DB — reads JSONL/YAML/MD directly |
@@ -242,12 +257,13 @@ products:
 **Trading** — pythia and milo-to-the-moon are completely isolated.
 They run their own cron jobs, their own strategies, never communicate with Holus.
 
-**Publishing logic** — social-media-automatization handles posting,
-rate limiting, account management, bilingual formatting.
-Holus just calls its API.
+**Publishing logic** — Holus Social API handles posting, scheduling,
+rate limiting, account management, bilingual formatting, and analytics.
+Holus prepares reviewed payloads and calls its API explicitly.
 
-**Video editing** — genpeli handles ffmpeg, whisper, caption burning.
-It edits human footage into polished shorts. Holus sends raw video, genpeli returns edited output.
+**Video editing** — Genpeli is deferred. It can later handle ffmpeg,
+whisper, caption burning, and polished shorts, but the current build should
+not block on video.
 
 **Image generation** — pilaster is a generation platform with memory.
 It owns character identity (LoRAs, references), templates, and experiment history.
@@ -270,8 +286,9 @@ Minimal shared infrastructure.
 
 ### marketing/ — the primary agent
 
-The brain. Runs the ReAct loop: observe analytics → reason about strategy → act via MCP tools.
-Runs on Opus for strategy decisions, Sonnet for content generation.
+The brain and studio. Runs the Thought Studio loop: ingest source thought,
+normalize, plan content set, generate variants, render visuals, review,
+schedule/publish through Holus Social API, then learn from performance.
 
 ### finance/ — simple weekly report (Phase 1.5)
 
@@ -292,17 +309,19 @@ Not needed until then.
 ## Build Order
 
 **Phase 1 (now): One working loop**
-- Write `config/products.yaml` describing your products
-- Connect to social-media MCP (already exists in silo repo — add `get_analytics` + `get_top_posts` tools)
-- Connect to pilaster MCP (already exists — add `get_templates` + `get_successful_prompts` tools)
-- Build genpeli MCP server in genpeli repo (wraps existing REST API)
-- Marketing agent observes analytics, decides, you approve, it posts
+- Make `/api/v1/content/from-thought` the primary intake
+- Generate text, image, and carousel variants from one thought
+- Render PNG/PDF assets with the Holus visual engine
+- Keep review/schedule/publish as explicit local actions
+- Rename and wire Holus Social API with legacy env aliases
 - Log every decision to trajectory.jsonl
 
 **Phase 2 (when Phase 1 is working): Automate**
 - launchd triggers the agent every 30 minutes
 - Telegram bot for manual triggers + approval gates
 - Agent runs with weekly human review
+- Optional Pilaster AI-image adapter if local visual quality is not enough
+- Optional Genpeli video adapter after text/image/carousel is excellent
 
 **Phase 3 (when Phase 2 has 4+ weeks of data): Optimize**
 - Pattern analysis on what converts

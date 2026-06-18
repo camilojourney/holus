@@ -1,7 +1,7 @@
 """48h performance loop — reads engagement data, updates bandit weights.
 
 Called by a scheduler 48h after each post goes live.
-Reads analytics from social-media-mcp, computes win signal,
+Reads analytics from Holus Social API, computes win signal,
 updates bandit arm weights, logs to trajectory.jsonl.
 """
 

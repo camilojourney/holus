@@ -1,7 +1,6 @@
 import { fetchKnowledge, fetchMemoryContent, fetchLessons } from '@/lib/api';
 import FreshnessIndicator from '@/components/FreshnessIndicator';
 import ErrorBanner from '@/components/ErrorBanner';
-import HoverRow from '@/components/HoverRow';
 import type { KnowledgeFile, MemoryContent, LessonsResponse } from '@/lib/types';
 
 export const revalidate = 30;

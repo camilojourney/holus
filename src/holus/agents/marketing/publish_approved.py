@@ -1,4 +1,4 @@
-"""Publish all approved social media content via the social-media-automatization API.
+"""Publish all approved content via Holus Social API.
 
 Supports --dry-run to preview what would be posted without actually publishing.
 """
@@ -16,14 +16,17 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from holus.integrations.social_media import (
+    HOLUS_SOCIAL_API_BASE_URL_ENV,
+    HOLUS_SOCIAL_API_KEY_ENV,
     PLATFORM_CHAR_LIMITS,
+    HolusSocialAPIClient,
     PublishRequest,
-    SocialMediaClient,
 )
 
 from .content_queue import list_approved, mark_published
 
 console = Console()
+SocialMediaClient = HolusSocialAPIClient
 
 
 def dry_run() -> None:
@@ -82,14 +85,17 @@ def dry_run() -> None:
 
 
 async def publish_all() -> None:
-    """Publish all approved content pieces via the social-media API."""
-    api_key = os.getenv("POSTING_API_KEY", "")
+    """Publish all approved content pieces via Holus Social API."""
+    api_key = os.getenv(HOLUS_SOCIAL_API_KEY_ENV) or os.getenv("POSTING_API_KEY", "")
     if not api_key:
-        console.print("[red]ERROR: POSTING_API_KEY not set in environment[/red]")
-        console.print("[dim]Set it in .env or export POSTING_API_KEY=your_key[/dim]")
+        console.print("[red]ERROR: HOLUS_SOCIAL_API_KEY not set in environment[/red]")
+        console.print("[dim]Set HOLUS_SOCIAL_API_KEY or legacy POSTING_API_KEY.[/dim]")
         sys.exit(1)
 
-    base_url = os.getenv("SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000")
+    base_url = os.getenv(HOLUS_SOCIAL_API_BASE_URL_ENV) or os.getenv(
+        "SOCIAL_MEDIA_API_BASE_URL",
+        "http://localhost:8000",
+    )
 
     # Get approved content
     approved = list_approved()

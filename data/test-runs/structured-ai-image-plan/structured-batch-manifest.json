@@ -1,0 +1,222 @@
+{
+  "created_at": "2026-06-18T23:31:49.335236+00:00",
+  "mode": "plan_only",
+  "total_thoughts": 10,
+  "total_provider_versions": 20,
+  "provider_models": [
+    "codex_cli_image:default",
+    "agy_cli_image:Gemini 3.5 Flash (Medium)"
+  ],
+  "items": [
+    {
+      "cycle_id": "structured-prompt-pile-strategy",
+      "structured_prompt_hash": "da1f2c2c1c0ef749",
+      "route_mode": "object_metaphor",
+      "image_class": "single_metaphor",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "da1f2c2c1c0ef749",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "da1f2c2c1c0ef749",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-prompt-pile-strategy/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-signal-card-buried",
+      "structured_prompt_hash": "d6d67e1df802e6a7",
+      "route_mode": "object_metaphor",
+      "image_class": "single_metaphor",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "d6d67e1df802e6a7",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "d6d67e1df802e6a7",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-signal-card-buried/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-bridge-with-missing-plank",
+      "structured_prompt_hash": "f858ed6899ee0e59",
+      "route_mode": "object_metaphor",
+      "image_class": "single_metaphor",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "f858ed6899ee0e59",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "f858ed6899ee0e59",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-bridge-with-missing-plank/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-compass-spinning",
+      "structured_prompt_hash": "0da18437805e0fd5",
+      "route_mode": "object_metaphor",
+      "image_class": "single_metaphor",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "0da18437805e0fd5",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "0da18437805e0fd5",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-compass-spinning/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-blueprint-vs-tools",
+      "structured_prompt_hash": "ce62a6959ea7bc6d",
+      "route_mode": "object_metaphor",
+      "image_class": "single_metaphor",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "ce62a6959ea7bc6d",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "ce62a6959ea7bc6d",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-blueprint-vs-tools/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-founder-marked-line",
+      "structured_prompt_hash": "fc68e733a7029a6b",
+      "route_mode": "person_story",
+      "image_class": "story_artifact",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "fc68e733a7029a6b",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "fc68e733a7029a6b",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-founder-marked-line/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-review-queue-pause",
+      "structured_prompt_hash": "e51130a341ba6eed",
+      "route_mode": "product_scene",
+      "image_class": "product_scene",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "e51130a341ba6eed",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "e51130a341ba6eed",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-review-queue-pause/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-map-with-no-legend",
+      "structured_prompt_hash": "ba796b401b1de9ce",
+      "route_mode": "object_metaphor",
+      "image_class": "single_metaphor",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "ba796b401b1de9ce",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "ba796b401b1de9ce",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-map-with-no-legend/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-lens-on-blurry-plan",
+      "structured_prompt_hash": "c7f75b7afd9150f8",
+      "route_mode": "object_metaphor",
+      "image_class": "single_metaphor",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "c7f75b7afd9150f8",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "c7f75b7afd9150f8",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-lens-on-blurry-plan/structured-prompt-package.json"
+    },
+    {
+      "cycle_id": "structured-factory-with-one-worker",
+      "structured_prompt_hash": "35a8f16f441b88a9",
+      "route_mode": "object_metaphor",
+      "image_class": "single_metaphor",
+      "provider_prompts": [
+        {
+          "provider": "codex_cli_image",
+          "model": "default",
+          "structured_prompt_hash": "35a8f16f441b88a9",
+          "status": "planned_not_dispatched"
+        },
+        {
+          "provider": "agy_cli_image",
+          "model": "Gemini 3.5 Flash (Medium)",
+          "structured_prompt_hash": "35a8f16f441b88a9",
+          "status": "planned_not_dispatched"
+        }
+      ],
+      "package_path": "data/test-runs/structured-ai-image-plan/structured-factory-with-one-worker/structured-prompt-package.json"
+    }
+  ]
+}

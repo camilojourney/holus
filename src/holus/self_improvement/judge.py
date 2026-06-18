@@ -154,7 +154,7 @@ class JudgeAgent:
     def __init__(
         self,
         api_key: str | None = None,
-        model: str = "anthropic/claude-haiku-4-5-20251001",
+        model: str = "anthropic/claude-sonnet-4-6",  # haiku slower than sonnet via SDK
         *,
         use_proxy: bool = True,
         proxy_url: str | None = None,

@@ -1,0 +1,31 @@
+version: 1
+owner: thought
+updated_at: "2026-06-04"
+purpose: >
+  Skill-level improvements discovered while dogfooding Holus.
+
+items:
+  - id: SKILL-THOUGHT-001
+    skill: thought
+    status: in_progress
+    change_needed: Require updates to `.self-improvement/memory/thoughts/` on every meaningful run.
+    reason: The loop needs durable memory for UX, pipeline, agents, prompts, creative variables, and app changes.
+
+  - id: SKILL-UX-001
+    skill: ux
+    status: open
+    change_needed: Add Holus Content Studio review-cockpit rubric.
+    reason: UX should judge the whole app experience, not only content cards.
+
+  - id: SKILL-TASTE-001
+    skill: taste
+    status: open
+    change_needed: Add creative novelty and anti-sameness scoring for Holus.
+    reason: Content must stay creative without losing voice or meaning.
+
+  - id: SKILL-CODE-001
+    skill: code
+    status: open
+    change_needed: Ensure generated records expose judge/rationale/lineage fields all the way to frontend types.
+    reason: App UX cannot improve if key reasoning is only in backend YAML.
+

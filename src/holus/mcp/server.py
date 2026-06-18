@@ -16,11 +16,17 @@ from holus.agents.marketing.content_queue import (
     mark_published,
     reject,
 )
-from holus.integrations.social_media.client import PublishRequest, SocialMediaClient
+from holus.integrations.holus_social_api import HolusSocialAPIClient, PublishRequest
 
 # Configuration and Environment Validation
-POSTING_API_KEY = os.environ.get("POSTING_API_KEY")
-SOCIAL_MEDIA_API_BASE_URL = os.environ.get("SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000")
+HOLUS_SOCIAL_API_KEY = os.environ.get("HOLUS_SOCIAL_API_KEY") or os.environ.get("POSTING_API_KEY")
+HOLUS_SOCIAL_API_BASE_URL = os.environ.get("HOLUS_SOCIAL_API_BASE_URL") or os.environ.get(
+    "SOCIAL_MEDIA_API_BASE_URL",
+    "http://localhost:8000",
+)
+POSTING_API_KEY = HOLUS_SOCIAL_API_KEY
+SOCIAL_MEDIA_API_BASE_URL = HOLUS_SOCIAL_API_BASE_URL
+SocialMediaClient = HolusSocialAPIClient
 
 mcp = FastMCP("holus")
 
@@ -165,7 +171,7 @@ async def holus_publish(
     media_url: str | None = None,
     media_type: str | None = None,
 ) -> dict[str, Any]:
-    """Immediately publish content to social media, bypassing the queue.
+    """Immediately publish content through Holus Social API, bypassing the queue.
 
     Args:
         text: The final text to publish.
@@ -174,8 +180,9 @@ async def holus_publish(
         media_url: Optional URL to an image or video.
         media_type: 'image' or 'video'.
     """
-    if not POSTING_API_KEY:
-        return {"error": "POSTING_API_KEY environment variable is not set"}
+    api_key = HOLUS_SOCIAL_API_KEY or POSTING_API_KEY
+    if not api_key:
+        return {"error": "HOLUS_SOCIAL_API_KEY environment variable is not set"}
 
     content = QueuedContent(
         product=product,
@@ -196,8 +203,8 @@ async def holus_publish(
         approve(piece_id)
 
         async with SocialMediaClient(
-            api_key=POSTING_API_KEY,
-            base_url=SOCIAL_MEDIA_API_BASE_URL,
+            api_key=api_key,
+            base_url=HOLUS_SOCIAL_API_BASE_URL or SOCIAL_MEDIA_API_BASE_URL,
         ) as client:
             result = await client.publish(
                 PublishRequest(

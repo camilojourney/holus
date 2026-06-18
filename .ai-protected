@@ -1,0 +1,11 @@
+# Paths agents must NEVER write to
+.env
+.env.*
+*.key
+*.pem
+secrets/
+dist/
+node_modules/
+__pycache__/
+.git/
+.venv/

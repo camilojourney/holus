@@ -1,0 +1,54 @@
+version: 1
+owner: thought
+updated_at: "2026-06-04"
+purpose: >
+  Registry of agents, models, prompts, reviewers, and harness roles used or
+  needed by the thought-to-content improvement loop.
+
+current_harness:
+  app_driver:
+    tool: Codex
+    role: Use the real Holus app/API, capture screenshots, inspect outputs, implement fixes.
+  deterministic_pipeline:
+    model: holus/deterministic-thought-pipeline
+    role: Fast local generation, essence extraction, visual specs, queue records.
+  local_visual_judge:
+    model: holus/local-visual-judge
+    role: Catch raw-copy, generic filler, wrong visual profile, missing rationale, missing review hooks.
+  fast_polish_lane:
+    model: gemini-3-flash-preview
+    role: Fast low-risk polishing, title cleanup, microcopy, variant phrasing, and UI feedback copy after deterministic structure is already valid.
+    guardrail: Never own thesis extraction, final taste judgment, publishing approval, or major strategy decisions.
+  ux_reviewer:
+    skill: ux
+    role: Evaluate the whole app, workflow, information architecture, accessibility, and visual craft.
+  taste_reviewer:
+    skill: taste
+    role: Judge creative quality, voice, novelty, and visual taste.
+  code_worker:
+    skill: code
+    role: Change pipeline, API, renderer, tests, and frontend.
+  skill_maintainer:
+    skill: skill-creator
+    role: Keep `$thought` and related skills current.
+
+planned_reviewers:
+  - id: agy-reviewer
+    model_or_cli: Agy / Antigravity CLI
+    when: Independent review of UX, code, content quality, and harness gaps.
+    status: available_but_slow
+  - id: deepseek-fallback-evaluator
+    model_or_cli: DeepSeek
+    when: Cheap fallback review, adversarial critique, and batch evaluations.
+    status: planned
+  - id: claude-consultant
+    model_or_cli: Claude
+    when: Strategy, taste, planning, and prompt-doctrine consultation.
+    status: planned
+
+prompt_change_rules:
+  - If output copies raw thought, update intake/extractor and judge prompts.
+  - If visual is generic, update creative_strategy and taste/judge prompts.
+  - If app hides decisions, update UX prompt and frontend review surface.
+  - If reviewers disagree, save the disagreement and decide which judge becomes stricter.
+  - If the UI is waiting on "Polishing..." for low-risk copy edits, route that step to the fast polish lane and keep the stronger judge for final approval.

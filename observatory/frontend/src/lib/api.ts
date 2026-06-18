@@ -3,13 +3,18 @@
 
 import type {
   Agent,
+  AgentStatus,
   AgentDetail,
   HealthStatus,
   KPIMetrics,
+  ModelTier,
+  ServiceStatus,
   EvaluationRecord,
   ContentItem,
   ContentDetail,
   ContentResponse,
+  CreateContentRequest,
+  CreateContentResponse,
   PatchContentRequest,
   KnowledgeFile,
   CostBreakdown,
@@ -37,6 +42,118 @@ const API_BASE_SERVER =
 const isServer = typeof window === 'undefined';
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
+function inferModelTier(model?: string): ModelTier {
+  const normalized = model?.toLowerCase() ?? '';
+  if (normalized.includes('opus')) return 'opus';
+  if (normalized.includes('sonnet')) return 'sonnet';
+  if (normalized.includes('haiku')) return 'haiku';
+  return 'unknown';
+}
+
+function inferAgentStatus(raw: Record<string, unknown>): AgentStatus {
+  const status = String(raw.status ?? raw.last_status ?? '').toLowerCase();
+  if (['active', 'idle', 'running', 'error', 'disabled', 'planned'].includes(status)) {
+    return status as AgentStatus;
+  }
+  if (['failed', 'fail', 'failure'].includes(status)) return 'error';
+  if (status === 'success') return 'idle';
+  return Number(raw.run_count_7d ?? 0) > 0 ? 'active' : 'idle';
+}
+
+function normalizeAgent(raw: Partial<Agent> & Record<string, unknown>): Agent {
+  const model = String(raw.model ?? '');
+  return {
+    id: String(raw.id ?? ''),
+    name: String(raw.name ?? raw.id ?? 'unknown-agent'),
+    role: String(raw.role ?? ''),
+    type: String(raw.type ?? 'agent'),
+    status: inferAgentStatus(raw),
+    model,
+    model_tier: (raw.model_tier as ModelTier | undefined) ?? inferModelTier(model),
+    category: raw.category as string | undefined,
+    registry_status: raw.status as string | undefined,
+    is_gate: Boolean(raw.is_gate),
+    evaluated_by: Array.isArray(raw.evaluated_by) ? raw.evaluated_by.map(String) : [],
+    evaluates_with: Array.isArray(raw.evaluates_with) ? raw.evaluates_with.map(String) : [],
+    version: raw.version as string | undefined,
+    prompt_path: raw.prompt_path as string | undefined,
+    last_run: raw.last_run as string | undefined,
+    last_status: raw.last_status as string | undefined,
+    run_count_7d: Number(raw.run_count_7d ?? 0),
+    description: raw.description as string | undefined,
+  };
+}
+
+function normalizeHealth(raw: Partial<HealthStatus> & Record<string, unknown>): HealthStatus {
+  const timestamp = String(raw.timestamp ?? new Date().toISOString());
+  const services: ServiceStatus[] = Array.isArray(raw.services)
+    ? (raw.services as ServiceStatus[])
+    : [
+        {
+          name: 'Trajectory Log',
+          status: raw.trajectory_file_exists ? 'up' : 'down',
+          last_checked: timestamp,
+        },
+        {
+          name: 'Agent Registry',
+          status: raw.agents_yaml_exists ? 'up' : 'down',
+          last_checked: timestamp,
+        },
+        {
+          name: 'Evaluation History',
+          status: raw.eval_history_file_exists ? 'up' : 'degraded',
+          last_checked: timestamp,
+        },
+        {
+          name: 'Content Queue',
+          status: Number(raw.content_queue_count ?? 0) > 0 ? 'up' : 'degraded',
+          last_checked: timestamp,
+        },
+      ];
+  const hasDownService = services.some((service) => service.status === 'down');
+  const status =
+    raw.status ?? (raw.kill_switch_active || hasDownService ? 'degraded' : 'healthy');
+
+  return {
+    status: status as HealthStatus['status'],
+    kill_switch_active: Boolean(raw.kill_switch_active),
+    kill_switch_activated_at: raw.kill_switch_activated_at as string | undefined,
+    services,
+    timestamp,
+  };
+}
+
+function normalizeMetrics(raw: Partial<KPIMetrics> & Record<string, unknown>): KPIMetrics {
+  return {
+    cycles_this_week: Number(raw.cycles_this_week ?? raw.total_cycles ?? 0),
+    success_rate: Number(raw.success_rate ?? 0),
+    avg_quality_score: Number(raw.avg_quality_score ?? 0),
+    total_cost_usd: Number(raw.total_cost_usd ?? 0),
+    sparkline: Array.isArray(raw.sparkline) ? raw.sparkline : [],
+  };
+}
+
+function freshnessFor(modifiedAt: string): KnowledgeFile['freshness'] {
+  const ageMs = Date.now() - new Date(modifiedAt).getTime();
+  const ageDays = ageMs / 86_400_000;
+  if (!Number.isFinite(ageDays) || ageDays < 0) return 'fresh';
+  if (ageDays <= 14) return 'fresh';
+  if (ageDays <= 45) return 'aging';
+  return 'stale';
+}
+
+function normalizeKnowledgeFile(raw: Partial<KnowledgeFile> & Record<string, unknown>): KnowledgeFile {
+  const name = String(raw.name ?? raw.filename ?? raw.path ?? 'unknown.md');
+  const modifiedAt = String(raw.modified_at ?? raw.last_modified ?? new Date(0).toISOString());
+  return {
+    path: String(raw.path ?? name),
+    name,
+    modified_at: modifiedAt,
+    size_bytes: Number(raw.size_bytes ?? 0),
+    freshness: (raw.freshness as KnowledgeFile['freshness'] | undefined) ?? freshnessFor(modifiedAt),
+  };
+}
 
 async function apiFetch<T>(
   path: string,
@@ -67,18 +184,23 @@ async function withFallback<T>(fetcher: () => Promise<T>, fallback: T): Promise<
 
 // Health
 export async function fetchHealth(): Promise<HealthStatus> {
-  return withFallback(
-    () => apiFetch<HealthStatus>('/api/v1/health', { revalidate: 0 }),
-    demoHealth,
-  );
+  return withFallback(async () => {
+    const raw = await apiFetch<Partial<HealthStatus> & Record<string, unknown>>(
+      '/api/v1/health',
+      { revalidate: 0 },
+    );
+    return normalizeHealth(raw);
+  }, demoHealth);
 }
 
 // Agents list
 export async function fetchAgents(): Promise<Agent[]> {
-  return withFallback(
-    () => apiFetch<Agent[]>('/api/v1/agents'),
-    demoAgents,
-  );
+  return withFallback(async () => {
+    const raw = await apiFetch<(Partial<Agent> & Record<string, unknown>)[]>('/api/v1/agents', {
+      revalidate: 0,
+    });
+    return raw.map(normalizeAgent);
+  }, demoAgents);
 }
 
 // Agent detail
@@ -91,17 +213,28 @@ export async function fetchAgent(id: string): Promise<AgentDetail> {
     dimension_averages: demoDimensionAverages[id] ?? {},
   };
   return withFallback(
-    () => apiFetch<AgentDetail>(`/api/v1/agents/${id}`),
+    async () => {
+      const raw = await apiFetch<Partial<AgentDetail> & Record<string, unknown>>(
+        `/api/v1/agents/${id}`,
+      );
+      return {
+        ...normalizeAgent(raw),
+        cycles: Array.isArray(raw.cycles) ? raw.cycles : [],
+        recent_scores: Array.isArray(raw.recent_scores) ? raw.recent_scores : [],
+        dimension_averages:
+          (raw.dimension_averages as Record<string, number> | undefined) ?? {},
+      };
+    },
     fallback,
   );
 }
 
 // KPI metrics (dashboard)
 export async function fetchMetrics(): Promise<KPIMetrics> {
-  return withFallback(
-    () => apiFetch<KPIMetrics>('/api/v1/metrics'),
-    demoMetrics,
-  );
+  return withFallback(async () => {
+    const raw = await apiFetch<Partial<KPIMetrics> & Record<string, unknown>>('/api/v1/metrics');
+    return normalizeMetrics(raw);
+  }, demoMetrics);
 }
 
 // Evaluations
@@ -141,11 +274,27 @@ export async function fetchEvaluations(params?: {
 export async function fetchContent(): Promise<ContentItem[]> {
   return withFallback(
     async () => {
-      const resp = await apiFetch<ContentResponse>('/api/v1/content');
+      const resp = await apiFetch<ContentResponse>('/api/v1/content', { revalidate: 0 });
       return resp.items;
     },
     demoContent,
   );
+}
+
+// Create platform drafts from one thought. This only queues drafts for review.
+export async function createContentFromThought(
+  body: CreateContentRequest,
+): Promise<CreateContentResponse> {
+  const res = await fetch('/api/v1/content/from-thought', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => res.statusText);
+    throw new Error(`POST /content/from-thought → ${res.status}: ${msg}`);
+  }
+  return res.json() as Promise<CreateContentResponse>;
 }
 
 // Content detail (full text + agent trace)
@@ -190,12 +339,20 @@ export function contentImageUrl(pieceId: string, variant: 'a' | 'b' = 'a'): stri
   return `/api/v1/content/${pieceId}/image${variant === 'b' ? '?variant=b' : ''}`;
 }
 
+export function contentPdfUrl(pieceId: string): string {
+  return `/api/v1/content/${pieceId}/pdf`;
+}
+
 // Knowledge files
 export async function fetchKnowledge(): Promise<KnowledgeFile[]> {
   return withFallback(
     async () => {
-      const resp = await apiFetch<KnowledgeFile[] | { files: KnowledgeFile[] }>('/api/v1/knowledge');
-      return Array.isArray(resp) ? resp : resp.files ?? [];
+      const resp = await apiFetch<
+        | (Partial<KnowledgeFile> & Record<string, unknown>)[]
+        | { files: (Partial<KnowledgeFile> & Record<string, unknown>)[] }
+      >('/api/v1/knowledge');
+      const files = Array.isArray(resp) ? resp : resp.files ?? [];
+      return files.map(normalizeKnowledgeFile);
     },
     demoKnowledge,
   );

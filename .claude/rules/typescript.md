@@ -1,0 +1,1 @@
+/Users/mini/shared-claude-rules/typescript.md

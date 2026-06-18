@@ -4,16 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import {
-  Info,
-  BarChart3,
-  UserPlus,
-  LayoutDashboard,
-  Users,
   FileText,
-  Target,
-  BookOpen,
-  Activity,
-  TrendingUp,
   Menu,
   X,
   Sun,
@@ -22,36 +13,19 @@ import {
 import HolusLogo from '@/components/HolusLogo';
 
 const nav = [
-  { href: '/about', label: 'Architecture', Icon: Info, section: null },
-  { href: '/', label: 'Inference Feed', Icon: LayoutDashboard, section: null },
-  { href: '/agents', label: 'Agent Fleet', Icon: Users, section: 'system' },
-  { href: '/content', label: 'Content Pipeline', Icon: FileText, section: 'system' },
-  { href: '/evaluations', label: 'Quality Signals', Icon: Target, section: 'system' },
-  { href: '/engagement', label: 'Engagement', Icon: BarChart3, section: 'signals' },
-  { href: '/followers', label: 'Audience Growth', Icon: UserPlus, section: 'signals' },
-  { href: '/results', label: 'Performance', Icon: TrendingUp, section: 'signals' },
-  { href: '/knowledge', label: 'Knowledge Graph', Icon: BookOpen, section: 'ops' },
-  { href: '/health', label: 'System Diagnostics', Icon: Activity, section: 'ops' },
+  { href: '/content', label: 'Content Studio', Icon: FileText },
 ];
-
-const sectionLabels: Record<string, string> = {
-  system: 'Orchestration',
-  signals: 'Market Signals',
-  ops: 'Operations',
-};
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(
+    () => typeof window === 'undefined' || localStorage.getItem('theme') !== 'light',
+  );
 
   useEffect(() => {
-    const stored = localStorage.getItem('theme');
-    if (stored === 'light') {
-      setDark(false);
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
+    document.documentElement.classList.toggle('dark', dark);
+  }, [dark]);
 
   function toggleTheme() {
     const next = !dark;
@@ -59,8 +33,6 @@ export default function Sidebar() {
     document.documentElement.classList.toggle('dark', next);
     localStorage.setItem('theme', next ? 'dark' : 'light');
   }
-
-  let lastSection: string | null = null;
 
   const sidebarContent = (
     <>
@@ -74,7 +46,7 @@ export default function Sidebar() {
               Holus
             </div>
             <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-              Observatory
+              Content Studio
             </div>
           </div>
         </div>
@@ -90,21 +62,11 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav aria-label="Main navigation" className="flex-1 px-3 py-3 overflow-y-auto">
-        {nav.map(({ href, label, Icon, section }) => {
-          const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
-          const showSectionHeader = section !== null && section !== lastSection;
-          lastSection = section;
+        {nav.map(({ href, label, Icon }) => {
+          const active = pathname.startsWith(href);
 
           return (
             <div key={href}>
-              {showSectionHeader && (
-                <p
-                  className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] mt-5 mb-2 px-3"
-                  style={{ color: 'var(--text-tertiary)' }}
-                >
-                  {sectionLabels[section]}
-                </p>
-              )}
               <Link
                 href={href}
                 aria-current={active ? 'page' : undefined}
@@ -140,7 +102,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="px-5 py-3 flex items-center justify-between" style={{ borderTop: '1px solid var(--border-default)' }}>
-        <p className="text-[0.6875rem]" style={{ color: 'var(--text-tertiary)' }}>Read-only</p>
+        <p className="text-[0.6875rem]" style={{ color: 'var(--text-tertiary)' }}>Review gate</p>
         <button
           onClick={toggleTheme}
           className="p-1.5 rounded-lg transition-colors focus-ring"

@@ -12,6 +12,9 @@ import httpx
 import pytest
 
 from holus.integrations.social_media import (
+    HOLUS_SOCIAL_API_BASE_URL_ENV,
+    HOLUS_SOCIAL_API_KEY_ENV,
+    HolusSocialAPIClient,
     PublishRequest,
     PublishResult,
     ScheduleRequest,
@@ -102,6 +105,46 @@ class TestPublishContent:
         assert result.publish_id == "pub_100"
         assert result.targets[0].platform == "linkedin"
         assert result.succeeded is True
+
+
+class TestHolusSocialAPIEnv:
+    """Environment resolution for the renamed client."""
+
+    @pytest.mark.asyncio
+    async def test_new_env_vars_are_preferred_over_legacy_aliases(self):
+        with patch.dict(
+            "os.environ",
+            {
+                HOLUS_SOCIAL_API_BASE_URL_ENV: "http://new-holus-social.test/",
+                HOLUS_SOCIAL_API_KEY_ENV: "new-key",
+                "SOCIAL_MEDIA_API_BASE_URL": "http://legacy-social.test",
+                "POSTING_API_KEY": "legacy-key",
+            },
+            clear=False,
+        ):
+            client = HolusSocialAPIClient()
+            try:
+                assert client.base_url == "http://new-holus-social.test"
+                assert client.api_key == "new-key"
+            finally:
+                await client.close()
+
+    @pytest.mark.asyncio
+    async def test_legacy_env_aliases_still_work(self):
+        with patch.dict(
+            "os.environ",
+            {
+                "SOCIAL_MEDIA_API_BASE_URL": "http://legacy-social.test",
+                "POSTING_API_KEY": "legacy-key",
+            },
+            clear=True,
+        ):
+            client = HolusSocialAPIClient()
+            try:
+                assert client.base_url == "http://legacy-social.test"
+                assert client.api_key == "legacy-key"
+            finally:
+                await client.close()
 
 
 class TestPublishValidatesCharLimit:
@@ -232,7 +275,8 @@ class TestSchedulePost:
         # Verify payload
         payload = call_args[1]["json"]
         assert payload["content"] == "Scheduled insight"
-        assert payload["platform"] == "linkedin"
+        assert payload["platforms"] == ["linkedin"]
+        assert "platform" not in payload
         assert payload["approval_required"] is True
         assert payload["scheduled_at"] == "2026-04-01T09:00:00Z"
 

@@ -417,7 +417,7 @@ class MarketingAgent(BaseAgent):
         memory_context = self._read_text(self._MEMORY_PATH)
         brand_identity = self._load_brand_identity()
 
-        # Analytics from social-media API (graceful degradation)
+        # Analytics from Holus Social API (graceful degradation)
         analytics: dict[str, Any] = {}
         observe_gaps: list[str] = []
         try:
@@ -563,20 +563,22 @@ class MarketingAgent(BaseAgent):
     _TOP_POSTS_LOOKBACK_DAYS = 30
 
     async def _fetch_analytics(self) -> dict[str, Any]:
-        """Fetch recent analytics from social-media-automatization API.
+        """Fetch recent analytics from Holus Social API.
 
         Returns a dict with ``summary`` (aggregate stats) and ``top_posts``
         (best performing recent posts).  Returns empty dict if the API is
         unreachable or credentials are missing — the agent continues without
         analytics (cold start behavior).
         """
-        if not self.config.posting_api_key:
-            logger.info("Analytics fetch skipped: no POSTING_API_KEY configured")
+        api_key = self.config.holus_social_api_key or self.config.posting_api_key
+        base_url = self.config.holus_social_api_base_url or self.config.social_media_api_base_url
+        if not api_key:
+            logger.info("Analytics fetch skipped: no HOLUS_SOCIAL_API_KEY configured")
             return {}
 
         async with SocialMediaClient(
-            base_url=self.config.social_media_api_base_url,
-            api_key=self.config.posting_api_key,
+            base_url=base_url,
+            api_key=api_key,
         ) as client:
             summary = await client.get_analytics(days=self._ANALYTICS_LOOKBACK_DAYS)
             top_posts = await client.get_top_posts(
@@ -591,15 +593,17 @@ class MarketingAgent(BaseAgent):
     # -- Schedule for approval --------------------------------------------------
 
     async def _schedule_for_approval(self, piece: GeneratedPiece) -> str | None:
-        """Register a generated piece with the social-media API for approval.
+        """Register a generated piece with Holus Social API for approval.
 
         Returns the schedule_id from the API, or None if scheduling fails.
         The local content queue remains the source of truth — this is a
-        secondary registration so the social-media server can track pending posts.
+        secondary registration so Holus Social API can track pending posts.
         """
+        api_key = self.config.holus_social_api_key or self.config.posting_api_key
+        base_url = self.config.holus_social_api_base_url or self.config.social_media_api_base_url
         async with SocialMediaClient(
-            base_url=self.config.social_media_api_base_url,
-            api_key=self.config.posting_api_key,
+            base_url=base_url,
+            api_key=api_key,
         ) as client:
             request = ScheduleRequest(
                 content=piece.text,
@@ -1033,9 +1037,9 @@ class MarketingAgent(BaseAgent):
                 queue_path = self._write_queue_item(piece, queue_dir)
                 generated_content.append(piece.model_dump(mode="json"))
 
-                # Register with social-media API for approval tracking
+                # Register with Holus Social API for approval tracking
                 schedule_id = None
-                if self.config.posting_api_key:
+                if self.config.holus_social_api_key or self.config.posting_api_key:
                     try:
                         schedule_id = await self._schedule_for_approval(piece)
                     except Exception as sched_exc:

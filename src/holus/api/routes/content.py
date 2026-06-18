@@ -9,19 +9,40 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import httpx
 import yaml
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse
 
+from holus.agents.marketing.thought_pipeline import (
+    CHANNEL_TARGET as THOUGHT_CHANNEL_TARGET,
+)
+from holus.agents.marketing.thought_pipeline import (
+    DEFAULT_CHANNELS,
+    ThoughtContentPipeline,
+    build_posting_destination,
+)
 from holus.api.models import (
     AgentTraceStep,
     CalendarDay,
     ContentCalendarResponse,
+    ContentCreateRequest,
+    ContentCreateResponse,
     ContentDetail,
     ContentItem,
     ContentPatchRequest,
+    ContentPublishRequest,
+    ContentPublishResponse,
     ContentQuality,
     ContentResponse,
+    ContentScheduleRequest,
     ContentStatusCounts,
+    PostingDestination,
+)
+from holus.integrations.holus_social_api import (
+    HolusSocialAPIClient,
+    PublishRequest,
+    ScheduleRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -30,6 +51,15 @@ router = APIRouter(prefix="/content", tags=["content"])
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
 CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
+
+
+def _media_path(value: Any) -> Path | None:
+    if not value or not isinstance(value, str):
+        return None
+    path = Path(value)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    return path
 
 
 def _load_raw_files() -> list[tuple[Path, dict[str, Any]]]:
@@ -76,6 +106,27 @@ def _parse_quality(raw: dict[str, Any]) -> ContentQuality | None:
     )
 
 
+def _parse_posting_destination(raw: dict[str, Any]) -> PostingDestination | None:
+    destination = raw.get("posting_destination")
+    if isinstance(destination, dict):
+        with contextlib.suppress(Exception):
+            return PostingDestination(**destination)
+
+    platform = raw.get("platform")
+    if not platform:
+        return None
+    thought = (
+        raw.get("source_raw_input")
+        or raw.get("idea_source")
+        or raw.get("text")
+        or raw.get("topic")
+        or ""
+    )
+    return PostingDestination(
+        **build_posting_destination(platform=str(platform), thought=str(thought))
+    )
+
+
 def _parse_agent_trace(raw: dict[str, Any]) -> list[AgentTraceStep]:
     trace = raw.get("agent_trace", [])
     if not isinstance(trace, list):
@@ -107,6 +158,7 @@ def _raw_to_item(raw: dict[str, Any], file_stem: str) -> ContentItem:
 
     return ContentItem(
         id=piece_id,
+        group_id=raw.get("group_id"),
         title=title,
         content_type=str(raw.get("content_type", "text_post")),
         platform=raw.get("platform"),
@@ -116,7 +168,10 @@ def _raw_to_item(raw: dict[str, Any], file_stem: str) -> ContentItem:
         scheduled_for=_parse_dt(raw.get("scheduled_at") or raw.get("scheduled_for")),
         agent_id=raw.get("agent_id"),
         idea_source=raw.get("idea_source"),
+        source_type=raw.get("source_type"),
+        source_url=raw.get("source_url"),
         quality=_parse_quality(raw),
+        posting_destination=_parse_posting_destination(raw),
     )
 
 
@@ -127,10 +182,13 @@ def _raw_to_detail(raw: dict[str, Any], file_stem: str) -> ContentDetail:
     # Build image URLs if rendered images exist
     image_url = None
     image_b_url = None
+    pdf_url = None
     if raw.get("rendered_image_path"):
         image_url = f"/api/v1/content/{piece_id}/image"
     if raw.get("rendered_image_b_path"):
         image_b_url = f"/api/v1/content/{piece_id}/image?variant=b"
+    if raw.get("rendered_pdf_path") or raw.get("pdf_path"):
+        pdf_url = f"/api/v1/content/{piece_id}/pdf"
 
     return ContentDetail(
         **item.model_dump(),
@@ -140,8 +198,10 @@ def _raw_to_detail(raw: dict[str, Any], file_stem: str) -> ContentDetail:
         agent_trace=_parse_agent_trace(raw),
         image_url=image_url,
         image_b_url=image_b_url,
+        pdf_url=pdf_url,
         visual_spec=raw.get("visual_spec"),
         visual_spec_b=raw.get("visual_spec_b"),
+        thought_essence=raw.get("thought_essence"),
         judge_score=raw.get("judge_score"),
         judge_verdict=raw.get("judge_verdict"),
     )
@@ -171,7 +231,7 @@ async def list_content() -> ContentResponse:
             counts.draft += 1
         elif s in ("pending_review", "review"):
             counts.review += 1
-        elif s in ("published", "approved"):
+        elif s in ("published", "approved", "scheduled"):
             counts.published += 1
         elif s == "rejected":
             counts.rejected += 1
@@ -207,6 +267,36 @@ async def get_content_calendar(
     return ContentCalendarResponse(calendar=calendar)
 
 
+@router.post("/from-thought", response_model=ContentCreateResponse)
+async def create_content_from_thought(body: ContentCreateRequest) -> ContentCreateResponse:
+    """Create pending-review platform drafts from one source thought."""
+    requested = body.platforms or list(DEFAULT_CHANNELS)
+    unsupported = [channel for channel in requested if channel not in THOUGHT_CHANNEL_TARGET]
+    if unsupported:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported platform channel(s): {', '.join(unsupported)}",
+        )
+
+    pipeline = ThoughtContentPipeline(queue_dir=CONTENT_QUEUE_DIR)
+    try:
+        content_set = await pipeline.create_content_set(
+            thought=body.thought,
+            channels=list(requested),
+            source_type=body.source_type,
+            source_url=body.source_url,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Thought source fetch failed: {exc}") from exc
+
+    return ContentCreateResponse(
+        group_id=content_set.group_id,
+        items=[_raw_to_item(record, record["piece_id"]) for record in content_set.records],
+    )
+
+
 @router.get("/{piece_id}", response_model=ContentDetail)
 async def get_content_detail(piece_id: str) -> ContentDetail:
     """Return full content piece with text, agent trace, and quality breakdown."""
@@ -221,20 +311,38 @@ async def get_content_detail(piece_id: str) -> ContentDetail:
 @router.get("/{piece_id}/image")
 async def get_content_image(piece_id: str, variant: str = "a") -> Any:
     """Serve the rendered companion visual for a content piece."""
-    from fastapi.responses import FileResponse
-
     files = _load_raw_files()
     for path, raw in files:
         raw_id = str(raw.get("piece_id", raw.get("id", path.stem)))
         if raw_id == piece_id or path.stem == piece_id:
             key = "rendered_image_b_path" if variant == "b" else "rendered_image_path"
-            image_path_str = raw.get(key)
-            if not image_path_str:
+            image_path = _media_path(raw.get(key))
+            if image_path is None:
                 raise HTTPException(status_code=404, detail="No visual for this piece")
-            image_path = Path(image_path_str)
             if not image_path.exists():
                 raise HTTPException(status_code=404, detail="Image file not found on disk")
             return FileResponse(image_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail=f"Content piece {piece_id!r} not found")
+
+
+@router.get("/{piece_id}/pdf")
+async def get_content_pdf(piece_id: str) -> Any:
+    """Serve the rendered carousel PDF for a content piece."""
+    files = _load_raw_files()
+    for path, raw in files:
+        raw_id = str(raw.get("piece_id", raw.get("id", path.stem)))
+        if raw_id == piece_id or path.stem == piece_id:
+            pdf_path = _media_path(raw.get("rendered_pdf_path") or raw.get("pdf_path"))
+            if pdf_path is None:
+                raise HTTPException(status_code=404, detail="No carousel PDF for this piece")
+            if not pdf_path.exists():
+                raise HTTPException(status_code=404, detail="PDF file not found on disk")
+            return FileResponse(
+                pdf_path,
+                media_type="application/pdf",
+                filename=f"{piece_id}.pdf",
+                content_disposition_type="inline",
+            )
     raise HTTPException(status_code=404, detail=f"Content piece {piece_id!r} not found")
 
 
@@ -269,8 +377,8 @@ async def choose_visual_variant(piece_id: str, variant: str = "a") -> ContentDet
 async def update_content_status(piece_id: str, body: ContentPatchRequest) -> ContentDetail:
     """Approve, reject, or reschedule a content piece.
 
-    Updates the YAML/JSON file directly. If status is 'approved' and the
-    social-media API is reachable, triggers posting via the silo.
+    Updates the YAML/JSON file directly. Posting and scheduling through Holus
+    Social API are explicit endpoints so review actions never publish silently.
     """
     files = _load_raw_files()
     target_path: Path | None = None
@@ -301,37 +409,126 @@ async def update_content_status(piece_id: str, body: ContentPatchRequest) -> Con
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Failed to write file: {exc}") from exc
 
-    # If approved, attempt to post via social-media-automatization
-    if body.status == "approved":
-        _attempt_post(raw)
-
     return _raw_to_detail(raw, target_path.stem)
 
 
-def _attempt_post(raw: dict[str, Any]) -> None:
-    """Fire-and-forget: try to post via social-media-automatization API."""
-    try:
-        import os
+@router.post("/{piece_id}/publish", response_model=ContentPublishResponse)
+async def publish_content(
+    piece_id: str,
+    body: ContentPublishRequest | None = None,
+) -> ContentPublishResponse:
+    """Explicitly publish one approved piece through Holus Social API."""
+    request_body = body or ContentPublishRequest()
+    target_path, raw = _find_content_raw(piece_id)
+    payload = _publish_payload(raw)
 
-        import requests
-
-        api_base = os.environ.get("SOCIAL_MEDIA_API_BASE_URL", "http://localhost:8000")
-        api_key = os.environ.get("POSTING_API_KEY", "")
-        text = raw.get("text", "")
-        platform = raw.get("platform", "linkedin")
-        if not text or not api_key:
-            logger.info("Post skipped: missing text or POSTING_API_KEY not set")
-            return
-
-        resp = requests.post(
-            f"{api_base}/api/v1/publish",
-            json={"content": text, "targets": [platform]},
-            headers={"X-API-Key": api_key, "Content-Type": "application/json"},
-            timeout=10,
+    if request_body.dry_run:
+        return ContentPublishResponse(
+            piece=_raw_to_detail(raw, target_path.stem),
+            dry_run=True,
+            payload=payload,
+            status="dry_run",
         )
-        if resp.ok:
-            logger.info("Posted piece %s to %s", raw.get("piece_id", "?"), platform)
+
+    async with HolusSocialAPIClient() as client:
+        result = await client.publish(PublishRequest(**payload))
+
+    raw["status"] = "published" if result.succeeded else raw.get("status", "approved")
+    raw["post_id"] = result.publish_id
+    raw["published_at"] = datetime.now(tz=UTC).isoformat()
+    _write_raw_content(target_path, raw)
+
+    return ContentPublishResponse(
+        piece=_raw_to_detail(raw, target_path.stem),
+        payload=payload,
+        publish_id=result.publish_id,
+        status=raw["status"],
+    )
+
+
+@router.post("/{piece_id}/schedule", response_model=ContentPublishResponse)
+async def schedule_content(
+    piece_id: str,
+    body: ContentScheduleRequest,
+) -> ContentPublishResponse:
+    """Explicitly schedule one piece through Holus Social API."""
+    target_path, raw = _find_content_raw(piece_id)
+    payload = _schedule_payload(raw, body.scheduled_at)
+
+    raw["status"] = "scheduled"
+    raw["scheduled_at"] = body.scheduled_at
+    if body.dry_run:
+        return ContentPublishResponse(
+            piece=_raw_to_detail(raw, target_path.stem),
+            dry_run=True,
+            payload=payload,
+            status="dry_run",
+        )
+
+    async with HolusSocialAPIClient() as client:
+        result = await client.schedule_post(ScheduleRequest(**payload))
+
+    raw["schedule_id"] = result.schedule_id
+    raw["schedule_status"] = result.status
+    _write_raw_content(target_path, raw)
+
+    return ContentPublishResponse(
+        piece=_raw_to_detail(raw, target_path.stem),
+        payload=payload,
+        schedule_id=result.schedule_id,
+        status=result.status,
+    )
+
+
+def _find_content_raw(piece_id: str) -> tuple[Path, dict[str, Any]]:
+    files = _load_raw_files()
+    for path, data in files:
+        raw_id = str(data.get("piece_id", data.get("id", path.stem)))
+        if raw_id == piece_id or path.stem == piece_id:
+            return path, dict(data)
+    raise HTTPException(status_code=404, detail=f"Content piece {piece_id!r} not found")
+
+
+def _write_raw_content(path: Path, raw: dict[str, Any]) -> None:
+    try:
+        if path.suffix == ".json":
+            path.write_text(json.dumps(raw, indent=2), encoding="utf-8")
         else:
-            logger.warning("Post attempt returned %s: %s", resp.status_code, resp.text[:200])
-    except Exception as exc:
-        logger.warning("Post attempt failed (non-fatal): %s", exc)
+            path.write_text(yaml.dump(raw, default_flow_style=False), encoding="utf-8")
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to write file: {exc}") from exc
+
+
+def _media_payload(raw: dict[str, Any]) -> dict[str, str]:
+    if raw.get("rendered_pdf_path"):
+        return {"media_url": str(raw["rendered_pdf_path"]), "media_type": "document"}
+    if raw.get("rendered_image_path"):
+        return {"media_url": str(raw["rendered_image_path"]), "media_type": "image"}
+    return {}
+
+
+def _publish_payload(raw: dict[str, Any]) -> dict[str, Any]:
+    text = str(raw.get("text", ""))
+    platform = str(raw.get("platform", "linkedin"))
+    if not text:
+        raise HTTPException(status_code=400, detail="Content piece has no text to publish")
+    return {
+        "content": text,
+        "platforms": [platform],
+        "style": "raw",
+        **_media_payload(raw),
+    }
+
+
+def _schedule_payload(raw: dict[str, Any], scheduled_at: str) -> dict[str, Any]:
+    text = str(raw.get("text", ""))
+    platform = str(raw.get("platform", "linkedin"))
+    if not text:
+        raise HTTPException(status_code=400, detail="Content piece has no text to schedule")
+    return {
+        "content": text,
+        "platforms": [platform],
+        "approval_required": True,
+        "scheduled_at": scheduled_at,
+        **_media_payload(raw),
+    }

@@ -15,7 +15,16 @@ export interface Agent {
   status: AgentStatus;
   model: string;
   model_tier: ModelTier;
+  category?: string;
+  registry_status?: string;
+  is_gate?: boolean;
+  evaluated_by?: string[];
+  evaluates_with?: string[];
   version?: string;
+  prompt_path?: string;
+  last_run?: string;
+  last_status?: string;
+  run_count_7d?: number;
   description?: string;
 }
 
@@ -91,8 +100,21 @@ export interface ContentQuality {
   violations?: string[];
 }
 
+export interface PostingDestination {
+  platform: string;
+  account: string;
+  handle?: string;
+  profile_url?: string;
+  language?: string;
+  status?: string;
+  approval_required?: boolean;
+  rationale?: string;
+  lineage?: string;
+}
+
 export interface ContentItem {
   id: string;
+  group_id?: string;
   title?: string;
   content_type: string;
   platform?: string;
@@ -102,7 +124,10 @@ export interface ContentItem {
   scheduled_for?: string;
   agent_id?: string;
   idea_source?: string;
+  source_type?: string;
+  source_url?: string;
   quality?: ContentQuality;
+  posting_destination?: PostingDestination;
 }
 
 export interface ContentDetail extends ContentItem {
@@ -112,8 +137,10 @@ export interface ContentDetail extends ContentItem {
   agent_trace?: AgentTraceStep[];
   image_url?: string;
   image_b_url?: string;
+  pdf_url?: string;
   visual_spec?: Record<string, unknown>;
   visual_spec_b?: Record<string, unknown>;
+  thought_essence?: Record<string, unknown>;
   judge_score?: number;
   judge_verdict?: string;
 }
@@ -128,6 +155,18 @@ export interface ContentStatusCounts {
 export interface ContentResponse {
   items: ContentItem[];
   counts: ContentStatusCounts;
+}
+
+export interface CreateContentRequest {
+  thought: string;
+  platforms?: string[];
+  source_type?: 'text' | 'url';
+  source_url?: string;
+}
+
+export interface CreateContentResponse {
+  group_id: string;
+  items: ContentItem[];
 }
 
 export interface PatchContentRequest {

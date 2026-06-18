@@ -9,7 +9,36 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from holus.visual.brand import BrandVisualIdentityLoader
+from holus.visual.content_job import (
+    ContentJobPlan,
+    ContentJobType,
+    RecommendedContentFormat,
+    VisualNeedReason,
+    plan_content_job,
+)
+from holus.visual.dispatcher import (
+    CodexCliImageProvider,
+    HtmlRenderProvider,
+    RefinedVisualSource,
+    VisualAssetKind,
+    VisualDispatcher,
+    VisualDispatchError,
+    VisualDispatchLogger,
+    VisualDispatchRequest,
+    VisualDispatchResult,
+    VisualDispatchStatus,
+    VisualProvider,
+)
 from holus.visual.engine import PlaywrightEngine
+from holus.visual.generation_strategy import (
+    VisualDesignSystem,
+    VisualGenerationStrategy,
+    VisualPaletteName,
+    VisualRenderingPath,
+    VisualTemplateKind,
+    choose_visual_generation_strategy,
+)
+from holus.visual.linkedin_lens import apply_linkedin_impact_lens
 from holus.visual.models import (
     CarouselSpec,
     OutputFormat,
@@ -19,6 +48,15 @@ from holus.visual.models import (
     SlideSpec,
     VideoSkeletonSpec,
 )
+from holus.visual.production_plan import (
+    VisualProductionPlan,
+    build_visual_production_plan,
+)
+from holus.visual.proximity_router import (
+    VisualConceptRoute,
+    VisualProximityMode,
+    choose_visual_concept_route,
+)
 from holus.visual.spec_converter import (
     before_after_to_spec,
     carousel_spec_to_slides,
@@ -27,6 +65,13 @@ from holus.visual.spec_converter import (
     poll_to_spec,
 )
 from holus.visual.templates import TemplateEngine
+from holus.visual.visual_judge import (
+    VisualJudgeDecision,
+    VisualJudgeVerdict,
+    build_retry_instruction,
+    judge_visual_output,
+    mutate_visual_plan_for_retry,
+)
 
 if TYPE_CHECKING:
     from holus.agents.marketing.models import BrandVisualIdentity
@@ -118,19 +163,52 @@ async def render_carousel_visual(
 __all__ = [
     "BrandVisualIdentityLoader",
     "CarouselSpec",
+    "CodexCliImageProvider",
+    "ContentJobPlan",
+    "ContentJobType",
+    "HtmlRenderProvider",
     "OutputFormat",
     "PlaywrightEngine",
     "PollSpec",
+    "RefinedVisualSource",
+    "RecommendedContentFormat",
     "RenderResult",
     "RenderSpec",
     "SlideSpec",
     "TemplateEngine",
     "VideoSkeletonSpec",
+    "VisualAssetKind",
+    "VisualConceptRoute",
+    "VisualDesignSystem",
+    "VisualDispatchError",
+    "VisualDispatchLogger",
+    "VisualDispatchRequest",
+    "VisualDispatchResult",
+    "VisualDispatchStatus",
+    "VisualDispatcher",
+    "VisualGenerationStrategy",
+    "VisualJudgeDecision",
+    "VisualJudgeVerdict",
+    "VisualNeedReason",
+    "VisualPaletteName",
+    "VisualProductionPlan",
+    "VisualProvider",
+    "VisualProximityMode",
+    "VisualRenderingPath",
+    "VisualTemplateKind",
+    "apply_linkedin_impact_lens",
     "before_after_to_spec",
+    "build_retry_instruction",
+    "build_visual_production_plan",
     "carousel_spec_to_slides",
+    "choose_visual_concept_route",
+    "choose_visual_generation_strategy",
     "data_viz_to_spec",
     "insight_to_spec",
+    "judge_visual_output",
+    "mutate_visual_plan_for_retry",
     "poll_to_spec",
+    "plan_content_job",
     "render_carousel_visual",
     "render_visual",
 ]

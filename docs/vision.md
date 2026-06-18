@@ -2,7 +2,9 @@
 
 ## One Sentence
 
-Holus is the AI marketing brain that runs a solo founder's content portfolio -- a senior marketing director that never sleeps, learns from every post, and gets sharper every week.
+Holus is the Thought Studio for a solo founder's content portfolio -- one thought
+from a person or online source becomes platform-native text, images, carousels,
+reviewed posts, scheduled publishing, and learning.
 
 ---
 
@@ -12,7 +14,10 @@ Solo founders cannot scale beyond their own hours. Hiring is expensive, slow, an
 
 The insight: a federated system of AI agents, each owning one domain, sharing a lightweight event bus for cross-project learning, captures 80% of the value of a unified AI OS while avoiding the compound error problem that makes unified systems brittle. Every production multi-agent system studied (Replit, Vercel, Cognition/Devin, Anthropic) converges on this same pattern: independent agents with bounded communication channels.
 
-Holus is not a chatbot. It is not a wrapper around Claude. It is an operational system where agents make real decisions -- decide what content to create, brief visual specialists, schedule publishing, and evaluate what worked -- with safety guardrails, memory, and genuine self-improvement loops.
+Holus is not a chatbot. It is not a wrapper around Claude. It is an operational
+system where agents turn source thoughts into useful content sets, brief visual
+specialists, schedule publishing through Holus Social API, and evaluate what
+worked -- with safety guardrails, memory, and genuine self-improvement loops.
 
 The core philosophy: **intelligence is the primary constraint, not cost.** Every agent runs on the highest-capability model appropriate for its task. Claude Opus handles strategic decisions. Claude Sonnet handles high-volume content generation and evaluation. The Mac Mini serves as infrastructure only -- databases, orchestration, workflow automation, memory systems -- not as an AI inference layer.
 
@@ -22,8 +27,10 @@ The core philosophy: **intelligence is the primary constraint, not cost.** Every
 
 ### Phase 1 (Months 1-2): One Working Loop
 
-- Marketing strategist agent runs weekly: observe analytics → decide content → brief specialists → publish
-- 4+ content pieces per week across Pilaster, genpeli, invoz
+- Thought Studio creates content sets from text and URL thoughts
+- Text, image, and carousel variants render locally and enter human review
+- Holus Social API is wired for explicit dry-run, schedule, and publish calls
+- 4+ content pieces per week across active products and founder thoughts
 - Every decision logged to `trajectory.jsonl` — the memory that makes learning possible
 - Observatory dashboard reads from file-based state: agent status, recent decisions, evaluation scores
 
@@ -56,7 +63,10 @@ Holus operates as a team of 32 agents organized the way a senior marketing direc
 
 ### The Brain: marketing-strategist (ReAct loop)
 
-One Opus-powered manager runs the full observe → reason → act → evaluate cycle. It reads analytics from the social-media silo, decides what content will drive growth, briefs the right specialist team, and logs every decision for the learning loop.
+One Opus-powered manager runs the full thought -> content set -> review ->
+schedule/post -> learn cycle. It reads analytics from Holus Social API, decides
+what content will drive growth, briefs the right specialist team, and logs every
+decision for the learning loop.
 
 ### Specialist Teams (22 agents, 6 categories)
 
@@ -73,9 +83,9 @@ One Opus-powered manager runs the full observe → reason → act → evaluate c
 - `before-after-designer` — transformation stories as split visuals
 - `brand-designer` — visual consistency across all products
 
-**Video Content** (15%):
+**Future Video Content** (deferred):
 - `script-writer` — short-form video scripts (60-90 seconds)
-- `brief-composer` — production briefs for genpeli
+- `brief-composer` — production briefs for Genpeli when video becomes active
 - `caption-specialist` — hooks, hashtags, platform-specific formatting
 
 **Growth** (frequency-capped to avoid spam):

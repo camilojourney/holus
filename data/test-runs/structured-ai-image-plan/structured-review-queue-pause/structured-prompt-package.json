@@ -1,0 +1,251 @@
+{
+  "cycle_id": "structured-review-queue-pause",
+  "source": {
+    "piece_id": "structured-review-queue-pause",
+    "platform": "linkedin",
+    "content_type": "image_post",
+    "refined_text": "The reviewer pauses over one content card because the reason to approve is not visible yet.",
+    "headline": "The pause before approve",
+    "topic": "Human review artifact",
+    "content_pillar": null,
+    "intended_takeaway": "Good review surfaces make the reason visible before approval.",
+    "raw_thought_provenance": null,
+    "thought_essence": {},
+    "metadata": {}
+  },
+  "visual_route": {
+    "mode": "product_scene",
+    "proximity_score": 4,
+    "viewer_takeaway": "Good review surfaces make the reason visible before approval.",
+    "scene": "product interface or workspace showing the before-and-after state",
+    "subject": "a real-looking product surface, review queue, or content planning board",
+    "composition": "screen or board as hero, one visible state change, restrained editorial lighting",
+    "use_person": false,
+    "use_chart": false,
+    "use_workflow": false,
+    "visual_do": [
+      "show the product job",
+      "make the before/after or state change obvious",
+      "keep interface details plausible but not fake-text heavy"
+    ],
+    "visual_dont": [
+      "generic AI wallpaper",
+      "glowing brain",
+      "robot mascot",
+      "abstract network background",
+      "pseudo-text",
+      "random premium objects with unclear meaning"
+    ],
+    "rationale": "Product, screen, queue, or interface language needs a concrete usage scene."
+  },
+  "visual_plan": {
+    "plan_id": "structured-review-queue-pause__product_scene__v1",
+    "route_mode": "product_scene",
+    "concept": "Show the product behavior behind: Good review surfaces make the reason visible before approval.",
+    "viewer_test": "A viewer should see what changed in the product or review surface.",
+    "scene_script": "A plausible product/review interface shown as a work surface. The state change or decision reason must be visible. LinkedIn impact lens: Build a product decision artifact, not a fake screenshot.",
+    "composition_script": "Screen or board as the hero. Use one selected item, one reason panel, and one outcome state. LinkedIn impact lens: Show selected item -> reason/evidence -> decision. Use short real labels and large UI blocks.",
+    "required_elements": [
+      "one selected content/review item",
+      "one visible reason or fit signal",
+      "one decision state",
+      "one scroll-stopping top claim",
+      "one visible evidence structure below the claim",
+      "one clear verdict or takeaway panel",
+      "mobile-first hierarchy readable at thumbnail size",
+      "selected item",
+      "reason/evidence panel",
+      "decision badge"
+    ],
+    "text_policy": "Use abstract UI blocks or a few intentional labels only. No fake paragraphs.",
+    "forbidden_elements": [
+      "generic AI wallpaper",
+      "glowing brain",
+      "robot mascot",
+      "abstract network background",
+      "pseudo-text",
+      "random premium objects with unclear meaning",
+      "unexplained decorative objects",
+      "stock-photo handshake",
+      "fake brand logos",
+      "watermarks",
+      "random dashboard widgets",
+      "generic motivational poster",
+      "pretty scene without evidence",
+      "unstructured collage",
+      "fake unreadable paragraphs",
+      "made-up logos or unverifiable brand marks",
+      "dense SaaS dashboard",
+      "tiny pseudo UI text"
+    ],
+    "compliance_checks": [
+      "Is the product job visible?",
+      "Is the reason shown next to the item?",
+      "Is the UI plausible and not random widgets?",
+      "Can the viewer repeat the claim in two seconds?",
+      "Is there a concrete proof block below the hook?",
+      "Is the final verdict visually separate from the evidence?",
+      "Can the viewer see what was decided and why?"
+    ]
+  },
+  "visual_strategy": {
+    "rendering_path": "no_visual",
+    "provider": "html_renderer",
+    "template_kind": "no_visual",
+    "design_system": {
+      "palette": "mono_accent",
+      "background": "#FAF7EF",
+      "foreground": "#111111",
+      "accent": "#006D77",
+      "secondary_accent": "#D9902F",
+      "positive": "#187A55",
+      "negative": "#B73E3E",
+      "typography": "large editorial serif or heavy grotesk thesis",
+      "layout_density": "none: text-only content job",
+      "texture": "clean paper",
+      "icon_style": "none or one accent rule",
+      "chart_style": "not applicable unless support line needs a mark",
+      "guardrails": [
+        "mobile-first 1080x1350 or 1080x1080 safe hierarchy",
+        "one focal claim before details",
+        "consistent padding and stroke widths",
+        "no tiny pseudo text"
+      ]
+    },
+    "content_job": {
+      "job_type": "opinion",
+      "needs_visual": false,
+      "reason": "no_visual_needed",
+      "recommended_format": "text_post",
+      "forbidden_formats": [
+        "ai_generated_image"
+      ],
+      "deterministic_allowed": false,
+      "ai_image_allowed": false,
+      "judge": "written-content-judge",
+      "rationale": "No data, workflow, product state, framework, or concrete metaphor signal was detected."
+    },
+    "deterministic_score": 0.0,
+    "ai_score": 0.0,
+    "rationale": "The content job is better served as text; no visual should be produced by default.",
+    "required_inputs": [
+      "approved text post"
+    ],
+    "failure_modes": [
+      "adding a visual anyway",
+      "weak writing",
+      "unclear text-only thesis"
+    ]
+  },
+  "ai_image_direction": {
+    "allowed": true,
+    "blocked_reason": null,
+    "image_class": "product_scene",
+    "viewer_takeaway": "Good review surfaces make the reason visible before approval.",
+    "metaphor_mapping": {
+      "concept": "Human review artifact",
+      "visual_object": "a real-looking product surface, review queue, or content planning board",
+      "why_it_maps": "Product, screen, queue, or interface language needs a concrete usage scene."
+    },
+    "subject": {
+      "primary": "a real-looking product surface, review queue, or content planning board",
+      "secondary": [
+        "one selected content/review item",
+        "one visible reason or fit signal",
+        "one decision state"
+      ],
+      "forbidden_subjects": [
+        "robots",
+        "glowing brains",
+        "fake dashboards",
+        "brand logos",
+        "generic corporate team photos"
+      ]
+    },
+    "action_or_state": "A plausible product/review interface shown as a work surface. The state change or decision reason must be visible. LinkedIn impact lens: Build a product decision artifact, not a fake screenshot.",
+    "environment": "quiet operator workbench with restrained real-world materials",
+    "composition": {
+      "shot_type": "top_down",
+      "camera_angle": "editorial angle focused on the single artifact",
+      "focal_point": "a real-looking product surface, review queue, or content planning board",
+      "depth": "clear focal plane with background details subdued",
+      "crop_safe_area": "leave clean margin on all sides for social crop"
+    },
+    "lighting_and_mood": {
+      "lighting": "soft side light with natural shadows",
+      "mood": "calm, editorial, operator-focused",
+      "contrast": "medium"
+    },
+    "style": {
+      "medium": "photoreal_editorial",
+      "texture": "matte paper, real desk materials, restrained tactile detail",
+      "palette": "warm neutral base with one teal or amber accent",
+      "brand_fit": "restrained builder/operator aesthetic; not glossy SaaS stock"
+    },
+    "output": {
+      "platform": "linkedin",
+      "aspect_ratio": "1:1",
+      "resolution_intent": "768x768"
+    },
+    "text_policy": {
+      "mode": "none",
+      "allowed_text": null,
+      "font_style": null,
+      "placement": null
+    },
+    "reference_assets": [],
+    "prompt": "Create a product scene for Holus social content. Viewer takeaway: Good review surfaces make the reason visible before approval.. Subject: a real-looking product surface, review queue, or content planning board. Scene: A plausible product/review interface shown as a work surface. The state change or decision reason must be visible. LinkedIn impact lens: Build a product decision artifact, not a fake screenshot.. Composition: Screen or board as the hero. Use one selected item, one reason panel, and one outcome state. LinkedIn impact lens: Show selected item -> reason/evidence -> decision. Use short real labels and large UI blocks.. Use a concrete editorial image, not generic AI wallpaper. Use 1:1 composition for linkedin. Text policy: Use abstract UI blocks or a few intentional labels only. No fake paragraphs.",
+    "negative_prompt": [
+      "generic AI wallpaper",
+      "glowing brain",
+      "robot mascot",
+      "abstract network background",
+      "pseudo-text",
+      "random premium objects with unclear meaning",
+      "unexplained decorative objects",
+      "stock-photo handshake",
+      "fake brand logos",
+      "watermarks",
+      "random dashboard widgets",
+      "generic motivational poster",
+      "pretty scene without evidence",
+      "unstructured collage",
+      "fake unreadable paragraphs",
+      "made-up logos or unverifiable brand marks",
+      "dense SaaS dashboard",
+      "tiny pseudo UI text",
+      "robots",
+      "glowing brain",
+      "abstract neural network background",
+      "fake dashboard",
+      "unreadable paragraphs",
+      "brand logos",
+      "watermark",
+      "charts",
+      "workflow arrows"
+    ],
+    "reviewer_checklist": [
+      "Does the image communicate this takeaway: Good review surfaces make the reason visible before approval.?",
+      "Is there one focal subject?",
+      "Is forbidden content absent?",
+      "Is the text policy respected?",
+      "Would this be more honest as a deterministic chart/diagram instead?"
+    ]
+  },
+  "structured_prompt_hash": "e51130a341ba6eed",
+  "provider_prompts": [
+    {
+      "provider": "codex_cli_image",
+      "model": "default",
+      "structured_prompt_hash": "e51130a341ba6eed",
+      "status": "planned_not_dispatched"
+    },
+    {
+      "provider": "agy_cli_image",
+      "model": "Gemini 3.5 Flash (Medium)",
+      "structured_prompt_hash": "e51130a341ba6eed",
+      "status": "planned_not_dispatched"
+    }
+  ],
+  "prompt": "SOURCE OF TRUTH: refined Holus content, not the raw thought transcript.\nPlatform: linkedin\nContent type: image_post\nHeadline/thesis: The pause before approve\nTopic: Human review artifact\nIntended takeaway: Good review surfaces make the reason visible before approval.\nRefined post/caption:\nThe reviewer pauses over one content card because the reason to approve is not visible yet.\nRaw thought provenance exists only for lineage. Do not copy raw wording into the image.\n\nAI IMAGE DIRECTOR STRUCTURED BRIEF:\n{\n  \"allowed\": true,\n  \"blocked_reason\": null,\n  \"image_class\": \"product_scene\",\n  \"viewer_takeaway\": \"Good review surfaces make the reason visible before approval.\",\n  \"metaphor_mapping\": {\n    \"concept\": \"Human review artifact\",\n    \"visual_object\": \"a real-looking product surface, review queue, or content planning board\",\n    \"why_it_maps\": \"Product, screen, queue, or interface language needs a concrete usage scene.\"\n  },\n  \"subject\": {\n    \"primary\": \"a real-looking product surface, review queue, or content planning board\",\n    \"secondary\": [\n      \"one selected content/review item\",\n      \"one visible reason or fit signal\",\n      \"one decision state\"\n    ],\n    \"forbidden_subjects\": [\n      \"robots\",\n      \"glowing brains\",\n      \"fake dashboards\",\n      \"brand logos\",\n      \"generic corporate team photos\"\n    ]\n  },\n  \"action_or_state\": \"A plausible product/review interface shown as a work surface. The state change or decision reason must be visible. LinkedIn impact lens: Build a product decision artifact, not a fake screenshot.\",\n  \"environment\": \"quiet operator workbench with restrained real-world materials\",\n  \"composition\": {\n    \"shot_type\": \"top_down\",\n    \"camera_angle\": \"editorial angle focused on the single artifact\",\n    \"focal_point\": \"a real-looking product surface, review queue, or content planning board\",\n    \"depth\": \"clear focal plane with background details subdued\",\n    \"crop_safe_area\": \"leave clean margin on all sides for social crop\"\n  },\n  \"lighting_and_mood\": {\n    \"lighting\": \"soft side light with natural shadows\",\n    \"mood\": \"calm, editorial, operator-focused\",\n    \"contrast\": \"medium\"\n  },\n  \"style\": {\n    \"medium\": \"photoreal_editorial\",\n    \"texture\": \"matte paper, real desk materials, restrained tactile detail\",\n    \"palette\": \"warm neutral base with one teal or amber accent\",\n    \"brand_fit\": \"restrained builder/operator aesthetic; not glossy SaaS stock\"\n  },\n  \"output\": {\n    \"platform\": \"linkedin\",\n    \"aspect_ratio\": \"1:1\",\n    \"resolution_intent\": \"768x768\"\n  },\n  \"text_policy\": {\n    \"mode\": \"none\",\n    \"allowed_text\": null,\n    \"font_style\": null,\n    \"placement\": null\n  },\n  \"reference_assets\": [],\n  \"prompt\": \"Create a product scene for Holus social content. Viewer takeaway: Good review surfaces make the reason visible before approval.. Subject: a real-looking product surface, review queue, or content planning board. Scene: A plausible product/review interface shown as a work surface. The state change or decision reason must be visible. LinkedIn impact lens: Build a product decision artifact, not a fake screenshot.. Composition: Screen or board as the hero. Use one selected item, one reason panel, and one outcome state. LinkedIn impact lens: Show selected item -> reason/evidence -> decision. Use short real labels and large UI blocks.. Use a concrete editorial image, not generic AI wallpaper. Use 1:1 composition for linkedin. Text policy: Use abstract UI blocks or a few intentional labels only. No fake paragraphs.\",\n  \"negative_prompt\": [\n    \"generic AI wallpaper\",\n    \"glowing brain\",\n    \"robot mascot\",\n    \"abstract network background\",\n    \"pseudo-text\",\n    \"random premium objects with unclear meaning\",\n    \"unexplained decorative objects\",\n    \"stock-photo handshake\",\n    \"fake brand logos\",\n    \"watermarks\",\n    \"random dashboard widgets\",\n    \"generic motivational poster\",\n    \"pretty scene without evidence\",\n    \"unstructured collage\",\n    \"fake unreadable paragraphs\",\n    \"made-up logos or unverifiable brand marks\",\n    \"dense SaaS dashboard\",\n    \"tiny pseudo UI text\",\n    \"robots\",\n    \"glowing brain\",\n    \"abstract neural network background\",\n    \"fake dashboard\",\n    \"unreadable paragraphs\",\n    \"brand logos\",\n    \"watermark\",\n    \"charts\",\n    \"workflow arrows\"\n  ],\n  \"reviewer_checklist\": [\n    \"Does the image communicate this takeaway: Good review surfaces make the reason visible before approval.?\",\n    \"Is there one focal subject?\",\n    \"Is forbidden content absent?\",\n    \"Is the text policy respected?\",\n    \"Would this be more honest as a deterministic chart/diagram instead?\"\n  ]\n}\n\nUse the `prompt` field as the provider-ready visual prompt. Obey negative_prompt, text_policy, output, and reviewer_checklist exactly."
+}

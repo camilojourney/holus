@@ -1,0 +1,245 @@
+version: 1
+owner: thought
+updated_at: "2026-06-04"
+purpose: >
+  Prioritized backlog for improving Holus from raw thought to app-tested,
+  judge-gated, visually coherent content and app UX.
+
+items:
+  - id: THOUGHT-UX-001
+    area: app_ux
+    priority: P0
+    status: open
+    title: Show judge, variable rationale, lineage, and redo history in Content Studio.
+    why: >
+      The API records visual_judge, variable_rationale, brand_identity, and
+      content lineage, but the review UI still hides those decisions.
+    success:
+      - Review panel shows PASS/REDO, score, reasons, and redo count.
+      - Image/carousel detail shows why format, style, hook, proof, and handle policy were chosen.
+      - User can understand whether the output makes sense without inspecting YAML/API.
+    suggested_skill: ux
+
+  - id: THOUGHT-UX-002
+    area: app_ux
+    priority: P0
+    status: open
+    title: Redesign Content Studio as a real review cockpit, not a dashboard card stack.
+    why: >
+      The current app looks cleaner than before but still does not make review,
+      compare, rerun, approve, and learn feel like the primary workflow.
+    success:
+      - First screen emphasizes generated content and review state.
+      - Composer, generated set, visual previews, variables, and approvals are one coherent workflow.
+      - Existing decorative dashboard framing is reduced.
+    suggested_skill: ux
+
+  - id: THOUGHT-UX-003
+    area: app_ux
+    priority: P0
+    status: completed
+    title: Show rendered carousels in Content Studio review.
+    why: >
+      Carousel records were saving rendered_pdf_path, but the API and review UI
+      only exposed image_url fields. Users saw "Visual pending" even when the
+      PDF asset already existed.
+    success:
+      - Content detail exposes pdf_url for carousel records.
+      - Content Studio shows native slide previews and offers an explicit export action.
+      - Detail drawer shows the same carousel preview before approval.
+    suggested_skill: ux
+
+  - id: THOUGHT-UX-004
+    area: app_ux
+    priority: P0
+    status: completed
+    title: Show posting account destination before approval or scheduling.
+    why: >
+      Reviewers could see platform and content type, but not which account a
+      draft would target. That is unsafe when Holus manages multiple accounts.
+    success:
+      - Content queue records store posting_destination with account, handle, language, status, and lineage.
+      - API detail returns a destination fallback for older records.
+      - Review drawer shows the account route above the visual and before approve/schedule controls.
+    suggested_skill: ux
+
+  - id: THOUGHT-UX-005
+    area: app_ux
+    priority: P0
+    status: completed
+    title: Make carousel review inspectable in the detail drawer.
+    why: >
+      The drawer used the same compact thumbnail grid as overview cards, so
+      carousel slide text was clipped and hard to review before approval.
+    success:
+      - Detail drawer shows one large selected slide.
+      - Reviewer can move between slides with Previous/Next and thumbnails.
+      - PDF can be opened inline for inspection or downloaded for export.
+    suggested_skill: ux
+
+  - id: THOUGHT-UX-006
+    area: app_ux
+    priority: P0
+    status: completed
+    title: Review generated content by thought, not by status column.
+    why: >
+      Thought Studio creates a content set from one raw thought. A Kanban board
+      split outputs by draft/review/approved/published, hiding the relationship
+      between the original thought and all generated platform variants.
+    success:
+      - Review section groups records by normalized thought.
+      - Each thought shows the latest output for each platform/content type.
+      - Regenerated outputs show version counts instead of appearing as separate thoughts.
+      - Output cards still open the existing detail drawer for copy, visual, destination, and schedule review.
+    suggested_skill: ux
+
+  - id: THOUGHT-UX-007
+    area: app_ux
+    priority: P0
+    status: completed
+    title: Add agent wiring and prompt health dashboard to Content Studio.
+    why: >
+      The old agent fleet grid listed registered agents but did not explain
+      which agents actually participated in the current Thought Studio run,
+      which prompts were only definitions, or where model/evaluator telemetry
+      was missing.
+    success:
+      - Agent section separates registered agents, current-run trace, active-not-used agents, judges, and stored telemetry gaps.
+      - Dashboard explains why agents can appear idle even when the registry is healthy.
+      - Agent chips show ran/planned/judge-idle/no-telemetry states with prompt path and version hints.
+      - Model lanes and prompt versioning gaps are visible in the same review surface.
+    suggested_skill: ux
+
+  - id: THOUGHT-PIPE-004
+    area: agents_harness
+    priority: P0
+    status: open
+    title: Make Thought Studio registry-driven instead of hardcoded trace-driven.
+    why: >
+      Opus review confirmed the current Thought Studio path stamps a subset of
+      agent names into agent_trace but does not invoke AgentRegistry,
+      PromptLoader, or real per-agent model calls for every stage.
+    success:
+      - Thought stages resolve agent prompts from agents/AGENTS.yaml and prompt files.
+      - Each stage records agent_id, prompt_version, prompt_sha, model, latency, cost, verdict, and output hash.
+      - Missing or disabled agents are reported as wiring failures, not silently skipped.
+      - Current-run trace and persistent trajectory share the same schema.
+    suggested_skill: code
+
+  - id: THOUGHT-PIPE-005
+    area: agents_harness
+    priority: P0
+    status: open
+    title: Wire evaluator agents as model-backed judges for every generated output.
+    why: >
+      Evaluator prompts exist, but Thought Studio still relies mostly on
+      deterministic gates and local quality scores. Judges should work like a
+      review crew: check sense, voice, platform fit, visual taste, and publish
+      readiness, then force redo when needed.
+    success:
+      - Every generated item has evaluator routing by platform and content type.
+      - Judge outputs include rubric score, reasons, disagreement notes, and redo recommendation.
+      - Redo loops preserve lineage from failed draft to regenerated draft.
+      - Dashboard shows evaluator pass/fail history per thought and per prompt version.
+    suggested_skill: code
+
+  - id: THOUGHT-PIPE-003
+    area: pipeline
+    priority: P0
+    status: open
+    title: Pass explicit account routing through the Holus Social API contract.
+    why: >
+      The review drawer now shows the configured account destination, but the
+      downstream publish/schedule payload still targets by platform. Publishing
+      should eventually enforce the selected account, not only display it.
+    success:
+      - PublishRequest and ScheduleRequest accept an account/account_id field.
+      - Dry-run payloads show the exact destination account.
+      - Social API rejects ambiguous multi-account publish requests.
+    suggested_skill: code
+
+  - id: THOUGHT-PIPE-002
+    area: pipeline
+    priority: P0
+    status: open
+    title: Export Instagram carousels as image slide sets.
+    why: >
+      Instagram carousel is a multi-image post, not a PDF document. Holus now
+      creates and reviews Instagram carousel slide sequences, but the renderer
+      still saves a PDF review artifact instead of final PNG/JPG slides.
+    success:
+      - Instagram carousel records save rendered_slide_paths with one image per slide.
+      - Content Studio shows each exported slide and keeps PDF only as optional review artifact.
+      - Publishing payload sends image slide media, not a PDF.
+    suggested_skill: code
+
+  - id: THOUGHT-PIPE-001
+    area: pipeline
+    priority: P0
+    status: in_progress
+    title: Judge every visual/carousel before writing queue records.
+    why: >
+      Raw-copy and generic visual failures should be caught before the user sees them.
+    success:
+      - visual_judge is saved with score, verdict, reasons, and redo_count.
+      - REDO causes a regenerated spec before rendering.
+      - Tests cover raw-copy, generic filler, missing rationale, and wrong profile.
+    suggested_skill: code
+
+  - id: THOUGHT-CREATIVE-001
+    area: creative_system
+    priority: P1
+    status: open
+    title: Track creative novelty and recent pattern reuse.
+    why: >
+      Holus should stay coherent without producing the same hook, layout, proof
+      structure, and CTA every time.
+    success:
+      - Each run records selected novelty axes and recent-pattern distance.
+      - Repeated strategy/style combinations trigger alternate variants.
+      - User can see what changed creatively between runs.
+    suggested_skill: taste
+
+  - id: THOUGHT-HARNESS-001
+    area: agents_harness
+    priority: P1
+    status: open
+    title: Add model-backed judges after deterministic gates.
+    why: >
+      The local judge catches structural failures, but voice, taste, and strategy
+      need richer reviewers when budget allows.
+    success:
+      - Codex/local judge remains the fast gate.
+      - Agy/DeepSeek/Claude reviewers can be invoked with saved prompts.
+      - Reviewer disagreements are saved as learning signals.
+    suggested_skill: code
+
+  - id: THOUGHT-HARNESS-002
+    area: agents_harness
+    priority: P0
+    status: open
+    title: Add a fast polish lane for low-risk waiting states.
+    why: >
+      The app can feel slow when a strong model handles small edits such as
+      title cleanup, microcopy polish, or variant phrasing. A faster model
+      should reduce "Polishing..." waits without taking over core judgment.
+    success:
+      - Fast model is used only after deterministic structure, essence, and visual variables are valid.
+      - Stronger judge still reviews final output and can force redo.
+      - UI shows which lane is running: structure, polish, judge, render, or review.
+      - Latency and quality deltas are recorded in Thought Evolution Memory.
+    suggested_skill: code
+
+  - id: THOUGHT-SKILL-001
+    area: skills
+    priority: P1
+    status: open
+    title: Keep `$thought` synced with app behavior and memory schema.
+    why: >
+      The skill should keep teaching future runs to use the app, inspect the
+      whole product UX, and update this memory.
+    success:
+      - Skill requires memory updates.
+      - Skill has app-wide UX and harness sections.
+      - Skill validation passes after updates.
+    suggested_skill: skill-creator

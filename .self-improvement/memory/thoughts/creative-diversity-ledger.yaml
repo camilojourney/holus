@@ -1,0 +1,51 @@
+version: 1
+owner: thought
+updated_at: "2026-06-04"
+purpose: >
+  Prevent Holus from becoming same-y while preserving Juan's voice and the
+  thought's essence.
+
+novelty_axes:
+  hook_frame:
+    examples:
+      - contrarian thesis
+      - operating note
+      - mistake reframe
+      - architecture map
+      - field report
+  proof_shape:
+    examples:
+      - role map
+      - before/after
+      - numbered system
+      - budget split
+      - failure lesson
+  visual_metaphor:
+    examples:
+      - harness
+      - signal/noise
+      - cockpit
+      - assembly line
+      - review gate
+  layout_archetype:
+    examples:
+      - editorial poster
+      - systems map
+      - carousel sequence
+      - comparison card
+      - checklist
+  pacing:
+    examples:
+      - claim/proof/rule
+      - problem/system/payoff
+      - confession/reframe/takeaway
+      - map/roles/lesson
+
+anti_sameness_rules:
+  - Do not reuse the same hook frame, visual metaphor, and proof shape three runs in a row.
+  - If the same style profile wins twice, force a second variant with a different layout archetype.
+  - Preserve the thesis first; novelty cannot make the idea less true.
+  - Every visual must earn its metaphor. Decorative novelty does not count.
+
+recent_patterns: []
+

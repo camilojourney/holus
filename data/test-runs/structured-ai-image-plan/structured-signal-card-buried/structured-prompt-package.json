@@ -1,0 +1,253 @@
+{
+  "cycle_id": "structured-signal-card-buried",
+  "source": {
+    "piece_id": "structured-signal-card-buried",
+    "platform": "linkedin",
+    "content_type": "image_post",
+    "refined_text": "A pile of reasonable notes can bury the one card that changes the decision.",
+    "headline": "Specific beats generic",
+    "topic": "Specific examples beat generic advice",
+    "content_pillar": null,
+    "intended_takeaway": "One specific example beats a pile of generic advice.",
+    "raw_thought_provenance": null,
+    "thought_essence": {},
+    "metadata": {}
+  },
+  "visual_route": {
+    "mode": "object_metaphor",
+    "proximity_score": 2,
+    "viewer_takeaway": "One specific example beats a pile of generic advice.",
+    "scene": "single concrete editorial object metaphor",
+    "subject": "one recognizable object directly mapped to the thesis",
+    "composition": "one hero object, simple background, strong focal point, no clutter",
+    "use_person": false,
+    "use_chart": false,
+    "use_workflow": false,
+    "visual_do": [
+      "use one metaphor only",
+      "make the metaphor explainable in one sentence",
+      "keep it grounded and physical"
+    ],
+    "visual_dont": [
+      "generic AI wallpaper",
+      "glowing brain",
+      "robot mascot",
+      "abstract network background",
+      "pseudo-text",
+      "random premium objects with unclear meaning",
+      "do not create a generic premium desk object collection"
+    ],
+    "rationale": "A concrete object-metaphor signal was detected before any generic human or workflow framing."
+  },
+  "visual_plan": {
+    "plan_id": "structured-signal-card-buried__object_metaphor__v1",
+    "route_mode": "object_metaphor",
+    "concept": "Use one physical metaphor for: One specific example beats a pile of generic advice.",
+    "viewer_test": "A viewer should be able to explain the metaphor in one sentence.",
+    "scene_script": "One hero object or small object arrangement, directly mapped to the idea. LinkedIn impact lens: Use one metaphor object as evidence for the idea, not as decoration.",
+    "composition_script": "Single focal point, clear negative space, no secondary metaphors competing. LinkedIn impact lens: One object, one tension, one verdict line. Leave negative space.",
+    "required_elements": [
+      "one hero metaphor object",
+      "a visible tension or imbalance",
+      "simple environment that does not steal attention",
+      "one scroll-stopping top claim",
+      "one visible evidence structure below the claim",
+      "one clear verdict or takeaway panel",
+      "mobile-first hierarchy readable at thumbnail size",
+      "single metaphor object",
+      "visible tension"
+    ],
+    "text_policy": "No readable text unless the object itself requires a short real-world label.",
+    "forbidden_elements": [
+      "generic AI wallpaper",
+      "glowing brain",
+      "robot mascot",
+      "abstract network background",
+      "pseudo-text",
+      "random premium objects with unclear meaning",
+      "do not create a generic premium desk object collection",
+      "unexplained decorative objects",
+      "stock-photo handshake",
+      "fake brand logos",
+      "watermarks",
+      "random dashboard widgets",
+      "generic motivational poster",
+      "pretty scene without evidence",
+      "unstructured collage",
+      "fake unreadable paragraphs",
+      "made-up logos or unverifiable brand marks",
+      "premium desk object pile"
+    ],
+    "compliance_checks": [
+      "Is there one metaphor only?",
+      "Can the metaphor be explained in one sentence?",
+      "Is the scene not just a pretty object collection?",
+      "Can the viewer repeat the claim in two seconds?",
+      "Is there a concrete proof block below the hook?",
+      "Is the final verdict visually separate from the evidence?",
+      "Can the metaphor be explained in one sentence?"
+    ]
+  },
+  "visual_strategy": {
+    "rendering_path": "ai_image",
+    "provider": "codex_cli_image",
+    "template_kind": "single_metaphor",
+    "design_system": {
+      "palette": "teal_amber",
+      "background": "#F8F6EF",
+      "foreground": "#172326",
+      "accent": "#007A7A",
+      "secondary_accent": "#E6A23C",
+      "positive": "#228B62",
+      "negative": "#B94A48",
+      "typography": "bold grotesk headline with compact labels",
+      "layout_density": "sparse-to-medium with one focal object or sequence",
+      "texture": "warm paper",
+      "icon_style": "rounded line icons",
+      "chart_style": "teal primary data with amber callout",
+      "guardrails": [
+        "mobile-first 1080x1350 or 1080x1080 safe hierarchy",
+        "one focal claim before details",
+        "consistent padding and stroke widths",
+        "no tiny pseudo text"
+      ]
+    },
+    "content_job": {
+      "job_type": "metaphor",
+      "needs_visual": true,
+      "reason": "visual_carries_metaphor",
+      "recommended_format": "ai_generated_image",
+      "forbidden_formats": [],
+      "deterministic_allowed": false,
+      "ai_image_allowed": true,
+      "judge": "visual-content-judge",
+      "rationale": "A single concrete metaphor can justify AI image generation."
+    },
+    "deterministic_score": 0.35,
+    "ai_score": 0.85,
+    "rationale": "object_metaphor benefits from generative imagery because the core value is metaphor or mood.",
+    "required_inputs": [
+      "metaphor object",
+      "tension",
+      "verdict"
+    ],
+    "failure_modes": [
+      "unclear claim",
+      "weak mobile hierarchy",
+      "caption-dependent visual",
+      "generic AI metaphor",
+      "decorative scene without proof"
+    ]
+  },
+  "ai_image_direction": {
+    "allowed": true,
+    "blocked_reason": null,
+    "image_class": "single_metaphor",
+    "viewer_takeaway": "One specific example beats a pile of generic advice.",
+    "metaphor_mapping": {
+      "concept": "Specific examples beat generic advice",
+      "visual_object": "one recognizable object directly mapped to the thesis",
+      "why_it_maps": "A concrete object-metaphor signal was detected before any generic human or workflow framing."
+    },
+    "subject": {
+      "primary": "one recognizable object directly mapped to the thesis",
+      "secondary": [
+        "one hero metaphor object",
+        "a visible tension or imbalance",
+        "simple environment that does not steal attention"
+      ],
+      "forbidden_subjects": [
+        "robots",
+        "glowing brains",
+        "fake dashboards",
+        "brand logos",
+        "generic corporate team photos"
+      ]
+    },
+    "action_or_state": "One hero object or small object arrangement, directly mapped to the idea. LinkedIn impact lens: Use one metaphor object as evidence for the idea, not as decoration.",
+    "environment": "quiet operator workbench with restrained real-world materials",
+    "composition": {
+      "shot_type": "top_down",
+      "camera_angle": "editorial angle focused on the single artifact",
+      "focal_point": "one recognizable object directly mapped to the thesis",
+      "depth": "clear focal plane with background details subdued",
+      "crop_safe_area": "leave clean margin on all sides for social crop"
+    },
+    "lighting_and_mood": {
+      "lighting": "soft side light with natural shadows",
+      "mood": "calm, editorial, operator-focused",
+      "contrast": "medium"
+    },
+    "style": {
+      "medium": "photoreal_editorial",
+      "texture": "matte paper, real desk materials, restrained tactile detail",
+      "palette": "warm neutral base with one teal or amber accent",
+      "brand_fit": "restrained builder/operator aesthetic; not glossy SaaS stock"
+    },
+    "output": {
+      "platform": "linkedin",
+      "aspect_ratio": "1:1",
+      "resolution_intent": "768x768"
+    },
+    "text_policy": {
+      "mode": "none",
+      "allowed_text": null,
+      "font_style": null,
+      "placement": null
+    },
+    "reference_assets": [],
+    "prompt": "Create a single metaphor for Holus social content. Viewer takeaway: One specific example beats a pile of generic advice.. Subject: one recognizable object directly mapped to the thesis. Scene: One hero object or small object arrangement, directly mapped to the idea. LinkedIn impact lens: Use one metaphor object as evidence for the idea, not as decoration.. Composition: Single focal point, clear negative space, no secondary metaphors competing. LinkedIn impact lens: One object, one tension, one verdict line. Leave negative space.. Use a concrete editorial image, not generic AI wallpaper. Use 1:1 composition for linkedin. Text policy: No readable text unless the object itself requires a short real-world label.",
+    "negative_prompt": [
+      "generic AI wallpaper",
+      "glowing brain",
+      "robot mascot",
+      "abstract network background",
+      "pseudo-text",
+      "random premium objects with unclear meaning",
+      "do not create a generic premium desk object collection",
+      "unexplained decorative objects",
+      "stock-photo handshake",
+      "fake brand logos",
+      "watermarks",
+      "random dashboard widgets",
+      "generic motivational poster",
+      "pretty scene without evidence",
+      "unstructured collage",
+      "fake unreadable paragraphs",
+      "made-up logos or unverifiable brand marks",
+      "premium desk object pile",
+      "robots",
+      "glowing brain",
+      "abstract neural network background",
+      "fake dashboard",
+      "unreadable paragraphs",
+      "brand logos",
+      "watermark",
+      "charts",
+      "workflow arrows"
+    ],
+    "reviewer_checklist": [
+      "Does the image communicate this takeaway: One specific example beats a pile of generic advice.?",
+      "Is there one focal subject?",
+      "Is forbidden content absent?",
+      "Is the text policy respected?",
+      "Would this be more honest as a deterministic chart/diagram instead?"
+    ]
+  },
+  "structured_prompt_hash": "d6d67e1df802e6a7",
+  "provider_prompts": [
+    {
+      "provider": "codex_cli_image",
+      "model": "default",
+      "structured_prompt_hash": "d6d67e1df802e6a7",
+      "status": "planned_not_dispatched"
+    },
+    {
+      "provider": "agy_cli_image",
+      "model": "Gemini 3.5 Flash (Medium)",
+      "structured_prompt_hash": "d6d67e1df802e6a7",
+      "status": "planned_not_dispatched"
+    }
+  ],
+  "prompt": "SOURCE OF TRUTH: refined Holus content, not the raw thought transcript.\nPlatform: linkedin\nContent type: image_post\nHeadline/thesis: Specific beats generic\nTopic: Specific examples beat generic advice\nIntended takeaway: One specific example beats a pile of generic advice.\nRefined post/caption:\nA pile of reasonable notes can bury the one card that changes the decision.\nRaw thought provenance exists only for lineage. Do not copy raw wording into the image.\n\nAI IMAGE DIRECTOR STRUCTURED BRIEF:\n{\n  \"allowed\": true,\n  \"blocked_reason\": null,\n  \"image_class\": \"single_metaphor\",\n  \"viewer_takeaway\": \"One specific example beats a pile of generic advice.\",\n  \"metaphor_mapping\": {\n    \"concept\": \"Specific examples beat generic advice\",\n    \"visual_object\": \"one recognizable object directly mapped to the thesis\",\n    \"why_it_maps\": \"A concrete object-metaphor signal was detected before any generic human or workflow framing.\"\n  },\n  \"subject\": {\n    \"primary\": \"one recognizable object directly mapped to the thesis\",\n    \"secondary\": [\n      \"one hero metaphor object\",\n      \"a visible tension or imbalance\",\n      \"simple environment that does not steal attention\"\n    ],\n    \"forbidden_subjects\": [\n      \"robots\",\n      \"glowing brains\",\n      \"fake dashboards\",\n      \"brand logos\",\n      \"generic corporate team photos\"\n    ]\n  },\n  \"action_or_state\": \"One hero object or small object arrangement, directly mapped to the idea. LinkedIn impact lens: Use one metaphor object as evidence for the idea, not as decoration.\",\n  \"environment\": \"quiet operator workbench with restrained real-world materials\",\n  \"composition\": {\n    \"shot_type\": \"top_down\",\n    \"camera_angle\": \"editorial angle focused on the single artifact\",\n    \"focal_point\": \"one recognizable object directly mapped to the thesis\",\n    \"depth\": \"clear focal plane with background details subdued\",\n    \"crop_safe_area\": \"leave clean margin on all sides for social crop\"\n  },\n  \"lighting_and_mood\": {\n    \"lighting\": \"soft side light with natural shadows\",\n    \"mood\": \"calm, editorial, operator-focused\",\n    \"contrast\": \"medium\"\n  },\n  \"style\": {\n    \"medium\": \"photoreal_editorial\",\n    \"texture\": \"matte paper, real desk materials, restrained tactile detail\",\n    \"palette\": \"warm neutral base with one teal or amber accent\",\n    \"brand_fit\": \"restrained builder/operator aesthetic; not glossy SaaS stock\"\n  },\n  \"output\": {\n    \"platform\": \"linkedin\",\n    \"aspect_ratio\": \"1:1\",\n    \"resolution_intent\": \"768x768\"\n  },\n  \"text_policy\": {\n    \"mode\": \"none\",\n    \"allowed_text\": null,\n    \"font_style\": null,\n    \"placement\": null\n  },\n  \"reference_assets\": [],\n  \"prompt\": \"Create a single metaphor for Holus social content. Viewer takeaway: One specific example beats a pile of generic advice.. Subject: one recognizable object directly mapped to the thesis. Scene: One hero object or small object arrangement, directly mapped to the idea. LinkedIn impact lens: Use one metaphor object as evidence for the idea, not as decoration.. Composition: Single focal point, clear negative space, no secondary metaphors competing. LinkedIn impact lens: One object, one tension, one verdict line. Leave negative space.. Use a concrete editorial image, not generic AI wallpaper. Use 1:1 composition for linkedin. Text policy: No readable text unless the object itself requires a short real-world label.\",\n  \"negative_prompt\": [\n    \"generic AI wallpaper\",\n    \"glowing brain\",\n    \"robot mascot\",\n    \"abstract network background\",\n    \"pseudo-text\",\n    \"random premium objects with unclear meaning\",\n    \"do not create a generic premium desk object collection\",\n    \"unexplained decorative objects\",\n    \"stock-photo handshake\",\n    \"fake brand logos\",\n    \"watermarks\",\n    \"random dashboard widgets\",\n    \"generic motivational poster\",\n    \"pretty scene without evidence\",\n    \"unstructured collage\",\n    \"fake unreadable paragraphs\",\n    \"made-up logos or unverifiable brand marks\",\n    \"premium desk object pile\",\n    \"robots\",\n    \"glowing brain\",\n    \"abstract neural network background\",\n    \"fake dashboard\",\n    \"unreadable paragraphs\",\n    \"brand logos\",\n    \"watermark\",\n    \"charts\",\n    \"workflow arrows\"\n  ],\n  \"reviewer_checklist\": [\n    \"Does the image communicate this takeaway: One specific example beats a pile of generic advice.?\",\n    \"Is there one focal subject?\",\n    \"Is forbidden content absent?\",\n    \"Is the text policy respected?\",\n    \"Would this be more honest as a deterministic chart/diagram instead?\"\n  ]\n}\n\nUse the `prompt` field as the provider-ready visual prompt. Obey negative_prompt, text_policy, output, and reviewer_checklist exactly."
+}

@@ -12,19 +12,18 @@ export function useTrajectoryStream(): {
   events: TrajectoryEvent[];
   connected: boolean;
 } {
-  const [events, setEvents] = useState<TrajectoryEvent[]>([]);
-  const [connected, setConnected] = useState(false);
+  const demoMode = isDemoMode();
+  const [events, setEvents] = useState<TrajectoryEvent[]>(
+    () => (demoMode ? demoTrajectoryEvents : []),
+  );
+  const [connected, setConnected] = useState(demoMode);
   const retryDelay = useRef(1_000);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     // In demo mode, return static trajectory events without opening an EventSource
-    if (isDemoMode()) {
-      setEvents(demoTrajectoryEvents);
-      setConnected(true);
-      return;
-    }
+    if (demoMode) return;
 
     let cancelled = false;
 
@@ -78,7 +77,7 @@ export function useTrajectoryStream(): {
         sourceRef.current = null;
       }
     };
-  }, []);
+  }, [demoMode]);
 
   return { events, connected };
 }

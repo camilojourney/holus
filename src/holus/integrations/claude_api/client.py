@@ -36,14 +36,14 @@ ModelTier = Literal["strategic", "operational", "classification"]
 MODEL_MAP: dict[ModelTier, str] = {
     "strategic": "claude-opus-4-6",
     "operational": "claude-sonnet-4-6",
-    "classification": "claude-haiku-4-5-20251001",
+    "classification": "claude-sonnet-4-6",  # haiku slower than sonnet via SDK
 }
 
 # (input_regular, cache_write, cache_read, output)
 PRICING: dict[str, tuple[float, float, float, float]] = {
     "claude-opus-4-6": (15.0, 3.75, 1.50, 75.0),
     "claude-sonnet-4-6": (3.0, 0.75, 0.30, 15.0),
-    "claude-haiku-4-5-20251001": (0.80, 0.08, 0.08, 4.0),
+    "claude-haiku-4-5-20251001": (0.80, 0.08, 0.08, 4.0),  # kept for cost history; not actively used
 }
 
 

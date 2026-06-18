@@ -71,14 +71,29 @@ class TestNormalizeOutlineDesign:
         result = _normalize_outline(outline)
         assert result["slides"][0]["variables"]["theme"] == "bold"
 
-    def test_author_name_still_injected(self):
+    def test_author_name_not_injected_without_identity(self):
         outline = {
             "slides": [{"type": "hook", "variables": {"headline": "H"}}],
             "design": {"theme": "cool"},
         }
         result = _normalize_outline(outline)
-        assert result["slides"][0]["variables"]["author_name"] == "Juan Camilo Martinez"
+        assert "author_name" not in result["slides"][0]["variables"]
         assert result["slides"][0]["variables"]["theme"] == "cool"
+
+    def test_author_name_injected_from_brand_identity(self):
+        outline = {
+            "slides": [{"type": "hook", "variables": {"headline": "H"}}],
+            "design": {
+                "theme": "cool",
+                "brand_identity": {
+                    "author_name": "Juan Camilo Martinez",
+                    "brand_handle": "@camiloexperience",
+                },
+            },
+        }
+        result = _normalize_outline(outline)
+        assert result["slides"][0]["variables"]["author_name"] == "Juan Camilo Martinez"
+        assert result["slides"][0]["variables"]["brand_handle"] == "@camiloexperience"
 
 
 class TestAutoSvgInjection:

@@ -1,22 +1,26 @@
 # Roadmap -- Holus
 
-_Last updated: 2026-03-17_
+_Last updated: 2026-05-31_
 
 ## Now (current focus)
 
-- [ ] Fix Instagram rubric — caption scored 0.40 despite hook 9/10 and voice PASS. Rubric miscalibrated for short-form
-- [ ] Wire auto-publish approval flow — 36 items processed as `skipped`, need approval gate or config for autonomous publishing
-- [ ] Observatory frontend polish (chart components, SSE real-time, accessibility) -- spec 029
-- [ ] Silo integration hardening (genpeli MCP, pilaster MCP, social-media MCP) -- specs 014-016
-- [ ] End-to-end publish test — generate → approve → publish → verify post appears on social media
+- [ ] Make Thought Studio the primary product workflow: text/URL thought -> content set -> review
+- [ ] Complete Holus Social API rename and publish/schedule contract, with legacy env aliases
+- [ ] Wire text, Instagram image, and LinkedIn carousel generation end to end
+- [ ] Verify explicit dry-run, schedule, and publish calls never bypass human review by default
+- [ ] Observatory frontend polish around the Thought Studio composer, visual assets, and live/demo state
 
 ## Next (after Now is done)
 
+- Replace deterministic fallback copy with agent-backed ThoughtContentPipeline generation
+- Add platform activation controls and account/channel configuration in the UI
 - Prompt optimizer pipeline: A/B testing, versioned variants in `config/prompts/` -- spec 030
 - Observatory alerts: Slack/Telegram notifications on quality drops or cost spikes
 - Blog publishing pipeline: SEO researcher → blog writer → portfolio /blog route
 - Coordinator agent: cross-product pattern synthesis (needs 2+ months of data) -- spec 006
 - Langfuse tracing integration for production observability
+- Optional Pilaster AI-image adapter after Holus visual engine is stable
+- Optional Genpeli/video adapter after text/image/carousel quality is excellent
 
 ## Later (3-6 months, directional)
 

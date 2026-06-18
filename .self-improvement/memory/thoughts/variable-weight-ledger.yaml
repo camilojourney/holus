@@ -1,0 +1,66 @@
+version: 1
+owner: thought
+updated_at: "2026-06-04"
+purpose: >
+  Default scoring weights for `$thought` runs. These are not final truth; they
+  are the current operating hypothesis and should change when evidence shows a
+  better balance.
+
+scoring_weights:
+  essence_preservation:
+    weight: 18
+    asks:
+      - Did Holus extract the strongest thesis instead of copying the raw thought?
+      - Did role maps, evidence, and constraints survive?
+  juan_voice:
+    weight: 12
+    asks:
+      - Does it sound like Juan thinking in public?
+      - Is it direct, useful, and non-corporate?
+  platform_fit:
+    weight: 10
+    asks:
+      - Does each format behave like the platform wants?
+      - Is the caption/thread/carousel/image native rather than reused text?
+  visual_semantics:
+    weight: 12
+    asks:
+      - Does the visual explain the idea?
+      - Are metaphor, hierarchy, proof, and CTA meaningful?
+  app_ux_reviewability:
+    weight: 12
+    asks:
+      - Can the user see output, judge, variables, lineage, and approval state quickly?
+      - Does the app make the next action obvious?
+  variable_lineage:
+    weight: 10
+    asks:
+      - Are chosen variables, missing variables, storage, model, renderer, and trace visible?
+      - Can the run be replayed?
+  agent_harness_quality:
+    weight: 8
+    asks:
+      - Were the right agents/models/reviewers used?
+      - Should a prompt, skill, or judge change?
+  creative_novelty:
+    weight: 8
+    asks:
+      - Is this meaningfully different from recent outputs?
+      - Did Holus vary format, metaphor, pacing, proof, or visual structure?
+  scale_readiness:
+    weight: 6
+    asks:
+      - Would this survive more users, more variants, A/B tests, and model routing?
+  publish_readiness:
+    weight: 4
+    asks:
+      - Is it ready for human approval?
+      - Are safety and publishing gates intact?
+
+weight_change_rules:
+  - Increase app_ux_reviewability if the user cannot understand app output without API/YAML inspection.
+  - Increase visual_semantics if outputs look polished but do not carry meaning.
+  - Increase creative_novelty if three recent outputs reuse the same hook/layout/proof pattern.
+  - Increase agent_harness_quality when model/reviewer disagreements produce useful fixes.
+  - Decrease publish_readiness during product-building phases where learning matters more than shipping.
+

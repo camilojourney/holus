@@ -25,9 +25,13 @@ logger = logging.getLogger(__name__)
 # Visual designer system prompt (Layer 3 fallback)
 # ---------------------------------------------------------------------------
 
-VISUAL_DESIGNER_SYSTEM = """You design visuals for social media posts.
-Given a post's text, extract the key concepts and design a visual that TEACHES
+VISUAL_DESIGNER_SYSTEM = """You design deterministic visuals for social media posts only after
+the content job router and visual necessity gate have confirmed that a visual is needed.
+Given a routed post's text, extract the key concepts and design a visual that TEACHES
 the core idea independently — someone should understand your visual WITHOUT reading the post.
+
+If the routing context says needs_visual=false, return {"type": "none", "reason": "visual gate rejected companion visual"}.
+If AI images are forbidden, do not describe a generated scene. Use a deterministic visual type.
 
 You have 7 visual types. Pick the one that best fits the post's structure:
 
@@ -211,12 +215,38 @@ Return JSON only."""
         return None
 
 
+def _apply_style_controls(variables: dict[str, Any], visual_spec: dict[str, Any]) -> None:
+    """Carry Thought Studio style profiles through spec conversion."""
+    style_profile = visual_spec.get("style_profile")
+    if not isinstance(style_profile, dict):
+        return
+
+    control_map = {
+        "theme": "theme",
+        "font_pairing": "font_pairing",
+        "gradient": "background_gradient",
+        "effect": "visual_effect",
+    }
+    for source_key, target_key in control_map.items():
+        value = style_profile.get(source_key)
+        if isinstance(value, str) and value and value != "none":
+            variables.setdefault(target_key, value)
+
+
 def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
     """Render a visual spec to PNG using PlaywrightEngine. Returns True on success."""
     import asyncio
 
     async def _do_render() -> bytes:
-        from holus.visual import render_visual
+        from holus.visual.dispatcher import (
+            RefinedVisualSource,
+            VisualAssetKind,
+            VisualDispatcher,
+            VisualDispatchRequest,
+            VisualDispatchStatus,
+            VisualProvider,
+        )
+        from holus.visual.models import OutputFormat, RenderSpec
         from holus.visual.spec_converter import (
             architecture_to_spec,
             code_card_to_spec,
@@ -228,7 +258,7 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
         )
 
         spec_type = visual_spec.get("type", "insight")
-        author = {"author_name": "Juan Camilo Martinez", "brand_handle": "@juancamilomartinez"}
+        author = _visual_author_context(visual_spec)
 
         if spec_type == "flowchart":
             render_spec = flowchart_to_spec({**visual_spec, **author})
@@ -243,19 +273,116 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
         elif spec_type == "data_viz":
             render_spec = data_viz_to_spec(visual_spec)
             render_spec.variables["author_name"] = author["author_name"]
+        elif spec_type == "instagram_editorial_card":
+            creative_contract = visual_spec.get("creative_contract", {})
+            if not isinstance(creative_contract, dict):
+                creative_contract = {}
+            render_spec = RenderSpec(
+                template="single_image/editorial_poster",
+                variables={
+                    "label": str(visual_spec.get("label", "Prompt craft")),
+                    "hook": str(visual_spec.get("hook", visual_spec.get("headline", ""))),
+                    "subhook": str(visual_spec.get("subhook", visual_spec.get("body", ""))),
+                    "emphasis_word": str(visual_spec.get("emphasis_word", "Focus")),
+                    "proof_points": [
+                        str(point) for point in visual_spec.get("proof_points", [])
+                    ],
+                    "punchline": str(visual_spec.get("punchline", "")),
+                    "save_cue": str(visual_spec.get("save_cue", "Save this")),
+                    "composition_axis": str(
+                        creative_contract.get("composition_axis", "left_anchor")
+                    ),
+                    "density": str(creative_contract.get("density", "low")),
+                    "novelty_device": str(creative_contract.get("novelty_device", "rule label")),
+                    "visual_metaphor": str(
+                        creative_contract.get("visual_metaphor", "signal separated from noise")
+                    ),
+                    **author,
+                },
+                output_format=OutputFormat.PNG,
+                viewport_width=1080,
+                viewport_height=1350,
+            )
         else:
             # insight fallback
+            body_text = visual_spec.get("body", visual_spec.get("headline", ""))
             render_spec = insight_to_spec(
-                text=visual_spec.get("body", visual_spec.get("headline", "")),
+                text=body_text,
                 stat=visual_spec.get("stat_value"),
             )
             if visual_spec.get("headline"):
                 render_spec.variables["headline"] = visual_spec["headline"]
+            if body_text:
+                render_spec.variables["body"] = body_text
+            if visual_spec.get("stat_value"):
+                render_spec.variables["stat_value"] = visual_spec["stat_value"]
             if visual_spec.get("stat_label"):
                 render_spec.variables["stat_label"] = visual_spec["stat_label"]
             render_spec.variables.update(author)
 
-        return await render_visual(render_spec)
+        _apply_style_controls(render_spec.variables, visual_spec)
+        source_payload = visual_spec.get("refined_visual_source")
+        refined_source = (
+            RefinedVisualSource.model_validate(source_payload)
+            if isinstance(source_payload, dict)
+            else None
+        )
+        from holus.visual.proximity_router import VisualConceptRoute
+
+        route_payload = visual_spec.get("visual_route")
+        visual_route = (
+            VisualConceptRoute.model_validate(route_payload)
+            if isinstance(route_payload, dict)
+            else None
+        )
+        from holus.visual.production_plan import VisualProductionPlan
+
+        plan_payload = visual_spec.get("visual_plan")
+        visual_plan = (
+            VisualProductionPlan.model_validate(plan_payload)
+            if isinstance(plan_payload, dict)
+            else None
+        )
+        request_id = str(
+            visual_spec.get("request_id")
+            or f"visual_{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
+        )
+        result = await VisualDispatcher().dispatch(
+            VisualDispatchRequest(
+                request_id=request_id,
+                platform=str(visual_spec.get("platform", "linkedin")),
+                asset_kind=VisualAssetKind.SINGLE_IMAGE,
+                provider=VisualProvider.HTML_RENDERER,
+                render_spec=render_spec,
+                output_path=output_path,
+                log_path=Path(
+                    str(visual_spec.get("visual_dispatch_log_path", "data/logs/image-dispatch.jsonl"))
+                ),
+                refined_source=refined_source,
+                visual_route=visual_route,
+                visual_plan=visual_plan,
+                metadata={
+                    "source": "visual_pipeline",
+                    "visual_type": spec_type,
+                    "template": render_spec.template,
+                    "visual_strategy": visual_spec.get("visual_strategy"),
+                },
+            )
+        )
+        if result.status != VisualDispatchStatus.SUCCEEDED or result.output_path is None:
+            msg = result.error or "Visual dispatcher failed without an error message"
+            raise RuntimeError(msg)
+        visual_spec["visual_dispatch"] = {
+            "request_id": result.request_id,
+            "provider": result.provider.value,
+            "status": result.status.value,
+            "log_path": str(result.log_path),
+            "sidecar_path": str(
+                result.output_path.with_suffix(result.output_path.suffix + ".dispatch.json")
+            ),
+            "model_or_tool": result.model_or_tool,
+        }
+        return result.output_path.read_bytes()
 
     try:
         # Handle both sync and async contexts
@@ -264,8 +391,11 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
             # We're in an async context — use nest_asyncio or thread
             import concurrent.futures
 
+            def _run_render_in_thread() -> bytes:
+                return asyncio.run(_do_render())
+
             with concurrent.futures.ThreadPoolExecutor() as pool:
-                png_bytes = pool.submit(asyncio.run, _do_render()).result(timeout=30)
+                png_bytes = pool.submit(_run_render_in_thread).result(timeout=30)
         except RuntimeError:
             # No running loop — safe to use asyncio.run
             png_bytes = asyncio.run(_do_render())
@@ -276,3 +406,17 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
         logger.debug("Visual render failed: %s", exc)
         print(f"  ⚠ Visual render failed: {exc}")
         return False
+
+
+def _visual_author_context(visual_spec: dict[str, Any]) -> dict[str, str]:
+    """Return author variables without forcing a social handle."""
+    brand_identity = visual_spec.get("brand_identity")
+    if not isinstance(brand_identity, dict):
+        brand_identity = {}
+
+    author_name = visual_spec.get("author_name", brand_identity.get("author_name", "Juan Camilo Martinez"))
+    brand_handle = visual_spec.get("brand_handle", brand_identity.get("brand_handle", ""))
+    return {
+        "author_name": str(author_name) if author_name else "",
+        "brand_handle": str(brand_handle) if brand_handle else "",
+    }

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { fetchContentDetail, patchContent, chooseVisual, contentImageUrl } from '@/lib/api';
+import CarouselPreview from './CarouselPreview';
 import type { ContentItem, ContentDetail } from '@/lib/types';
 
 interface Props {
@@ -113,6 +115,9 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
   const d = detail ?? item;
   const status = d.status?.toLowerCase() ?? 'draft';
   const canAct = ['draft', 'pending_review'].includes(status);
+  const destination = detail?.posting_destination ?? item.posting_destination;
+  const destinationPlatform = destination?.platform?.replace(/_/g, ' ');
+  const destinationLanguage = destination?.language === 'es' ? 'Spanish' : 'English';
 
   return (
     <div
@@ -122,6 +127,7 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
       role="dialog"
       aria-modal="true"
       aria-label={`Content detail: ${d.title ?? d.id}`}
+      style={{ width: '100vw', maxWidth: '100vw', overflow: 'hidden' }}
       onKeyDown={handleFocusTrap}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
@@ -129,7 +135,11 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
 
       <div
         className="relative h-full w-full max-w-2xl shadow-xl overflow-y-auto flex flex-col panel-slide-in"
-        style={{ background: 'var(--surface-raised)', borderLeft: '1px solid var(--border-default)' }}
+        style={{
+          width: 'min(100vw, 42rem)',
+          background: 'var(--surface-raised)',
+          borderLeft: '1px solid var(--border-default)',
+        }}
       >
         <div
           className="sticky top-0 z-10 px-5 py-4 flex items-start gap-3"
@@ -167,10 +177,62 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
             <p className="text-sm animate-pulse" style={{ color: 'var(--text-tertiary)' }}>Loading detail...</p>
           ) : (
             <>
+              <section>
+                <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-tertiary)' }}>
+                  Posting Destination
+                </h3>
+                {destination ? (
+                  <div className="rounded-xl px-4 py-3 space-y-3" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-default)' }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
+                          {destinationPlatform}
+                        </p>
+                        <p className="text-lg font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>
+                          {destination.handle ?? destination.account}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap justify-end">
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--status-pending-bg)', color: 'var(--status-pending-text)' }}>
+                          {destinationLanguage} default
+                        </span>
+                        {destination.approval_required && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--verdict-pass-bg)', color: 'var(--verdict-pass-text)' }}>
+                            Review required
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {destination.rationale && (
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                        {destination.rationale}
+                      </p>
+                    )}
+                    {destination.profile_url && (
+                      <a
+                        href={destination.profile_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex text-xs font-semibold focus-ring rounded"
+                        style={{ color: 'var(--brand)' }}
+                      >
+                        View account
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-xl px-4 py-3" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-default)' }}>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      Destination account is not configured for this draft.
+                    </p>
+                  </div>
+                )}
+              </section>
+
               {detail?.image_url && (
                 <section>
                   <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-tertiary)' }}>
-                    Companion Visual{detail.image_b_url && ' -- Pick A or B'}
+                    Companion Visual{detail.image_b_url && ' / Pick A or B'}
                   </h3>
                   {detail.image_b_url ? (
                     <div className="space-y-3">
@@ -180,7 +242,9 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                           className="rounded-xl overflow-hidden border-2 transition-all"
                           style={{ borderColor: selectedVisual === 'a' ? 'var(--brand)' : 'var(--border-default)', boxShadow: selectedVisual === 'a' ? '0 0 0 2px var(--brand-muted-oklch)' : 'none' }}
                         >
-                          <img src={contentImageUrl(item.id, 'a')} alt="Visual variant A" className="w-full aspect-square object-cover" />
+                          <div className="relative w-full aspect-square">
+                            <Image src={contentImageUrl(item.id, 'a')} alt="Visual variant A" fill sizes="(min-width: 768px) 19rem, 45vw" style={{ objectFit: 'cover' }} unoptimized />
+                          </div>
                           <div className="text-center py-1.5 text-xs font-semibold" style={{ background: selectedVisual === 'a' ? 'var(--warning-subtle)' : 'var(--surface-2)', color: selectedVisual === 'a' ? 'var(--warning)' : 'var(--text-tertiary)' }}>
                             A {selectedVisual === 'a' ? '(selected)' : ''}
                           </div>
@@ -190,7 +254,9 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                           className="rounded-xl overflow-hidden border-2 transition-all"
                           style={{ borderColor: selectedVisual === 'b' ? 'var(--brand)' : 'var(--border-default)', boxShadow: selectedVisual === 'b' ? '0 0 0 2px var(--brand-muted-oklch)' : 'none' }}
                         >
-                          <img src={contentImageUrl(item.id, 'b')} alt="Visual variant B" className="w-full aspect-square object-cover" />
+                          <div className="relative w-full aspect-square">
+                            <Image src={contentImageUrl(item.id, 'b')} alt="Visual variant B" fill sizes="(min-width: 768px) 19rem, 45vw" style={{ objectFit: 'cover' }} unoptimized />
+                          </div>
                           <div className="text-center py-1.5 text-xs font-semibold" style={{ background: selectedVisual === 'b' ? 'var(--warning-subtle)' : 'var(--surface-2)', color: selectedVisual === 'b' ? 'var(--warning)' : 'var(--text-tertiary)' }}>
                             B {selectedVisual === 'b' ? '(selected)' : ''}
                           </div>
@@ -200,9 +266,22 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
                     </div>
                   ) : (
                     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-default)' }}>
-                      <img src={contentImageUrl(item.id)} alt="Companion visual" className="w-full" />
+                      <div className="relative w-full aspect-square">
+                        <Image src={contentImageUrl(item.id)} alt="Companion visual" fill sizes="(min-width: 768px) 38rem, 90vw" style={{ objectFit: 'contain' }} unoptimized />
+                      </div>
                     </div>
                   )}
+                </section>
+              )}
+
+              {!detail?.image_url && detail?.pdf_url && (
+                <section>
+                  <CarouselPreview
+                    detail={detail}
+                    pieceId={item.id}
+                    label={d.title ?? d.id}
+                    maxSlides={5}
+                  />
                 </section>
               )}
 
@@ -284,17 +363,18 @@ export default function ContentDetailPanel({ item, onClose, onAction }: Props) {
               <input
                 type="datetime-local"
                 value={scheduleDate}
+                aria-label="Schedule date and time"
                 onChange={(e) => setScheduleDate(e.target.value)}
                 className="flex-1 text-sm rounded-lg px-3 py-1.5 focus-ring"
                 style={{ border: '1px solid var(--border-default)', background: 'var(--surface-2)', color: 'var(--text-secondary)' }}
               />
               <button onClick={handleSchedule} disabled={!scheduleDate || !!acting} className="py-1.5 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 focus-ring" style={{ background: 'var(--button-schedule-bg)', color: 'var(--text-inverse)' }}>
-                {acting === 'schedule' ? 'Scheduling...' : 'Schedule'}
+                {acting === 'schedule' ? 'Scheduling...' : 'Schedule draft'}
               </button>
             </div>
             <div className="flex items-center gap-3">
               <button onClick={handleApprove} disabled={!!acting} className="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 focus-ring" style={{ background: 'var(--button-approve-bg)', color: 'var(--text-inverse)' }}>
-                {acting === 'approve' ? 'Approving...' : 'Approve & Post Now'}
+                {acting === 'approve' ? 'Approving...' : 'Approve draft'}
               </button>
               <button onClick={handleReject} disabled={!!acting} className="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 focus-ring" style={{ border: '1px solid var(--button-reject-border)', color: 'var(--button-reject-text)' }}>
                 {acting === 'reject' ? 'Rejecting...' : 'Reject'}

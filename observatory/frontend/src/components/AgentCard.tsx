@@ -23,7 +23,7 @@ interface Props {
 }
 
 export default function AgentCard({ agent, staggerIndex }: Props) {
-  const status = statusColors[agent.status];
+  const status = statusColors[agent.status] ?? statusColors.idle;
   const isActive = agent.status === 'active' || agent.status === 'running';
   const staggerClass = staggerIndex !== undefined ? `stagger-${staggerIndex}` : '';
 

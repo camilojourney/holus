@@ -479,7 +479,8 @@ class TestSchedulePost:
             assert call_args[0][0] == "/api/v1/schedule"
             payload = call_args[1]["json"]
             assert payload["content"] == "Scheduled post"
-            assert payload["platform"] == "linkedin"
+            assert payload["platforms"] == ["linkedin"]
+            assert "platform" not in payload
             assert payload["approval_required"] is False
             assert payload["scheduled_at"] == "2026-03-25T10:00:00Z"
 

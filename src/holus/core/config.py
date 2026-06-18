@@ -74,6 +74,11 @@ class HolusConfig(BaseSettings):
     anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
     langfuse_secret_key: str = Field(default="", alias="LANGFUSE_SECRET_KEY")
     langfuse_public_key: str = Field(default="", alias="LANGFUSE_PUBLIC_KEY")
+    holus_social_api_key: str = Field(default="", alias="HOLUS_SOCIAL_API_KEY")
+    holus_social_api_base_url: str = Field(
+        default="http://localhost:8000",
+        alias="HOLUS_SOCIAL_API_BASE_URL",
+    )
     posting_api_key: str = Field(default="", alias="POSTING_API_KEY")
     social_media_api_base_url: str = Field(
         default="http://localhost:8000",
@@ -103,7 +108,7 @@ class HolusConfig(BaseSettings):
     # ---- Model identifiers (defaults match config/models.yaml) -------------
     opus_model: str = "claude-opus-4-6"
     sonnet_model: str = "claude-sonnet-4-6"
-    haiku_model: str = "claude-haiku-4-5-20251001"
+    haiku_model: str = "claude-sonnet-4-6"  # haiku is slower than sonnet via SDK; sonnet used for all tiers
 
     # ---- Proxy configuration ------------------------------------------------
     anthropic_base_url: str = Field(

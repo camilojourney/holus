@@ -96,18 +96,18 @@ def _update_item(file_path: str, updates: dict[str, Any]) -> None:
 
 
 async def _publish_piece(item: dict[str, Any]) -> str | None:
-    """Publish a piece via social-media MCP. Returns publish_id or None."""
+    """Publish a piece via Holus Social API. Returns publish_id or None."""
     try:
         import os
 
-        from holus.integrations.social_media import PublishRequest, SocialMediaClient
+        from holus.integrations.holus_social_api import HolusSocialAPIClient, PublishRequest
 
-        api_key = os.environ.get("POSTING_API_KEY", "")
+        api_key = os.environ.get("HOLUS_SOCIAL_API_KEY") or os.environ.get("POSTING_API_KEY", "")
         if not api_key:
-            logger.error("POSTING_API_KEY not set — cannot publish")
+            logger.error("HOLUS_SOCIAL_API_KEY not set — cannot publish")
             return None
 
-        client = SocialMediaClient(api_key=api_key)
+        client = HolusSocialAPIClient(api_key=api_key)
         platform = item.get("platform", "linkedin")
         # Normalize platform names (holus uses twitter_x, API uses twitter)
         platform_map = {"twitter_x": "twitter"}
