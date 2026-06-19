@@ -10,6 +10,10 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from holus.visual.content_job import ContentJobPlan, plan_content_job
+from holus.visual.design_brief import (
+    DeterministicVisualDesignBrief,
+    build_deterministic_visual_design_brief,
+)
 from holus.visual.dispatcher import VisualProvider
 from holus.visual.proximity_router import VisualConceptRoute, VisualProximityMode
 
@@ -92,6 +96,7 @@ class VisualGenerationStrategy(BaseModel):
     rationale: str
     required_inputs: list[str] = Field(default_factory=list)
     failure_modes: list[str] = Field(default_factory=list)
+    design_brief: DeterministicVisualDesignBrief | None = None
 
     def log_summary(self) -> dict[str, Any]:
         """Return compact strategy metadata for logs."""
@@ -105,6 +110,9 @@ class VisualGenerationStrategy(BaseModel):
             "deterministic_score": self.deterministic_score,
             "ai_score": self.ai_score,
             "rationale": self.rationale,
+            "design_brief": (
+                self.design_brief.model_dump(mode="json") if self.design_brief else None
+            ),
         }
 
 
@@ -132,6 +140,15 @@ def choose_visual_generation_strategy(
     )
     deterministic_score, ai_score = _scores(rendering_path, route.mode)
     design_system = _design_system(text, pattern, route.mode)
+    design_brief = (
+        build_deterministic_visual_design_brief(
+            template_kind=pattern.value,
+            route_mode=route.mode.value,
+            text=text,
+        )
+        if rendering_path == VisualRenderingPath.DETERMINISTIC_TEMPLATE
+        else None
+    )
     return VisualGenerationStrategy(
         rendering_path=rendering_path,
         provider=provider,
@@ -143,6 +160,7 @@ def choose_visual_generation_strategy(
         rationale=_rationale(rendering_path, pattern, route.mode),
         required_inputs=_required_inputs(pattern),
         failure_modes=_failure_modes(rendering_path, pattern),
+        design_brief=design_brief,
     )
 
 
@@ -415,7 +433,9 @@ def _rationale(
             f"{mode.value} needs a human/artifact moment, but should stay constrained by a "
             "deterministic layout and design system."
         )
-    return f"{mode.value} benefits from generative imagery because the core value is metaphor or mood."
+    return (
+        f"{mode.value} benefits from generative imagery because the core value is metaphor or mood."
+    )
 
 
 def _has_news_battlecard_signal(lowered: str) -> bool:

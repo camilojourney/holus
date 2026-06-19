@@ -79,7 +79,9 @@
 {% endblock %}
 
 {% block body %}
-<div class="compare-shell">
+<div class="compare-shell layout-{{ html_layout | default('before_after_decision_table') }} mark-{{ mark_style | default('large_rows_with_clear_verdict') }}"
+     data-surface-treatment="{{ surface_treatment | default('') }}"
+     data-label-policy="{{ label_policy | default('') }}">
   {% if title %}
   <header>
     <p class="compare-kicker">Decision Surface</p>

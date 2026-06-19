@@ -114,6 +114,9 @@ def test_render_visual_bridges_claim_chart_strategy_to_data_viz(tmp_path, monkey
     assert seen["metadata"]["visual_type"] == "data_viz"
     assert seen["variables"]["chart_type"] == "bar"
     assert seen["variables"]["highlight_index"] == 2
+    assert seen["variables"]["html_layout"] == "editorial_metric_card"
+    assert seen["variables"]["bar_style"] == "winner_bar_accent_muted_context"
+    assert "title states the conclusion" in " ".join(seen["variables"]["design_compliance_checks"])
 
 
 def test_render_visual_bridges_operating_map_strategy_to_flowchart(tmp_path, monkeypatch) -> None:
@@ -121,6 +124,7 @@ def test_render_visual_bridges_operating_map_strategy_to_flowchart(tmp_path, mon
 
     async def fake_dispatch(self, request):
         seen["template"] = request.render_spec.template
+        seen["variables"] = request.render_spec.variables
         seen["metadata"] = request.metadata
         request.output_path.write_bytes(b"PNG_BYTES")
         return VisualDispatchResult(
@@ -157,6 +161,8 @@ def test_render_visual_bridges_operating_map_strategy_to_flowchart(tmp_path, mon
     assert ok is True
     assert seen["template"] == "single_image/flowchart"
     assert seen["metadata"]["visual_type"] == "flowchart"
+    assert seen["variables"]["html_layout"] == "step_card_grid"
+    assert seen["variables"]["mark_style"] == "numbered_step_cards"
 
 
 def test_render_visual_bridges_decision_surface_strategy_to_comparison(
@@ -166,6 +172,7 @@ def test_render_visual_bridges_decision_surface_strategy_to_comparison(
 
     async def fake_dispatch(self, request):
         seen["template"] = request.render_spec.template
+        seen["variables"] = request.render_spec.variables
         seen["metadata"] = request.metadata
         request.output_path.write_bytes(b"PNG_BYTES")
         return VisualDispatchResult(
@@ -202,6 +209,8 @@ def test_render_visual_bridges_decision_surface_strategy_to_comparison(
     assert ok is True
     assert seen["template"] == "single_image/comparison"
     assert seen["metadata"]["visual_type"] == "comparison"
+    assert seen["variables"]["html_layout"] == "before_after_decision_table"
+    assert seen["variables"]["surface_treatment"] == "large_table_card"
 
 
 @pytest.mark.asyncio

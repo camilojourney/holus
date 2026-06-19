@@ -79,7 +79,9 @@
 {% endblock %}
 
 {% block body %}
-<div class="flowchart-shell">
+<div class="flowchart-shell layout-{{ html_layout | default('step_card_grid') }} mark-{{ mark_style | default('numbered_step_cards') }}"
+     data-label-policy="{{ label_policy | default('') }}"
+     data-density="{{ density | default('') }}">
   {% if title %}
   <header>
     <p class="flowchart-kicker">Operating Map</p>

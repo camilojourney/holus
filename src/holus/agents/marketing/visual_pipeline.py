@@ -19,6 +19,10 @@ from typing import Any
 import yaml
 
 from holus.agents.marketing.idea_utils import _call, _strip_fences
+from holus.visual.design_brief import (
+    build_deterministic_visual_design_brief,
+    render_variables_from_payload,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -247,6 +251,23 @@ def _strategy_design_system(visual_spec: dict[str, Any]) -> dict[str, Any]:
     return design_system if isinstance(design_system, dict) else {}
 
 
+def _strategy_design_brief(visual_spec: dict[str, Any]) -> dict[str, Any]:
+    strategy = visual_spec.get("visual_strategy")
+    design_brief = strategy.get("design_brief") if isinstance(strategy, dict) else None
+    if isinstance(design_brief, dict):
+        return design_brief
+    template_kind = _strategy_template_kind(visual_spec)
+    if not template_kind:
+        return {}
+    route = visual_spec.get("visual_route")
+    route_mode = route.get("mode") if isinstance(route, dict) else ""
+    return build_deterministic_visual_design_brief(
+        template_kind=template_kind,
+        route_mode=str(route_mode or ""),
+        text=_source_text(visual_spec),
+    ).model_dump(mode="json")
+
+
 def _source_text(visual_spec: dict[str, Any]) -> str:
     source = visual_spec.get("refined_visual_source")
     source_parts: list[str] = []
@@ -369,6 +390,7 @@ def _claim_chart_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
         range(len(data_points)), key=lambda index: float(data_points[index]["value"])
     )
     design_system = _strategy_design_system(visual_spec)
+    design_brief = _strategy_design_brief(visual_spec)
     winner_label = str(data_points[highlight_index]["label"])
     return {
         **visual_spec,
@@ -379,6 +401,7 @@ def _claim_chart_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
         "highlight_index": highlight_index,
         "source_label": "Refined thought",
         "color_scheme": str(design_system.get("accent", "#14b8a6")),
+        "design_brief": design_brief,
     }
 
 
@@ -417,6 +440,7 @@ def _operating_map_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
         "nodes": nodes,
         "connections": connections,
         "layout": "grid",
+        "design_brief": _strategy_design_brief(visual_spec),
     }
 
 
@@ -453,6 +477,7 @@ def _decision_surface_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
         "left_label": "Before",
         "right_label": "After",
         "items": items,
+        "design_brief": _strategy_design_brief(visual_spec),
     }
 
 
@@ -562,6 +587,9 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
             render_spec.variables.update(author)
 
         _apply_style_controls(render_spec.variables, render_visual_spec)
+        render_spec.variables.update(
+            render_variables_from_payload(render_visual_spec.get("design_brief"))
+        )
         source_payload = visual_spec.get("refined_visual_source")
         refined_source = (
             RefinedVisualSource.model_validate(source_payload)

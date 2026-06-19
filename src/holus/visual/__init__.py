@@ -16,6 +16,10 @@ from holus.visual.content_job import (
     VisualNeedReason,
     plan_content_job,
 )
+from holus.visual.design_brief import (
+    DeterministicVisualDesignBrief,
+    build_deterministic_visual_design_brief,
+)
 from holus.visual.dispatcher import (
     CodexCliImageProvider,
     HtmlRenderProvider,
@@ -166,12 +170,13 @@ __all__ = [
     "CodexCliImageProvider",
     "ContentJobPlan",
     "ContentJobType",
+    "DeterministicVisualDesignBrief",
     "HtmlRenderProvider",
     "OutputFormat",
     "PlaywrightEngine",
     "PollSpec",
-    "RefinedVisualSource",
     "RecommendedContentFormat",
+    "RefinedVisualSource",
     "RenderResult",
     "RenderSpec",
     "SlideSpec",
@@ -198,6 +203,7 @@ __all__ = [
     "VisualTemplateKind",
     "apply_linkedin_impact_lens",
     "before_after_to_spec",
+    "build_deterministic_visual_design_brief",
     "build_retry_instruction",
     "build_visual_production_plan",
     "carousel_spec_to_slides",
@@ -207,8 +213,8 @@ __all__ = [
     "insight_to_spec",
     "judge_visual_output",
     "mutate_visual_plan_for_retry",
-    "poll_to_spec",
     "plan_content_job",
+    "poll_to_spec",
     "render_carousel_visual",
     "render_visual",
 ]

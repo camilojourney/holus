@@ -36,6 +36,8 @@ def test_generation_strategy_uses_deterministic_news_battlecard() -> None:
     assert strategy.provider == VisualProvider.HTML_RENDERER
     assert strategy.template_kind == VisualTemplateKind.NEWS_BATTLECARD
     assert strategy.design_system.palette == VisualPaletteName.RED_GREEN_COMPARE
+    assert strategy.design_brief is not None
+    assert strategy.design_brief.composition_pattern == "product_decision_surface"
     assert "numeric delta" in " ".join(strategy.required_inputs)
 
 
