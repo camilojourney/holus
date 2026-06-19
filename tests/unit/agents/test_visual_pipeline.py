@@ -1,5 +1,7 @@
 """Tests for visual pipeline renderer variables."""
 
+import pytest
+
 from holus.agents.marketing.visual_pipeline import _render_visual, _visual_author_context
 from holus.visual.dispatcher import VisualDispatchResult, VisualDispatchStatus, VisualProvider
 
@@ -63,3 +65,26 @@ def test_render_visual_routes_through_dispatcher(tmp_path, monkeypatch) -> None:
     assert seen["provider"] == VisualProvider.HTML_RENDERER
     assert seen["metadata"]["source"] == "visual_pipeline"
     assert seen["metadata"]["visual_type"] == "insight"
+
+
+@pytest.mark.asyncio
+async def test_render_visual_works_inside_running_event_loop(tmp_path, monkeypatch) -> None:
+    async def fake_dispatch(self, request):
+        request.output_path.write_bytes(b"PNG_BYTES")
+        return VisualDispatchResult(
+            request_id=request.request_id,
+            provider=VisualProvider.HTML_RENDERER,
+            status=VisualDispatchStatus.SUCCEEDED,
+            output_path=request.output_path,
+            log_path=request.log_path,
+            model_or_tool="test_dispatcher",
+            duration_ms=1,
+        )
+
+    monkeypatch.setattr("holus.visual.dispatcher.VisualDispatcher.dispatch", fake_dispatch)
+
+    output_path = tmp_path / "visual.png"
+    ok = _render_visual({"type": "insight", "headline": "Async dispatcher test"}, output_path)
+
+    assert ok is True
+    assert output_path.read_bytes() == b"PNG_BYTES"

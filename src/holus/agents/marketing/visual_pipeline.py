@@ -385,20 +385,20 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
         return result.output_path.read_bytes()
 
     try:
-        # Handle both sync and async contexts
         try:
             asyncio.get_running_loop()
-            # We're in an async context — use nest_asyncio or thread
+        except RuntimeError:
+            png_bytes = asyncio.run(_do_render())
+        else:
+            # The public helper is sync, but API tests call it from an active
+            # event loop. Run the async dispatcher in a worker thread.
             import concurrent.futures
 
             def _run_render_in_thread() -> bytes:
                 return asyncio.run(_do_render())
 
-            with concurrent.futures.ThreadPoolExecutor() as pool:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
                 png_bytes = pool.submit(_run_render_in_thread).result(timeout=30)
-        except RuntimeError:
-            # No running loop — safe to use asyncio.run
-            png_bytes = asyncio.run(_do_render())
 
         output_path.write_bytes(png_bytes)
         return True
