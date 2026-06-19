@@ -61,6 +61,7 @@ def _run_command_with_timeout(
         )
     return subprocess.CompletedProcess(command, process.returncode, stdout=stdout, stderr=stderr)
 
+
 DEFAULT_LOG_PATH = Path("data/logs/image-dispatch.jsonl")
 DEFAULT_OUTPUT_DIR = Path("data/rendered-content")
 
@@ -391,7 +392,7 @@ class CodexCliImageProvider:
             raise VisualDispatchError(msg)
 
         started = time.perf_counter()
-        output_path = request.resolved_output_path(".png")
+        output_path = request.resolved_output_path(".png").resolve()
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         workspace = Path.cwd()
@@ -419,7 +420,8 @@ class CodexCliImageProvider:
 
         stdout_tail = completed.stdout[-4000:] if completed.stdout else ""
         stderr_tail = completed.stderr[-4000:] if completed.stderr else ""
-        if completed.returncode != 0:
+        recovered_from_nonzero_exit = completed.returncode != 0 and output_path.exists()
+        if completed.returncode != 0 and not recovered_from_nonzero_exit:
             msg = f"codex exec failed with exit code {completed.returncode}"
             raise VisualDispatchError(f"{msg}: {stderr_tail or stdout_tail}")
         if not output_path.exists():
@@ -440,6 +442,8 @@ class CodexCliImageProvider:
                 "stdout_tail": stdout_tail,
                 "stderr_tail": stderr_tail,
                 "dimensions": [request.width, request.height],
+                "provider_exit_code": completed.returncode,
+                "recovered_from_nonzero_exit": recovered_from_nonzero_exit,
             },
         )
 
@@ -493,7 +497,7 @@ class AgyCliImageProvider:
             raise VisualDispatchError(msg)
 
         started = time.perf_counter()
-        output_path = request.resolved_output_path(".png")
+        output_path = request.resolved_output_path(".png").resolve()
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         prompt = self._build_prompt(request, output_path, prompt_used)

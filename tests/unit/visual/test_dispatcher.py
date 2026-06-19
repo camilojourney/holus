@@ -273,6 +273,41 @@ async def test_codex_provider_invokes_cli_and_verifies_output(tmp_path, monkeypa
 
 
 @pytest.mark.asyncio
+async def test_codex_provider_recovers_when_timeout_exit_still_created_image(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOLUS_ENABLE_CODEX_IMAGE_PROVIDER", "1")
+
+    output_path = tmp_path / "asset.png"
+
+    def fake_run(command, *, timeout_seconds):
+        output_path.write_bytes(_png_bytes())
+        return subprocess.CompletedProcess(
+            command,
+            124,
+            stdout="Generated and saved the image.",
+            stderr="Timed out after 180 seconds.",
+        )
+
+    monkeypatch.setattr("holus.visual.dispatcher._run_command_with_timeout", fake_run)
+
+    request = VisualDispatchRequest(
+        request_id="img_codex_timeout_recovered",
+        provider=VisualProvider.CODEX_CLI_IMAGE,
+        asset_kind=VisualAssetKind.SINGLE_IMAGE,
+        prompt="A concrete editorial image.",
+        output_path=output_path,
+        log_path=tmp_path / "image-dispatch.jsonl",
+        timeout_seconds=30,
+    )
+
+    result = await VisualDispatcher().dispatch(request)
+
+    assert result.status == VisualDispatchStatus.SUCCEEDED
+    assert result.output_path == output_path.resolve()
+    assert result.metadata["provider_exit_code"] == 124
+    assert result.metadata["recovered_from_nonzero_exit"] is True
+
+
+@pytest.mark.asyncio
 async def test_codex_provider_builds_prompt_from_refined_source(tmp_path, monkeypatch):
     monkeypatch.setenv("HOLUS_ENABLE_CODEX_IMAGE_PROVIDER", "1")
 

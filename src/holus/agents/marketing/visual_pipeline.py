@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import random
+import re
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -233,6 +234,200 @@ def _apply_style_controls(variables: dict[str, Any], visual_spec: dict[str, Any]
             variables.setdefault(target_key, value)
 
 
+def _strategy_template_kind(visual_spec: dict[str, Any]) -> str:
+    strategy = visual_spec.get("visual_strategy")
+    if isinstance(strategy, dict):
+        return str(strategy.get("template_kind", ""))
+    return ""
+
+
+def _strategy_design_system(visual_spec: dict[str, Any]) -> dict[str, Any]:
+    strategy = visual_spec.get("visual_strategy")
+    design_system = strategy.get("design_system") if isinstance(strategy, dict) else None
+    return design_system if isinstance(design_system, dict) else {}
+
+
+def _source_text(visual_spec: dict[str, Any]) -> str:
+    source = visual_spec.get("refined_visual_source")
+    source_parts: list[str] = []
+    if isinstance(source, dict):
+        for key in ("refined_text", "topic", "intended_takeaway"):
+            value = source.get(key)
+            if isinstance(value, str):
+                source_parts.append(value)
+        thought_essence = source.get("thought_essence")
+        if isinstance(thought_essence, dict) and isinstance(
+            thought_essence.get("visual_prompt"), str
+        ):
+            source_parts.append(thought_essence["visual_prompt"])
+    for key in ("hook", "headline", "subhook", "body", "punchline"):
+        value = visual_spec.get(key)
+        if isinstance(value, str):
+            source_parts.append(value)
+    return " ".join(part for part in source_parts if part).strip()
+
+
+def _short_text(value: Any, *, fallback: str, max_words: int = 5) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip(" .:-")
+    if not text:
+        return fallback
+    words = text.split()
+    if len(words) > max_words:
+        text = " ".join(words[:max_words])
+    return text[:44].strip(" .:-") or fallback
+
+
+def _strategy_title(visual_spec: dict[str, Any], fallback: str) -> str:
+    plan = visual_spec.get("visual_plan")
+    candidates: list[Any] = []
+    if isinstance(plan, dict):
+        candidates.extend([plan.get("concept"), plan.get("summary")])
+    candidates.extend([visual_spec.get("hook"), visual_spec.get("headline")])
+    for candidate in candidates:
+        title = _short_text(candidate, fallback="", max_words=7)
+        if title:
+            return title
+    return fallback
+
+
+def _required_elements(visual_spec: dict[str, Any]) -> list[str]:
+    plan = visual_spec.get("visual_plan")
+    elements = plan.get("required_elements") if isinstance(plan, dict) else None
+    if isinstance(elements, list):
+        return [_short_text(element, fallback="", max_words=4) for element in elements if element]
+    return []
+
+
+def _claim_chart_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
+    text = _source_text(visual_spec)
+    data_points: list[dict[str, float | str]] = []
+    seen_points: set[tuple[str, float]] = set()
+    clauses = re.split(r"\s*(?:,|;|\band\b)\s*", text)
+    pattern = re.compile(
+        r"([A-Za-z][A-Za-z0-9 /&+-]{1,40}?)\s+(?:gets?|is|are|at|hits?|reached|to)?\s*(\d+(?:\.\d+)?)\s*%"
+    )
+    for clause in clauses:
+        match = pattern.search(clause)
+        if not match:
+            continue
+        label = _short_text(match.group(1), fallback="Metric", max_words=3)
+        value = float(match.group(2))
+        key = (label.lower(), value)
+        if key in seen_points:
+            continue
+        seen_points.add(key)
+        data_points.append({"label": label, "value": value})
+    if not data_points:
+        fallback_labels = _required_elements(visual_spec)[:3] or ["Baseline", "Variant", "Winner"]
+        fallback_values = [35, 58, 82]
+        data_points = [
+            {"label": label, "value": fallback_values[index]}
+            for index, label in enumerate(fallback_labels[:3])
+        ]
+    data_points = data_points[:5]
+    highlight_index = max(
+        range(len(data_points)), key=lambda index: float(data_points[index]["value"])
+    )
+    design_system = _strategy_design_system(visual_spec)
+    return {
+        **visual_spec,
+        "type": "data_viz",
+        "chart_type": "bar",
+        "title": _strategy_title(visual_spec, "The Signal"),
+        "data_points": data_points,
+        "highlight_index": highlight_index,
+        "source_label": "Refined thought",
+        "color_scheme": str(design_system.get("accent", "#14b8a6")),
+    }
+
+
+def _operating_map_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
+    text = _source_text(visual_spec)
+    elements = [
+        _short_text(part, fallback="", max_words=3)
+        for part in re.split(r"\s*(?:->|→|,|;|\n|\bthen\b|\band then\b)\s*", text)
+        if re.search(
+            r"\b(capture|extract|refine|route|choose|render|judge|queue|publish)\b", part, re.I
+        )
+    ]
+    if len(elements) < 3:
+        elements = _required_elements(visual_spec)
+    elements = [element for element in elements if element][:5] or [
+        "Capture signal",
+        "Structure proof",
+        "Ship asset",
+    ]
+    nodes = [
+        {
+            "id": str(index + 1),
+            "label": element,
+            "description": "",
+        }
+        for index, element in enumerate(elements)
+    ]
+    connections = [
+        {"from_id": str(index + 1), "to_id": str(index + 2), "label": ""}
+        for index in range(len(nodes) - 1)
+    ]
+    return {
+        **visual_spec,
+        "type": "flowchart",
+        "title": _strategy_title(visual_spec, "Operating Map"),
+        "nodes": nodes,
+        "connections": connections,
+        "layout": "vertical",
+    }
+
+
+def _decision_surface_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
+    text = _source_text(visual_spec).lower()
+    if "decision surface" in text:
+        elements = ["Raw idea", "Visual routes", "Evidence", "Next action"]
+    else:
+        elements = _required_elements(visual_spec)
+    items = [
+        {
+            "dimension": elements[0] if len(elements) > 0 else "Input",
+            "left": "Scattered",
+            "right": "Ranked",
+            "winner": "right",
+        },
+        {
+            "dimension": elements[1] if len(elements) > 1 else "Evidence",
+            "left": "Assumed",
+            "right": "Visible",
+            "winner": "right",
+        },
+        {
+            "dimension": elements[2] if len(elements) > 2 else "Decision",
+            "left": "Delayed",
+            "right": "Chosen",
+            "winner": "right",
+        },
+    ]
+    return {
+        **visual_spec,
+        "type": "comparison",
+        "title": _strategy_title(visual_spec, "Decision Surface"),
+        "left_label": "Before",
+        "right_label": "After",
+        "items": items,
+    }
+
+
+def _apply_deterministic_strategy_bridge(visual_spec: dict[str, Any]) -> dict[str, Any]:
+    if visual_spec.get("type") != "instagram_editorial_card":
+        return visual_spec
+    template_kind = _strategy_template_kind(visual_spec)
+    if template_kind == "claim_chart":
+        return _claim_chart_spec(visual_spec)
+    if template_kind in {"operating_map", "framework_grid"}:
+        return _operating_map_spec(visual_spec)
+    if template_kind in {"decision_surface", "news_battlecard", "comparison_table"}:
+        return _decision_surface_spec(visual_spec)
+    return visual_spec
+
+
 def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
     """Render a visual spec to PNG using PlaywrightEngine. Returns True on success."""
     import asyncio
@@ -257,38 +452,43 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
             research_card_to_spec,
         )
 
-        spec_type = visual_spec.get("type", "insight")
-        author = _visual_author_context(visual_spec)
+        render_visual_spec = _apply_deterministic_strategy_bridge(visual_spec)
+        spec_type = render_visual_spec.get("type", "insight")
+        author = _visual_author_context(render_visual_spec)
 
         if spec_type == "flowchart":
-            render_spec = flowchart_to_spec({**visual_spec, **author})
+            render_spec = flowchart_to_spec({**render_visual_spec, **author})
         elif spec_type == "architecture":
-            render_spec = architecture_to_spec({**visual_spec, **author})
+            render_spec = architecture_to_spec({**render_visual_spec, **author})
         elif spec_type == "comparison":
-            render_spec = comparison_to_spec({**visual_spec, **author})
+            render_spec = comparison_to_spec({**render_visual_spec, **author})
         elif spec_type == "code_card":
-            render_spec = code_card_to_spec({**visual_spec, **author})
+            render_spec = code_card_to_spec({**render_visual_spec, **author})
         elif spec_type == "research_card":
-            render_spec = research_card_to_spec({**visual_spec, **author})
+            render_spec = research_card_to_spec({**render_visual_spec, **author})
         elif spec_type == "data_viz":
-            render_spec = data_viz_to_spec(visual_spec)
+            render_spec = data_viz_to_spec(render_visual_spec)
             render_spec.variables["author_name"] = author["author_name"]
         elif spec_type == "instagram_editorial_card":
-            creative_contract = visual_spec.get("creative_contract", {})
+            creative_contract = render_visual_spec.get("creative_contract", {})
             if not isinstance(creative_contract, dict):
                 creative_contract = {}
             render_spec = RenderSpec(
                 template="single_image/editorial_poster",
                 variables={
-                    "label": str(visual_spec.get("label", "Prompt craft")),
-                    "hook": str(visual_spec.get("hook", visual_spec.get("headline", ""))),
-                    "subhook": str(visual_spec.get("subhook", visual_spec.get("body", ""))),
-                    "emphasis_word": str(visual_spec.get("emphasis_word", "Focus")),
+                    "label": str(render_visual_spec.get("label", "Prompt craft")),
+                    "hook": str(
+                        render_visual_spec.get("hook", render_visual_spec.get("headline", ""))
+                    ),
+                    "subhook": str(
+                        render_visual_spec.get("subhook", render_visual_spec.get("body", ""))
+                    ),
+                    "emphasis_word": str(render_visual_spec.get("emphasis_word", "Focus")),
                     "proof_points": [
-                        str(point) for point in visual_spec.get("proof_points", [])
+                        str(point) for point in render_visual_spec.get("proof_points", [])
                     ],
-                    "punchline": str(visual_spec.get("punchline", "")),
-                    "save_cue": str(visual_spec.get("save_cue", "Save this")),
+                    "punchline": str(render_visual_spec.get("punchline", "")),
+                    "save_cue": str(render_visual_spec.get("save_cue", "Save this")),
                     "composition_axis": str(
                         creative_contract.get("composition_axis", "left_anchor")
                     ),
@@ -305,22 +505,22 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
             )
         else:
             # insight fallback
-            body_text = visual_spec.get("body", visual_spec.get("headline", ""))
+            body_text = render_visual_spec.get("body", render_visual_spec.get("headline", ""))
             render_spec = insight_to_spec(
                 text=body_text,
-                stat=visual_spec.get("stat_value"),
+                stat=render_visual_spec.get("stat_value"),
             )
-            if visual_spec.get("headline"):
-                render_spec.variables["headline"] = visual_spec["headline"]
+            if render_visual_spec.get("headline"):
+                render_spec.variables["headline"] = render_visual_spec["headline"]
             if body_text:
                 render_spec.variables["body"] = body_text
-            if visual_spec.get("stat_value"):
-                render_spec.variables["stat_value"] = visual_spec["stat_value"]
-            if visual_spec.get("stat_label"):
-                render_spec.variables["stat_label"] = visual_spec["stat_label"]
+            if render_visual_spec.get("stat_value"):
+                render_spec.variables["stat_value"] = render_visual_spec["stat_value"]
+            if render_visual_spec.get("stat_label"):
+                render_spec.variables["stat_label"] = render_visual_spec["stat_label"]
             render_spec.variables.update(author)
 
-        _apply_style_controls(render_spec.variables, visual_spec)
+        _apply_style_controls(render_spec.variables, render_visual_spec)
         source_payload = visual_spec.get("refined_visual_source")
         refined_source = (
             RefinedVisualSource.model_validate(source_payload)
@@ -356,7 +556,11 @@ def _render_visual(visual_spec: dict[str, Any], output_path: Path) -> bool:
                 render_spec=render_spec,
                 output_path=output_path,
                 log_path=Path(
-                    str(visual_spec.get("visual_dispatch_log_path", "data/logs/image-dispatch.jsonl"))
+                    str(
+                        visual_spec.get(
+                            "visual_dispatch_log_path", "data/logs/image-dispatch.jsonl"
+                        )
+                    )
                 ),
                 refined_source=refined_source,
                 visual_route=visual_route,
@@ -414,7 +618,9 @@ def _visual_author_context(visual_spec: dict[str, Any]) -> dict[str, str]:
     if not isinstance(brand_identity, dict):
         brand_identity = {}
 
-    author_name = visual_spec.get("author_name", brand_identity.get("author_name", "Juan Camilo Martinez"))
+    author_name = visual_spec.get(
+        "author_name", brand_identity.get("author_name", "Juan Camilo Martinez")
+    )
     brand_handle = visual_spec.get("brand_handle", brand_identity.get("brand_handle", ""))
     return {
         "author_name": str(author_name) if author_name else "",

@@ -54,6 +54,25 @@ def test_workflow_routes_to_carousel_or_deterministic_visual() -> None:
     assert plan.ai_image_allowed is False
 
 
+def test_visual_prompt_keeps_short_caption_from_rejecting_workflow_visual() -> None:
+    plan = plan_content_job(
+        {
+            "refined_text": "A raw thought should not become an image directly.",
+            "topic": "A raw thought should not become an image directly",
+            "thought_essence": {
+                "visual_prompt": (
+                    "Capture the sentence, extract the thesis, refine the angle, "
+                    "route the visual, choose deterministic or AI, render, judge, queue."
+                )
+            },
+        }
+    )
+
+    assert plan.job_type == ContentJobType.WORKFLOW_EXPLANATION
+    assert plan.needs_visual is True
+    assert plan.deterministic_allowed is True
+
+
 def test_metaphor_allows_ai_image() -> None:
     plan = plan_content_job(
         {

@@ -74,6 +74,27 @@ def test_object_metaphor_beats_broad_team_language() -> None:
     assert strategy.template_kind == VisualTemplateKind.SINGLE_METAPHOR
 
 
+def test_workflow_verbs_beat_queue_product_language() -> None:
+    source = RefinedVisualSource(
+        piece_id="thought-flow",
+        platform="linkedin",
+        content_type="image_post",
+        refined_text="A raw thought should not become an image directly.",
+        topic="Thought pipeline",
+        thought_essence={
+            "visual_prompt": (
+                "Capture the sentence, extract the thesis, refine the angle, "
+                "route the visual, render, judge it, and only then queue it."
+            )
+        },
+    )
+    route = choose_visual_concept_route(source)
+    strategy = choose_visual_generation_strategy(source, route)
+
+    assert route.mode == VisualProximityMode.WORKFLOW
+    assert strategy.template_kind == VisualTemplateKind.OPERATING_MAP
+
+
 def test_founder_marked_draft_routes_to_story_artifact() -> None:
     source = RefinedVisualSource(
         piece_id="founder-line",

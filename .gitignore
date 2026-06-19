@@ -70,6 +70,7 @@ Desktop.ini
 # ---- Data: Runtime ----
 data/runtime/
 data/content-queue/
+data/test-runs/
 data/.niche-research-state.json
 data/.repurpose-state.json
 *.db

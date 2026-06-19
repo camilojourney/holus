@@ -53,7 +53,10 @@ CHANNEL_AGENT: dict[str, tuple[str, str]] = {
     "linkedin_image": ("visual-designer", "designed LinkedIn image asset"),
     "linkedin_carousel": ("carousel-architect", "structured the thought into a carousel"),
     "instagram_image": ("visual-designer", "designed Instagram image asset"),
-    "instagram_carousel": ("carousel-architect", "structured the thought into an Instagram carousel"),
+    "instagram_carousel": (
+        "carousel-architect",
+        "structured the thought into an Instagram carousel",
+    ),
     "threads_text": ("platform-adapter", "adapted thought into Threads post"),
     "twitter_x_thread": ("platform-adapter", "adapted thought into X thread"),
     "facebook_text": ("storyteller", "adapted thought into conversational Facebook post"),
@@ -375,7 +378,9 @@ class ThoughtContentPipeline:
         rendered_dir: Path | str | None = None,
     ) -> None:
         self.queue_dir = Path(queue_dir)
-        self.rendered_dir = Path(rendered_dir) if rendered_dir else self.queue_dir.parent / "rendered-content"
+        self.rendered_dir = (
+            Path(rendered_dir) if rendered_dir else self.queue_dir.parent / "rendered-content"
+        )
 
     async def normalize_source(
         self,
@@ -425,10 +430,7 @@ class ThoughtContentPipeline:
             raise ValueError(msg)
 
         group_id = uuid.uuid4().hex
-        records = [
-            self._create_queue_record(source, channel, group_id)
-            for channel in channels
-        ]
+        records = [self._create_queue_record(source, channel, group_id) for channel in channels]
         for record in records:
             self.write_queue_record(record)
         return ContentSet(group_id=group_id, thought=source.extracted_text, records=records)
@@ -515,6 +517,7 @@ class ThoughtContentPipeline:
                 "evidence": essence.evidence,
                 "voice_markers": essence.voice_markers,
                 "mode": essence.mode,
+                "visual_prompt": essence.visual_prompt,
             },
             "reasoning": "Created from the Holus Thought Studio intake. Human approval is required before publishing.",
             "model_used": "holus/deterministic-thought-pipeline",
@@ -981,7 +984,10 @@ def _select_visual_brief(thought: str, channel: str, nonce: str) -> VisualBrief:
         profile = _visual_profile("ai-workflow-harness")
     elif (
         channel in IMAGE_CHANNELS
-        and any(signal in lowered for signal in ("simplicity", "simple", "focus", "prompt", "model", "ai"))
+        and any(
+            signal in lowered
+            for signal in ("simplicity", "simple", "focus", "prompt", "model", "ai")
+        )
         and not any(signal in lowered for signal in ("workflow", "system architecture", "pipeline"))
     ):
         profile = _visual_profile("ai-focus-thesis")
@@ -1541,7 +1547,9 @@ def _carousel_headline_for(visual_brief: VisualBrief) -> str:
 def _load_font(size: int, *, bold: bool = False) -> ImageFont.ImageFont:
     names = (
         "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf",
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf" if bold else "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+        if bold
+        else "/System/Library/Fonts/Supplemental/Arial.ttf",
         "/Library/Fonts/Arial Bold.ttf" if bold else "/Library/Fonts/Arial.ttf",
     )
     for name in names:
@@ -1599,7 +1607,9 @@ def _render_fallback_visual(
 
     draw.rectangle((0, 0, width, height), fill=palette["background"])
     draw.rounded_rectangle((64, 64, width - 64, height - 64), radius=44, fill=palette["surface"])
-    draw.rounded_rectangle((64, 64, width - 64, height - 64), radius=44, outline=palette["border"], width=3)
+    draw.rounded_rectangle(
+        (64, 64, width - 64, height - 64), radius=44, outline=palette["border"], width=3
+    )
     draw.text((96, 110), visual_brief.style.upper(), fill=palette["accent"], font=label_font)
 
     y = 240

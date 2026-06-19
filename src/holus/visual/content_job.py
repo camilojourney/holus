@@ -145,7 +145,10 @@ def plan_content_job(source: Any) -> ContentJobPlan:
 
     if _has_founder_story_signal(lowered):
         has_concrete_artifact = bool(
-            re.search(r"\b(artifact|draft|line|sentence|screen|note|voice note|points at|marked|mark|document)\b", lowered)
+            re.search(
+                r"\b(artifact|draft|line|sentence|screen|note|voice note|points at|marked|mark|document)\b",
+                lowered,
+            )
         )
         return ContentJobPlan(
             job_type=ContentJobType.FOUNDER_STORY,
@@ -212,27 +215,40 @@ def plan_content_job(source: Any) -> ContentJobPlan:
 
 def _source_text(source: Any) -> str:
     if isinstance(source, dict):
-        return " ".join(
-            str(source.get(key, "") or "")
-            for key in (
-                "refined_text",
-                "text",
-                "topic",
-                "headline",
-                "intended_takeaway",
-                "content_type",
-            )
+        thought_essence = source.get("thought_essence")
+        visual_prompt = (
+            thought_essence.get("visual_prompt") if isinstance(thought_essence, dict) else ""
         )
-    return " ".join(
-        str(getattr(source, key, "") or "")
-        for key in ("refined_text", "topic", "headline", "intended_takeaway", "content_type")
+        return (
+            " ".join(
+                str(source.get(key, "") or "")
+                for key in (
+                    "refined_text",
+                    "text",
+                    "topic",
+                    "headline",
+                    "intended_takeaway",
+                    "content_type",
+                )
+            )
+            + f" {visual_prompt or ''}"
+        )
+    thought_essence = getattr(source, "thought_essence", None)
+    visual_prompt = (
+        thought_essence.get("visual_prompt") if isinstance(thought_essence, dict) else ""
+    )
+    return (
+        " ".join(
+            str(getattr(source, key, "") or "")
+            for key in ("refined_text", "topic", "headline", "intended_takeaway", "content_type")
+        )
+        + f" {visual_prompt or ''}"
     )
 
 
 def _has_data_signal(lowered: str) -> bool:
     return bool(
-        "%"
-        in lowered
+        "%" in lowered
         or "$" in lowered
         or re.search(
             r"\b(metric|data|chart|benchmark|rank|ranking|compare|versus|vs|percent|rate|cost|revenue|ctr|engagement)\b",
@@ -254,7 +270,7 @@ def _looks_like_text_only_thesis(lowered: str) -> bool:
 def _has_workflow_signal(lowered: str) -> bool:
     return bool(
         re.search(
-            r"\b(workflow|pipeline|process|system|handoff|sequence|loop|cycle|routing|orchestration|agent|agents)\b",
+            r"\b(workflow|pipeline|process|system|handoff|sequence|loop|cycle|routing|route|capture|extract|refine|render|judge|orchestration|agent|agents)\b",
             lowered,
         )
         or "->" in lowered
@@ -273,9 +289,10 @@ def _has_framework_signal(lowered: str) -> bool:
 def _has_product_signal(lowered: str) -> bool:
     return bool(
         re.search(
-            r"\b(product|feature|release|demo|screen|ui|dashboard|queue|interface|pilaster|genpeli|invoz|holus)\b",
+            r"\b(product|feature|release|demo|screen|ui|dashboard|queue|interface|workbench|surface|pilaster|genpeli|invoz|holus)\b",
             lowered,
         )
+        or "decision surface" in lowered
     )
 
 
@@ -290,11 +307,17 @@ def _has_founder_story_signal(lowered: str) -> bool:
 
 def _has_metaphor_signal(lowered: str) -> bool:
     return bool(
-        re.search(r"\b(metaphor|like a|as if|buried|pile|bridge|compass|map|mirror|signal|noise|trap|lens)\b", lowered)
+        re.search(
+            r"\b(metaphor|like a|as if|buried|pile|bridge|compass|map|mirror|signal|noise|trap|lens)\b",
+            lowered,
+        )
     )
 
 
 def _has_lesson_signal(lowered: str) -> bool:
     return bool(
-        re.search(r"\b(lesson|learned|observation|takeaway|opinion|contrarian|mistake|truth|note)\b", lowered)
+        re.search(
+            r"\b(lesson|learned|observation|takeaway|opinion|contrarian|mistake|truth|note)\b",
+            lowered,
+        )
     )

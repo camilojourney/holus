@@ -88,6 +88,27 @@ def choose_visual_concept_route(source: Any) -> VisualConceptRoute:
     if _has_founder_artifact_signal(lowered):
         return _person_story_route(source)
 
+    if _has_workflow_signal(lowered):
+        return VisualConceptRoute(
+            mode=VisualProximityMode.WORKFLOW,
+            proximity_score=5,
+            viewer_takeaway=_takeaway(source, "The workflow is job design, not one magic model."),
+            scene="clear operating flow with distinct stations or roles",
+            subject="planning, execution, skills, review, fallback, and daily work as separate jobs",
+            composition="left-to-right or top-to-bottom flow with five labeled stages; one small model component inside the system",
+            use_workflow=True,
+            visual_do=[
+                "show role separation",
+                "make the workflow readable without the caption",
+                "make the model only one part of the system",
+            ],
+            visual_dont=[
+                *_default_donts(),
+                "do not show abstract cables or unlabeled blank modules as the main idea",
+            ],
+            rationale="The refined content explains a system of roles, so the closest useful visual is a workflow.",
+        )
+
     if _has_product_signal(lowered):
         return VisualConceptRoute(
             mode=VisualProximityMode.PRODUCT_SCENE,
@@ -113,27 +134,6 @@ def choose_visual_concept_route(source: Any) -> VisualConceptRoute:
 
     if _has_person_signal(lowered):
         return _person_story_route(source)
-
-    if _has_workflow_signal(lowered):
-        return VisualConceptRoute(
-            mode=VisualProximityMode.WORKFLOW,
-            proximity_score=5,
-            viewer_takeaway=_takeaway(source, "The workflow is job design, not one magic model."),
-            scene="clear operating flow with distinct stations or roles",
-            subject="planning, execution, skills, review, fallback, and daily work as separate jobs",
-            composition="left-to-right or top-to-bottom flow with five labeled stages; one small model component inside the system",
-            use_workflow=True,
-            visual_do=[
-                "show role separation",
-                "make the workflow readable without the caption",
-                "make the model only one part of the system",
-            ],
-            visual_dont=[
-                *_default_donts(),
-                "do not show abstract cables or unlabeled blank modules as the main idea",
-            ],
-            rationale="The refined content explains a system of roles, so the closest useful visual is a workflow.",
-        )
 
     if int(digest[:2], 16) % 2 == 0:
         return _object_metaphor_route(source)
@@ -201,13 +201,27 @@ def _typography_route(source: Any) -> VisualConceptRoute:
 
 def _source_text(source: Any) -> str:
     if isinstance(source, dict):
-        return " ".join(
-            str(source.get(key, "") or "")
-            for key in ("refined_text", "text", "topic", "headline", "intended_takeaway")
+        thought_essence = source.get("thought_essence")
+        visual_prompt = (
+            thought_essence.get("visual_prompt") if isinstance(thought_essence, dict) else ""
         )
-    return " ".join(
-        str(getattr(source, key, "") or "")
-        for key in ("refined_text", "topic", "headline", "intended_takeaway")
+        return (
+            " ".join(
+                str(source.get(key, "") or "")
+                for key in ("refined_text", "text", "topic", "headline", "intended_takeaway")
+            )
+            + f" {visual_prompt or ''}"
+        )
+    thought_essence = getattr(source, "thought_essence", None)
+    visual_prompt = (
+        thought_essence.get("visual_prompt") if isinstance(thought_essence, dict) else ""
+    )
+    return (
+        " ".join(
+            str(getattr(source, key, "") or "")
+            for key in ("refined_text", "topic", "headline", "intended_takeaway")
+        )
+        + f" {visual_prompt or ''}"
     )
 
 
@@ -225,8 +239,7 @@ def _takeaway(source: Any, fallback: str) -> str:
 
 def _has_chart_signal(lowered: str) -> bool:
     return bool(
-        "%"
-        in lowered
+        "%" in lowered
         or re.search(r"\b(metric|data|chart|rank|compare|versus|vs|percent)\b", lowered)
         or any(
             signal in lowered
@@ -236,24 +249,10 @@ def _has_chart_signal(lowered: str) -> bool:
 
 
 def _has_workflow_signal(lowered: str) -> bool:
-    return any(
-        signal in lowered
-        for signal in (
-            "workflow",
-            "pipeline",
-            "process",
-            "harness",
-            "system",
-            "planning",
-            "execution",
-            "fallback",
-            "review",
-            "grid",
-            "hierarchy",
-            "padding",
-            "stroke",
-            "rules",
-            "framework",
+    return bool(
+        re.search(
+            r"\b(workflow|pipeline|process|playbook|templates|content systems|brand formats|harness|handoff|sequence|loop|cycle|orchestration|step|stages|planning|execution|capture|extract|refine|render|judge|fallback|grid|hierarchy|padding|stroke)\b",
+            lowered,
         )
     )
 
@@ -291,10 +290,10 @@ def _has_founder_artifact_signal(lowered: str) -> bool:
 def _has_product_signal(lowered: str) -> bool:
     return bool(
         re.search(
-            r"\b(product|demo|interface|dashboard|app|queue|studio|draft|approve|reject)\b",
+            r"\b(product|demo|interface|dashboard|app|queue|studio|draft|approve|reject|workbench|surface)\b",
             lowered,
         )
-        or any(signal in lowered for signal in ("fit signal", "review surface"))
+        or any(signal in lowered for signal in ("fit signal", "review surface", "decision surface"))
     )
 
 
