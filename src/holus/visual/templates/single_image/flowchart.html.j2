@@ -5,59 +5,60 @@
   body {
     margin: 0;
     font-family: "Inter", var(--brand-font-primary), sans-serif;
-    background:
-      radial-gradient(circle at top left, color-mix(in srgb, var(--brand-color-primary) 18%, transparent), transparent 36%),
-      linear-gradient(180deg, #020617 0%, #0f172a 100%);
+    background: #f3f4f6;
   }
 
   .flowchart-shell {
     width: var(--brand-image-width);
     height: var(--brand-image-height);
-    padding: var(--brand-spacing-margin);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    padding: 68px;
+    display: grid;
+    grid-template-rows: auto auto auto;
+    gap: 38px;
     background:
-      linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 100%);
+      radial-gradient(circle at 12% 12%, rgba(14, 165, 233, 0.13), transparent 25%),
+      linear-gradient(180deg, #f8fafc 0%, #e5e7eb 100%);
     position: relative;
     overflow: hidden;
   }
 
-  .flowchart-shell::before {
-    content: "";
-    position: absolute;
-    inset: 24px;
-    border-radius: 36px;
-    border: 1px solid color-mix(in srgb, var(--brand-color-primary) 28%, #1e293b);
-    pointer-events: none;
+  .flowchart-kicker {
+    margin: 0 0 16px;
+    font-size: 22px;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #2563eb;
   }
 
   .flowchart-title {
     position: relative;
     z-index: 1;
     margin: 0;
-    max-width: 820px;
-    font-size: 48px;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    color: #f8fafc;
+    max-width: 920px;
+    font-size: 64px;
+    line-height: 1;
+    letter-spacing: 0;
+    color: #111827;
   }
 
   .flowchart-stage {
     position: relative;
     z-index: 1;
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px 0;
+    padding: 28px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 28px 70px rgba(15, 23, 42, 0.10);
   }
 
   .flowchart-stage svg {
     width: 100%;
-    max-width: 860px;
+    max-width: 980px;
     height: auto;
-    filter: drop-shadow(0 16px 48px rgba(15, 23, 42, 0.4));
   }
 
   .flowchart-footer {
@@ -67,7 +68,7 @@
     justify-content: space-between;
     align-items: center;
     font-size: 20px;
-    color: #94a3b8;
+    color: #64748b;
   }
 
   .flowchart-author {
@@ -80,7 +81,10 @@
 {% block body %}
 <div class="flowchart-shell">
   {% if title %}
-  <h1 class="flowchart-title">{{ title }}</h1>
+  <header>
+    <p class="flowchart-kicker">Operating Map</p>
+    <h1 class="flowchart-title">{{ title }}</h1>
+  </header>
   {% endif %}
 
   <div class="flowchart-stage">

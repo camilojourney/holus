@@ -267,6 +267,20 @@ def _source_text(visual_spec: dict[str, Any]) -> str:
     return " ".join(part for part in source_parts if part).strip()
 
 
+def _visual_prompt_text(visual_spec: dict[str, Any]) -> str:
+    source = visual_spec.get("refined_visual_source")
+    if isinstance(source, dict):
+        thought_essence = source.get("thought_essence")
+        if isinstance(thought_essence, dict) and isinstance(
+            thought_essence.get("visual_prompt"), str
+        ):
+            return thought_essence["visual_prompt"].strip()
+        provenance = source.get("raw_thought_provenance")
+        if isinstance(provenance, str) and provenance.strip():
+            return provenance.strip()
+    return _source_text(visual_spec)
+
+
 def _short_text(value: Any, *, fallback: str, max_words: int = 5) -> str:
     text = re.sub(r"\s+", " ", str(value or "")).strip(" .:-")
     if not text:
@@ -275,6 +289,20 @@ def _short_text(value: Any, *, fallback: str, max_words: int = 5) -> str:
     if len(words) > max_words:
         text = " ".join(words[:max_words])
     return text[:44].strip(" .:-") or fallback
+
+
+def _hook_title(visual_spec: dict[str, Any], fallback: str) -> str:
+    for key in ("hook", "headline"):
+        title = _short_text(visual_spec.get(key), fallback="", max_words=6)
+        if title:
+            return title
+    source = visual_spec.get("refined_visual_source")
+    if isinstance(source, dict):
+        for key in ("headline", "topic", "intended_takeaway"):
+            title = _short_text(source.get(key), fallback="", max_words=6)
+            if title:
+                return title
+    return fallback
 
 
 def _strategy_title(visual_spec: dict[str, Any], fallback: str) -> str:
@@ -290,6 +318,18 @@ def _strategy_title(visual_spec: dict[str, Any], fallback: str) -> str:
     return fallback
 
 
+def _step_label(text: str) -> str:
+    match = re.search(
+        r"\b(capture|extract|refine|route|choose|render|judge|queue|publish)\b\s*(.*)",
+        text,
+        re.I,
+    )
+    if not match:
+        return _short_text(text, fallback="", max_words=3)
+    label = f"{match.group(1).title()} {match.group(2)}"
+    return _short_text(label, fallback="", max_words=3)
+
+
 def _required_elements(visual_spec: dict[str, Any]) -> list[str]:
     plan = visual_spec.get("visual_plan")
     elements = plan.get("required_elements") if isinstance(plan, dict) else None
@@ -299,7 +339,7 @@ def _required_elements(visual_spec: dict[str, Any]) -> list[str]:
 
 
 def _claim_chart_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
-    text = _source_text(visual_spec)
+    text = _visual_prompt_text(visual_spec)
     data_points: list[dict[str, float | str]] = []
     seen_points: set[tuple[str, float]] = set()
     clauses = re.split(r"\s*(?:,|;|\band\b)\s*", text)
@@ -310,7 +350,7 @@ def _claim_chart_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
         match = pattern.search(clause)
         if not match:
             continue
-        label = _short_text(match.group(1), fallback="Metric", max_words=3)
+        label = _short_text(match.group(1).removeprefix("and "), fallback="Metric", max_words=3)
         value = float(match.group(2))
         key = (label.lower(), value)
         if key in seen_points:
@@ -329,11 +369,12 @@ def _claim_chart_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
         range(len(data_points)), key=lambda index: float(data_points[index]["value"])
     )
     design_system = _strategy_design_system(visual_spec)
+    winner_label = str(data_points[highlight_index]["label"])
     return {
         **visual_spec,
         "type": "data_viz",
         "chart_type": "bar",
-        "title": _strategy_title(visual_spec, "The Signal"),
+        "title": f"{winner_label.title()} wins",
         "data_points": data_points,
         "highlight_index": highlight_index,
         "source_label": "Refined thought",
@@ -342,9 +383,9 @@ def _claim_chart_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
 
 
 def _operating_map_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
-    text = _source_text(visual_spec)
+    text = _visual_prompt_text(visual_spec)
     elements = [
-        _short_text(part, fallback="", max_words=3)
+        _step_label(part)
         for part in re.split(r"\s*(?:->|→|,|;|\n|\bthen\b|\band then\b)\s*", text)
         if re.search(
             r"\b(capture|extract|refine|route|choose|render|judge|queue|publish)\b", part, re.I
@@ -372,15 +413,15 @@ def _operating_map_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
     return {
         **visual_spec,
         "type": "flowchart",
-        "title": _strategy_title(visual_spec, "Operating Map"),
+        "title": _hook_title(visual_spec, "Thought To Asset Pipeline"),
         "nodes": nodes,
         "connections": connections,
-        "layout": "vertical",
+        "layout": "grid",
     }
 
 
 def _decision_surface_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
-    text = _source_text(visual_spec).lower()
+    text = _visual_prompt_text(visual_spec).lower()
     if "decision surface" in text:
         elements = ["Raw idea", "Visual routes", "Evidence", "Next action"]
     else:
@@ -408,7 +449,7 @@ def _decision_surface_spec(visual_spec: dict[str, Any]) -> dict[str, Any]:
     return {
         **visual_spec,
         "type": "comparison",
-        "title": _strategy_title(visual_spec, "Decision Surface"),
+        "title": _hook_title(visual_spec, "Decision Surface"),
         "left_label": "Before",
         "right_label": "After",
         "items": items,

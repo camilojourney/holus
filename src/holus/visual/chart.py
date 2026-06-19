@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from html import escape
 
-_MUTED_COLOR = "#94a3b8"
+_MUTED_COLOR = "#cbd5e1"
 _SVG_WIDTH = 800
 _SVG_HEIGHT = 400
 
@@ -63,18 +63,18 @@ def _generate_bar_svg(
     color_accent: str,
 ) -> str:
     max_value = max(numeric_values) or 1.0
-    chart_left = 90.0
-    chart_top = 56.0
-    chart_bottom = 310.0
+    chart_left = 70.0
+    chart_top = 44.0
+    chart_bottom = 294.0
     chart_height = chart_bottom - chart_top
-    slot_width = 620.0 / len(labels)
-    bar_width = min(76.0, slot_width * 0.58)
+    slot_width = 660.0 / len(labels)
+    bar_width = min(104.0, slot_width * 0.62)
     axis_y = chart_bottom
 
-    parts = [_svg_open(), _background_panel(), _chart_title("Bar Chart")]
+    parts = [_svg_open()]
     parts.append(
-        f'<line x1="{chart_left}" y1="{axis_y}" x2="730" y2="{axis_y}" '
-        'stroke="#334155" stroke-width="2" />'
+        f'<line x1="{chart_left}" y1="{axis_y}" x2="750" y2="{axis_y}" '
+        'stroke="#dbe4ef" stroke-width="2" />'
     )
 
     for index, (label, raw_value, numeric_value) in enumerate(
@@ -88,21 +88,37 @@ def _generate_bar_svg(
 
         parts.append(
             f'<rect x="{x:.2f}" y="{y:.2f}" width="{bar_width:.2f}" height="{height:.2f}" '
-            f'rx="12" fill="{escape(fill)}" />'
+            f'rx="14" fill="{escape(fill)}" />'
         )
         parts.append(
             f'<text x="{text_x:.2f}" y="{max(36.0, y - 12):.2f}" text-anchor="middle" '
-            'font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#e2e8f0">'
+            'font-family="Inter, sans-serif" font-size="30" font-weight="800" fill="#111827">'
             f"{escape(raw_value)}</text>"
         )
-        parts.append(
-            f'<text x="{text_x:.2f}" y="344" text-anchor="middle" '
-            'font-family="Inter, sans-serif" font-size="16" fill="#94a3b8">'
-            f"{escape(label)}</text>"
-        )
+        for line_index, line in enumerate(_wrap_svg_label(label)):
+            parts.append(
+                f'<text x="{text_x:.2f}" y="{338 + line_index * 24}" text-anchor="middle" '
+                'font-family="Inter, sans-serif" font-size="19" font-weight="650" fill="#475569">'
+                f"{escape(line)}</text>"
+            )
 
     parts.append("</svg>")
     return "".join(parts)
+
+
+def _wrap_svg_label(label: str, max_chars: int = 15) -> list[str]:
+    words = label.split()
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        if current and len(current) + len(word) + 1 > max_chars:
+            lines.append(current)
+            current = word
+        else:
+            current = f"{current} {word}" if current else word
+    if current:
+        lines.append(current)
+    return lines[:2] or [label]
 
 
 def _generate_line_svg(
@@ -184,7 +200,8 @@ def _generate_metric_svg(value_text: str, subtitle: str, color_accent: str) -> s
 def _svg_open() -> str:
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" '
-        'width="800" height="400" role="img" aria-label="Generated chart">'
+        'width="800" height="400" role="img" aria-label="Generated chart" '
+        'style="overflow:visible">'
     )
 
 

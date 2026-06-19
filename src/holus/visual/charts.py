@@ -346,11 +346,11 @@ def flowchart_svg(
     edges: list[dict[str, str]],
     *,
     layout: str = "vertical",
-    width: int = 900,
-    node_color: str = "var(--brand-color-primary)",
-    edge_color: str = "var(--brand-color-accent)",
-    text_color: str = "var(--brand-color-text)",
-    bg_color: str = "var(--brand-color-surface)",
+    width: int = 940,
+    node_color: str = "#2563eb",
+    edge_color: str = "#94a3b8",
+    text_color: str = "#111827",
+    bg_color: str = "#ffffff",
 ) -> str:
     """Generate a flowchart SVG with connected nodes.
 
@@ -372,25 +372,39 @@ def flowchart_svg(
 
     n = len(nodes)
     is_vertical = layout == "vertical"
+    is_grid = layout == "grid"
 
     # Node sizing
-    node_w = 220
-    node_h = 80
-    gap = 60
+    node_w = 250 if is_grid else (160 if not is_vertical else 260)
+    node_h = 116 if is_grid else (126 if not is_vertical else 92)
+    gap = 28 if is_grid else (24 if not is_vertical else 56)
 
-    if is_vertical:
+    if is_grid:
+        cols = 3 if n > 3 else n
+        rows = (n + cols - 1) // cols
+        svg_w = width
+        svg_h = rows * node_h + (rows - 1) * gap + 80
+    elif is_vertical:
         total_h = n * node_h + (n - 1) * gap + 80
         svg_w = width
         svg_h = total_h
     else:
         total_w = n * (node_w + gap) - gap + 80
         svg_w = max(width, total_w)
-        svg_h = 260
+        svg_h = 190
 
     # Build id→position map
     positions: dict[str, tuple[float, float]] = {}
     for i, node in enumerate(nodes):
-        if is_vertical:
+        if is_grid:
+            cols = 3 if n > 3 else n
+            total_w = cols * node_w + (cols - 1) * gap
+            start_x = (svg_w - total_w) / 2
+            col = i % cols
+            row = i // cols
+            cx = start_x + col * (node_w + gap) + node_w / 2
+            cy = 40 + row * (node_h + gap) + node_h / 2
+        elif is_vertical:
             cx = svg_w / 2
             cy = 40 + i * (node_h + gap) + node_h / 2
         else:
@@ -419,12 +433,15 @@ def flowchart_svg(
         fx, fy = positions[from_id]
         tx, ty = positions[to_id]
 
+        if is_grid:
+            # The grid layout reads by number; connector lines add clutter at thumbnail size.
+            continue
         if is_vertical:
             y1 = fy + node_h / 2
             y2 = ty - node_h / 2
             elements.append(
                 f'<line x1="{fx}" y1="{y1}" x2="{tx}" y2="{y2}" '
-                f'stroke="{edge_color}" stroke-width="2" '
+                f'stroke="{edge_color}" stroke-width="4" '
                 f'marker-end="url(#fc-arrow)"/>'
             )
             # Edge label
@@ -469,16 +486,28 @@ def flowchart_svg(
         # Node box
         elements.append(
             f'<rect x="{rx}" y="{ry}" width="{node_w}" height="{node_h}" '
-            f'rx="12" fill="{bg_color}" stroke="{node_color}" stroke-width="2"/>'
+            f'rx="16" fill="{bg_color}" stroke="{node_color}" stroke-width="2"/>'
+        )
+        elements.append(
+            f'<circle cx="{rx + 24}" cy="{ry + 24}" r="14" fill="{node_color}" opacity="0.14"/>'
+        )
+        elements.append(
+            f'<text x="{rx + 24}" y="{ry + 25}" text-anchor="middle" '
+            f'dominant-baseline="middle" fill="{node_color}" '
+            f'font-size="14" font-weight="850" font-family="Inter, sans-serif">'
+            f"{_escape_xml(nid)}</text>"
         )
         # Label
-        elements.append(
-            f'<text x="{cx}" y="{cy - 8}" text-anchor="middle" '
-            f'dominant-baseline="middle" fill="{text_color}" '
-            f'font-size="16" font-weight="700" '
-            f'font-family="var(--brand-font-primary)">'
-            f"{_escape_xml(label)}</text>"
-        )
+        label_lines = _wrap_text_lines(label, 20 if is_grid else (14 if not is_vertical else 24))
+        start_y = cy - (len(label_lines[:3]) - 1) * 13
+        for li, line in enumerate(label_lines[:3]):
+            elements.append(
+                f'<text x="{cx}" y="{start_y + li * 26}" text-anchor="middle" '
+                f'dominant-baseline="middle" fill="{text_color}" '
+                f'font-size="22" font-weight="800" '
+                f'font-family="Inter, sans-serif">'
+                f"{_escape_xml(line)}</text>"
+            )
         # Description (smaller, below label)
         if desc:
             desc_lines = _wrap_text_lines(desc, 28)
@@ -652,11 +681,11 @@ def comparison_table_svg(
     right_label: str,
     *,
     width: int = 900,
-    header_color: str = "var(--brand-color-primary)",
-    text_color: str = "var(--brand-color-text)",
-    divider_color: str = "var(--brand-color-accent)",
-    row_even_color: str = "rgba(255,255,255,0.03)",
-    row_odd_color: str = "rgba(255,255,255,0.06)",
+    header_color: str = "#b45309",
+    text_color: str = "#111827",
+    divider_color: str = "#d1d5db",
+    row_even_color: str = "#ffffff",
+    row_odd_color: str = "#f8fafc",
     winner_color: str = "#22c55e",
     loser_color: str = "#ef4444",
 ) -> str:
@@ -682,9 +711,9 @@ def comparison_table_svg(
     if not items:
         return ""
 
-    row_h = 52
-    header_h = 56
-    padding = 20
+    row_h = 102
+    header_h = 82
+    padding = 24
     n_rows = len(items)
     total_h = header_h + n_rows * row_h + padding
 
@@ -711,26 +740,26 @@ def comparison_table_svg(
     # Header row
     elements.append(
         f'<rect x="0" y="0" width="{width}" height="{header_h}" '
-        f'rx="8" fill="{header_color}" opacity="0.15"/>'
+        f'rx="18" fill="#fffbeb" stroke="#fde68a" stroke-width="2"/>'
     )
     elements.append(
         f'<text x="{left_cx}" y="{header_h / 2}" text-anchor="middle" '
         f'dominant-baseline="middle" fill="{header_color}" '
-        f'font-size="18" font-weight="700" '
+        f'font-size="30" font-weight="850" '
         f'font-family="var(--brand-font-primary)">'
         f"{_escape_xml(left_label)}</text>"
     )
     elements.append(
         f'<text x="{dim_cx}" y="{header_h / 2}" text-anchor="middle" '
         f'dominant-baseline="middle" fill="{text_color}" '
-        f'font-size="13" font-weight="600" opacity="0.5" '
+        f'font-size="18" font-weight="800" opacity="0.55" '
         f'font-family="var(--brand-font-secondary)">'
         f"VS</text>"
     )
     elements.append(
         f'<text x="{right_cx}" y="{header_h / 2}" text-anchor="middle" '
         f'dominant-baseline="middle" fill="{header_color}" '
-        f'font-size="18" font-weight="700" '
+        f'font-size="30" font-weight="850" '
         f'font-family="var(--brand-font-primary)">'
         f"{_escape_xml(right_label)}</text>"
     )
@@ -745,13 +774,16 @@ def comparison_table_svg(
         winner = item.get("winner", "tie")
 
         # Row background
-        elements.append(f'<rect x="0" y="{y}" width="{width}" height="{row_h}" fill="{bg}"/>')
+        elements.append(
+            f'<rect x="0" y="{y + 8}" width="{width}" height="{row_h - 12}" '
+            f'rx="16" fill="{bg}" stroke="#e5e7eb" stroke-width="1"/>'
+        )
 
         # Dimension label (center)
         elements.append(
             f'<text x="{dim_cx}" y="{y + row_h / 2}" text-anchor="middle" '
             f'dominant-baseline="middle" fill="{text_color}" '
-            f'font-size="13" font-weight="600" opacity="0.7" '
+            f'font-size="24" font-weight="850" opacity="0.86" '
             f'font-family="var(--brand-font-secondary)">'
             f"{_escape_xml(dimension)}</text>"
         )
@@ -764,13 +796,13 @@ def comparison_table_svg(
         elements.append(
             f'<text x="{left_text_x}" y="{y + row_h / 2}" text-anchor="middle" '
             f'dominant-baseline="middle" fill="{text_color}" '
-            f'font-size="14" font-family="var(--brand-font-primary)">'
+            f'font-size="25" font-weight="800" font-family="Inter, sans-serif">'
             f"{_escape_xml(left_val)}</text>"
         )
         elements.append(
             f'<text x="{right_text_x}" y="{y + row_h / 2}" text-anchor="middle" '
             f'dominant-baseline="middle" fill="{text_color}" '
-            f'font-size="14" font-family="var(--brand-font-primary)">'
+            f'font-size="25" font-weight="800" font-family="Inter, sans-serif">'
             f"{_escape_xml(right_val)}</text>"
         )
 
@@ -781,26 +813,26 @@ def comparison_table_svg(
             elements.append(
                 f'<text x="{left_col_end - indicator_offset}" y="{mark_y}" '
                 f'text-anchor="middle" dominant-baseline="middle" '
-                f'fill="{winner_color}" font-size="18" font-weight="700">'
+                f'fill="{winner_color}" font-size="30" font-weight="850">'
                 f"&#x2713;</text>"
             )
             elements.append(
                 f'<text x="{right_col_start + indicator_offset}" y="{mark_y}" '
                 f'text-anchor="middle" dominant-baseline="middle" '
-                f'fill="{loser_color}" font-size="16" opacity="0.4">'
+                f'fill="{loser_color}" font-size="28" opacity="0.35">'
                 f"&#x2717;</text>"
             )
         elif winner == "right":
             elements.append(
                 f'<text x="{left_col_end - indicator_offset}" y="{mark_y}" '
                 f'text-anchor="middle" dominant-baseline="middle" '
-                f'fill="{loser_color}" font-size="16" opacity="0.4">'
+                f'fill="{loser_color}" font-size="28" opacity="0.35">'
                 f"&#x2717;</text>"
             )
             elements.append(
                 f'<text x="{right_col_start + indicator_offset}" y="{mark_y}" '
                 f'text-anchor="middle" dominant-baseline="middle" '
-                f'fill="{winner_color}" font-size="18" font-weight="700">'
+                f'fill="{winner_color}" font-size="30" font-weight="850">'
                 f"&#x2713;</text>"
             )
         # tie: no indicators
@@ -808,11 +840,11 @@ def comparison_table_svg(
     # Center divider lines
     elements.append(
         f'<line x1="{dim_start}" y1="0" x2="{dim_start}" y2="{total_h}" '
-        f'stroke="{divider_color}" stroke-width="1" opacity="0.2"/>'
+        f'stroke="{divider_color}" stroke-width="1" opacity="0.7"/>'
     )
     elements.append(
         f'<line x1="{dim_end}" y1="0" x2="{dim_end}" y2="{total_h}" '
-        f'stroke="{divider_color}" stroke-width="1" opacity="0.2"/>'
+        f'stroke="{divider_color}" stroke-width="1" opacity="0.7"/>'
     )
 
     return (
