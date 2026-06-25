@@ -1,11 +1,11 @@
 # Holus Agent Registry — single source of truth
 # Every agent MUST be listed here.
-# Total: 41 agents (1 manager + 30 specialists + 8 evaluators + 2 ops)
+# Total: 45 agents (1 manager + 34 specialists + 8 evaluators + 2 ops)
 
 agents:
   # MANAGERS (1)
   marketing-strategist:
-    role: "Primary marketing brain — ReAct loop: observe → reason → act → evaluate"
+    role: "Primary marketing brain — raw thought → preview/trace → taste → targeted rerun → approval loop"
     type: manager
     model_tier: strategic
     status: active
@@ -198,7 +198,7 @@ agents:
     gate: true
 
   deterministic-artifact-planner:
-    role: "Plans charts, diagrams, tables, PDFs, and HTML artifacts for exact rendering"
+    role: "Plans charts, diagrams, tables, PDFs, and HTML artifacts with renderer contracts and rerun scope"
     type: specialist
     category: visual
     model_tier: operational
@@ -320,6 +320,16 @@ agents:
     prompt: "specialists/research/competitive-intel.md"
     evaluated_by: seo-judge
 
+  research-curator:
+    role: "Scores external AI research feed items for reading priority and thought-candidate routing"
+    type: specialist
+    category: research
+    model_tier: operational
+    status: active
+    version: "1.0.0"
+    prompt: "specialists/research/research-curator.md"
+    evaluated_by: seo-judge
+
   # SPECIALISTS — Repurposing (3) — Every piece × 4 platforms
   platform-adapter:
     role: "LinkedIn → Twitter/Threads/Instagram native voice"
@@ -351,7 +361,7 @@ agents:
     prompt: "specialists/repurposing/format-converter.md"
     evaluated_by: [visual-content-judge, platform-fit-judge]
 
-  # EVALUATORS (7) — Domain-Expert Judges
+  # EVALUATORS (8) — Domain-Expert Judges
   written-content-judge:
     role: "Expert evaluation of text content"
     type: evaluator
@@ -363,7 +373,7 @@ agents:
     rubric: [hook_strength, narrative_arc, voice_fidelity, authority_signal, readability_score]
 
   visual-content-judge:
-    role: "Expert evaluation of visual content"
+    role: "Expert evaluation of rendered visual artifacts, taste failures, and targeted visual reruns"
     type: evaluator
     category: visual
     model_tier: classification
@@ -373,7 +383,7 @@ agents:
     rubric: [visual_hierarchy, brand_alignment, info_clarity, scroll_stop_power, slide_pacing]
 
   semantic-visual-judge:
-    role: "Evaluates whether a visual artifact communicates the intended content job"
+    role: "Preflight judge for whether a visual artifact communicates the intended content job"
     type: evaluator
     category: visual
     model_tier: classification
@@ -444,7 +454,7 @@ agents:
     prompt: "ops/security-sentinel.md"
 
   knowledge-keeper:
-    role: "Knowledge freshness checking, stale file detection"
+    role: "Knowledge freshness checking, stale file detection, and .self-improvement memory hygiene"
     type: ops
     model_tier: operational
     status: planned

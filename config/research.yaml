@@ -1,0 +1,30 @@
+window_days: 7
+
+thresholds:
+  digest: 0.5
+  candidate: 0.65
+
+paths:
+  research_dir: data/research
+  candidates_dir: data/research/candidates
+  seen_store: data/research/seen.jsonl
+  interests: config/research-interests.md
+
+sources:
+  arxiv:
+    categories:
+      - cs.AI
+      - cs.CL
+      - cs.LG
+    max_results: 25
+  hackernews:
+    query: "artificial intelligence OR machine learning OR LLM OR AI agents"
+    max_results: 25
+  rss:
+    per_feed_limit: 10
+    feeds:
+      - https://importai.substack.com/feed
+      - https://www.latent.space/feed
+      - https://openai.com/news/rss.xml
+      - https://www.anthropic.com/rss.xml
+      - https://deepmind.google/discover/blog/rss.xml

@@ -19,6 +19,7 @@ from holus.api.routes import (
     improvement,
     ingest,
     knowledge,
+    research,
     results,
     telegram_gate,
     trajectory,
@@ -87,6 +88,7 @@ def create_app() -> FastAPI:
     app.include_router(content.router, prefix=prefix)
     app.include_router(evaluations.router, prefix=prefix)
     app.include_router(knowledge.router, prefix=prefix)
+    app.include_router(research.router, prefix=prefix)
     app.include_router(health.router, prefix=prefix)
     app.include_router(results.router, prefix=prefix)
     app.include_router(improvement.router, prefix=prefix)

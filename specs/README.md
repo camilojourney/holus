@@ -91,6 +91,12 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 | --- | ---------------------------------------------------------------- | ------- | ----------- |
 | 036 | [System Diagnostician](036-system-diagnostician.md)              | Backend | Not Started |
 
+## Research & Ingestion
+
+| #   | Spec                                                             | Type    | Status      |
+| --- | ---------------------------------------------------------------- | ------- | ----------- |
+| 037 | [Research Radar](037-research-radar.md)                          | Backend | Ready |
+
 ---
 
 ## Spec Status Legend
