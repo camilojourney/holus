@@ -1,0 +1,56 @@
+[
+  {
+    "query": "/post AI is evolving from model quality to harness quality. Turn this into a LinkedIn post and show me the PDF.",
+    "should_trigger": true,
+    "pillar": "Outcome",
+    "mode": "thought_to_review"
+  },
+  {
+    "query": "Run the thought-to-LinkedIn workflow and give me the PDF link plus trace.",
+    "should_trigger": true,
+    "pillar": "Trajectory",
+    "mode": "thought_to_review"
+  },
+  {
+    "query": "Use Holus to turn this raw thought into a LinkedIn carousel, inspect the artifact, and tell me if it is publishable.",
+    "should_trigger": true,
+    "pillar": "Observability",
+    "mode": "artifact_trace_audit"
+  },
+  {
+    "query": "/post publish thought-abc123-linkedin_text",
+    "should_trigger": true,
+    "pillar": "Safety",
+    "mode": "explicit_publish_gate"
+  },
+  {
+    "query": "post this to LinkedIn after I approve it",
+    "should_trigger": true,
+    "pillar": "Safety",
+    "mode": "explicit_publish_gate"
+  },
+  {
+    "query": "Taste rejected the carousel PDF but the thesis is good. Rerun only what needs to be rerun.",
+    "should_trigger": true,
+    "pillar": "Trajectory",
+    "mode": "taste_targeted_rerun"
+  },
+  {
+    "query": "fix the carousel renderer palette bug",
+    "should_trigger": false,
+    "pillar": "Trajectory",
+    "mode": "non_post_code_fix"
+  },
+  {
+    "query": "write a spec for observability",
+    "should_trigger": false,
+    "pillar": "Outcome",
+    "mode": "non_post_spec"
+  },
+  {
+    "query": "research LinkedIn carousel best practices",
+    "should_trigger": false,
+    "pillar": "Evidence",
+    "mode": "non_post_research"
+  }
+]
