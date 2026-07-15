@@ -1,10 +1,10 @@
 # Spec 037: Research Radar — AI Content Feed into the Thought Studio
 
-**Status:** ready
+**Status:** implemented
 **Phase:** Phase 1 (on-demand) → Phase 2 (scheduled)
 **Author:** Juan
 **Created:** 2026-06-25
-**Updated:** 2026-06-25
+**Updated:** 2026-07-15
 
 ## Background
 
@@ -42,7 +42,7 @@ publishes and never bypasses human review.
 - Score each new item for portfolio relevance, novelty, and read priority via a
   new `research-curator` agent registered in `agentic/agents/AGENTS.yaml`.
 - Emit a human-readable markdown reading digest at
-  `data/research/digest-YYYY-MM-DD.md`.
+  `data/research/digest-YYYY-MM-DD-{run_id}.md`.
 - Emit thought-candidate YAML at `data/research/candidates/*.yaml`.
 - Expose `/api/v1/research/*` routes to run the radar, read the digest, and
   list/approve/reject candidates. Approving a candidate calls the existing
@@ -58,7 +58,8 @@ publishes and never bypasses human review.
 - No new analytics storage — performance still lives in Holus Social API.
 - No full reinforcement loop now; only the trajectory hook is specified.
 - No Twitter/X or paywalled-source scraping in this spec.
-- No change to `ThoughtContentPipeline` behavior or content-queue schema.
+- No separate publishing pipeline. Candidate approval reuses the Thought Studio
+  package contract and content-queue schema.
 
 ## Solution
 
@@ -139,6 +140,12 @@ class RadarRunReport(BaseModel):
     scored: int
     digest_path: str | None
     candidates_created: int
+    scoring_failures: int = 0
+    degraded: bool = False
+    failure_reasons: list[str] = Field(default_factory=list)
+    dedupe_collisions: int = 0
+    scorer_mode: str = "heuristic"
+    heuristic_fallbacks: int = 0
 ```
 
 ### Scoring → output routing
@@ -166,7 +173,7 @@ content-queue writing logic is reimplemented in the research module.
 | `POST` | `/run` | Run the radar; returns `RadarRunReport`. |
 | `GET`  | `/digest` | Latest digest (optional `?date=YYYY-MM-DD`) as markdown/JSON. |
 | `GET`  | `/candidates` | List candidates (filter `?status=`). |
-| `POST` | `/candidates/{id}/approve` | Approve → calls from-thought intake; returns created content group. |
+| `POST` | `/candidates/{id}/approve` | Approve through from-thought intake; returns the updated candidate with `approved_group_id`. |
 | `POST` | `/candidates/{id}/reject` | Mark rejected. |
 
 ### Run entrypoint
@@ -174,6 +181,10 @@ content-queue writing logic is reimplemented in the research module.
 `run_radar()` is callable from `POST /api/v1/research/run` and from a thin
 `scripts/research_radar_cycle.py` CLI so a launchd job (Phase 2) can trigger the
 same code path. Both return/serialize a `RadarRunReport`.
+
+```bash
+uv run python scripts/research_radar_cycle.py [--repo-root PATH]
+```
 
 ### Learning hook
 
@@ -222,7 +233,7 @@ guarantees the signal is written with the originating `item_id`.
   `recommended_action in {read_only, candidate, skip}`, and non-empty
   `why_it_matters` and `key_idea`.
 - [ ] **AC8 — Digest generation:** Given items scored above the digest threshold,
-  when a run completes, then `data/research/digest-YYYY-MM-DD.md` exists and each
+  when a run completes, then `data/research/digest-YYYY-MM-DD-{run_id}.md` exists and each
   listed item shows title, why-it-matters, key idea, and a clickable link.
 - [ ] **AC9 — Candidate routing:** Given an item with `relevance >=
   candidate_threshold` and `recommended_action == "candidate"`, when a run
@@ -277,6 +288,7 @@ guarantees the signal is written with the originating `item_id`.
 
 - The curator takes an **injectable scorer**; unit tests pass a stub returning
   fixed `ResearchScore` objects so no LLM call is made.
-- Source adapters take an injectable HTTP client; tests stub API/RSS payloads.
+- Source adapters expose injectable clients or transports appropriate to their
+  protocol; tests stub API and feed payloads without network access.
 - The approval bridge is tested with a spy/fake `ThoughtContentPipeline` to assert
   reuse (AC10) without writing real network calls.

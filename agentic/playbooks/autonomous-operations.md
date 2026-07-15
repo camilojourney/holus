@@ -39,7 +39,7 @@ monitoring, troubleshooting, and manual intervention.
 
 ### Judge scoring 0 for everything
 1. Check Haiku API: does the proxy route to Haiku?
-2. Check rubric: `cat agents/evaluators/written-content-judge.md`
+2. Check rubric: `cat agentic/agents/evaluators/written-content-judge.md`
 3. Check trajectory: `tail -5 .self-improvement/memory/trajectory.jsonl | python3 -m json.tool`
 
 ### Analytics not collecting

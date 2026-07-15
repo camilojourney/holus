@@ -19,7 +19,7 @@ How content and agents are evaluated in the Holus system.
      - `exclamation_density` - more than 3% of chars are `!` (penalty: 10)
      - `emoji_density` - emoji chars exceed 2% of total (penalty: 10)
 
-2. **Domain-Expert Judges** (`agents/evaluators/`) - LLM-based evaluation after generation
+2. **Domain-Expert Judges** (`agentic/agents/evaluators/`) - LLM-based evaluation after generation
    - Runs asynchronously after content passes the quality gate
    - Each judge is a domain expert with a category-specific rubric defined in `agentic/agents/AGENTS.yaml`
    - 7 domain judges + 1 cross-cutting brand-safety gate (runs on all content)
@@ -119,7 +119,7 @@ just costs             # Show per-agent cost breakdown
 
 ## Adding a New Evaluator
 
-1. Create `agents/evaluators/{name}.md` following the KERNEL template (Role, Scope, Steps, Negatives, Output Contract, Contrastive Examples)
+1. Create `agentic/agents/evaluators/{name}.md` following the KERNEL template (Role, Scope, Steps, Negatives, Output Contract, Contrastive Examples)
 2. Add entry to `agentic/agents/AGENTS.yaml` under the evaluators section with `type: evaluator`, `model_tier: classification`, and `rubric` list
 3. Update specialist entries in `agentic/agents/AGENTS.yaml` - set `evaluated_by: {name}` on the relevant specialists
 4. If it is a blocking gate (like brand-safety-judge), add `gate: true` to the evaluator entry
@@ -133,7 +133,7 @@ Content generated
       score < 60: auto-reject, log violation, stop
       score >= 60: admit to judge queue
   → domain evaluator selected via AGENTS.yaml evaluated_by
-  → evaluator .md prompt loaded (agents/evaluators/{name}.md)
+  → evaluator .md prompt loaded (agentic/agents/evaluators/{name}.md)
   → LLM scores rubric dimensions (classification model tier)
   → brand-safety-judge runs cross-cutting on all gated content
   → Results written to trajectory.jsonl

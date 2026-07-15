@@ -101,7 +101,7 @@ def parse_http_url(value: str) -> HttpUrl:
 
 
 def validate_public_http_url(value: str) -> str:
-    """Reject non-public HTTP destinations before a network request is made."""
+    """Validate scheme and host before DNS and public-address checks."""
     split = urlsplit(value)
     if split.scheme.lower() not in {"http", "https"}:
         msg = f"unsupported URL scheme: {split.scheme or '<missing>'}"

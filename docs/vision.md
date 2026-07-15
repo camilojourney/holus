@@ -111,11 +111,11 @@ Not generic quality judges. Domain experts who know what good looks like in thei
 ### Ops Agents (2)
 
 - `security-sentinel` — scans for leaked credentials, reviews API usage anomalies
-- `knowledge-keeper` — maintains `.self-improvement/MEMORY.md` and extracts patterns from trajectory data
+- `knowledge-keeper` — maintains `agentic/memory/MEMORY.md` and extracts patterns from trajectory data
 
 ### Agent Registry
 
-`agents/AGENTS.yaml` is the single source of truth for all 32 agents: name, model, role, input/output contract, and which evaluation rubric applies.
+`agentic/agents/AGENTS.yaml` is the single source of truth for all agents: name, model, role, input/output contract, and which evaluation rubric applies.
 
 ---
 
@@ -160,7 +160,7 @@ The Observatory is a FastAPI backend + Next.js 15 frontend that reads from exist
 - **Content pipeline kanban** -- content in-flight: researching → drafted → evaluated → published
 - **Evaluation scores over time** -- per-agent quality trends by content category
 - **Cost tracking** -- daily/weekly spend per agent, actual vs. budget
-- **Knowledge browser** -- searchable view of `.self-improvement/MEMORY.md` and lessons
+- **Knowledge browser** -- searchable view of `agentic/memory/MEMORY.md` and lessons
 - **System health** -- MCP silo connectivity, Redis, Langfuse
 
 Dual purpose: day-to-day operations + interview demo. A live dashboard showing a fully autonomous 32-agent content system is a stronger portfolio signal than any résumé line.

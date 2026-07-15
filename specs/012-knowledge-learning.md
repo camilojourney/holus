@@ -29,7 +29,7 @@ The marketing agent makes decisions in a vacuum. There is no persistent knowledg
 
 Three interconnected systems create a learning flywheel:
 
-1. **Knowledge Base** (`.self-improvement/knowledge/current/`) -- Structured markdown files with metadata headers that agents read before making decisions. Files cover platform best practices, audience profiles, content formats, and performance patterns. Old versions are archived automatically when updated.
+1. **Knowledge Base** (`agentic/memory/knowledge/current/`) -- Structured markdown files with metadata headers that agents read before making decisions. Files cover platform best practices, audience profiles, content formats, and performance patterns. Old versions are archived automatically when updated.
 
 2. **Trajectory Logging** (`.self-improvement/memory/trajectory.jsonl`) -- Append-only JSONL log of every agent decision and outcome. Entries include agent_id, timestamp, task_type, status, cost, and rich metadata. Supports filtered reads and time-based summaries.
 
@@ -43,7 +43,7 @@ Additionally, a **Knowledge Gap Detection** system lets agents file requests whe
 
 | Field | Value |
 |-------|-------|
-| Description | Structured markdown files in `.self-improvement/knowledge/current/` that agents read before making decisions |
+| Description | Structured markdown files in `agentic/memory/knowledge/current/` that agents read before making decisions |
 | Trigger | Read at the start of every marketing cycle (observe stage) |
 | Input | Knowledge files written by humans, research agents, or the learning loop |
 | Output | Loaded into agent context as part of the system prompt |
@@ -53,7 +53,7 @@ Additionally, a **Knowledge Gap Detection** system lets agents file requests whe
 Knowledge file structure:
 
 ```
-.self-improvement/knowledge/
+agentic/memory/knowledge/
 ├── README.md              # Index of all topics
 ├── current/               # Active knowledge files
 │   ├── platforms.md       # Social media platform knowledge
@@ -236,7 +236,7 @@ Top performing posts:
 {json.dumps(top_posts, default=str)}
 
 Current MEMORY.md:
-{Path('.self-improvement/MEMORY.md').read_text()}
+{Path('agentic/memory/MEMORY.md').read_text()}
 
 Return:
 1. New insights to add to MEMORY.md
@@ -260,7 +260,7 @@ Return:
 | Description | Agents can file "knowledge gap requests" when they need information they don't have |
 | Trigger | Agent encounters a decision where knowledge is insufficient |
 | Input | Gap description, priority, related topic |
-| Output | Request file in `.self-improvement/knowledge/requests/` |
+| Output | Request file in `agentic/memory/knowledge/requests/` |
 | Validation | Must specify what's needed and why |
 | Auth Required | No |
 
@@ -278,7 +278,7 @@ def file_knowledge_gap(
     related_topic: str = "",
 ) -> Path:
     """File a knowledge gap request for expert agents to resolve."""
-    requests_dir = Path(".self-improvement/knowledge/requests")
+    requests_dir = Path("agentic/memory/knowledge/requests")
     requests_dir.mkdir(parents=True, exist_ok=True)
 
     slug = what_i_need[:50].lower().replace(" ", "-")
@@ -321,7 +321,7 @@ Knowledge update event (published to event bus):
   "timestamp": "2026-03-02T07:15:00Z",
   "payload": {
     "topic": "performance-patterns",
-    "file": ".self-improvement/knowledge/current/performance-patterns.md",
+    "file": "agentic/memory/knowledge/current/performance-patterns.md",
     "confidence": "medium",
     "insights_count": 3,
     "sample_size": 28,
@@ -337,7 +337,7 @@ Knowledge update event (published to event bus):
 | `src/holus/memory/trajectory.py` | Modified | TrajectoryLogger with filtering and summary |
 | `src/holus/memory/knowledge_gaps.py` | New | Knowledge gap request system |
 | `src/holus/memory/__init__.py` | Modified | Export TrajectoryLogger, file_knowledge_gap |
-| `.self-improvement/knowledge/current/performance-patterns.md` | New (auto-generated) | Patterns learned from analytics |
+| `agentic/memory/knowledge/current/performance-patterns.md` | New (auto-generated) | Patterns learned from analytics |
 | `tests/unit/memory/test_trajectory.py` | New | Trajectory logger tests |
 | `tests/unit/memory/test_knowledge_gaps.py` | New | Knowledge gap tests |
 

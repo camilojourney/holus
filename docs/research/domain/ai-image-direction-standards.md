@@ -55,7 +55,7 @@ AI image direction must return `allowed: false` when:
 
 ## Recommended Agent Contract
 
-Use `agents/specialists/visual/ai-image-director.md` as the canonical specialist. It produces a structured brief, not a loose prompt. The final provider prompt is only one field inside the larger direction object.
+Use `agentic/agents/specialists/visual/ai-image-director.md` as the canonical specialist. It produces a structured brief, not a loose prompt. The final provider prompt is only one field inside the larger direction object.
 
 ## Why This Matters
 

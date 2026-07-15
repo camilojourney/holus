@@ -354,7 +354,7 @@ Pilaster experiment (what the MCP server returns):
 | `.claude/settings.json` | Modified | Add pilaster MCP server config |
 | `src/holus/agents/marketing/image_workflow.py` | New | Image creation workflow |
 | `src/holus/agents/marketing/image_optimization.py` | New | Monthly image strategy optimization |
-| `.self-improvement/knowledge/current/image-generation.md` | New | Image generation best practices |
+| `agentic/memory/knowledge/current/image-generation.md` | New | Image generation best practices |
 
 **In pilaster repo (to be added to existing MCP server):**
 
@@ -429,5 +429,5 @@ Pilaster experiment (what the MCP server returns):
 - [ ] Monthly optimization runs when 20+ experiments exist
 - [ ] Analysis identifies successful prompt patterns
 - [ ] Analysis identifies failed patterns to avoid
-- [ ] Insights written to `.self-improvement/knowledge/current/image-generation.md`
+- [ ] Insights written to `agentic/memory/knowledge/current/image-generation.md`
 - [ ] Success rate trends tracked over time

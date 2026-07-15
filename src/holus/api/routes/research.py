@@ -34,7 +34,7 @@ async def get_research_digest(
     digest_date: date | None = DIGEST_DATE_QUERY,
     as_json: bool = AS_JSON_QUERY,
 ) -> Any:
-    """Return the latest digest or a specific dated digest."""
+    """Return a JSON envelope, or raw Markdown when ``as_json`` is false."""
     path = _digest_path(digest_date)
     if path is None or not path.exists():
         raise HTTPException(status_code=404, detail="Research digest not found")
@@ -56,7 +56,7 @@ async def list_research_candidates(status: str | None = Query(default=None)) -> 
 
 @router.post("/candidates/{candidate_id}/approve")
 async def approve_research_candidate(candidate_id: str) -> dict[str, Any]:
-    """Approve a candidate into the existing from-thought pipeline."""
+    """Idempotently approve a candidate and return its updated state."""
     config = _research_config()
     store = CandidateStore(_candidates_dir(config), queue_dir=CONTENT_QUEUE_DIR)
     try:

@@ -25,7 +25,7 @@ binary, measurable, behavioral, independent, specific enough to write a test.
 ### AC-003: Observe stage loads knowledge files
 **Priority:** P0
 **Spec:** SPEC-010
-**Given** `.self-improvement/knowledge/current/` contains at least one `.md` file
+**Given** `agentic/memory/knowledge/current/` contains at least one `.md` file
 **When** the `observe` method executes on `MarketingAgent`
 **Then** `state["knowledge"]` is a dict with at least one key matching a filename stem from `knowledge/current/`, and each value is a non-empty string
 
@@ -87,7 +87,7 @@ binary, measurable, behavioral, independent, specific enough to write a test.
 **Spec:** SPEC-012
 **Given** the `file_knowledge_gap` function is called with `filed_by="marketing-agent"`, `what_i_need="LinkedIn carousel best practices"`, `why_i_need_it="No data on carousel engagement"`, `priority="high"`
 **When** the function completes
-**Then** a new `.md` file exists in `.self-improvement/knowledge/requests/` whose content contains the strings `Filed by: marketing-agent`, `Priority: high`, and `LinkedIn carousel best practices`
+**Then** a new `.md` file exists in `agentic/memory/knowledge/requests/` whose content contains the strings `Filed by: marketing-agent`, `Priority: high`, and `LinkedIn carousel best practices`
 
 ---
 
@@ -135,21 +135,21 @@ binary, measurable, behavioral, independent, specific enough to write a test.
 ### AC-017: GET /api/v1/health returns agent health status
 **Priority:** P0
 **Spec:** SPEC-028
-**Given** the Observatory FastAPI app is running and `agents/AGENTS.yaml` exists
+**Given** the Observatory FastAPI app is running and `agentic/agents/AGENTS.yaml` exists
 **When** `GET /api/v1/health` is called
 **Then** the response has status 200 and the JSON body contains boolean fields `kill_switch_active`, `trajectory_file_exists`, `eval_history_file_exists`, `agents_yaml_exists`, integer field `content_queue_count`, and nullable float field `error_rate_1h`
 
 ### AC-018: GET /api/v1/agents returns all agents from AGENTS.yaml
 **Priority:** P0
 **Spec:** SPEC-028
-**Given** `agents/AGENTS.yaml` contains entries for N agents (where N >= 1)
+**Given** `agentic/agents/AGENTS.yaml` contains entries for N agents (where N >= 1)
 **When** `GET /api/v1/agents` is called
 **Then** the response has status 200 and the JSON body is a list with exactly N elements, each having fields `id`, `name`, `model`, and `role`
 
 ### AC-019: GET /api/v1/agents/{agent_id} returns 404 for unknown agent
 **Priority:** P1
 **Spec:** SPEC-028
-**Given** `agents/AGENTS.yaml` does not contain an agent with id `nonexistent-agent-xyz`
+**Given** `agentic/agents/AGENTS.yaml` does not contain an agent with id `nonexistent-agent-xyz`
 **When** `GET /api/v1/agents/nonexistent-agent-xyz` is called
 **Then** the response has status 404
 

@@ -46,7 +46,7 @@ Two decision points:
 - [ ] Add `config/visual-variety.yaml` with type weights + recency penalty config
 - [ ] Add `_pick_visual_type()` function (weighted sampling + recency decay)
 - [ ] Remove `DECISION PRIORITY` from VISUAL_DESIGNER_SYSTEM prompt
-- [ ] Extract 3 prompt constants to `agents/specialists/` as `.md` files
+- [ ] Extract 3 prompt constants to `agentic/agents/specialists/` as `.md` files
 - [ ] Register `idea-planner`, `idea-generator`, `visual-designer` in AGENTS.yaml
 - [ ] Split idea_runner.py into 4 modules + idea_utils.py
 - [ ] Add Pydantic validation at stage boundaries

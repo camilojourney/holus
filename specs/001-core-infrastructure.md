@@ -620,7 +620,7 @@ class HolusEvent(BaseModel):
 - Scenario: Mac Mini power loss or forced shutdown while services are writing
 - Expected behavior: PostgreSQL runs WAL recovery on next startup. Redis replays AOF or loads last RDB snapshot.
 - Error message: PostgreSQL logs `LOG: database system was not properly shut down; automatic recovery in progress`
-- Recovery: Automatic. If data is corrupted beyond recovery, restore from daily backup (see `docs/playbooks/deployment.md`).
+- Recovery: Automatic. If data is corrupted beyond recovery, restore from daily backup (see `agentic/playbooks/deployment.md`).
 
 **EDGE-006: Anthropic API rate limit exceeded**
 - Scenario: Agent exceeds Anthropic rate limits (429 response)

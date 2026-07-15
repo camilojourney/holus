@@ -10,7 +10,7 @@ Not a trading system. Not an account owner. Not a silent publisher. Not a video
 generator for the current build. Holus Social API owns posting and analytics;
 Genpeli/video is deferred.
 
-**Last updated:** 2026-03-12
+**Last updated:** 2026-07-15
 **Update cadence:** Only on major structural changes.
 
 ---
@@ -51,10 +51,10 @@ Holus reads silo data to make decisions, but the source of truth stays in the si
  ┌──────────────────────────────────────────────────────────────────────┐
  │                    SELF-IMPROVEMENT LOOP                            │
  │                                                                     │
- │  agents/AGENTS.yaml ─── AgentRegistry ─── PromptLoader (3 layers)  │
+ │ agentic/agents/AGENTS.yaml ─ AgentRegistry ─ PromptLoader (3 layers)│
  │       │                      │                    │                 │
  │       │            get_evaluator_for()    Layer 1: config/prompts/  │
- │       ▼                      │           Layer 2: agents/*.md       │
+ │       ▼                      │      Layer 2: agentic/agents/*.md    │
  │  32 agent prompts            ▼           Layer 3: Python fallback   │
  │  (.md + YAML frontmatter)  JudgeAgent                               │
  │                     evaluate_with_routing()                         │
@@ -79,7 +79,7 @@ Holus reads silo data to make decisions, but the source of truth stays in the si
 
 **Three-layer prompt resolution:** When an agent loads its system prompt, PromptLoader
 checks (1) optimizer-promoted variant in `config/prompts/`, (2) canonical `.md` file in
-`agents/`, (3) hardcoded Python constant. First hit wins. This enables A/B testing and
+`agentic/agents/`, (3) hardcoded Python constant. First hit wins. This enables A/B testing and
 prompt optimization without changing code.
 
 **Evaluator routing:** The judge dispatches evaluation to domain-specific evaluators
@@ -97,6 +97,7 @@ Holus runs as a thought-to-content pipeline through the API, CLI, or future agen
 INGEST
   -> accept thought text or URL at /api/v1/content/from-thought
   -> store source_type, source_url, and raw source metadata
+  -> optionally accept scored Research Radar candidates after human approval
 
 NORMALIZE
   -> extract useful text from the source
@@ -105,12 +106,15 @@ NORMALIZE
 PLAN
   -> choose PlatformActivation rows such as linkedin_text, instagram_image,
      linkedin_carousel, threads_text, twitter_x_thread
+  -> build source context, a strategic brief, a primary-channel recommendation,
+     and per-channel transformation jobs
 
 GENERATE
   -> create ContentVariant rows for each platform
   -> render VisualAsset files into data/rendered-content for image/carousel outputs
 
 REVIEW
+  -> preserve platform-fit evidence and an explicit approval checklist
   -> run judges and preserve human review as the default gate
   -> PATCH approval/rejection/scheduled state locally only
 
@@ -236,6 +240,7 @@ products:
 | Thing | Lives in | Why |
 |-------|---------|-----|
 | Thought source metadata | `data/content-queue/*.yaml` | Each generated item keeps source_type/source_url/source_raw_input |
+| Research digests and candidates | `data/research/` | Radar outputs remain reviewable before entering the Thought Studio |
 | Rendered image/carousel files | `data/rendered-content` | Holus visual engine owns current PNG/PDF outputs |
 | Social media analytics | Holus Social API | Source of truth; Holus reads, never stores permanently |
 | Future video files | genpeli / R2 | Genpeli owns future video creation |
@@ -244,9 +249,9 @@ products:
 | Generation templates | pilaster / Supabase | pilaster owns reusable presets |
 | Marketing strategy decisions | `.self-improvement/` | Holus owns the strategy layer |
 | Product definitions | `config/products.yaml` | Single source for what Holus promotes |
-| Content performance patterns | `.self-improvement/MEMORY.md` | Learned by Holus over time |
+| Content performance patterns | `agentic/memory/MEMORY.md` | Learned by Holus over time |
 | Posting queue + accounts | Holus Social API | Never centralized in Holus |
-| Agent definitions | `agents/AGENTS.yaml` + `agents/*.md` | Single registry for all 32 agents |
+| Agent definitions | `agentic/agents/AGENTS.yaml` + `agentic/agents/**/*.md` | Single registry for all agents |
 | Judge evaluations | `trajectory.jsonl` metadata | Per-piece quality scores from domain evaluators |
 | Observatory data | FastAPI reads from all above files | No new DB — reads JSONL/YAML/MD directly |
 

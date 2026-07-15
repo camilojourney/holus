@@ -9,7 +9,7 @@ Holus -- Thought Studio and Social API workflow for a solo founder.
 ```bash
 git clone https://github.com/camilomartinez/holus.git && cd holus
 uv sync --all-extras
-make run
+just run
 ```
 
 ## What This Does
@@ -29,6 +29,29 @@ Holus Social API is the publishing and analytics boundary. Holus prepares and
 reviews content; the Social API owns accounts, posting, scheduling, and platform
 analytics. Genpeli/video remains a future adapter, not a blocker for the current
 text/image/carousel build.
+
+## Research Radar
+
+Research Radar ingests recent arXiv, Hacker News, and configured RSS items,
+deduplicates and scores them, then writes reviewable digests and thought
+candidates under `data/research/`. Configure sources and thresholds in
+`config/research.yaml`, and edit curator context in
+`config/research-interests.md`.
+
+```bash
+uv run python scripts/research_radar_cycle.py
+```
+
+The `/api/v1/research` API can run the radar, read digests, list candidates,
+and explicitly approve or reject candidates. Approval routes a candidate
+through the Thought Studio pipeline; it does not publish content.
+
+Validate representative text and URL intake cases without fetching URLs or
+writing queue records with:
+
+```bash
+uv run python scripts/simulate_content_intake_cases.py
+```
 
 
 ## Workflow: Explore → Plan → Execute → Review

@@ -331,7 +331,7 @@ class HealthCheck:
         }
 
     def check_knowledge(self) -> dict:
-        knowledge_dir = Path(".self-improvement/knowledge/current")
+        knowledge_dir = Path("agentic/memory/knowledge/current")
         files = list(knowledge_dir.glob("*.md")) if knowledge_dir.exists() else []
         return {
             "status": "healthy" if files else "degraded",

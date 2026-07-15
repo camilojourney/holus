@@ -34,7 +34,7 @@ The result: we are generating content with agents we cannot observe, cannot eval
 Four loosely-coupled additions to the existing codebase:
 
 ```
-agents/AGENTS.yaml
+agentic/agents/AGENTS.yaml
       │
       ▼
 AgentRegistry          ← reads YAML, returns AgentInfo objects
@@ -95,7 +95,7 @@ EVALUATOR_ROUTING = {
 }
 ```
 
-Each evaluator has its own `.md` prompt in `agents/evaluators/`. `JudgeAgent.evaluate()` is extended to accept an optional `evaluator_id` that overrides the system prompt with the domain expert's rubric.
+Each evaluator has its own `.md` prompt in `agentic/agents/evaluators/`. `JudgeAgent.evaluate()` is extended to accept an optional `evaluator_id` that overrides the system prompt with the domain expert's rubric.
 
 ### Self-Evaluation Hook
 
@@ -310,8 +310,8 @@ Rejected because: YAML changes require a process restart anyway (we don't hot-re
 
 **Structured log events:**
 ```
-INFO  registry: loaded 32 agents from agents/AGENTS.yaml
-INFO  prompt_loader: resolved hook-architect → agents/specialists/written-authority/hook-architect.md (layer 2)
+INFO  registry: loaded agents from agentic/agents/AGENTS.yaml
+INFO  prompt_loader: resolved hook-architect → agentic/agents/specialists/written-authority/hook-architect.md (layer 2)
 INFO  judge_dispatch: TUTORIAL → [written-content-judge, brand-safety-judge]
 WARN  self_eval: judge timed out after 10s — marking as evaluation_status=failed
 WARN  prompt_loader: no .md file for security-sentinel — falling back to Python string (layer 3)
@@ -342,7 +342,7 @@ No data migration needed. No schema changes. Rollback is `git revert`.
 ## Open Questions
 
 - [ ] Should `_evaluate_self()` be async or sync? `JudgeAgent.evaluate()` is currently sync (blocking HTTP). If we make it async, we need `asyncio.to_thread()`. — @Juan
-- [ ] Should the registry cache be invalidated when `agents/AGENTS.yaml` is modified? Currently requires process restart. — @Juan
+- [ ] Should the registry cache be invalidated when `agentic/agents/AGENTS.yaml` is modified? Currently requires process restart. — @Juan
 - [ ] Do we want per-evaluator score tracking in trajectory.jsonl (separate entry per evaluator) or one merged entry? Separate is more queryable; merged is simpler. — @Juan
 
 ## Acceptance Criteria

@@ -95,7 +95,7 @@ Forward-looking implementation blueprints. Written BEFORE coding a feature.
 
 | #   | Spec                                                             | Type    | Status      |
 | --- | ---------------------------------------------------------------- | ------- | ----------- |
-| 037 | [Research Radar](037-research-radar.md)                          | Backend | Ready |
+| 037 | [Research Radar](037-research-radar.md)                          | Backend | Implemented |
 
 ---
 

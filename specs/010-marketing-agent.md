@@ -32,7 +32,7 @@ There is no automated system to promote the product portfolio (Pilaster, genpeli
 
 The marketing agent is the brain of Holus. It runs as an episodic LangGraph state machine triggered every 30 minutes by cron or manually via `just run-marketing`. The agent executes a four-stage ReAct loop:
 
-1. **Observe** -- Read analytics from social-media MCP, product state from `config/products.yaml`, knowledge from `.self-improvement/knowledge/`, and memory from `.self-improvement/MEMORY.md`
+1. **Observe** -- Read analytics from social-media MCP, product state from `config/products.yaml`, knowledge from `agentic/memory/knowledge/`, and memory from `agentic/memory/MEMORY.md`
 2. **Reason** -- Use Claude Opus to analyze all context and decide what 1-3 content pieces to create this cycle, with explicit reasoning
 3. **Act** -- Use Claude Sonnet to generate platform-specific text content. In Phase 1, save to `data/content-queue/` for human review. In Phase 2+, publish via social-media MCP
 4. **Evaluate** -- Log all decisions and outcomes to trajectory.jsonl. Update MEMORY.md when significant patterns emerge (Phase 2+)
@@ -47,7 +47,7 @@ The agent starts simple (text posts to LinkedIn and Twitter) and gains capabilit
 |-------|-------|
 | Description | LangGraph state machine with 4 stages: observe, reason, act, evaluate |
 | Trigger | Cron (every 30 min) or manual (`just run-marketing`) |
-| Input | Product state (`config/products.yaml`), knowledge base (`.self-improvement/knowledge/`), memory (`.self-improvement/MEMORY.md`) |
+| Input | Product state (`config/products.yaml`), knowledge base (`agentic/memory/knowledge/`), memory (`agentic/memory/MEMORY.md`) |
 | Output | Published content, updated trajectory log, updated memory |
 | Validation | Kill switch checked before every stage. Content reviewed before posting (Phase 1: human approval required). |
 | Auth Required | `ANTHROPIC_API_KEY` |
@@ -141,13 +141,13 @@ async def observe(self, state: MarketingState) -> dict:
     products = yaml.safe_load(Path("config/products.yaml").read_text())
 
     # Read knowledge base
-    knowledge_dir = Path(".self-improvement/knowledge/current")
+    knowledge_dir = Path("agentic/memory/knowledge/current")
     knowledge = {}
     for f in knowledge_dir.glob("*.md"):
         knowledge[f.stem] = f.read_text()
 
     # Read memory
-    memory = Path(".self-improvement/MEMORY.md").read_text()
+    memory = Path("agentic/memory/MEMORY.md").read_text()
 
     # Read analytics from social-media MCP
     analytics = await self.call_mcp("social-media", "get_analytics", days=7)
@@ -452,15 +452,15 @@ class MarketingCycleReport(BaseModel):
 - [ ] LangGraph state machine has 4 stages: observe, reason, act, evaluate
 - [ ] Kill switch is checked before each stage
 - [ ] Agent reads `config/products.yaml` during observe stage
-- [ ] Agent reads `.self-improvement/knowledge/` during observe stage
-- [ ] Agent reads `.self-improvement/MEMORY.md` during observe stage
+- [ ] Agent reads `agentic/memory/knowledge/` during observe stage
+- [ ] Agent reads `agentic/memory/MEMORY.md` during observe stage
 - [ ] Agent uses Opus for strategy reasoning (model routing)
 - [ ] Agent uses Sonnet for content generation
 - [ ] Agent logs every decision to trajectory.jsonl
 - [ ] `just run-marketing` triggers the agent manually
 - [ ] Products loaded from `config/products.yaml`
-- [ ] Knowledge loaded from all files in `.self-improvement/knowledge/current/`
-- [ ] Memory loaded from `.self-improvement/MEMORY.md`
+- [ ] Knowledge loaded from all files in `agentic/memory/knowledge/current/`
+- [ ] Memory loaded from `agentic/memory/MEMORY.md`
 - [ ] Observe stage completes within 30 seconds
 - [ ] Graceful handling if files are missing
 - [ ] Reason stage uses Opus (via `task_type="strategic_planning"`)
@@ -526,7 +526,7 @@ observe
 
 #### Search Query Design
 
-Queries live in `.self-improvement/knowledge/current/niche-research-queries.md` as a
+Queries live in `agentic/memory/knowledge/current/niche-research-queries.md` as a
 machine-readable YAML block. Categories:
 
 ```yaml
@@ -815,7 +815,7 @@ This file is gitignored (runtime data). The rotation algorithm:
 
 | File | Change Type | Description |
 |------|-------------|-------------|
-| `.self-improvement/knowledge/current/niche-research-queries.md` | New | Curated search queries by category |
+| `agentic/memory/knowledge/current/niche-research-queries.md` | New | Curated search queries by category |
 | `src/holus/agents/marketing/models.py` | Modified | Add `NicheInsight`, `NicheResearchResult` |
 | `src/holus/agents/marketing/agent.py` | Modified | Add `_niche_research()`, update `observe()` |
 | `src/holus/agents/marketing/prompts.py` | Modified | Add niche research extraction prompt, update Opus strategy prompt |

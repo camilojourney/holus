@@ -13,7 +13,7 @@ Building Holus feature-by-feature requires many small implementation tasks that 
 ## Goals
 
 - Claude Code sessions run automatically every 30 minutes via macOS launchd, requiring no human intervention
-- Each session reads the priority queue (`.self-improvement/NEXT.md`), picks the top unfinished task, and implements it
+- Each session reads the priority queue (`agentic/memory/NEXT.md`), picks the top unfinished task, and implements it
 - `just check` (lint + typecheck + tests) must pass before any code is committed to main
 - Overlapping sessions are prevented via OS-level file locking that auto-releases on crash
 - Every build session is logged to `trajectory.jsonl` with task picked, status, files changed, and duration
@@ -55,7 +55,7 @@ Security: Builder runs with user-level permissions only. It never force-pushes, 
 |-------|-------|
 | Description | Claude Code agent (`.claude/agents/builder.md`) that reads NEXT.md, picks the top P0 task, implements it, tests it, and commits |
 | Trigger | launchd runs `just build-cycle` every 30 minutes |
-| Input | `.self-improvement/NEXT.md` (priority queue), relevant spec files, existing codebase |
+| Input | `agentic/memory/NEXT.md` (priority queue), relevant spec files, existing codebase |
 | Output | Implemented code, passing tests, git commit, updated NEXT.md |
 | Validation | `just check` must pass before committing. No force-pushes. |
 | Auth Required | No (runs locally) |
@@ -63,7 +63,7 @@ Security: Builder runs with user-level permissions only. It never force-pushes, 
 The builder agent follows this loop:
 
 ```
-1. READ .self-improvement/NEXT.md
+1. READ agentic/memory/NEXT.md
 2. FIND the first unchecked [ ] task in the highest priority group (P0 first)
 3. READ the relevant spec for that task
 4. IMPLEMENT the task (write code, create tests)

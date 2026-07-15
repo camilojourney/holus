@@ -422,7 +422,14 @@ class ThoughtContentPipeline:
         fetch_source_url: bool = True,
         write_records: bool = True,
     ) -> ContentSet:
-        """Create all requested content variants and write queue records."""
+        """Build requested variants and optionally persist queue records.
+
+        ``source_intent`` makes the intake purpose explicit. Setting
+        ``fetch_source_url=False`` preserves URL provenance while using the
+        supplied thought text without network retrieval. Setting
+        ``write_records=False`` returns the complete content set without writing
+        queue files.
+        """
         effective_source_type = source_type
         effective_source_url = source_url
         if source_type == "url" and not fetch_source_url:
