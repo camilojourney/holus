@@ -375,7 +375,7 @@ class JudgeAgent:
             from holus.agents.registry import AgentRegistry
 
             root = repo_root or Path(__file__).parents[3]
-            registry = AgentRegistry(yaml_path=root / "agents" / "AGENTS.yaml")
+            registry = AgentRegistry(yaml_path=root / "agentic" / "agents" / "AGENTS.yaml")
         except (FileNotFoundError, Exception):
             logger.warning("Could not load agent registry; falling back to generic evaluation")
             return self.evaluate(task=task, task_type=content_type.lower(), output=output)

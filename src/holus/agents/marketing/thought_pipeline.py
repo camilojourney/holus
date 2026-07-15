@@ -11,12 +11,11 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
-import httpx
 import yaml
 from PIL import Image, ImageDraw, ImageFont
 
@@ -127,6 +126,7 @@ class ContentSet:
     group_id: str
     thought: str
     records: list[dict[str, Any]]
+    package: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -418,22 +418,50 @@ class ThoughtContentPipeline:
         channels: list[str],
         source_type: str | None = None,
         source_url: str | None = None,
+        source_intent: str | None = None,
+        fetch_source_url: bool = True,
+        write_records: bool = True,
     ) -> ContentSet:
-        """Create all requested content variants and write queue records."""
+        """Build requested variants and optionally persist queue records.
+
+        ``source_intent`` makes the intake purpose explicit. Setting
+        ``fetch_source_url=False`` preserves URL provenance while using the
+        supplied thought text without network retrieval. Setting
+        ``write_records=False`` returns the complete content set without writing
+        queue files.
+        """
+        effective_source_type = source_type
+        effective_source_url = source_url
+        if source_type == "url" and not fetch_source_url:
+            effective_source_type = "text"
         source = await self.normalize_source(
             thought=thought,
-            source_type=source_type,
-            source_url=source_url,
+            source_type=effective_source_type,
+            source_url=effective_source_url,
         )
+        if source_type == "url" and not fetch_source_url:
+            source = ThoughtSource(
+                source_type="url",
+                raw_input=source_url or thought,
+                extracted_text=source.extracted_text,
+                source_url=source_url,
+            )
         if len(source.extracted_text) < 8:
             msg = "Thought is too short"
             raise ValueError(msg)
 
         group_id = uuid.uuid4().hex
         records = [self._create_queue_record(source, channel, group_id) for channel in channels]
-        for record in records:
-            self.write_queue_record(record)
-        return ContentSet(group_id=group_id, thought=source.extracted_text, records=records)
+        package = self._build_package(source, records, source_intent=source_intent)
+        if write_records:
+            for record in records:
+                self.write_queue_record(record)
+        return ContentSet(
+            group_id=group_id,
+            thought=source.extracted_text,
+            records=records,
+            package=package,
+        )
 
     def write_queue_record(self, record: dict[str, Any]) -> Path:
         """Persist one generated variant to the content queue."""
@@ -443,20 +471,129 @@ class ThoughtContentPipeline:
         return path
 
     async def _extract_from_url(self, url: str) -> str:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(
-                url,
-                follow_redirects=True,
-                headers={"User-Agent": "HolusThoughtStudio/1.0"},
-            )
-            response.raise_for_status()
-            text = response.text
+        from holus.research.sources.base import safe_get
+
+        response = await safe_get(
+            url,
+            headers={"User-Agent": "HolusThoughtStudio/1.0"},
+        )
+        text = response.text
 
         import re
 
         text = re.sub(r"<[^>]+>", " ", text)
         text = re.sub(r"\s+", " ", text).strip()
         return text[:4000]
+
+    def _build_package(
+        self,
+        source: ThoughtSource,
+        records: list[dict[str, Any]],
+        *,
+        source_intent: str | None = None,
+    ) -> dict[str, Any]:
+        intent = source_intent or _infer_source_intent(source.extracted_text, source.source_type)
+        source_context = _source_context(source.extracted_text, intent)
+        channel_plan = [
+            {
+                "piece_id": record["piece_id"],
+                "platform": record["platform"],
+                "content_type": record["content_type"],
+                "channel_job": record.get("content_job_plan", ""),
+                "transformation_job": _transformation_job(record, source_context),
+            }
+            for record in records
+        ]
+        for plan_item, record in zip(channel_plan, records, strict=False):
+            record["platform_job_plan"] = plan_item["transformation_job"]
+            record.setdefault("quality", {})
+            record["quality"]["platform_fit"] = _platform_fit(record)
+        platform_fit_summary = _platform_fit_summary(records)
+        platform_fit_ready = (
+            platform_fit_summary["failure_count"] == 0
+            and platform_fit_summary["missing_count"] == 0
+        )
+        source_extract_char_count = len(_clean_thought(source.extracted_text))
+        source_evidence: dict[str, Any] = {
+            "source_type": source.source_type,
+            "status": "available" if source.source_type == "url" else "operator_supplied",
+            "operator_context_included": False,
+        }
+        if source.source_type == "url":
+            source_evidence["source_extract_char_count"] = source_extract_char_count
+        review_checklist = [
+            {
+                "artifact": "source_evidence",
+                "status": "PASS",
+                "evidence": f"{source.source_type} source evidence available",
+            },
+            {
+                "artifact": "source_context",
+                "status": "PASS",
+                "evidence": f"intent={intent}",
+            },
+            {
+                "artifact": "channel_plan.transformation_job",
+                "status": "PASS",
+                "evidence": "Each channel has a transformation job.",
+            },
+            {
+                "artifact": "quality_evaluation.platform_fit_summary",
+                "status": "PASS" if platform_fit_ready else "FAIL",
+                "evidence": (
+                    "All variants fit platform bounds."
+                    if platform_fit_ready
+                    else (
+                        f"{platform_fit_summary['failure_count']} failed and "
+                        f"{platform_fit_summary['missing_count']} missing platform-fit evaluations."
+                    )
+                ),
+            },
+            {
+                "artifact": "approval_workflow.publish_gate",
+                "status": "PASS",
+                "evidence": "Explicit human approval is required before publishing.",
+            },
+        ]
+        return {
+            "source": {
+                "intent": intent,
+                "char_count": source_extract_char_count,
+                "operator_context_included": False,
+                "source_extract_char_count": (
+                    source_extract_char_count if source.source_type == "url" else None
+                ),
+            },
+            "source_context": source_context,
+            "strategic_brief": f"{intent}: {_first_sentence(source.extracted_text, fallback='')}",
+            "distribution_recommendation": {
+                "primary_channel": records[0]["platform"] if records else None,
+            },
+            "channel_plan": channel_plan,
+            "quality_evaluation": {
+                "ready_for_human_review": platform_fit_ready,
+                "success_criteria": [
+                    "clear source context",
+                    "platform-native transformation",
+                    "explicit human approval",
+                    source_context.get("success_signal", "useful marketing content"),
+                ],
+                "source_evidence": source_evidence,
+                "platform_fit_summary": platform_fit_summary,
+            },
+            "approval_workflow": {
+                "status": "pending_review",
+                "approval_required": True,
+                "publish_gate": "Publishing requires explicit human approval.",
+                "review_steps": [
+                    "source evidence",
+                    "source context",
+                    "platform fit",
+                    "publish gate",
+                ],
+                "review_checklist": review_checklist,
+            },
+        }
 
     def _create_queue_record(
         self,
@@ -484,11 +621,13 @@ class ThoughtContentPipeline:
             trace_agents.insert(5, ("brand-designer", AGENT_TRACE_ROLES["brand-designer"]))
 
         seen_agents: set[str] = set()
-        trace_agents = [
-            (agent_id, role)
-            for agent_id, role in trace_agents
-            if not (agent_id in seen_agents or seen_agents.add(agent_id))
-        ]
+        deduped_trace_agents: list[tuple[str, str]] = []
+        for agent_id, role in trace_agents:
+            if agent_id in seen_agents:
+                continue
+            seen_agents.add(agent_id)
+            deduped_trace_agents.append((agent_id, role))
+        trace_agents = deduped_trace_agents
 
         record: dict[str, Any] = {
             "piece_id": piece_id,
@@ -823,7 +962,13 @@ def _extract_budget_lines(thought: str) -> list[str]:
             label = "DeepSeek" if name.lower() == "deepseek" else name
             evidence.append(f"{label}: {matches[-1]}")
     seen: set[str] = set()
-    return [item for item in evidence if not (item in seen or seen.add(item))]
+    unique: list[str] = []
+    for item in evidence:
+        if item in seen:
+            continue
+        seen.add(item)
+        unique.append(item)
+    return unique
 
 
 def _build_platform_text(
@@ -1408,6 +1553,88 @@ def build_posting_destination(*, platform: str | None, thought: str | None) -> d
     }
 
 
+def _infer_source_intent(text: str, source_type: str) -> str:
+    lowered = text.lower()
+    if source_type == "url":
+        return "online_article"
+    if "pilaster" in lowered:
+        return "product_context"
+    if any(marker in lowered for marker in ("campaign", "launch", "series")):
+        return "campaign_idea"
+    if any(marker in lowered for marker in ("research", "study", "paper", "benchmark")):
+        return "research_note"
+    return "raw_thought"
+
+
+def _source_context(text: str, intent: str) -> dict[str, Any]:
+    mentioned_products = ["Pilaster"] if "pilaster" in text.lower() else []
+    return {
+        "source_intent": intent,
+        "mentioned_products": mentioned_products,
+        "product_context_detected": bool(mentioned_products),
+        "targeting_changed": False,
+        "success_signal": {
+            "raw_thought": "clear source context",
+            "online_article": "source evidence",
+            "research_note": "research implication",
+            "product_context": "product facts",
+            "campaign_idea": "campaign direction",
+        }.get(intent, "useful marketing content"),
+    }
+
+
+def _transformation_job(record: dict[str, Any], source_context: dict[str, Any]) -> str:
+    platform = str(record.get("platform") or "platform")
+    content_type = str(record.get("content_type") or "content")
+    if source_context.get("mentioned_products"):
+        return (
+            f"Transform product facts into {platform} {content_type} "
+            "without changing product targeting."
+        )
+    return f"Transform the source idea into a {platform} {content_type} with native pacing."
+
+
+def _platform_fit(record: dict[str, Any]) -> dict[str, Any]:
+    text = str(record.get("text") or "")
+    platform = str(record.get("platform") or "")
+    content_type = str(record.get("content_type") or "")
+    bounds = {"min": 20, "max": 3000}
+    return {
+        "verdict": "PASS" if bounds["min"] <= len(text) <= bounds["max"] else "REVIEW",
+        "platform": platform,
+        "content_type": content_type,
+        "text_char_count": len(text),
+        "text_length_bounds": bounds,
+        "platform_job_present": bool(
+            record.get("platform_job_plan") or record.get("content_job_plan")
+        ),
+        "expected_shape": f"{platform} {content_type}",
+        "notes": [],
+    }
+
+
+def _platform_fit_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
+    missing = [
+        str(record.get("piece_id"))
+        for record in records
+        if not (record.get("quality") or {}).get("platform_fit")
+    ]
+    failed = [
+        str(record.get("piece_id"))
+        for record in records
+        if (platform_fit := (record.get("quality") or {}).get("platform_fit"))
+        and platform_fit.get("verdict") != "PASS"
+    ]
+    return {
+        "variant_count": len(records),
+        "pass_count": len(records) - len(failed) - len(missing),
+        "failure_count": len(failed),
+        "missing_count": len(missing),
+        "failed_piece_ids": failed,
+        "missing_piece_ids": missing,
+    }
+
+
 def _creative_contract_from_brief(visual_brief: VisualBrief) -> dict[str, str]:
     if visual_brief.profile_id == "ai-focus-thesis":
         return {
@@ -1554,13 +1781,13 @@ def _load_font(size: int, *, bold: bool = False) -> ImageFont.ImageFont:
     )
     for name in names:
         with contextlib.suppress(OSError):
-            return ImageFont.truetype(name, size)
-    return ImageFont.load_default()
+            return cast("ImageFont.ImageFont", ImageFont.truetype(name, size))
+    return cast("ImageFont.ImageFont", ImageFont.load_default())
 
 
 def _text_width(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> int:
     left, _, right, _ = draw.textbbox((0, 0), text, font=font)
-    return right - left
+    return int(right - left)
 
 
 def _wrap_text(

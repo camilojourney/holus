@@ -720,7 +720,7 @@ async def act(self, state: MarketingState) -> dict[str, Any]:
 - **Depends on:** Spec 010 (Marketing Agent) — all changes build on existing agent
 - **Depends on:** Spec 012 (Knowledge & Learning) — knowledge files read during observe
 - **Depends on:** `config/brand.yaml` — must exist (created in Sprint 2 P0)
-- **Depends on:** `.self-improvement/knowledge/current/niche-research-queries.md` — must exist (created in Sprint 2 P2)
+- **Depends on:** `agentic/memory/knowledge/current/niche-research-queries.md` — must exist (created in Sprint 2 P2)
 - **Related:** Spec 016 (Social Media Integration V2) — posting happens after human approval
 - **Blocks:** P4 end-to-end authority engine test
 

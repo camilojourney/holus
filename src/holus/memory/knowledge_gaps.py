@@ -2,7 +2,7 @@
 
 When an agent encounters a decision where knowledge is insufficient, it files
 a "knowledge gap request" as a markdown file in
-``.self-improvement/knowledge/requests/``.  The manager agent reads these
+``agentic/memory/knowledge/requests/``.  The manager agent reads these
 during the weekly learning cycle, prioritizes them, and either researches
 the answer or delegates to a research agent.
 
@@ -19,7 +19,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_REQUESTS_DIR = Path(".self-improvement/knowledge/requests")
+DEFAULT_REQUESTS_DIR = Path("agentic/memory/knowledge/requests")
 
 
 @dataclass(frozen=True)
@@ -199,7 +199,7 @@ def resolve_gap(
         True if the file was updated, False if the file doesn't exist.
     """
     if not path.exists():
-        logger.warning("Cannot resolve gap — file not found: %s", path)
+        logger.warning("Cannot resolve gap - file not found: %s", path)
         return False
 
     text = path.read_text()

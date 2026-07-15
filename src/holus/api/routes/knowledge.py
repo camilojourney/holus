@@ -1,4 +1,4 @@
-"""Knowledge routes — GET /api/v1/knowledge."""
+"""Knowledge routes - GET /api/v1/knowledge."""
 
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-KNOWLEDGE_DIR = REPO_ROOT / ".self-improvement" / "knowledge" / "current"
-MEMORY_PATH = REPO_ROOT / ".self-improvement" / "MEMORY.md"
+KNOWLEDGE_DIR = REPO_ROOT / "agentic" / "memory" / "knowledge" / "current"
+MEMORY_PATH = REPO_ROOT / "agentic" / "memory" / "MEMORY.md"
 LESSONS_PATH = REPO_ROOT / ".self-improvement" / "memory" / "lessons.json"
 
 
@@ -130,7 +130,7 @@ async def get_recent_lessons(
 @router.get("/{filename}", response_model=KnowledgeFile)
 async def get_knowledge_file(filename: str) -> KnowledgeFile:
     """Return a single knowledge file with content."""
-    # Sanitize filename — no path traversal
+    # Sanitize filename - no path traversal
     if "/" in filename or "\\" in filename or ".." in filename:
         raise HTTPException(status_code=400, detail="Invalid filename")
 

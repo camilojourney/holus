@@ -1,6 +1,6 @@
 """Knowledge base loader: validate and load knowledge files for agent context.
 
-Agents read knowledge files from ``.self-improvement/knowledge/current/``
+Agents read knowledge files from ``agentic/memory/knowledge/current/``
 at the start of every marketing cycle (observe stage).  Each file must have
 a metadata header with required fields.  This module validates headers and
 loads files into structured data.
@@ -19,7 +19,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_KNOWLEDGE_DIR = Path(".self-improvement/knowledge/current")
+DEFAULT_KNOWLEDGE_DIR = Path("agentic/memory/knowledge/current")
 
 REQUIRED_HEADERS = frozenset(
     {
@@ -165,7 +165,7 @@ def load_knowledge_files(
         if not kf.is_valid:
             if skip_invalid:
                 logger.warning(
-                    "Knowledge file has validation errors: %s — %s",
+                    "Knowledge file has validation errors: %s - %s",
                     path.name,
                     "; ".join(kf.errors),
                 )
@@ -179,7 +179,7 @@ def load_knowledge_files(
     return files
 
 
-DEFAULT_ARCHIVE_DIR = Path(".self-improvement/knowledge/archive")
+DEFAULT_ARCHIVE_DIR = Path("agentic/memory/knowledge/archive")
 
 
 def archive_knowledge_file(
@@ -202,7 +202,7 @@ def archive_knowledge_file(
         exist.
     """
     if not path.exists():
-        logger.debug("Nothing to archive — file does not exist: %s", path)
+        logger.debug("Nothing to archive - file does not exist: %s", path)
         return None
 
     archive_dir.mkdir(parents=True, exist_ok=True)

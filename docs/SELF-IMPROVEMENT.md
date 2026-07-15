@@ -113,7 +113,7 @@ Every piece gets TWO evaluation passes:
 **Key files:**
 - `src/holus/agents/marketing/quality_score.py` — deterministic gate
 - `src/holus/self_improvement/judge.py` — LLM judges + routing
-- `agents/evaluators/*.md` — judge rubric prompts
+- `agentic/agents/evaluators/*.md` — judge rubric prompts
 
 ---
 
@@ -134,7 +134,7 @@ individual content — it evaluates the machine that makes content.
 - P1 tasks: Quality is systematically poor (e.g., "hook_strength < 0.6 on 70%")
 - P2 tasks: Improvement opportunities (e.g., "feedback loop not connected")
 
-Tasks are automatically appended to `.self-improvement/NEXT.md`.
+Tasks are automatically appended to `agentic/memory/NEXT.md`.
 
 **Key files:**
 - `src/holus/self_improvement/diagnostician.py`
@@ -154,7 +154,7 @@ The improvement cycle has 5 steps:
 - Groups by product × content_type × platform
 - Computes success rates, avg scores, engagement signals
 - Detects score drift (agents whose avg dropped 0.1+ from peak)
-- Updates `.self-improvement/MEMORY.md` with insights
+- Updates `agentic/memory/MEMORY.md` with insights
 
 ### Step 2: Prompt Evolution ($0.15/cycle)
 
@@ -182,7 +182,7 @@ Classifies failures into 4 buckets:
 - `quality_issue` — poor output quality
 
 Writes gap requests to `.self-improvement/capability-requests/` and
-`.self-improvement/knowledge/requests/`.
+`agentic/memory/knowledge/requests/`.
 
 **Key files:**
 - `src/holus/agents/marketing/orchestrator.py` — ties all 5 steps together

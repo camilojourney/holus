@@ -43,7 +43,12 @@ MODEL_MAP: dict[ModelTier, str] = {
 PRICING: dict[str, tuple[float, float, float, float]] = {
     "claude-opus-4-6": (15.0, 3.75, 1.50, 75.0),
     "claude-sonnet-4-6": (3.0, 0.75, 0.30, 15.0),
-    "claude-haiku-4-5-20251001": (0.80, 0.08, 0.08, 4.0),  # kept for cost history; not actively used
+    "claude-haiku-4-5-20251001": (
+        0.80,
+        0.08,
+        0.08,
+        4.0,
+    ),  # kept for cost history; not actively used
 }
 
 

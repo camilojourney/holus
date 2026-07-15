@@ -108,7 +108,9 @@ class HolusConfig(BaseSettings):
     # ---- Model identifiers (defaults match config/models.yaml) -------------
     opus_model: str = "claude-opus-4-6"
     sonnet_model: str = "claude-sonnet-4-6"
-    haiku_model: str = "claude-sonnet-4-6"  # haiku is slower than sonnet via SDK; sonnet used for all tiers
+    haiku_model: str = (
+        "claude-sonnet-4-6"  # haiku is slower than sonnet via SDK; sonnet used for all tiers
+    )
 
     # ---- Proxy configuration ------------------------------------------------
     anthropic_base_url: str = Field(

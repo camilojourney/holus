@@ -1,4 +1,4 @@
-# Holus — unified task runner
+# Holus - unified task runner
 # Run `just` or `just --list` to see all commands.
 
 default:
@@ -139,14 +139,14 @@ build-cycle:
 # Start the 80-cycle sprint via launchd cron (every 20 min)
 sprint-start:
     mkdir -p logs
-    @echo '{"cycle": 0, "max_cycles": 80, "status": "running", "started_at": null, "interval_minutes": 20}' > .self-improvement/sprint-state.json
+    @echo '{"cycle": 0, "max_cycles": 80, "status": "running", "started_at": null, "interval_minutes": 20}' > agentic/sprint-state.json
     cp infra/launchd/com.holus.builder.plist ~/Library/LaunchAgents/
     launchctl load ~/Library/LaunchAgents/com.holus.builder.plist
     @echo "Sprint started! Builder will run every 20 min for 80 cycles (~27 hours)."
     @echo "Monitor: just sprint-status"
     @echo "Stop:    just sprint-stop"
 
-# Stop the sprint (graceful — finishes current cycle first)
+# Stop the sprint (graceful - finishes current cycle first)
 sprint-stop:
     touch /tmp/holus-stop
     -launchctl unload ~/Library/LaunchAgents/com.holus.builder.plist 2>/dev/null
@@ -164,17 +164,17 @@ sprint-resume:
 sprint-reset:
     -launchctl unload ~/Library/LaunchAgents/com.holus.builder.plist 2>/dev/null
     rm -f /tmp/holus-stop
-    @echo '{"cycle": 0, "max_cycles": 80, "status": "ready", "started_at": null, "interval_minutes": 20}' > .self-improvement/sprint-state.json
+    @echo '{"cycle": 0, "max_cycles": 80, "status": "ready", "started_at": null, "interval_minutes": 20}' > agentic/sprint-state.json
     @echo "Sprint reset to cycle 0."
 
 # Full sprint status dashboard
 sprint-status:
     @echo "=== Sprint State ==="
-    @cat .self-improvement/sprint-state.json 2>/dev/null || echo "No sprint state"
+    @cat agentic/sprint-state.json 2>/dev/null || echo "No sprint state"
     @echo ""
     @echo "=== Tasks ==="
-    @printf "Remaining: "; grep -c '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null || echo "0"
-    @printf "Completed: "; grep -c '^\- \[x\]' .self-improvement/NEXT.md 2>/dev/null || echo "0"
+    @printf "Remaining: "; grep -c '^\- \[ \]' agentic/memory/NEXT.md 2>/dev/null || echo "0"
+    @printf "Completed: "; grep -c '^\- \[x\]' agentic/memory/NEXT.md 2>/dev/null || echo "0"
     @echo ""
     @echo "=== Cron Status ==="
     @launchctl list 2>/dev/null | grep holus.builder || echo "Builder cron not loaded"
@@ -192,7 +192,7 @@ sprint-status:
 sprint-loop:
     bash infra/build-sprint.sh
 
-# -- Scheduling (launchd) — marketing + health crons -----------------------
+# -- Scheduling (launchd) - marketing + health crons -----------------------
 
 # Validate all launchd plist files (syntax + paths)
 validate-plists:
@@ -203,10 +203,10 @@ validate-plists:
     @plutil -lint infra/launchd/com.holus.builder.plist
     @echo ""
     @echo "=== Path Checks ==="
-    @test -d /Users/mini/.openclaw/workspace/github/holus && echo "PASS: working directory exists" || echo "FAIL: working directory missing"
+    @test -d "$(git rev-parse --show-toplevel)" && echo "PASS: working directory exists" || echo "FAIL: working directory missing"
     @test -x /opt/homebrew/bin/uv && echo "PASS: uv found at /opt/homebrew/bin/uv" || echo "FAIL: uv not found"
     @test -x /opt/homebrew/bin/just && echo "PASS: just found at /opt/homebrew/bin/just" || echo "FAIL: just not found"
-    @test -d logs && echo "PASS: logs/ directory exists" || echo "WARN: logs/ missing — run mkdir -p logs"
+    @test -d logs && echo "PASS: logs/ directory exists" || echo "WARN: logs/ missing - run mkdir -p logs"
     @echo ""
     @echo "All plist validation complete."
 
@@ -214,7 +214,7 @@ validate-plists:
 schedule-test:
     @mkdir -p logs
     @echo "Running health check to verify plist command works..."
-    @cd /Users/mini/.openclaw/workspace/github/holus && /opt/homebrew/bin/uv run python -m holus health
+    @cd "$(git rev-parse --show-toplevel)" && /opt/homebrew/bin/uv run python -m holus health
     @echo ""
     @echo "Health check succeeded. Plist command is valid."
 
@@ -328,7 +328,7 @@ gaps:
     @ls -1 .self-improvement/capability-requests/*.md 2>/dev/null | grep -v README || echo "  None"
     @echo ""
     @echo "=== Knowledge Gaps (expert agent auto-resolves) ==="
-    @ls -1 .self-improvement/knowledge/requests/*.md 2>/dev/null | grep -v README || echo "  None"
+    @ls -1 agentic/memory/knowledge/requests/*.md 2>/dev/null | grep -v README || echo "  None"
 
 # Show Thompson Sampling arm performance
 arms:
@@ -348,7 +348,7 @@ improvement-status:
     @echo ""
     @echo "=== Open Gaps ==="
     @printf "  Capability: "; ls .self-improvement/capability-requests/*.md 2>/dev/null | grep -c -v README || echo "0"
-    @printf "  Knowledge:  "; ls .self-improvement/knowledge/requests/*.md 2>/dev/null | grep -c -v README || echo "0"
+    @printf "  Knowledge:  "; ls agentic/memory/knowledge/requests/*.md 2>/dev/null | grep -c -v README || echo "0"
 
 # Run load test (100 simulated entries)
 load-test:

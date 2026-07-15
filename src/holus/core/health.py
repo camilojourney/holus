@@ -104,7 +104,7 @@ class HealthCheck:
 
     def check_knowledge(self) -> dict[str, Any]:
         """Check knowledge base has files."""
-        knowledge_dir = Path(".self-improvement/knowledge/current")
+        knowledge_dir = Path("agentic/memory/knowledge/current")
         files = list(knowledge_dir.glob("*.md")) if knowledge_dir.exists() else []
         return {
             "status": "healthy" if files else "degraded",
@@ -124,7 +124,7 @@ class HealthCheck:
         """Check logs directory exists."""
         logs_dir = Path("logs")
         if not logs_dir.exists():
-            return {"status": "degraded", "note": "logs/ directory missing — run mkdir -p logs"}
+            return {"status": "degraded", "note": "logs/ directory missing - run mkdir -p logs"}
         return {"status": "healthy", "directory": str(logs_dir)}
 
 
@@ -147,13 +147,13 @@ def run_preflight_checks(
 
     Checks are run in this order:
 
-    1. Kill switch (blocking) — global Redis kill switch must not be active.
-    2. LLM reachable (blocking) — Anthropic API must respond.
-    3. Holus Social API (blocking) — primary output channel.
-    4. Pilaster MCP (non-blocking) — future optional image adapter; removed from silos on failure.
-    5. Genpeli MCP (non-blocking) — future optional video adapter; removed from silos on failure.
-    6. Trajectory log writable (blocking) — data integrity requires write access.
-    7. Run lock (blocking) — no concurrent cycle is already running.
+    1. Kill switch (blocking) - global Redis kill switch must not be active.
+    2. LLM reachable (blocking) - Anthropic API must respond.
+    3. Holus Social API (blocking) - primary output channel.
+    4. Pilaster MCP (non-blocking) - future optional image adapter; removed from silos on failure.
+    5. Genpeli MCP (non-blocking) - future optional video adapter; removed from silos on failure.
+    6. Trajectory log writable (blocking) - data integrity requires write access.
+    7. Run lock (blocking) - no concurrent cycle is already running.
 
     Args:
         redis_url: Override Redis URL (default: ``REDIS_URL`` env var or localhost).
@@ -196,7 +196,7 @@ def run_preflight_checks(
         kill_active = bool(r.exists("holus:kill:global"))
         r.close()
         if kill_active:
-            logger.warning("Preflight: global kill switch is active — blocking cycle")
+            logger.warning("Preflight: global kill switch is active - blocking cycle")
             return HealthResult(
                 blocking_ok=False,
                 available_silos=[],
@@ -204,7 +204,7 @@ def run_preflight_checks(
             )
     except Exception as exc:
         # Redis unavailable: non-fatal for kill switch (agent proceeds cautiously)
-        warnings.append(f"Kill switch check skipped — Redis unavailable: {exc}")
+        warnings.append(f"Kill switch check skipped - Redis unavailable: {exc}")
         logger.warning("Preflight: Redis unavailable for kill switch check", error=str(exc))
 
     # ------------------------------------------------------------------
@@ -219,7 +219,7 @@ def run_preflight_checks(
                 if resp.status_code >= 500:
                     raise RuntimeError(f"LLM proxy returned {resp.status_code}")
         except Exception as exc:
-            logger.error("Preflight: LLM proxy not reachable — blocking cycle", error=str(exc))
+            logger.error("Preflight: LLM proxy not reachable - blocking cycle", error=str(exc))
             return HealthResult(
                 blocking_ok=False,
                 available_silos=[],
@@ -228,7 +228,7 @@ def run_preflight_checks(
     else:
         # Direct API mode: check Anthropic API with key
         if not _anthropic_key:
-            logger.error("Preflight: ANTHROPIC_API_KEY not set — blocking cycle")
+            logger.error("Preflight: ANTHROPIC_API_KEY not set - blocking cycle")
             return HealthResult(
                 blocking_ok=False,
                 available_silos=[],
@@ -243,7 +243,7 @@ def run_preflight_checks(
                 if resp.status_code >= 500:
                     raise RuntimeError(f"Anthropic API returned {resp.status_code}")
         except Exception as exc:
-            logger.error("Preflight: LLM not reachable — blocking cycle", error=str(exc))
+            logger.error("Preflight: LLM not reachable - blocking cycle", error=str(exc))
             return HealthResult(
                 blocking_ok=False,
                 available_silos=[],
@@ -257,7 +257,7 @@ def run_preflight_checks(
         with httpx.Client(timeout=5.0) as client:
             client.get(f"{_social_url}/health")
     except Exception as exc:
-        logger.error("Preflight: Holus Social API unreachable — blocking cycle", error=str(exc))
+        logger.error("Preflight: Holus Social API unreachable - blocking cycle", error=str(exc))
         return HealthResult(
             blocking_ok=False,
             available_silos=[],
@@ -295,7 +295,7 @@ def run_preflight_checks(
         with _trajectory.open("a", encoding="utf-8"):
             pass
     except OSError as exc:
-        logger.error("Preflight: trajectory log not writable — blocking cycle", error=str(exc))
+        logger.error("Preflight: trajectory log not writable - blocking cycle", error=str(exc))
         return HealthResult(
             blocking_ok=False,
             available_silos=[],
@@ -312,11 +312,11 @@ def run_preflight_checks(
             fd = open(lock_path, "w")  # noqa: SIM115
             try:
                 fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                # We got the lock — release immediately. The actual agent will re-acquire.
+                # We got the lock - release immediately. The actual agent will re-acquire.
                 fcntl.flock(fd, fcntl.LOCK_UN)
             except BlockingIOError:
                 fd.close()
-                logger.warning("Preflight: run lock held — another cycle is running")
+                logger.warning("Preflight: run lock held - another cycle is running")
                 return HealthResult(
                     blocking_ok=False,
                     available_silos=[],
@@ -349,7 +349,7 @@ def acquire_run_lock(lock_path: Path | None = None) -> Generator[object, None, N
     """Context manager for the marketing cycle run lock.
 
     Acquires an exclusive file lock on entry, releases on exit.
-    Uses OS-level ``flock`` which auto-releases if the process crashes — no
+    Uses OS-level ``flock`` which auto-releases if the process crashes - no
     stale locks.
 
     Args:

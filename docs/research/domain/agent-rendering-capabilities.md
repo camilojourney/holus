@@ -120,7 +120,7 @@ any renderer runs.
 
 ### Planning
 
-- `agents/specialists/content/idea-planner.md` decides candidate formats.
+- `agentic/agents/specialists/content/idea-planner.md` decides candidate formats.
 - `src/holus/agents/marketing/thought_pipeline.py` turns thoughts into
   channel-specific records.
 - `src/holus/agents/marketing/format_planner.py` and `idea_runner.py` support
@@ -155,7 +155,7 @@ proven file-producing image generation.
 
 - `src/holus/visual/visual_judge.py` checks file readability, dimensions, route,
   and plan presence.
-- `agents/evaluators/visual-content-judge.md` defines a richer visual rubric.
+- `agentic/agents/evaluators/visual-content-judge.md` defines a richer visual rubric.
 - `docs/research/domain/content-evaluation.md` says rendered PNGs need a
   multimodal visual judge.
 

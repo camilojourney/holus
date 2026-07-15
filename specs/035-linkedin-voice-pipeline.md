@@ -115,9 +115,9 @@ INPUT (Telegram message from Juan)
 ### New Files
 
 **Agent prompts (loaded via PromptLoader Layer 2):**
-- `agents/specialists/content/voice-writer.md` — single Opus prompt with 4 roles inline
-- `agents/specialists/content/context-builder.md` — enrichment instructions
-- `agents/specialists/content/idea-injector.md` — intake + content_pillar extraction
+- `agentic/agents/specialists/content/voice-writer.md` — single Opus prompt with 4 roles inline
+- `agentic/agents/specialists/content/context-builder.md` — enrichment instructions
+- `agentic/agents/specialists/content/idea-injector.md` — intake + content_pillar extraction
 
 **Pipeline modules:**
 - `src/holus/agents/marketing/voice_pipeline.py` — orchestrates the full flow
@@ -130,7 +130,7 @@ INPUT (Telegram message from Juan)
 
 ### Voice Writer Prompt Structure
 
-Single Opus call. System prompt loads `agents/specialists/content/voice-writer.md` via PromptLoader.
+Single Opus call. System prompt loads `agentic/agents/specialists/content/voice-writer.md` via PromptLoader.
 
 The prompt instructs Opus to produce output in 4 labeled sections:
 ```

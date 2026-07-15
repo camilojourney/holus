@@ -40,7 +40,7 @@ Observatory Dashboard (SvelteKit/Next.js, port 3000)
           ▼
   FastAPI app (src/holus/api/)
           │
-          ├── agents/AGENTS.yaml          → /api/v1/agents
+          ├── agentic/agents/AGENTS.yaml  → /api/v1/agents
           ├── .self-improvement/
           │   ├── memory/trajectory.jsonl → /api/v1/trajectory
           │   └── knowledge/current/*.md  → /api/v1/knowledge
@@ -334,11 +334,11 @@ All paths are relative to the Holus repo root and resolved at startup:
 
 | Endpoint group | Source path | Notes |
 |---|---|---|
-| /agents | `agents/AGENTS.yaml` | Parse with PyYAML |
+| /agents | `agentic/agents/AGENTS.yaml` | Parse with PyYAML |
 | /trajectory | `.self-improvement/memory/trajectory.jsonl` | Read line-by-line; one JSON object per line |
 | /evaluations | `~Projects/core/verification/eval_history.jsonl` | Absolute path via env var `EVAL_HISTORY_PATH` |
 | /content | `data/content-queue/*.yaml` | Glob all YAML files in directory |
-| /knowledge | `.self-improvement/knowledge/current/*.md` | Glob all MD files |
+| /knowledge | `agentic/memory/knowledge/current/*.md` | Glob all MD files |
 | /health | Multiple (see above) | Check file existence + kill_switch.py |
 | /metrics | Computed from trajectory + eval_history | In-memory aggregation on request |
 
@@ -431,7 +431,7 @@ The API itself is lightweight enough that no additional monitoring is needed in 
 ## Acceptance Criteria
 
 - [ ] FastAPI app starts with `just dev-api` and serves at `http://localhost:8000`
-- [ ] `GET /api/v1/agents` returns all 32 agents defined in `agents/AGENTS.yaml`
+- [ ] `GET /api/v1/agents` returns all agents defined in `agentic/agents/AGENTS.yaml`
 - [ ] `GET /api/v1/agents/{agent_id}` returns 404 for an unknown agent_id
 - [ ] `GET /api/v1/trajectory` returns paginated results with correct `total` and `has_more` fields
 - [ ] `GET /api/v1/trajectory?agent_id=marketing-strategist` filters correctly

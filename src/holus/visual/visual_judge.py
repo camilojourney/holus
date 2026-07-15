@@ -176,7 +176,9 @@ def mutate_visual_plan_for_retry(
     attempt: int,
 ) -> VisualProductionPlan:
     """Strengthen a production plan after a judge retry verdict."""
-    instruction = decision.retry_instruction or build_retry_instruction(None, plan, decision.reasons)
+    instruction = decision.retry_instruction or build_retry_instruction(
+        None, plan, decision.reasons
+    )
     return plan.model_copy(
         update={
             "plan_id": f"{plan.plan_id}__retry{attempt}",
@@ -212,8 +214,7 @@ def build_retry_instruction(
     prefix = f"Fix these gate issues: {reason_text}. " if reason_text else ""
     if mode == VisualProximityMode.WORKFLOW:
         return (
-            prefix
-            + "Make the sequence literal: five distinct stages, one visible handoff path, "
+            prefix + "Make the sequence literal: five distinct stages, one visible handoff path, "
             "one bottleneck, and one model/component inside the process."
         )
     if mode == VisualProximityMode.CHART:

@@ -251,7 +251,7 @@ Frontend is a separate directory (`observatory/frontend/`) with no shared code w
 
 - [ ] `pnpm dev` inside `observatory/frontend/` starts the dashboard on localhost:3000 without errors
 - [ ] Dashboard (`/`) loads real data from Observatory API — KPI cards are not hardcoded
-- [ ] Agent status grid shows all registered agents from `agents/AGENTS.yaml` (via API)
+- [ ] Agent status grid shows all registered agents from `agentic/agents/AGENTS.yaml` (via API)
 - [ ] `/agents/[id]` renders per-agent performance chart and cycle history table
 - [ ] TrajectoryTimeline connects via SSE and displays new events within 1s of push
 - [ ] `/evaluations` heatmap renders without error when eval data is present

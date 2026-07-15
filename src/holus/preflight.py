@@ -16,13 +16,13 @@ from pathlib import Path
 import yaml
 
 # ---------------------------------------------------------------------------
-# Constants — must match agent.py paths
+# Constants - must match agent.py paths
 # ---------------------------------------------------------------------------
 
 _BRAND_PATH = Path("config/brand.yaml")
 _PRODUCTS_PATH = Path("config/products.yaml")
-_KNOWLEDGE_DIR = Path(".self-improvement/knowledge/current")
-_MEMORY_PATH = Path(".self-improvement/MEMORY.md")
+_KNOWLEDGE_DIR = Path("agentic/memory/knowledge/current")
+_MEMORY_PATH = Path("agentic/memory/MEMORY.md")
 _QUEUE_DIR = Path("data/content-queue")
 _DATA_DIR = Path("data")
 _TRAJECTORY_DIR = Path(".self-improvement/memory")
@@ -143,7 +143,7 @@ def check_brand_yaml() -> CheckResult:
                 "config/brand.yaml",
                 passed=False,
                 detail="Parsed but not a valid YAML mapping",
-                fix="Check the file format — should be a YAML dict",
+                fix="Check the file format - should be a YAML dict",
             )
         sections = len(data)
         todos = _count_todos(_BRAND_PATH)
@@ -178,7 +178,7 @@ def check_products_yaml() -> CheckResult:
                 "config/products.yaml",
                 passed=False,
                 detail="Parsed but not a valid YAML mapping",
-                fix="Check the file format — should be a YAML dict",
+                fix="Check the file format - should be a YAML dict",
             )
         products = data.get("products", data)
         count = len(products) if isinstance(products, dict) else 0

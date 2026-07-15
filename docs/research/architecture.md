@@ -309,7 +309,7 @@ Judge 3 (optional): Domain-Specific (for invoz/technical content only)
 
 [VERIFIED] Reflexion (Shinn et al., NeurIPS 2023) converts environment feedback into linguistic self-reflections stored as episodic memory. The agent uses these reflections as context in subsequent attempts. No weight changes required -- pure prompt engineering with memory. Demonstrated gains on multi-hop QA and code generation tasks.
 
-For Holus: after each content cycle, the marketing-strategist writes a 3-sentence reflection on what worked and what didn't, stored in `.self-improvement/MEMORY.md`. This is already conceptually present in the weekly learning loop -- it needs formalization and consistent logging. [Source: arXiv:2303.11366]
+For Holus: after each content cycle, the marketing-strategist writes a 3-sentence reflection on what worked and what didn't, stored in `agentic/memory/MEMORY.md`. This is already conceptually present in the weekly learning loop -- it needs formalization and consistent logging. [Source: arXiv:2303.11366]
 
 #### 4.2 SiriuS -- Experience Library Pattern
 
@@ -903,7 +903,7 @@ Holus runs as a single system but learns independently per platform. Instagram l
   - TikTok `audience_fit` rubric emphasizes hook strength (first 3 seconds), visual pacing, trend alignment
   - Instagram `audience_fit` rubric emphasizes save-worthiness, carousel flow, visual hierarchy
 - **Reward weights:** The engagement signal weights (Mechanism 2) are already defined per-platform in the table above.
-- **Performance patterns:** Learned lessons about what works (stored in `.self-improvement/MEMORY.md` and Mem0) are tagged by platform. When the marketing-strategist reasons about LinkedIn strategy, it retrieves only LinkedIn patterns.
+- **Performance patterns:** Learned lessons about what works (stored in `agentic/memory/MEMORY.md` and Mem0) are tagged by platform. When the marketing-strategist reasons about LinkedIn strategy, it retrieves only LinkedIn patterns.
 
 ### What Crosses Platform Boundaries (Carefully)
 

@@ -44,7 +44,7 @@ OBSERVE:
   → social-media-mcp: get_analytics(days=7) → AnalyticsReport
   → social-media-mcp: get_top_posts(limit=5) → list[Post]
   → Read config/products.yaml → list[Product]
-  → Read .self-improvement/MEMORY.md → learned patterns
+  → Read agentic/memory/MEMORY.md → learned patterns
 
 REASON (Claude Opus):
   → Analyze: which product has news? which content type performs best?
