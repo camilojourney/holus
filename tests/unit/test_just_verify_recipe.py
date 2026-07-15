@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 JUSTFILE = REPO_ROOT / "justfile"
 JUST_BIN = shutil.which("just")
@@ -32,7 +31,7 @@ def _write_verifier(path: Path, marker: str, exit_code: int = 0) -> None:
     path.chmod(path.stat().st_mode | stat.S_IXUSR)
 
 
-def _run_verify(tmp_path: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+def _run_verify(tmp_path: Path, env: dict[str, str | None]) -> subprocess.CompletedProcess[str]:
     python_bin = tmp_path / "python-bin"
     python_bin.mkdir(exist_ok=True)
     python_link = python_bin / "python3"
@@ -45,10 +44,21 @@ def _run_verify(tmp_path: Path, env: dict[str, str]) -> subprocess.CompletedProc
         "HOME": str(tmp_path / "home"),
         "PATH": os.pathsep.join(path_parts),
     }
-    run_env.update(env)
+    for key, value in env.items():
+        if value is None:
+            run_env.pop(key, None)
+        else:
+            run_env[key] = value
     run_env["PATH"] = os.pathsep.join(path_parts)
     return subprocess.run(
-        [JUST_BIN or "just", "--justfile", str(JUSTFILE), "--working-directory", str(tmp_path), "verify"],
+        [
+            JUST_BIN or "just",
+            "--justfile",
+            str(JUSTFILE),
+            "--working-directory",
+            str(tmp_path),
+            "verify",
+        ],
         text=True,
         capture_output=True,
         env=run_env,
@@ -66,7 +76,16 @@ def test_verify_prefers_explicit_repo_verify_path(tmp_path: Path) -> None:
     explicit = tmp_path / "explicit" / "repo_verify.py"
     path_bin = tmp_path / "bin" / "repo_verify.py"
     fleet = tmp_path / "fleet" / "system" / "shared" / "scripts" / "repo_verify.py"
-    home = tmp_path / "home" / "github" / "fleet-system" / "system" / "shared" / "scripts" / "repo_verify.py"
+    home = (
+        tmp_path
+        / "home"
+        / "github"
+        / "fleet-system"
+        / "system"
+        / "shared"
+        / "scripts"
+        / "repo_verify.py"
+    )
     _write_verifier(explicit, "explicit")
     _write_verifier(path_bin, "path")
     _write_verifier(fleet, "fleet")
@@ -90,7 +109,16 @@ def test_verify_prefers_explicit_repo_verify_path(tmp_path: Path) -> None:
 def test_verify_uses_path_before_fleet_root_and_home(tmp_path: Path) -> None:
     path_bin = tmp_path / "bin" / "repo_verify.py"
     fleet = tmp_path / "fleet" / "system" / "shared" / "scripts" / "repo_verify.py"
-    home = tmp_path / "home" / "github" / "fleet-system" / "system" / "shared" / "scripts" / "repo_verify.py"
+    home = (
+        tmp_path
+        / "home"
+        / "github"
+        / "fleet-system"
+        / "system"
+        / "shared"
+        / "scripts"
+        / "repo_verify.py"
+    )
     _write_verifier(path_bin, "path")
     _write_verifier(fleet, "fleet")
     _write_verifier(home, "home")
@@ -110,7 +138,16 @@ def test_verify_uses_path_before_fleet_root_and_home(tmp_path: Path) -> None:
 
 def test_verify_uses_fleet_root_before_home(tmp_path: Path) -> None:
     fleet = tmp_path / "fleet" / "system" / "shared" / "scripts" / "repo_verify.py"
-    home = tmp_path / "home" / "github" / "fleet-system" / "system" / "shared" / "scripts" / "repo_verify.py"
+    home = (
+        tmp_path
+        / "home"
+        / "github"
+        / "fleet-system"
+        / "system"
+        / "shared"
+        / "scripts"
+        / "repo_verify.py"
+    )
     _write_verifier(fleet, "fleet")
     _write_verifier(home, "home")
 
@@ -128,7 +165,16 @@ def test_verify_uses_fleet_root_before_home(tmp_path: Path) -> None:
 
 
 def test_verify_uses_home_fleet_system_last(tmp_path: Path) -> None:
-    home = tmp_path / "home" / "github" / "fleet-system" / "system" / "shared" / "scripts" / "repo_verify.py"
+    home = (
+        tmp_path
+        / "home"
+        / "github"
+        / "fleet-system"
+        / "system"
+        / "shared"
+        / "scripts"
+        / "repo_verify.py"
+    )
     _write_verifier(home, "home")
 
     result = _run_verify(tmp_path, {"PATH": ""})
@@ -144,3 +190,13 @@ def test_verify_fails_with_override_guidance_when_verifier_is_missing(tmp_path: 
     assert "Set REPO_VERIFY_PATH=/path/to/repo_verify.py" in result.stderr
     assert "add executable repo_verify.py to PATH" in result.stderr
     assert "set FLEET_SYSTEM_ROOT=/path/to/fleet-system" in result.stderr
+
+
+def test_verify_fails_with_override_guidance_when_home_is_unset(tmp_path: Path) -> None:
+    result = _run_verify(tmp_path, {"HOME": None, "PATH": ""})
+
+    assert result.returncode == 127
+    assert "Set REPO_VERIFY_PATH=/path/to/repo_verify.py" in result.stderr
+    assert "add executable repo_verify.py to PATH" in result.stderr
+    assert "set FLEET_SYSTEM_ROOT=/path/to/fleet-system" in result.stderr
+    assert "unbound variable" not in result.stderr

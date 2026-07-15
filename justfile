@@ -426,7 +426,7 @@ verify:
             repo_verify="$candidate"; \
         fi; \
     fi; \
-    if [ -z "$repo_verify" ]; then \
+    if [ -z "$repo_verify" ] && [ -n "${HOME:-}" ]; then \
         candidate="${HOME}/github/fleet-system/system/shared/scripts/repo_verify.py"; \
         if [ -f "$candidate" ]; then \
             repo_verify="$candidate"; \
