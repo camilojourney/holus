@@ -416,9 +416,24 @@ rotate-logs:
 
 # Verify repo integrity before committing; recognized warnings pass, missing verifier fails
 verify:
-    @repo_verify="/Users/mini/github/fleet-system/system/shared/scripts/repo_verify.py"; \
+    @repo_verify="${REPO_VERIFY_PATH:-}"; \
+    if [ -z "$repo_verify" ] && command -v repo_verify.py >/dev/null 2>&1; then \
+        repo_verify="$(command -v repo_verify.py)"; \
+    fi; \
+    if [ -z "$repo_verify" ] && [ -n "${FLEET_SYSTEM_ROOT:-}" ]; then \
+        candidate="${FLEET_SYSTEM_ROOT}/system/shared/scripts/repo_verify.py"; \
+        if [ -f "$candidate" ]; then \
+            repo_verify="$candidate"; \
+        fi; \
+    fi; \
+    if [ -z "$repo_verify" ]; then \
+        candidate="${HOME}/github/fleet-system/system/shared/scripts/repo_verify.py"; \
+        if [ -f "$candidate" ]; then \
+            repo_verify="$candidate"; \
+        fi; \
+    fi; \
     if [ ! -f "$repo_verify" ]; then \
-        echo "repo_verify.py not found at $repo_verify" >&2; \
+        echo "repo_verify.py not found. Set REPO_VERIFY_PATH=/path/to/repo_verify.py, add executable repo_verify.py to PATH, or set FLEET_SYSTEM_ROOT=/path/to/fleet-system." >&2; \
         exit 127; \
     fi; \
     output=$(python3 "$repo_verify" --repo holus --skip tests); \
