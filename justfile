@@ -421,9 +421,12 @@ verify:
         echo "repo_verify.py not found at $repo_verify" >&2; \
         exit 127; \
     fi; \
-    python3 "$repo_verify" --repo holus --skip tests; \
+    output=$(python3 "$repo_verify" --repo holus --skip tests); \
     status=$?; \
-    if [ "$status" -eq 2 ]; then \
+    if [ -n "$output" ]; then \
+        printf '%s\n' "$output"; \
+    fi; \
+    if [ "$status" -eq 2 ] && printf '%s\n' "$output" | grep -q '^RESULT: PASS WITH WARNINGS'; then \
         exit 0; \
     fi; \
     exit "$status"
