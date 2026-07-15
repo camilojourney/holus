@@ -83,12 +83,12 @@ async def reject_research_candidate(candidate_id: str) -> dict[str, Any]:
 def _digest_path(digest_date: date | None) -> Path | None:
     research_dir = _research_dir(_research_config())
     if digest_date is not None:
-        candidates = sorted(research_dir.glob(f"digest-{digest_date.isoformat()}*.md"))
-        return candidates[-1] if candidates else None
+        candidates = list(research_dir.glob(f"digest-{digest_date.isoformat()}*.md"))
+        return max(candidates, key=lambda path: path.stat().st_mtime_ns) if candidates else None
     if not research_dir.exists():
         return None
-    candidates = sorted(research_dir.glob("digest-*.md"))
-    return candidates[-1] if candidates else None
+    candidates = list(research_dir.glob("digest-*.md"))
+    return max(candidates, key=lambda path: path.stat().st_mtime_ns) if candidates else None
 
 
 def _research_config() -> ResearchRadarConfig:

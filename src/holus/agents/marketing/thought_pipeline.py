@@ -445,10 +445,10 @@ class ThoughtContentPipeline:
 
         group_id = uuid.uuid4().hex
         records = [self._create_queue_record(source, channel, group_id) for channel in channels]
+        package = self._build_package(source, records, source_intent=source_intent)
         if write_records:
             for record in records:
                 self.write_queue_record(record)
-        package = self._build_package(source, records, source_intent=source_intent)
         return ContentSet(
             group_id=group_id,
             thought=source.extracted_text,
@@ -502,6 +502,10 @@ class ThoughtContentPipeline:
             record.setdefault("quality", {})
             record["quality"]["platform_fit"] = _platform_fit(record)
         platform_fit_summary = _platform_fit_summary(records)
+        platform_fit_ready = (
+            platform_fit_summary["failure_count"] == 0
+            and platform_fit_summary["missing_count"] == 0
+        )
         source_extract_char_count = len(_clean_thought(source.extracted_text))
         source_evidence: dict[str, Any] = {
             "source_type": source.source_type,
@@ -528,8 +532,15 @@ class ThoughtContentPipeline:
             },
             {
                 "artifact": "quality_evaluation.platform_fit_summary",
-                "status": "PASS",
-                "evidence": "All variants fit platform bounds.",
+                "status": "PASS" if platform_fit_ready else "FAIL",
+                "evidence": (
+                    "All variants fit platform bounds."
+                    if platform_fit_ready
+                    else (
+                        f"{platform_fit_summary['failure_count']} failed and "
+                        f"{platform_fit_summary['missing_count']} missing platform-fit evaluations."
+                    )
+                ),
             },
             {
                 "artifact": "approval_workflow.publish_gate",
@@ -553,7 +564,7 @@ class ThoughtContentPipeline:
             },
             "channel_plan": channel_plan,
             "quality_evaluation": {
-                "ready_for_human_review": True,
+                "ready_for_human_review": platform_fit_ready,
                 "success_criteria": [
                     "clear source context",
                     "platform-native transformation",
@@ -1596,15 +1607,16 @@ def _platform_fit(record: dict[str, Any]) -> dict[str, Any]:
 
 
 def _platform_fit_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
-    failed = [
-        str(record.get("piece_id"))
-        for record in records
-        if (record.get("quality") or {}).get("platform_fit", {}).get("verdict") != "PASS"
-    ]
     missing = [
         str(record.get("piece_id"))
         for record in records
         if not (record.get("quality") or {}).get("platform_fit")
+    ]
+    failed = [
+        str(record.get("piece_id"))
+        for record in records
+        if (platform_fit := (record.get("quality") or {}).get("platform_fit"))
+        and platform_fit.get("verdict") != "PASS"
     ]
     return {
         "variant_count": len(records),

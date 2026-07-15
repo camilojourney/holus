@@ -1,6 +1,9 @@
 """Tests for Holus Thought Studio deterministic pipeline helpers."""
 
+from pathlib import Path
+
 import pytest
+import yaml
 
 from holus.agents.marketing.creative_strategy import (
     choose_creative_strategy,
@@ -46,6 +49,52 @@ Agy 20
 Deepseek 20 (roughly, I am just testing it)
 Cursor 60
 """
+
+
+@pytest.mark.asyncio
+async def test_persisted_records_include_package_metadata(tmp_path: Path) -> None:
+    pipeline = ThoughtContentPipeline(
+        queue_dir=tmp_path / "queue",
+        rendered_dir=tmp_path / "rendered",
+    )
+
+    content_set = await pipeline.create_content_set(
+        thought=AI_WORKFLOW_THOUGHT,
+        channels=["linkedin_text"],
+    )
+
+    [record] = content_set.records
+    persisted = yaml.safe_load(
+        (tmp_path / "queue" / f"{record['piece_id']}.yaml").read_text(encoding="utf-8")
+    )
+    assert persisted["platform_job_plan"] == record["platform_job_plan"]
+    assert persisted["quality"]["platform_fit"] == record["quality"]["platform_fit"]
+
+
+@pytest.mark.asyncio
+async def test_failed_platform_fit_blocks_human_review(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "holus.agents.marketing.thought_pipeline._platform_fit",
+        lambda _record: {"verdict": "REVIEW"},
+    )
+    pipeline = ThoughtContentPipeline(
+        queue_dir=tmp_path / "queue",
+        rendered_dir=tmp_path / "rendered",
+    )
+
+    content_set = await pipeline.create_content_set(
+        thought=AI_WORKFLOW_THOUGHT,
+        channels=["linkedin_text"],
+        write_records=False,
+    )
+
+    assert content_set.package["quality_evaluation"]["ready_for_human_review"] is False
+    checklist = content_set.package["approval_workflow"]["review_checklist"]
+    platform_fit_item = next(
+        item for item in checklist if item["artifact"] == "quality_evaluation.platform_fit_summary"
+    )
+    assert platform_fit_item["status"] == "FAIL"
+    assert "1 failed" in platform_fit_item["evidence"]
 
 
 def test_extracts_ai_workflow_essence() -> None:

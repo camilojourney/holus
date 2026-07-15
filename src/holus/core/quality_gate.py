@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
 DEFAULT_PASS_THRESHOLD = 7.0
+DEFAULT_HARD_FAIL_THRESHOLD = 4.0
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,7 @@ class QualityGateResult:
     scores: list[float] = field(default_factory=list)
     pass_count: int = 0
     hard_fail_count: int = 0
+    review_count: int = 0
 
 
 def enforce_quality_gate(
@@ -32,6 +34,8 @@ def enforce_quality_gate(
     accepted: list[dict[str, Any]] = []
     discarded: list[dict[str, Any]] = []
     scores: list[float] = []
+    hard_fail_count = 0
+    review_count = 0
 
     for piece in pieces:
         score = float(scorer(piece))
@@ -40,11 +44,16 @@ def enforce_quality_gate(
             accepted.append(piece)
         else:
             discarded.append(piece)
+            if score < DEFAULT_HARD_FAIL_THRESHOLD:
+                hard_fail_count += 1
+            else:
+                review_count += 1
 
     return QualityGateResult(
         accepted_pieces=accepted,
         discarded_pieces=discarded,
         scores=scores,
         pass_count=len(accepted),
-        hard_fail_count=len(discarded),
+        hard_fail_count=hard_fail_count,
+        review_count=review_count,
     )

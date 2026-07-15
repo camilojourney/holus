@@ -109,28 +109,47 @@ def validate_public_http_url(value: str) -> str:
     if not split.hostname:
         msg = "URL host is required"
         raise ValueError(msg)
-    _validate_public_host(split.hostname)
     return value
 
 
 async def safe_get(
     url: str,
     *,
-    client: httpx.AsyncClient | None = None,
+    transport: httpx.AsyncBaseTransport | None = None,
     timeout: float = 30.0,
     headers: dict[str, str] | None = None,
 ) -> httpx.Response:
     """Fetch a public URL while validating every redirect target."""
     current_url = validate_public_http_url(url)
-    owns_client = client is None
-    active_client = client or httpx.AsyncClient(timeout=timeout)
+    test_client = (
+        httpx.AsyncClient(transport=transport, timeout=timeout, trust_env=False)
+        if transport is not None
+        else None
+    )
     try:
         for _ in range(MAX_SAFE_REDIRECTS + 1):
-            response = await active_client.get(
-                current_url,
-                follow_redirects=False,
-                headers=headers,
-            )
+            pinned_url, host_header, sni_hostname = _pin_public_url(current_url)
+            request_headers = dict(headers or {})
+            request_headers["host"] = host_header
+            if test_client is not None:
+                response = await test_client.get(
+                    pinned_url,
+                    follow_redirects=False,
+                    headers=request_headers,
+                    extensions={"sni_hostname": sni_hostname},
+                )
+            else:
+                async with httpx.AsyncClient(
+                    transport=httpx.AsyncHTTPTransport(),
+                    timeout=timeout,
+                    trust_env=False,
+                ) as active_client:
+                    response = await active_client.get(
+                        pinned_url,
+                        follow_redirects=False,
+                        headers=request_headers,
+                        extensions={"sni_hostname": sni_hostname},
+                    )
             if response.status_code not in {301, 302, 303, 307, 308}:
                 response.raise_for_status()
                 return response
@@ -142,11 +161,26 @@ async def safe_get(
         msg = f"too many redirects fetching {url}"
         raise httpx.TooManyRedirects(msg)
     finally:
-        if owns_client:
-            await active_client.aclose()
+        if test_client is not None:
+            await test_client.aclose()
 
 
-def _validate_public_host(hostname: str) -> None:
+def _pin_public_url(value: str) -> tuple[str, str, bytes]:
+    split = urlsplit(value)
+    hostname = split.hostname
+    if hostname is None:
+        raise ValueError("URL host is required")
+    address = _resolve_public_addresses(hostname)[0]
+    address_text = f"[{address}]" if address.version == 6 else str(address)
+    port = split.port
+    netloc = f"{address_text}:{port}" if port is not None else address_text
+    default_port = 443 if split.scheme.lower() == "https" else 80
+    host_header = hostname if port in {None, default_port} else f"{hostname}:{port}"
+    pinned_url = urlunsplit((split.scheme, netloc, split.path, split.query, split.fragment))
+    return pinned_url, host_header, hostname.encode("ascii")
+
+
+def _resolve_public_addresses(hostname: str) -> list[ipaddress.IPv4Address | ipaddress.IPv6Address]:
     try:
         addresses = [ipaddress.ip_address(hostname)]
     except ValueError:
@@ -180,3 +214,4 @@ def _validate_public_host(hostname: str) -> None:
     if blocked:
         msg = f"URL host resolves to a non-public address: {hostname}"
         raise ValueError(msg)
+    return addresses

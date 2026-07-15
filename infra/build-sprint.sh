@@ -39,7 +39,7 @@ json.dump({
     'started_at': datetime.now(timezone.utc).isoformat(),
     'mode': 'loop',
     'interval_minutes': 2
-}, open('.self-improvement/sprint-state.json', 'w'), indent=2)
+}, open('agentic/sprint-state.json', 'w'), indent=2)
 "
 
 # Clean up kill file from previous runs

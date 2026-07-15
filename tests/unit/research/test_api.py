@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 
@@ -123,3 +124,27 @@ async def test_approve_candidate_invokes_pipeline_and_no_auto_publish(
     # Verify no auto publish occurred
     mock_publish.assert_not_called()
     mock_schedule.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_waiting_approval_lock_does_not_block_event_loop(mock_candidate_store) -> None:
+    store, _candidates_dir, _queue_dir = mock_candidate_store
+    entered = asyncio.Event()
+    release = asyncio.Event()
+
+    async def create_content_set(**_kwargs):
+        entered.set()
+        await release.wait()
+        result = MagicMock()
+        result.group_id = "group-123"
+        return result
+
+    store._pipeline_factory = lambda: MagicMock(create_content_set=create_content_set)
+    first = asyncio.create_task(store.approve("arxiv-123"))
+    await entered.wait()
+    second = asyncio.create_task(store.approve("arxiv-123"))
+    await asyncio.sleep(0.01)
+
+    assert second.done() is False
+    release.set()
+    await asyncio.gather(first, second)

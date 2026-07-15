@@ -10,7 +10,7 @@
 #   - .self-improvement/memory/trajectory.jsonl  (full history of every cycle)
 #   - agentic/memory/MEMORY.md        (accumulated learnings)
 #   - .self-improvement/reports/builder/  (detailed cycle reports)
-#   - .self-improvement/sprint-state.json (cycle counter, auto-stop)
+#   - agentic/sprint-state.json         (cycle counter, auto-stop)
 #
 # Usage:
 #   just build-cycle           # Run one cycle
@@ -34,7 +34,7 @@ unset CLAUDECODE 2>/dev/null || true
 LOG_DIR="$HOLUS_DIR/logs"
 mkdir -p "$LOG_DIR"
 
-STATE_FILE="$HOLUS_DIR/.self-improvement/sprint-state.json"
+STATE_FILE="$HOLUS_DIR/agentic/sprint-state.json"
 KILL_FILE="/tmp/holus-stop"
 LOCK_DIR="/tmp/holus-builder-cycle.lock"
 

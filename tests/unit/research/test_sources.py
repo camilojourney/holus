@@ -89,15 +89,10 @@ async def test_rss_adapter_parses_atom_and_defaults_missing_published_date() -> 
         <summary>Second summary</summary>
       </entry>
     </feed>"""
-    client = httpx.AsyncClient(
-        transport=httpx.MockTransport(lambda _request: httpx.Response(200, text=payload))
+    transport = httpx.MockTransport(lambda _request: httpx.Response(200, text=payload))
+    items = await RssAdapter(feeds=["https://example.com/feed"], transport=transport).fetch(
+        window_days=7
     )
-    try:
-        items = await RssAdapter(feeds=["https://example.com/feed"], client=client).fetch(
-            window_days=7
-        )
-    finally:
-        await client.aclose()
 
     assert len(items) == 2
     assert {item.source for item in items} == {"rss"}
@@ -124,9 +119,85 @@ async def test_safe_get_rejects_loopback_before_request() -> None:
     async def handler(_request: httpx.Request) -> httpx.Response:
         raise AssertionError("loopback URL should not be requested")
 
-    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-    try:
-        with pytest.raises(ValueError, match="non-public"):
-            await safe_get("http://127.0.0.1/admin", client=client)
-    finally:
-        await client.aclose()
+    transport = httpx.MockTransport(handler)
+    with pytest.raises(ValueError, match="non-public"):
+        await safe_get("http://127.0.0.1/admin", transport=transport)
+
+
+@pytest.mark.asyncio
+async def test_safe_get_pins_request_to_validated_address(monkeypatch: pytest.MonkeyPatch) -> None:
+    resolutions = 0
+
+    def resolve(*_args: object, **_kwargs: object) -> list[tuple[object, ...]]:
+        nonlocal resolutions
+        resolutions += 1
+        address = "93.184.216.34" if resolutions == 1 else "127.0.0.1"
+        return [(2, 1, 6, "", (address, 0))]
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.host == "93.184.216.34"
+        assert request.headers["host"] == "example.com"
+        return httpx.Response(200)
+
+    monkeypatch.setattr("holus.research.sources.base.socket.getaddrinfo", resolve)
+    transport = httpx.MockTransport(handler)
+    await safe_get("https://example.com/feed", transport=transport)
+
+    assert resolutions == 1
+
+
+@pytest.mark.asyncio
+async def test_safe_get_isolates_redirect_hosts_and_bypasses_environment_proxy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transports: list[httpx.MockTransport] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if request.headers["host"] == "first.example":
+            return httpx.Response(302, headers={"location": "https://second.example/final"})
+        assert request.headers["host"] == "second.example"
+        return httpx.Response(200)
+
+    def transport_factory() -> httpx.MockTransport:
+        transport = httpx.MockTransport(handler)
+        transports.append(transport)
+        return transport
+
+    monkeypatch.setenv("HTTPS_PROXY", "http://127.0.0.1:1")
+    monkeypatch.setattr(
+        "holus.research.sources.base.socket.getaddrinfo",
+        lambda *_args, **_kwargs: [(2, 1, 6, "", ("93.184.216.34", 0))],
+    )
+    monkeypatch.setattr(
+        "holus.research.sources.base.httpx.AsyncHTTPTransport",
+        transport_factory,
+    )
+
+    response = await safe_get("https://first.example/start")
+
+    assert response.status_code == 200
+    assert len(transports) == 2
+
+
+@pytest.mark.asyncio
+async def test_rss_adapter_accepts_successful_empty_feed_when_another_feed_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    empty_feed = "<?xml version='1.0'?><rss><channel></channel></rss>"
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if request.headers["host"] == "healthy.example":
+            return httpx.Response(200, text=empty_feed)
+        return httpx.Response(503)
+
+    monkeypatch.setattr(
+        "holus.research.sources.base.socket.getaddrinfo",
+        lambda *_args, **_kwargs: [(2, 1, 6, "", ("93.184.216.34", 0))],
+    )
+    transport = httpx.MockTransport(handler)
+    items = await RssAdapter(
+        feeds=["https://healthy.example/feed", "https://failed.example/feed"],
+        transport=transport,
+    ).fetch(window_days=7)
+
+    assert items == []

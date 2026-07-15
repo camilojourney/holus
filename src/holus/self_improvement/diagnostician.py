@@ -30,9 +30,9 @@ REPO_ROOT = Path(__file__).parents[3]
 TRAJECTORY_PATH = REPO_ROOT / ".self-improvement" / "memory" / "trajectory.jsonl"
 CONTENT_QUEUE = REPO_ROOT / "data" / "content-queue"
 REPORT_DIR = REPO_ROOT / ".self-improvement" / "reports" / "diagnostic"
-AGENTS_YAML = REPO_ROOT / "agents" / "AGENTS.yaml"
+AGENTS_YAML = REPO_ROOT / "agentic" / "agents" / "AGENTS.yaml"
 KNOWLEDGE_DIR = REPO_ROOT / ".self-improvement" / "knowledge" / "current"
-NEXT_MD_PATH = REPO_ROOT / ".self-improvement" / "NEXT.md"
+NEXT_MD_PATH = REPO_ROOT / "agentic" / "memory" / "NEXT.md"
 
 # Dimension score thresholds
 DIMENSION_FAIL_THRESHOLD = 0.6

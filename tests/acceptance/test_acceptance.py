@@ -548,6 +548,17 @@ class TestSpec031LinkedInPipeline:
         assert len(result.discarded_pieces) == 1
         assert result.hard_fail_count == 1
 
+    def test_quality_gate_distinguishes_review_scores_from_hard_failures(self):
+        from holus.core.quality_gate import enforce_quality_gate
+
+        piece = {"text": "Content requiring review"}
+
+        result = enforce_quality_gate([piece], scorer=lambda _piece: 5.0)
+
+        assert result.discarded_pieces == [piece]
+        assert result.hard_fail_count == 0
+        assert result.review_count == 1
+
     # -- AC-022: Quality gate accepts content scoring 7.0 or above -----------
 
     def test_ac022_quality_gate_accepts_high_score(self):

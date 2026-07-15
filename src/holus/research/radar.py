@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import fcntl
 import json
 import uuid
 from collections.abc import Sequence  # noqa: TC003 - used in public runtime signature.
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -87,6 +89,24 @@ async def run_radar(
     """Fetch, dedupe, score, and emit research outputs."""
     root = Path(repo_root)
     config = load_config(root)
+    async with _radar_lock(config.research_dir):
+        return await _run_radar_unlocked(
+            root=root,
+            config=config,
+            source_adapters=source_adapters,
+            scorer=scorer,
+            run_date=run_date,
+        )
+
+
+async def _run_radar_unlocked(
+    *,
+    root: Path,
+    config: ResearchRadarConfig,
+    source_adapters: Sequence[SourceAdapter] | None,
+    scorer: ScoreCallable | AsyncScoreCallable | None,
+    run_date: date | None,
+) -> RadarRunReport:
     started_at = datetime.now(UTC)
     run_id = uuid.uuid4().hex
     digest_date = run_date or started_at.date()
@@ -201,6 +221,18 @@ async def run_radar(
     )
 
 
+@asynccontextmanager
+async def _radar_lock(research_dir: Path) -> Any:
+    research_dir.mkdir(parents=True, exist_ok=True)
+    lock_path = research_dir / ".radar.lock"
+    with lock_path.open("w", encoding="utf-8") as lock_file:
+        await asyncio.to_thread(fcntl.flock, lock_file.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
 def record_outcome(
     item_id: str,
     signal: dict[str, Any],
@@ -302,8 +334,8 @@ def _write_or_preserve_digest(
 
 
 def _latest_digest_for_date(research_dir: Path, digest_date: date) -> Path | None:
-    candidates = sorted(research_dir.glob(f"digest-{digest_date.isoformat()}*.md"))
-    return candidates[-1] if candidates else None
+    candidates = list(research_dir.glob(f"digest-{digest_date.isoformat()}*.md"))
+    return max(candidates, key=lambda path: path.stat().st_mtime_ns) if candidates else None
 
 
 async def _score_with_retries(

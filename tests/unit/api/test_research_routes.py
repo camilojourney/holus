@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -126,6 +127,25 @@ def test_digest_route_returns_latest_digest(
 
     assert response.status_code == 200
     assert response.json()["markdown"] == "# Digest\n"
+
+
+def test_digest_route_uses_modification_time_not_random_suffix(
+    client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    research_dir = tmp_path / "data" / "research"
+    research_dir.mkdir(parents=True)
+    newer = research_dir / "digest-2026-06-25-aaa.md"
+    older = research_dir / "digest-2026-06-25-zzz.md"
+    newer.write_text("# Newer\n", encoding="utf-8")
+    older.write_text("# Older\n", encoding="utf-8")
+    os.utime(older, ns=(1, 1))
+    os.utime(newer, ns=(2, 2))
+    monkeypatch.setattr("holus.api.routes.research.RESEARCH_DIR", research_dir)
+
+    response = client.get("/api/v1/research/digest")
+
+    assert response.status_code == 200
+    assert response.json()["markdown"] == "# Newer\n"
 
 
 def test_approve_candidate_reuses_thought_pipeline_without_publish(

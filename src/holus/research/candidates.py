@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import fcntl
 from collections.abc import Callable
-from contextlib import contextmanager
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol, cast
@@ -50,6 +51,9 @@ class CandidateStore:
         self._pipeline_factory = pipeline_factory
 
     def create(self, item: RawResearchItem, score: ResearchScore) -> ResearchCandidate:
+        path = self._path(item.item_id)
+        if path.exists():
+            return self.get(item.item_id)
         candidate = ResearchCandidate(
             candidate_id=item.item_id,
             item=item,
@@ -90,7 +94,7 @@ class CandidateStore:
         return candidates
 
     async def approve(self, candidate_id: str) -> ResearchCandidate:
-        with self._approval_lock(candidate_id):
+        async with self._approval_lock(candidate_id):
             candidate = self.get(candidate_id)
             if candidate.status == "approved" and candidate.approved_group_id:
                 return candidate
@@ -139,12 +143,12 @@ class CandidateStore:
     def _path(self, candidate_id: str) -> Path:
         return self.directory / f"{candidate_id}.yaml"
 
-    @contextmanager
-    def _approval_lock(self, candidate_id: str) -> Any:
+    @asynccontextmanager
+    async def _approval_lock(self, candidate_id: str) -> Any:
         self.directory.mkdir(parents=True, exist_ok=True)
         lock_path = self.directory / f"{candidate_id}.approval.lock"
         with lock_path.open("w", encoding="utf-8") as lock_file:
-            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            await asyncio.to_thread(fcntl.flock, lock_file.fileno(), fcntl.LOCK_EX)
             try:
                 yield
             finally:

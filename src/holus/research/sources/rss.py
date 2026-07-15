@@ -31,32 +31,34 @@ class RssAdapter:
         feeds: list[str],
         per_feed_limit: int = 10,
         max_concurrency: int = 4,
-        client: httpx.AsyncClient | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self.feeds = feeds
         self.per_feed_limit = per_feed_limit
         self.max_concurrency = max(1, max_concurrency)
-        self._client = client
+        self._transport = transport
 
     async def fetch(self, window_days: int) -> list[RawResearchItem]:
         semaphore = asyncio.Semaphore(self.max_concurrency)
 
-        async def fetch_one(feed_url: str) -> tuple[list[RawResearchItem], str | None]:
+        async def fetch_one(feed_url: str) -> tuple[list[RawResearchItem], str | None, bool]:
             try:
                 async with semaphore:
-                    response = await safe_get(feed_url, client=self._client)
-                return self._parse_feed(response.text, feed_url, window_days), None
+                    response = await safe_get(feed_url, transport=self._transport)
+                return self._parse_feed(response.text, feed_url, window_days), None, True
             except Exception as exc:
-                return [], f"{feed_url}: {exc}"
+                return [], f"{feed_url}: {exc}", False
 
         results = await asyncio.gather(*(fetch_one(feed_url) for feed_url in self.feeds))
         items: list[RawResearchItem] = []
         errors: list[str] = []
-        for fetched, error in results:
+        successful_fetches = 0
+        for fetched, error, succeeded in results:
             items.extend(fetched)
+            successful_fetches += int(succeeded)
             if error:
                 errors.append(error)
-        if errors and not items:
+        if errors and successful_fetches == 0:
             raise RuntimeError("; ".join(errors))
         return items
 

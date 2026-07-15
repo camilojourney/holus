@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import json
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import yaml
 
@@ -63,9 +64,19 @@ class ResearchCurator:
     async def score(self, item: RawResearchItem) -> ResearchScore:
         if self._scorer is not None:
             try:
-                result = self._scorer(item, self.interests, self.products)
-                if inspect.isawaitable(result):
-                    result = await result
+                call = self._scorer
+                is_async = inspect.iscoroutinefunction(call) or inspect.iscoroutinefunction(
+                    type(call).__call__
+                )
+                if is_async:
+                    result = await cast(
+                        "Awaitable[ResearchScore]", call(item, self.interests, self.products)
+                    )
+                else:
+                    sync_call = cast("ScoreCallable", call)
+                    result = await asyncio.to_thread(sync_call, item, self.interests, self.products)
+                    if inspect.isawaitable(result):
+                        result = await result
                 return ResearchScore.model_validate(result)
             except Exception as exc:
                 if not self._fallback_on_scorer_error:

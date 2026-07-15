@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import time
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
@@ -8,6 +10,7 @@ import pytest
 import yaml
 
 from holus.research.candidates import CandidateStore
+from holus.research.curator import ResearchCurator
 from holus.research.models import RawResearchItem, ResearchScore
 from holus.research.radar import load_config, record_outcome, run_radar
 
@@ -114,6 +117,57 @@ def _candidate_score(
         key_idea="AI agents can improve production workflows.",
         recommended_action="candidate",
     )
+
+
+@pytest.mark.asyncio
+async def test_sync_curator_scorer_does_not_block_event_loop() -> None:
+    item = _item("arxiv", "2401.1", "https://arxiv.org/abs/2401.1")
+
+    def blocking_scorer(
+        scored_item: RawResearchItem, interests: str, products: dict[str, Any]
+    ) -> ResearchScore:
+        time.sleep(0.05)
+        return _candidate_score(scored_item, interests, products)
+
+    curator = ResearchCurator(scorer=blocking_scorer)
+    score_task = asyncio.create_task(curator.score(item))
+    await asyncio.sleep(0.01)
+
+    assert score_task.done() is False
+    assert (await score_task).item_id == item.item_id
+
+
+@pytest.mark.asyncio
+async def test_concurrent_radar_runs_are_serialized(tmp_path: Path) -> None:
+    _write_config(tmp_path)
+    active = 0
+    peak_active = 0
+
+    class TrackingAdapter:
+        source = "arxiv"
+
+        async def fetch(self, _window_days: int) -> list[RawResearchItem]:
+            nonlocal active, peak_active
+            active += 1
+            peak_active = max(peak_active, active)
+            await asyncio.sleep(0.03)
+            active -= 1
+            return []
+
+    await asyncio.gather(
+        run_radar(
+            repo_root=tmp_path,
+            source_adapters=[TrackingAdapter()],
+            scorer=_candidate_score,
+        ),
+        run_radar(
+            repo_root=tmp_path,
+            source_adapters=[TrackingAdapter()],
+            scorer=_candidate_score,
+        ),
+    )
+
+    assert peak_active == 1
 
 
 @pytest.mark.asyncio
@@ -239,6 +293,19 @@ def test_candidate_store_reject_and_outcome_hook(tmp_path: Path) -> None:
 
     assert rejected.status == "rejected"
     assert "record_research_outcome" in trajectory.read_text(encoding="utf-8")
+
+
+def test_candidate_create_preserves_existing_review_state(tmp_path: Path) -> None:
+    item = _item("arxiv", "2401.1", "https://arxiv.org/abs/2401.1")
+    score = _candidate_score(item, "", {})
+    store = CandidateStore(tmp_path / "candidates")
+    store.create(item, score)
+    store.reject(item.item_id)
+
+    candidate = store.create(item, score)
+
+    assert candidate.status == "rejected"
+    assert store.get(item.item_id).status == "rejected"
 
 
 def test_repo_config_loads() -> None:

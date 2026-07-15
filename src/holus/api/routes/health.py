@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["system"])
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-AGENTS_YAML = REPO_ROOT / "agents" / "AGENTS.yaml"
+AGENTS_YAML = REPO_ROOT / "agentic" / "agents" / "AGENTS.yaml"
 GUARDRAILS_YAML = REPO_ROOT / "config" / "guardrails.yaml"
 CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
 

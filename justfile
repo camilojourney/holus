@@ -139,7 +139,7 @@ build-cycle:
 # Start the 80-cycle sprint via launchd cron (every 20 min)
 sprint-start:
     mkdir -p logs
-    @echo '{"cycle": 0, "max_cycles": 80, "status": "running", "started_at": null, "interval_minutes": 20}' > .self-improvement/sprint-state.json
+    @echo '{"cycle": 0, "max_cycles": 80, "status": "running", "started_at": null, "interval_minutes": 20}' > agentic/sprint-state.json
     cp infra/launchd/com.holus.builder.plist ~/Library/LaunchAgents/
     launchctl load ~/Library/LaunchAgents/com.holus.builder.plist
     @echo "Sprint started! Builder will run every 20 min for 80 cycles (~27 hours)."
@@ -164,13 +164,13 @@ sprint-resume:
 sprint-reset:
     -launchctl unload ~/Library/LaunchAgents/com.holus.builder.plist 2>/dev/null
     rm -f /tmp/holus-stop
-    @echo '{"cycle": 0, "max_cycles": 80, "status": "ready", "started_at": null, "interval_minutes": 20}' > .self-improvement/sprint-state.json
+    @echo '{"cycle": 0, "max_cycles": 80, "status": "ready", "started_at": null, "interval_minutes": 20}' > agentic/sprint-state.json
     @echo "Sprint reset to cycle 0."
 
 # Full sprint status dashboard
 sprint-status:
     @echo "=== Sprint State ==="
-    @cat .self-improvement/sprint-state.json 2>/dev/null || echo "No sprint state"
+    @cat agentic/sprint-state.json 2>/dev/null || echo "No sprint state"
     @echo ""
     @echo "=== Tasks ==="
     @printf "Remaining: "; grep -c '^\- \[ \]' agentic/memory/NEXT.md 2>/dev/null || echo "0"
