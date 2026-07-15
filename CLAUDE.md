@@ -33,6 +33,7 @@ items, scheduled/published posts, and learning signals.
 just install          # uv sync --all-extras
 just run              # start the marketing agent
 just check            # lint + typecheck + tests (run before committing)
+just verify           # repo integrity; recognized warnings pass, missing verifier fails
 just improve          # run manager self-improvement cycle
 just audit            # run security sentinel
 ```

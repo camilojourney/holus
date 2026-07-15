@@ -414,7 +414,7 @@ rotate-logs:
     @find logs/archive -mtime +7 -delete 2>/dev/null || true
     @echo "Logs rotated."
 
-# Verify repo integrity before committing (checks duplicates, specs, schema, dead modules)
+# Verify repo integrity before committing; recognized warnings pass, missing verifier fails
 verify:
     @repo_verify="/Users/mini/github/fleet-system/system/shared/scripts/repo_verify.py"; \
     if [ ! -f "$repo_verify" ]; then \
