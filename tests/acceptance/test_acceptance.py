@@ -530,6 +530,42 @@ class TestSpec028ObservatoryAPI:
 class TestSpec031LinkedInPipeline:
     """SPEC-031: LinkedIn Content Pipeline acceptance criteria."""
 
+    # -- AC-021: Quality gate rejects content scoring below threshold ---------
+
+    def test_ac021_quality_gate_rejects_low_score(self):
+        """AC-021: enforce_quality_gate with scorer returning 3.0 produces
+        empty accepted_pieces, 1 discarded, and hard_fail_count=1."""
+        from holus.core.quality_gate import enforce_quality_gate
+
+        piece = {"text": "Low quality content"}
+
+        def low_scorer(_piece: Any) -> float:
+            return 3.0
+
+        result = enforce_quality_gate([piece], scorer=low_scorer)
+
+        assert len(result.accepted_pieces) == 0
+        assert len(result.discarded_pieces) == 1
+        assert result.hard_fail_count == 1
+
+    # -- AC-022: Quality gate accepts content scoring 7.0 or above -----------
+
+    def test_ac022_quality_gate_accepts_high_score(self):
+        """AC-022: enforce_quality_gate with scorer returning 8.5 produces
+        1 accepted, 0 discarded, and pass_count=1."""
+        from holus.core.quality_gate import enforce_quality_gate
+
+        piece = {"text": "High quality LinkedIn post about building ML pipelines"}
+
+        def high_scorer(_piece: Any) -> float:
+            return 8.5
+
+        result = enforce_quality_gate([piece], scorer=high_scorer)
+
+        assert len(result.accepted_pieces) == 1
+        assert len(result.discarded_pieces) == 0
+        assert result.pass_count == 1
+
     # -- AC-023: Schedule post calls MCP with approval_required=true ---------
 
     def test_ac023_schedule_post_approval_required(self):

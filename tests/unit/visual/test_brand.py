@@ -100,7 +100,7 @@ class TestBrandVisualIdentityLoader:
 
         brand = loader.load_theme("dark")
 
-        assert brand.colors.primary == "#F59E0B"
+        assert brand.colors.primary == "#6366F1"
         assert brand.colors.background == "#0A0F1E"
 
     def test_load_theme_warm(self):
@@ -116,7 +116,7 @@ class TestBrandVisualIdentityLoader:
 
         brand = loader.load_theme("nonexistent")
 
-        assert brand.colors.primary == "#F59E0B"
+        assert brand.colors.primary == "#6366F1"
         assert brand.colors.background == "#0A0F1E"
 
     def test_to_css_variables_with_theme(self):

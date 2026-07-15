@@ -99,13 +99,13 @@ def small_registry(tmp_agents_yaml: Path) -> AgentRegistry:
 
 
 class TestRegistryLoad:
-    def test_loads_all_agents(self, registry: AgentRegistry) -> None:
+    def test_loads_35_agents(self, registry: AgentRegistry) -> None:
         """AGENTS.yaml agent count (update when adding new agents)."""
-        assert len(registry.list_agents()) == 44
+        assert len(registry.list_agents()) == 38  # +3: idea-injector, context-builder, voice-writer
 
-    def test_list_evaluators_returns_all_evaluators(self, registry: AgentRegistry) -> None:
+    def test_list_evaluators_returns_7(self, registry: AgentRegistry) -> None:
         evaluators = registry.list_agents(type="evaluator")
-        assert len(evaluators) == 8
+        assert len(evaluators) == 7
 
     def test_list_active_excludes_planned(self, registry: AgentRegistry) -> None:
         active = registry.list_agents(status="active")
@@ -140,7 +140,7 @@ class TestRegistryLoad:
     def test_get_evaluators(self, registry: AgentRegistry) -> None:
         evaluators = registry.get_evaluators()
         assert all(a.type == "evaluator" for a in evaluators)
-        assert len(evaluators) == 8
+        assert len(evaluators) == 7
 
 
 # ---------------------------------------------------------------------------

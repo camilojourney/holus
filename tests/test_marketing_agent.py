@@ -166,8 +166,6 @@ def mock_config(temp_config_files):
     config.langfuse_public_key = None
     config.langfuse_secret_key = None
     config.langfuse_host = "http://localhost:3001"
-    config.holus_social_api_key = ""
-    config.holus_social_api_base_url = ""
     config.posting_api_key = ""
     config.social_media_api_base_url = "http://localhost:8000"
 
