@@ -414,6 +414,34 @@ rotate-logs:
     @find logs/archive -mtime +7 -delete 2>/dev/null || true
     @echo "Logs rotated."
 
-# Verify repo integrity before committing (checks duplicates, specs, schema, dead modules)
+# Verify repo integrity before committing; recognized warnings pass, missing verifier fails
 verify:
-    python3 /Users/mini/.openclaw/workspace/github/~Projects/system/shared/scripts/repo_verify.py --repo holus --skip tests || [ $? -eq 2 ]
+    @repo_verify="${REPO_VERIFY_PATH:-}"; \
+    if [ -z "$repo_verify" ] && command -v repo_verify.py >/dev/null 2>&1; then \
+        repo_verify="$(command -v repo_verify.py)"; \
+    fi; \
+    if [ -z "$repo_verify" ] && [ -n "${FLEET_SYSTEM_ROOT:-}" ]; then \
+        candidate="${FLEET_SYSTEM_ROOT}/system/shared/scripts/repo_verify.py"; \
+        if [ -f "$candidate" ]; then \
+            repo_verify="$candidate"; \
+        fi; \
+    fi; \
+    if [ -z "$repo_verify" ] && [ -n "${HOME:-}" ]; then \
+        candidate="${HOME}/github/fleet-system/system/shared/scripts/repo_verify.py"; \
+        if [ -f "$candidate" ]; then \
+            repo_verify="$candidate"; \
+        fi; \
+    fi; \
+    if [ ! -f "$repo_verify" ]; then \
+        echo "repo_verify.py not found. Set REPO_VERIFY_PATH=/path/to/repo_verify.py, add executable repo_verify.py to PATH, or set FLEET_SYSTEM_ROOT=/path/to/fleet-system." >&2; \
+        exit 127; \
+    fi; \
+    output=$(python3 "$repo_verify" --repo holus --skip tests); \
+    status=$?; \
+    if [ -n "$output" ]; then \
+        printf '%s\n' "$output"; \
+    fi; \
+    if [ "$status" -eq 2 ] && printf '%s\n' "$output" | grep -q '^RESULT: PASS WITH WARNINGS'; then \
+        exit 0; \
+    fi; \
+    exit "$status"
