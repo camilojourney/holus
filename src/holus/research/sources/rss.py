@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime, timedelta
-from typing import Any
-
-import httpx
+from typing import TYPE_CHECKING, Any
 
 from holus.research.models import RawResearchItem
-from holus.research.sources.base import clean_text, parse_datetime, parse_http_url, stable_item_id
+from holus.research.sources.base import (
+    clean_text,
+    parse_datetime,
+    parse_http_url,
+    safe_get,
+    stable_item_id,
+)
+
+if TYPE_CHECKING:
+    import httpx
 
 ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
 
@@ -22,26 +30,32 @@ class RssAdapter:
         *,
         feeds: list[str],
         per_feed_limit: int = 10,
+        max_concurrency: int = 4,
         client: httpx.AsyncClient | None = None,
     ) -> None:
         self.feeds = feeds
         self.per_feed_limit = per_feed_limit
+        self.max_concurrency = max(1, max_concurrency)
         self._client = client
 
     async def fetch(self, window_days: int) -> list[RawResearchItem]:
+        semaphore = asyncio.Semaphore(self.max_concurrency)
+
+        async def fetch_one(feed_url: str) -> tuple[list[RawResearchItem], str | None]:
+            try:
+                async with semaphore:
+                    response = await safe_get(feed_url, client=self._client)
+                return self._parse_feed(response.text, feed_url, window_days), None
+            except Exception as exc:
+                return [], f"{feed_url}: {exc}"
+
+        results = await asyncio.gather(*(fetch_one(feed_url) for feed_url in self.feeds))
         items: list[RawResearchItem] = []
         errors: list[str] = []
-        for feed_url in self.feeds:
-            try:
-                if self._client is None:
-                    async with httpx.AsyncClient(timeout=30.0) as client:
-                        response = await client.get(feed_url)
-                else:
-                    response = await self._client.get(feed_url)
-                response.raise_for_status()
-                items.extend(self._parse_feed(response.text, feed_url, window_days))
-            except Exception as exc:
-                errors.append(f"{feed_url}: {exc}")
+        for fetched, error in results:
+            items.extend(fetched)
+            if error:
+                errors.append(error)
         if errors and not items:
             raise RuntimeError("; ".join(errors))
         return items

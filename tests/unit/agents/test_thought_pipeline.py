@@ -141,7 +141,9 @@ def test_carousel_uses_harness_profile_and_rationale() -> None:
 
 
 def test_brand_identity_can_include_language_handle_when_opted_in() -> None:
-    assert _brand_identity(language="en", include_handle=True)["brand_handle"] == "@camiloexperience"
+    assert (
+        _brand_identity(language="en", include_handle=True)["brand_handle"] == "@camiloexperience"
+    )
     assert _brand_identity(language="es", include_handle=True)["brand_handle"] == "@camilojourney"
     assert _brand_identity(language="en", include_handle=False)["brand_handle"] is None
 

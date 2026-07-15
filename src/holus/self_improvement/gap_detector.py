@@ -1,4 +1,4 @@
-"""Gap detection — identify missing capabilities and knowledge from failure patterns.
+"""Gap detection - identify missing capabilities and knowledge from failure patterns.
 
 Two levels of detection:
 1. Per-failure classification (in reflexion): Opus classifies each failure as
@@ -33,7 +33,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 CAPABILITY_REQUESTS_DIR = Path(".self-improvement/capability-requests")
-KNOWLEDGE_REQUESTS_DIR = Path(".self-improvement/knowledge/requests")
+KNOWLEDGE_REQUESTS_DIR = Path("agentic/memory/knowledge/requests")
 
 # Keywords that indicate capability gaps (not prompt quality issues)
 CAPABILITY_KEYWORDS = [
@@ -162,7 +162,7 @@ def write_gap_request(gap: dict[str, Any]) -> Path:
     """Write a gap request file to the appropriate directory.
 
     capability_gap → .self-improvement/capability-requests/
-    data_gap → .self-improvement/knowledge/requests/
+    data_gap → agentic/memory/knowledge/requests/
     """
     gap_type = gap["type"]
     platform = gap["platform"]

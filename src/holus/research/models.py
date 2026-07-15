@@ -85,3 +85,9 @@ class RadarRunReport(BaseModel):
     scored: int
     digest_path: str | None
     candidates_created: int
+    scoring_failures: int = 0
+    degraded: bool = False
+    failure_reasons: list[str] = Field(default_factory=list)
+    dedupe_collisions: int = 0
+    scorer_mode: str = "heuristic"
+    heuristic_fallbacks: int = 0

@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Holus Autonomous Build Sprint — LOOP MODE
+# Holus Autonomous Build Sprint - LOOP MODE
 #
 # Runs build-cycle.sh in a loop with cooldown between cycles.
 # Alternative to the cron-based approach (just sprint-start).
@@ -68,13 +68,13 @@ while [ $CYCLE -lt $MAX_CYCLES ]; do
     fi
 
     # Check if all tasks are done
-    REMAINING=$(grep -c '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null || echo "0")
+    REMAINING=$(grep -c '^\- \[ \]' agentic/memory/NEXT.md 2>/dev/null || echo "0")
     if [ "$REMAINING" -eq 0 ]; then
         log "All tasks completed! Sprint finished after $CYCLE cycles."
         exit 0
     fi
 
-    NEXT_TASK=$(grep -m1 '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null | sed 's/^- \[ \] //' || echo "unknown")
+    NEXT_TASK=$(grep -m1 '^\- \[ \]' agentic/memory/NEXT.md 2>/dev/null | sed 's/^- \[ \] //' || echo "unknown")
     log "===== Cycle $CYCLE/$MAX_CYCLES | $REMAINING remaining | Next: $NEXT_TASK ====="
 
     START_TIME=$(date +%s)
@@ -102,8 +102,8 @@ done
 
 log "========================================="
 log "Sprint completed after $CYCLE cycles"
-COMPLETED=$(grep -c '^\- \[x\]' .self-improvement/NEXT.md 2>/dev/null || echo "0")
-REMAINING=$(grep -c '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null || echo "0")
+COMPLETED=$(grep -c '^\- \[x\]' agentic/memory/NEXT.md 2>/dev/null || echo "0")
+REMAINING=$(grep -c '^\- \[ \]' agentic/memory/NEXT.md 2>/dev/null || echo "0")
 log "Tasks completed: $COMPLETED"
 log "Tasks remaining: $REMAINING"
 log "========================================="

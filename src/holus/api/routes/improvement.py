@@ -26,7 +26,7 @@ router = APIRouter(prefix="/improvement", tags=["self-improvement"])
 TRAJECTORY_PATH = Path(".self-improvement/memory/trajectory.jsonl")
 BANDIT_ARMS_PATH = Path(".self-improvement/bandit_arms.json")
 CAPABILITY_GAPS_DIR = Path(".self-improvement/capability-requests")
-KNOWLEDGE_GAPS_DIR = Path(".self-improvement/knowledge/requests")
+KNOWLEDGE_GAPS_DIR = Path("agentic/memory/knowledge/requests")
 
 
 def _read_trajectory(days: int = 30) -> list[dict[str, Any]]:
@@ -51,7 +51,7 @@ def _read_trajectory(days: int = 30) -> list[dict[str, Any]]:
 
 @router.get("/score-trends")
 async def score_trends(days: int = 30) -> dict[str, Any]:
-    """Score trends over time — judge and engagement scores by day."""
+    """Score trends over time - judge and engagement scores by day."""
     entries = _read_trajectory(days)
 
     daily: dict[str, dict[str, list[float]]] = defaultdict(

@@ -1,10 +1,10 @@
-"""Orchestrator — ties all self-improvement mechanisms into 3 cron cycles.
+"""Orchestrator - ties all self-improvement mechanisms into 3 cron cycles.
 
 Three entry points, each a single Python function:
 
-1. content_cycle()  — every 6h: generate → judge → auto-publish
-2. analytics_cycle() — daily: fetch engagement → compute rewards
-3. improvement_cycle() — weekly: learn → evolve → evaluate A/B tests
+1. content_cycle()  - every 6h: generate → judge → auto-publish
+2. analytics_cycle() - daily: fetch engagement → compute rewards
+3. improvement_cycle() - weekly: learn → evolve → evaluate A/B tests
 
 Usage (from Justfile or launchd):
 
@@ -189,7 +189,7 @@ async def improvement_cycle() -> dict[str, Any]:
 
     # 3. Log gap summary
     gap_dir = Path(".self-improvement/capability-requests")
-    knowledge_gap_dir = Path(".self-improvement/knowledge/requests")
+    knowledge_gap_dir = Path("agentic/memory/knowledge/requests")
     capability_gaps = len(list(gap_dir.glob("*.md"))) if gap_dir.exists() else 0
     knowledge_gaps = (
         len(list(knowledge_gap_dir.glob("*.md"))) - 1 if knowledge_gap_dir.exists() else 0
@@ -219,7 +219,7 @@ async def improvement_cycle() -> dict[str, Any]:
     except Exception as exc:
         logger.warning("System diagnostic failed (non-blocking): %s", exc)
 
-    # 5. Detect failure streaks (log for diagnostician — auto-optimization is future work)
+    # 5. Detect failure streaks (log for diagnostician - auto-optimization is future work)
     try:
         traj_entries = _load_recent_trajectory()
         streaks = _detect_failure_streaks(traj_entries)

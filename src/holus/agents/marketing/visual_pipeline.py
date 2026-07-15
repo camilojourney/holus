@@ -33,53 +33,53 @@ logger = logging.getLogger(__name__)
 VISUAL_DESIGNER_SYSTEM = """You design deterministic visuals for social media posts only after
 the content job router and visual necessity gate have confirmed that a visual is needed.
 Given a routed post's text, extract the key concepts and design a visual that TEACHES
-the core idea independently — someone should understand your visual WITHOUT reading the post.
+the core idea independently - someone should understand your visual WITHOUT reading the post.
 
 If the routing context says needs_visual=false, return {"type": "none", "reason": "visual gate rejected companion visual"}.
 If AI images are forbidden, do not describe a generated scene. Use a deterministic visual type.
 
 You have 7 visual types. Pick the one that best fits the post's structure:
 
-1. "flowchart" — process diagrams, decision trees, pipelines.
+1. "flowchart" - process diagrams, decision trees, pipelines.
    USE WHEN: post describes a sequential process, workflow, or pipeline.
    JSON: {"type": "flowchart", "title": "max 8 words",
           "nodes": [{"id": "1", "label": "Step Name", "description": "optional 5-10 words"}],
           "connections": [{"from_id": "1", "to_id": "2", "label": "optional"}],
           "layout": "vertical"}
 
-2. "architecture" — system component diagrams, layered architectures.
+2. "architecture" - system component diagrams, layered architectures.
    USE WHEN: post describes system components, tech stacks, or how parts connect.
    JSON: {"type": "architecture", "title": "max 8 words",
           "layers": [{"name": "Layer Name", "components": [{"name": "Component", "description": "3-5 words"}]}],
           "connections": [{"from_layer": 0, "from_comp": 0, "to_layer": 1, "to_comp": 0}]}
 
-3. "comparison" — side-by-side comparison tables.
+3. "comparison" - side-by-side comparison tables.
    USE WHEN: post compares two approaches, tools, or before/after.
    JSON: {"type": "comparison", "title": "max 8 words",
           "left_label": "Option A", "right_label": "Option B",
           "items": [{"dimension": "Speed", "left": "Slow", "right": "Fast", "winner": "right"}]}
 
-4. "data_viz" — charts with data points.
+4. "data_viz" - charts with data points.
    USE WHEN: post has numbers, stats, rankings, or quantifiable comparisons.
    JSON: {"type": "data_viz", "chart_type": "bar|line|metric",
           "title": "max 6 words",
           "data_points": [{"label": "X", "value": 85}],
           "highlight_index": 0, "source_label": "optional"}
 
-5. "code_card" — code snippet showcase.
+5. "code_card" - code snippet showcase.
    USE WHEN: post discusses specific code, APIs, or implementation patterns.
    JSON: {"type": "code_card", "title": "max 8 words",
           "code": "actual code snippet (10-20 lines max)",
           "language": "python", "annotation": "what this code demonstrates"}
 
-6. "research_card" — hero stat + chart + source citation.
+6. "research_card" - hero stat + chart + source citation.
    USE WHEN: post cites research, studies, or has a striking headline number.
    JSON: {"type": "research_card", "title": "max 8 words",
           "key_stat": "73%", "key_stat_label": "of agents fail in production",
           "chart_type": "bar", "data_points": [{"label": "X", "value": 85}],
           "callout_text": "key insight sentence", "source_citation": "Author 2024"}
 
-7. "insight" — branded card with headline + stat (fallback).
+7. "insight" - branded card with headline + stat (fallback).
    USE WHEN: post is purely philosophical, no process/comparison/data.
    JSON: {"type": "insight", "headline": "max 8 words",
           "body": "optional 1-2 sentences",
@@ -91,7 +91,7 @@ If the post has ANY system components, use architecture.
 If the post compares two things, use comparison.
 Only fall back to insight if nothing else fits.
 
-The visual MUST teach independently — it's a scroll-stopper, not decoration.
+The visual MUST teach independently - it's a scroll-stopper, not decoration.
 Keep labels SHORT (max 3 words) so they don't overlap.
 
 Return ONLY the JSON object. No markdown fences, no explanation."""
@@ -292,10 +292,11 @@ def _visual_prompt_text(visual_spec: dict[str, Any]) -> str:
     source = visual_spec.get("refined_visual_source")
     if isinstance(source, dict):
         thought_essence = source.get("thought_essence")
-        if isinstance(thought_essence, dict) and isinstance(
-            thought_essence.get("visual_prompt"), str
-        ):
-            return thought_essence["visual_prompt"].strip()
+        visual_prompt = (
+            thought_essence.get("visual_prompt") if isinstance(thought_essence, dict) else None
+        )
+        if isinstance(visual_prompt, str):
+            return visual_prompt.strip()
         provenance = source.get("raw_thought_provenance")
         if isinstance(provenance, str) and provenance.strip():
             return provenance.strip()

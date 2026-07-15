@@ -3,10 +3,20 @@
 from __future__ import annotations
 
 import inspect
+import json
 from collections.abc import Awaitable, Callable
-from typing import Any
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
+import yaml
+
+from holus.core.config import HolusConfig
+from holus.core.prompt_loader import PromptLoader
+from holus.integrations.claude_api.client import CachedPrompt, HolusClaudeClient
 from holus.research.models import RawResearchItem, RecommendedAction, ResearchScore
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 PRODUCT_KEYWORDS: dict[str, set[str]] = {
     "pilaster": {"image", "diffusion", "comfyui", "lora", "generation", "visual"},
@@ -45,13 +55,24 @@ class ResearchCurator:
         self.interests = interests
         self.products = products or {}
         self._scorer = scorer
+        self._fallback_on_scorer_error = bool(getattr(scorer, "uses_heuristic_fallback", False))
+        self.fallback_count = 0
+        self.fallback_reasons: list[str] = []
+        self.scorer_mode = "injected" if scorer is not None else "heuristic"
 
     async def score(self, item: RawResearchItem) -> ResearchScore:
         if self._scorer is not None:
-            result = self._scorer(item, self.interests, self.products)
-            if inspect.isawaitable(result):
-                result = await result
-            return ResearchScore.model_validate(result)
+            try:
+                result = self._scorer(item, self.interests, self.products)
+                if inspect.isawaitable(result):
+                    result = await result
+                return ResearchScore.model_validate(result)
+            except Exception as exc:
+                if not self._fallback_on_scorer_error:
+                    raise
+                self.fallback_count += 1
+                self.fallback_reasons.append(f"{item.item_id}: {exc}")
+                return self._heuristic_score(item)
         return self._heuristic_score(item)
 
     def _heuristic_score(self, item: RawResearchItem) -> ResearchScore:
@@ -88,3 +109,74 @@ class ResearchCurator:
             key_idea=key_idea[:500],
             recommended_action=recommended_action,
         )
+
+
+@dataclass
+class AgentBackedResearchScorer:
+    """Research scorer backed by the registered research-curator prompt."""
+
+    repo_root: Path
+    config: HolusConfig
+    uses_heuristic_fallback: bool = True
+
+    def __post_init__(self) -> None:
+        self._prompt = PromptLoader(repo_root=self.repo_root).get_prompt(
+            "research-curator",
+            fallback="Score the research item and return only a ResearchScore object.",
+        )
+        self._client = HolusClaudeClient(
+            api_key=self.config.anthropic_api_key or None,
+            base_url=self.config.anthropic_base_url or None,
+            model_map={
+                "strategic": self.config.opus_model,
+                "operational": self.config.sonnet_model,
+                "classification": self.config.haiku_model,
+            },
+        )
+
+    def __call__(
+        self,
+        item: RawResearchItem,
+        interests: str,
+        products: dict[str, Any],
+    ) -> ResearchScore:
+        response = self._client.call(
+            CachedPrompt(system_prompt=self._prompt),
+            [
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {
+                            "item": item.model_dump(mode="json"),
+                            "interests": interests,
+                            "products": products,
+                        },
+                        sort_keys=True,
+                    ),
+                }
+            ],
+            tier="operational",
+            max_tokens=1200,
+            temperature=0.0,
+            agent_id="research-curator",
+        )
+        text = _message_text(response)
+        payload = yaml.safe_load(text)
+        return ResearchScore.model_validate(payload)
+
+
+def default_agent_scorer(repo_root: Path) -> AgentBackedResearchScorer | None:
+    """Return an agent scorer when credentials are configured, else deterministic fallback."""
+    config = HolusConfig.load(agent_name="research-curator")
+    if not config.anthropic_api_key:
+        return None
+    return AgentBackedResearchScorer(repo_root=repo_root, config=config)
+
+
+def _message_text(response: Any) -> str:
+    parts: list[str] = []
+    for block in getattr(response, "content", []):
+        text = getattr(block, "text", None)
+        if text:
+            parts.append(str(text))
+    return "\n".join(parts).strip()

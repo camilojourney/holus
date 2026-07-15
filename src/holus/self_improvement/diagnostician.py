@@ -1,4 +1,4 @@
-"""System Diagnostician — SPEC-036.
+"""System Diagnostician - SPEC-036.
 
 Watches the content pipeline from outside.  Reads trajectory patterns,
 actual code, agent prompts, and content output to trace quality failures
@@ -164,7 +164,7 @@ def _check_judge_coverage(entries: list[dict[str, Any]]) -> tuple[float, list[Di
             DiagnosticTask(
                 category="CODE_BUG",
                 description=f"Judge evaluation failed with JSON parse error on {len(zero_scores)} pieces",
-                root_cause="LLM response wasn't valid JSON — _parse_response() failed",
+                root_cause="LLM response wasn't valid JSON - _parse_response() failed",
                 evidence=f"Sample feedback: {zero_scores[0].get('judge_feedback', '')[:200]}",
                 suggested_fix="Check judge prompt instructs JSON-only output; increase retry count or add markdown fence stripping",
                 priority="P1",
@@ -267,7 +267,7 @@ def _check_feedback_loop(entries: list[dict[str, Any]]) -> list[DiagnosticTask]:
                 category="MISSING_TOOL",
                 description="Judge feedback is not fed back to content generators",
                 root_cause="No code path loads previous judge feedback during observe/reason phase",
-                evidence=f"Checked {len(entries)} entries — none reference prior feedback in reasoning",
+                evidence=f"Checked {len(entries)} entries - none reference prior feedback in reasoning",
                 suggested_fix="In marketing agent observe(), load last cycle's judge feedback from trajectory and inject into prompts",
                 priority="P1",
                 file_ref="src/holus/agents/marketing/agent.py",
@@ -419,7 +419,7 @@ def run_diagnostic(days: int = 30) -> DiagnosticReport:
 def format_report(report: DiagnosticReport) -> str:
     """Format diagnostic report as markdown."""
     lines = [
-        f"# System Diagnostic — {report.timestamp[:10]}",
+        f"# System Diagnostic - {report.timestamp[:10]}",
         "",
         "## Health",
         f"- Entries analyzed: {report.entries_analyzed}",
@@ -445,10 +445,10 @@ def format_report(report: DiagnosticReport) -> str:
             result.append("")
         return result
 
-    lines.extend(_fmt_tasks(report.critical, "P0 — Critical"))
-    lines.extend(_fmt_tasks(report.high, "P1 — High"))
-    lines.extend(_fmt_tasks(report.medium, "P2 — Medium"))
-    lines.extend(_fmt_tasks(report.suggestions, "P3 — Suggestions"))
+    lines.extend(_fmt_tasks(report.critical, "P0 - Critical"))
+    lines.extend(_fmt_tasks(report.high, "P1 - High"))
+    lines.extend(_fmt_tasks(report.medium, "P2 - Medium"))
+    lines.extend(_fmt_tasks(report.suggestions, "P3 - Suggestions"))
 
     return "\n".join(lines)
 
@@ -465,7 +465,7 @@ def save_report(report: DiagnosticReport) -> Path:
 
 
 def append_to_next_md(report: DiagnosticReport) -> int:
-    """Append P0/P1 findings to .self-improvement/NEXT.md.
+    """Append P0/P1 findings to agentic/memory/NEXT.md.
 
     Creates a '## System Diagnostic Tasks' section if missing.
     Skips tasks whose first 50 chars of description already appear in the section.
@@ -512,7 +512,7 @@ def append_to_next_md(report: DiagnosticReport) -> int:
             continue
         line = (
             f"- [ ] [{task.category}] {task.description}"
-            f" — File: `{task.file_ref}`."
+            f" - File: `{task.file_ref}`."
             f" Fix: {task.suggested_fix}"
         )
         new_lines.append(line)
@@ -528,7 +528,7 @@ def append_to_next_md(report: DiagnosticReport) -> int:
         rest = content[section_start + len(section_header) :]
         next_heading = rest.find("\n## ")
         if next_heading == -1:
-            # Section is at the end — just append
+            # Section is at the end - just append
             content = content.rstrip() + "\n" + "\n".join(new_lines) + "\n"
         else:
             # Insert before the next heading
@@ -579,7 +579,7 @@ def main() -> None:
         f"{len(report.medium)} medium, {len(report.suggestions)} suggestions"
     )
     if report.critical:
-        print("\n⚠ CRITICAL ISSUES FOUND — address before next content cycle")
+        print("\n⚠ CRITICAL ISSUES FOUND - address before next content cycle")
 
 
 if __name__ == "__main__":

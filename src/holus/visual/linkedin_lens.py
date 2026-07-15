@@ -131,7 +131,12 @@ def _lens_rules(pattern: str, mode: VisualProximityMode) -> dict[str, list[str] 
             "composition": (
                 "Show selected item -> reason/evidence -> decision. Use short real labels and large UI blocks."
             ),
-            "required": [*common_required, "selected item", "reason/evidence panel", "decision badge"],
+            "required": [
+                *common_required,
+                "selected item",
+                "reason/evidence panel",
+                "decision badge",
+            ],
             "forbidden": [*common_forbidden, "dense SaaS dashboard", "tiny pseudo UI text"],
             "checks": [*common_checks, "Can the viewer see what was decided and why?"],
         }
@@ -142,7 +147,12 @@ def _lens_rules(pattern: str, mode: VisualProximityMode) -> dict[str, list[str] 
             "composition": (
                 "Use 4-6 stages, one input, one output, and one highlighted failure/handoff point."
             ),
-            "required": [*common_required, "input boundary", "output boundary", "highlighted bottleneck"],
+            "required": [
+                *common_required,
+                "input boundary",
+                "output boundary",
+                "highlighted bottleneck",
+            ],
             "forbidden": [*common_forbidden, "unlabeled modules", "decorative arrows"],
             "checks": [*common_checks, "Can the viewer identify the sequence and the bottleneck?"],
         }
@@ -165,7 +175,11 @@ def _lens_rules(pattern: str, mode: VisualProximityMode) -> dict[str, list[str] 
                 "Use one huge thesis, one support line, one accent mark, and no illustration that competes."
             ),
             "required": [*common_required, "exact thesis text", "one support line"],
-            "forbidden": [*common_forbidden, "extra quote fragments", "decorative background scene"],
+            "forbidden": [
+                *common_forbidden,
+                "extra quote fragments",
+                "decorative background scene",
+            ],
             "checks": [*common_checks, "Is the thesis legible and exact?"],
         }
 

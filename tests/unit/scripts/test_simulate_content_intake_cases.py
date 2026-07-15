@@ -374,6 +374,50 @@ def test_cycle_61_compare_detects_artifact_level_status_regression(tmp_path: Pat
     ]
 
 
+def test_compare_marks_new_failing_case_as_regression(tmp_path: Path) -> None:
+    script = Path("scripts/simulate_content_intake_cases.py")
+    baseline = tmp_path / "baseline.json"
+    current = tmp_path / "current.json"
+    baseline.write_text(json.dumps({"version": 13, "cases": []}), encoding="utf-8")
+    current.write_text(
+        json.dumps({"version": 13, "cases": [{"id": "new-case", "passed": False}]}),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--compare", str(baseline), str(current), "--json"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    comparison = json.loads(result.stdout)
+
+    assert result.returncode == 1
+    assert comparison["passed"] is False
+    assert comparison["regressions"] == [
+        {"after": False, "case_id": "new-case", "check": "case_added"}
+    ]
+
+
+def test_compare_empty_current_report_fails(tmp_path: Path) -> None:
+    script = Path("scripts/simulate_content_intake_cases.py")
+    baseline = tmp_path / "baseline.json"
+    current = tmp_path / "current.json"
+    baseline.write_text(json.dumps({"version": 13, "cases": []}), encoding="utf-8")
+    current.write_text(json.dumps({"version": 13, "cases": []}), encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--compare", str(baseline), str(current), "--json"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    comparison = json.loads(result.stdout)
+
+    assert result.returncode == 1
+    assert comparison["passed"] is False
+
+
 def test_cycle_61_compare_falls_back_to_status_counts_for_legacy_diagnostics(
     tmp_path: Path,
 ) -> None:

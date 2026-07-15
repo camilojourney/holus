@@ -1,4 +1,4 @@
-"""Central catalog of all Holus agents. Reads agents/AGENTS.yaml."""
+"""Central catalog of all Holus agents. Reads agentic/agents/AGENTS.yaml."""
 
 from __future__ import annotations
 
@@ -11,13 +11,13 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-# Default path: relative to this source file → repo_root/agents/AGENTS.yaml
+# Default path: relative to this source file → repo_root/agentic/agents/AGENTS.yaml
 # registry.py lives at src/holus/agents/registry.py
 # parents[0] = src/holus/agents, [1] = src/holus, [2] = src, [3] = repo_root
-_DEFAULT_AGENTS_YAML = Path(__file__).parents[3] / "agents" / "AGENTS.yaml"
+_DEFAULT_AGENTS_YAML = Path(__file__).parents[3] / "agentic" / "agents" / "AGENTS.yaml"
 
 # ---------------------------------------------------------------------------
-# Evaluator routing — owned by the registry, not by judge.py
+# Evaluator routing - owned by the registry, not by judge.py
 # ---------------------------------------------------------------------------
 
 EVALUATOR_ROUTING: dict[str, list[str]] = {
@@ -64,9 +64,9 @@ class AgentInfo:
 class AgentRegistry:
     """In-memory catalog of all Holus agents.
 
-    Reads ``agents/AGENTS.yaml`` once at construction time.  Call
+        Reads ``agentic/agents/AGENTS.yaml`` once at construction time.  Call
     :meth:`reload` to refresh after the YAML has been edited (requires a
-    running process — file changes are not watched automatically).
+    running process - file changes are not watched automatically).
 
     Usage::
 
@@ -79,7 +79,7 @@ class AgentRegistry:
     def __init__(self, yaml_path: Path | None = None) -> None:
         self._yaml_path = yaml_path or _DEFAULT_AGENTS_YAML
         self._agents: dict[str, AgentInfo] = {}
-        self._repo_root: Path = self._yaml_path.parent.parent
+        self._repo_root: Path = self._yaml_path.parents[2]
         self._load()
 
     # -- Loading -----------------------------------------------------------
@@ -203,7 +203,7 @@ class AgentRegistry:
         key = content_type.upper()
         if key not in EVALUATOR_ROUTING:
             logger.debug(
-                "registry: unknown content_type '%s' — falling back to written-content-judge",
+                "registry: unknown content_type '%s' - falling back to written-content-judge",
                 content_type,
             )
             return ["written-content-judge"]
@@ -214,7 +214,7 @@ class AgentRegistry:
 
         Resolves through PromptLoader layers:
           1. ``config/prompts/{agent_id}/current.md`` (optimizer variant)
-          2. ``agents/{prompt_path}`` (canonical .md file)
+          2. ``agentic/agents/{prompt_path}`` (canonical .md file)
           3. Empty string fallback (PromptLoader emits WARNING)
 
         Returns:

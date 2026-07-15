@@ -7,7 +7,7 @@ prompt_version: 2
 agentic_eval: default-7-pillars
 ---
 
-# Post Skill — Thought To Review, Taste, Targeted Rerun, Then Publish Gate
+# Post Skill - Thought To Review, Taste, Targeted Rerun, Then Publish Gate
 
 ## Memory Contract
 
@@ -47,22 +47,22 @@ Never publish, schedule, or approve silently. Show review links first.
 
 `/post` is a traceable loop, not a one-shot generator:
 
-1. **Raw thought intake** — save the user's unpolished thought as the source of
+1. **Raw thought intake** - save the user's unpolished thought as the source of
    truth.
-2. **Content set generation** — produce the requested LinkedIn draft, carousel,
+2. **Content set generation** - produce the requested LinkedIn draft, carousel,
    and/or image assets.
-3. **Preview and trace** — expose Content Studio, direct PDF/image links, detail
+3. **Preview and trace** - expose Content Studio, direct PDF/image links, detail
    JSON, dispatch sidecars, and rendered screenshots/previews.
-4. **Taste and quality gate** — judge the real artifact, not only the planned
+4. **Taste and quality gate** - judge the real artifact, not only the planned
    spec or JSON score.
-5. **Targeted rerun** — if taste rejects a layer, freeze the approved upstream
+5. **Targeted rerun** - if taste rejects a layer, freeze the approved upstream
    decisions and rerun only the failed layer:
    - intake failure -> redo essence/thesis extraction only
    - copy failure -> redo platform copy only
    - visual failure -> redo renderer/template/visual strategy only
    - trace failure -> redo observability/linkage only
    - publish failure -> redo social API boundary only
-6. **Human approval** — publish/schedule only after explicit approval.
+6. **Human approval** - publish/schedule only after explicit approval.
 
 Do not restart the whole workflow when the failing layer is local and the
 upstream decisions are already correct.
@@ -102,7 +102,7 @@ inspect. Do not publish by default.
 Use the existing app/API whenever possible.
 
 ```bash
-cd /Users/mini/.openclaw/workspace/github/holus
+cd "$(git rev-parse --show-toplevel)"
 curl -s http://127.0.0.1:8003/api/v1/health >/dev/null || \
   uv run uvicorn holus.api.app:app --host 127.0.0.1 --port 8003
 ```
@@ -111,7 +111,7 @@ For the frontend, prefer an already-running Content Studio. If port `3000` is
 busy, use `3001` or the next open port.
 
 ```bash
-cd /Users/mini/.openclaw/workspace/github/holus/observatory/frontend
+cd "$(git rev-parse --show-toplevel)/observatory/frontend"
 npm run dev -- -p 3001
 ```
 
@@ -133,7 +133,7 @@ final answer. Do not create a public tunnel unless the user explicitly approves.
 For LinkedIn-first runs:
 
 ```bash
-cd /Users/mini/.openclaw/workspace/github/holus
+cd "$(git rev-parse --show-toplevel)"
 curl -sS -X POST http://127.0.0.1:8003/api/v1/content/from-thought \
   -H 'Content-Type: application/json' \
   --data-binary @- <<'JSON'

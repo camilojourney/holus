@@ -1,14 +1,14 @@
 #!/bin/bash
 # =============================================================================
-# Holus Build Cycle — ONE autonomous cycle
+# Holus Build Cycle - ONE autonomous cycle
 #
 # Designed to run via launchd cron (every 20-30 min) or manually.
 # Each cycle picks one task from NEXT.md, implements it, and logs everything.
 #
 # Memory between cycles is maintained through:
-#   - .self-improvement/NEXT.md          (task queue — what's done, what's next)
+#   - agentic/memory/NEXT.md          (task queue - what's done, what's next)
 #   - .self-improvement/memory/trajectory.jsonl  (full history of every cycle)
-#   - .self-improvement/MEMORY.md        (accumulated learnings)
+#   - agentic/memory/MEMORY.md        (accumulated learnings)
 #   - .self-improvement/reports/builder/  (detailed cycle reports)
 #   - .self-improvement/sprint-state.json (cycle counter, auto-stop)
 #
@@ -25,7 +25,7 @@ set -euo pipefail
 HOLUS_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$HOLUS_DIR"
 
-# Set PATH directly (don't source .zshrc — it hangs in non-interactive mode)
+# Set PATH directly (don't source .zshrc - it hangs in non-interactive mode)
 export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 export HOME="${HOME:-/Users/mini}"
 # Allow claude to run even if called from inside another claude session (e.g. testing)
@@ -130,7 +130,7 @@ if reports_dir.exists():
         print()
 
 # Summary of what's done in NEXT.md
-next_file = Path(".self-improvement/NEXT.md")
+next_file = Path("agentic/memory/NEXT.md")
 if next_file.exists():
     content = next_file.read_text()
     done = content.count("- [x]")
@@ -165,7 +165,7 @@ if [ "$CURRENT_CYCLE" -ge "$MAX_CYCLES" ]; then
 fi
 
 # No remaining tasks check
-REMAINING=$(grep -c '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null || echo "0")
+REMAINING=$(grep -c '^\- \[ \]' agentic/memory/NEXT.md 2>/dev/null || echo "0")
 if [ "$REMAINING" -eq 0 ]; then
     log "All tasks completed! Sprint finished after $CURRENT_CYCLE cycles."
     update_state "$CURRENT_CYCLE" "all_tasks_done"
@@ -173,7 +173,7 @@ if [ "$REMAINING" -eq 0 ]; then
     exit 0
 fi
 
-# Run lock — mkdir is atomic on POSIX, works on macOS (no flock needed)
+# Run lock - mkdir is atomic on POSIX, works on macOS (no flock needed)
 if ! mkdir "$LOCK_DIR" 2>/dev/null; then
     # Check if the lock is stale (older than 60 min = stuck cycle)
     if [ -d "$LOCK_DIR" ]; then
@@ -192,7 +192,7 @@ fi
 # ---- Run Cycle --------------------------------------------------------------
 
 NEXT_CYCLE=$((CURRENT_CYCLE + 1))
-NEXT_TASK=$(grep -m1 '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null | sed 's/^- \[ \] //' || echo "unknown")
+NEXT_TASK=$(grep -m1 '^\- \[ \]' agentic/memory/NEXT.md 2>/dev/null | sed 's/^- \[ \] //' || echo "unknown")
 CYCLE_LOG="$LOG_DIR/cycle-$NEXT_CYCLE.log"
 TODAY=$(date +%Y-%m-%d)
 
@@ -215,13 +215,13 @@ READ YOUR FULL INSTRUCTIONS: .claude/agents/builder.md
 $MEMORY_CONTEXT
 
 YOUR TASK THIS CYCLE:
-Pick the FIRST unchecked [ ] task from .self-improvement/NEXT.md.
+Pick the FIRST unchecked [ ] task from agentic/memory/NEXT.md.
 Classify it (BUILD/RESEARCH/INTEGRATE/REVIEW/CREATE) and execute using the right tools.
 
 MEMORY FILES (read these to understand past work):
-- .self-improvement/MEMORY.md — accumulated learnings
-- .self-improvement/memory/trajectory.jsonl — full history (read last 10 entries)
-- .self-improvement/reports/builder/ — detailed reports from past cycles
+- agentic/memory/MEMORY.md - accumulated learnings
+- .self-improvement/memory/trajectory.jsonl - full history (read last 10 entries)
+- .self-improvement/reports/builder/ - detailed reports from past cycles
 
 AFTER COMPLETING THE TASK:
 1. Run \`just check\` if code was written
@@ -229,7 +229,7 @@ AFTER COMPLETING THE TASK:
 3. Mark the task as [x] in NEXT.md
 4. Write cycle report to .self-improvement/reports/builder/${TODAY}-cycle-${NEXT_CYCLE}.md
 5. Append to .self-improvement/memory/trajectory.jsonl
-6. If you learned something important, update .self-improvement/MEMORY.md
+6. If you learned something important, update agentic/memory/MEMORY.md
 7. If you discovered new work needed, ADD new tasks to NEXT.md
 
 If Codex or Gemini are unavailable, do the work yourself with Claude tools. Always report tool failures.
@@ -244,6 +244,6 @@ log "Cycle $NEXT_CYCLE completed in ${DURATION}s ($((DURATION / 60))m $((DURATIO
 update_state "$NEXT_CYCLE" "running"
 
 # Summary
-COMPLETED=$(grep -c '^\- \[x\]' .self-improvement/NEXT.md 2>/dev/null || echo "0")
-REMAINING=$(grep -c '^\- \[ \]' .self-improvement/NEXT.md 2>/dev/null || echo "0")
+COMPLETED=$(grep -c '^\- \[x\]' agentic/memory/NEXT.md 2>/dev/null || echo "0")
+REMAINING=$(grep -c '^\- \[ \]' agentic/memory/NEXT.md 2>/dev/null || echo "0")
 log "Progress: $COMPLETED done, $REMAINING remaining"

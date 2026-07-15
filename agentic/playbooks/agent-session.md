@@ -19,7 +19,7 @@ Run these steps in order at the beginning of every session:
 ### 2. Check Current Priorities
 
 ```
-4. .self-improvement/NEXT.md           -- priority queue (what to work on next)
+4. agentic/memory/NEXT.md           -- priority queue (what to work on next)
 5. docs/roadmap.md                     -- Now/Next/Later strategic direction
 6. specs/README.md                     -- feature index and status
 ```
@@ -41,11 +41,11 @@ Run these steps in order at the beginning of every session:
 
 ## Current Sprint Focus
 
-Read `docs/roadmap.md` "Now" section for the current focus. All work should align with these priorities unless explicitly overridden by `.self-improvement/NEXT.md`.
+Read `docs/roadmap.md` "Now" section for the current focus. All work should align with these priorities unless explicitly overridden by `agentic/memory/NEXT.md`.
 
 ## Known Blockers
 
-Check `.self-improvement/NEXT.md` for blockers. If a blocker prevents your work:
+Check `agentic/memory/NEXT.md` for blockers. If a blocker prevents your work:
 
 1. Document the blocker in your report
 2. Move to the next priority item
@@ -73,7 +73,7 @@ If running a self-improvement cycle:
 After completing a cycle:
 
 1. Write your report to the appropriate `.self-improvement/reports/` directory
-2. Update `.self-improvement/NEXT.md` (mark completed, add discovered items)
+2. Update `agentic/memory/NEXT.md` (mark completed, add discovered items)
 3. Append to `.self-improvement/memory/trajectory.jsonl`
 
 ## What Requires Human Confirmation

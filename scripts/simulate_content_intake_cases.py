@@ -13,7 +13,12 @@ from typing import Any
 
 import yaml
 
-from holus.agents.marketing.thought_pipeline import ThoughtContentPipeline
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = REPO_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+from holus.agents.marketing.thought_pipeline import ThoughtContentPipeline  # noqa: E402
 
 DEFAULT_FIXTURE = Path("tests/fixtures/golden_content_intake_cases.yaml")
 DEFAULT_CHANNELS = ("linkedin_text", "threads_text")
@@ -32,7 +37,11 @@ def load_cases(path: Path) -> list[dict[str, Any]]:
     if not isinstance(cases, list):
         msg = f"Fixture has no cases list: {path}"
         raise ValueError(msg)
-    return [dict(case) for case in cases if isinstance(case, dict)]
+    loaded = [dict(case) for case in cases if isinstance(case, dict)]
+    if not loaded:
+        msg = f"Fixture has no usable cases: {path}"
+        raise ValueError(msg)
+    return loaded
 
 
 def _case_source_kwargs(case: dict[str, Any]) -> dict[str, Any]:
@@ -483,7 +492,11 @@ def _compare_reports(baseline: dict[str, Any], current: dict[str, Any]) -> dict[
         before = baseline_cases.get(case_id)
         after = current_cases.get(case_id)
         if before is None:
-            improvements.append({"case_id": case_id, "check": "case_added"})
+            change = {"case_id": case_id, "check": "case_added"}
+            if after is not None and after.get("passed") is not True:
+                regressions.append({**change, "after": after.get("passed")})
+            else:
+                improvements.append(change)
             continue
         if after is None:
             regressions.append({"case_id": case_id, "check": "case_missing"})
@@ -590,7 +603,7 @@ def _compare_reports(baseline: dict[str, Any], current: dict[str, Any]) -> dict[
         "improvement_count": len(improvements),
         "regressions": regressions,
         "improvements": improvements,
-        "passed": not regressions,
+        "passed": bool(current_cases) and not regressions,
     }
 
 

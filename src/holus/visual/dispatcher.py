@@ -326,11 +326,14 @@ class HtmlRenderProvider:
             raise VisualDispatchError(msg)
 
         started = time.perf_counter()
-        suffix = (
-            ".pdf"
-            if request.carousel_outline is not None
-            else f".{request.render_spec.output_format.value}"
-        )
+        render_spec = request.render_spec
+        if request.carousel_outline is not None:
+            suffix = ".pdf"
+        else:
+            if render_spec is None:
+                msg = "html_renderer requires render_spec when carousel_outline is absent"
+                raise VisualDispatchError(msg)
+            suffix = f".{render_spec.output_format.value}"
         output_path = request.resolved_output_path(suffix)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -346,14 +349,17 @@ class HtmlRenderProvider:
                 "slides": len(slides) if isinstance(slides, list) else None,
             }
         else:
-            rendered = await _render_visual_bytes(request.render_spec)
+            if render_spec is None:
+                msg = "html_renderer requires render_spec when carousel_outline is absent"
+                raise VisualDispatchError(msg)
+            rendered = await _render_visual_bytes(render_spec)
             output_path.write_bytes(rendered)
             metadata = {
-                "template": request.render_spec.template,
-                "format": request.render_spec.output_format.value,
+                "template": render_spec.template,
+                "format": render_spec.output_format.value,
                 "viewport": [
-                    request.render_spec.viewport_width,
-                    request.render_spec.viewport_height,
+                    render_spec.viewport_width,
+                    render_spec.viewport_height,
                 ],
             }
         duration_ms = int((time.perf_counter() - started) * 1000)
@@ -598,7 +604,7 @@ class VisualDispatcher:
         logger.log("visual_dispatch_started", request, provider=provider, status="started")
         if provider not in self._providers:
             msg = f"visual provider is not implemented: {provider.value}"
-            result = VisualDispatchResult(
+            unsupported_result = VisualDispatchResult(
                 request_id=request.request_id,
                 provider=provider,
                 status=VisualDispatchStatus.FAILED,
@@ -613,11 +619,11 @@ class VisualDispatcher:
                 "visual_dispatch_failed",
                 request,
                 provider=provider,
-                status=result.status.value,
-                result=result,
+                status=unsupported_result.status.value,
+                result=unsupported_result,
                 error=msg,
             )
-            return result
+            return unsupported_result
 
         attempt_request = request
         result: VisualDispatchResult | None = None

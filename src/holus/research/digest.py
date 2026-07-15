@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 def render_digest(entries: list[tuple[RawResearchItem, ResearchScore]], digest_date: date) -> str:
     lines = [
-        f"# Research Radar Digest — {digest_date.isoformat()}",
+        f"# Research Radar Digest - {digest_date.isoformat()}",
         "",
     ]
     if not entries:
@@ -49,8 +49,10 @@ def write_digest(
     *,
     research_dir: Path,
     digest_date: date,
+    run_id: str,
 ) -> Path:
     research_dir.mkdir(parents=True, exist_ok=True)
-    path = research_dir / f"digest-{digest_date.isoformat()}.md"
+    safe_run_id = "".join(ch for ch in run_id if ch.isalnum() or ch in {"-", "_"})[:48]
+    path = research_dir / f"digest-{digest_date.isoformat()}-{safe_run_id}.md"
     path.write_text(render_digest(entries, digest_date), encoding="utf-8")
     return path

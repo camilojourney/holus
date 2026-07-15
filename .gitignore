@@ -70,6 +70,7 @@ Desktop.ini
 # ---- Data: Runtime ----
 data/runtime/
 data/content-queue/
+data/research/
 data/test-runs/
 data/.niche-research-state.json
 data/.repurpose-state.json
@@ -100,7 +101,7 @@ data/examples/
 .worktrees/
 p2p3-final-review/
 
-# graphify — commit graph.json; ignore generated reports/cache/viz outputs
+# graphify - commit graph.json; ignore generated reports/cache/viz outputs
 graphify-out/.graphify_*
 graphify-out/.rebuild.lock
 graphify-out/cache/

@@ -1,4 +1,4 @@
-# Holus — Content Workflows
+# Holus - Content Workflows
 
 One workflow per platform. Each workflow is a complete spec:
 input → agents → output → evaluation → post → learn.
@@ -7,7 +7,7 @@ input → agents → output → evaluation → post → learn.
 
 | Platform | Workflow | Status |
 |----------|----------|--------|
-| LinkedIn | [linkedin.md](linkedin.md) | 🟡 Spec written — not built |
+| LinkedIn | [linkedin.md](linkedin.md) | 🟡 Spec written - not built |
 | Instagram | instagram.md | ⬜ Not started |
 | Twitter/X | twitter.md | ⬜ Not started |
 | Threads | threads.md | ⬜ Not started |
@@ -23,9 +23,9 @@ LinkedIn ships first. Everything else waits until LinkedIn is producing
 ## Shared Infrastructure
 
 All workflows share:
-- `brand.yaml` — voice, anti-patterns, positioning
-- `brand-visual.yaml` — visual identity
-- `config/products.yaml` — product proof points
-- `agents/AGENTS.yaml` — agent registry
-- `self_improvement/` — evaluation + learning loop
-- Multi-armed bandit — visual diversity algorithm (shared across platforms)
+- `brand.yaml` - voice, anti-patterns, positioning
+- `brand-visual.yaml` - visual identity
+- `config/products.yaml` - product proof points
+- `agentic/agents/AGENTS.yaml` - agent registry
+- `self_improvement/` - evaluation + learning loop
+- Multi-armed bandit - visual diversity algorithm (shared across platforms)

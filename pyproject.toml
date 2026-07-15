@@ -135,7 +135,7 @@ module = [
 ]
 ignore_missing_imports = true
 
-# Legacy modules — pre-existing complex type issues from initial scaffolding.
+# Legacy modules - pre-existing complex type issues from initial scaffolding.
 # Will be cleaned up as each module is actively rebuilt in the sprint.
 [[tool.mypy.overrides]]
 module = [

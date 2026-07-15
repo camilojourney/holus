@@ -1,15 +1,15 @@
 """Tests for content API routes (src/holus/api/routes/content.py).
 
 Covers:
-- GET /api/v1/content — list content items with status counts
-- GET /api/v1/content — empty when no queue files
-- GET /api/v1/content/{id} — full detail for a piece
-- GET /api/v1/content/{id} — 404 for missing piece
-- PATCH /api/v1/content/{id} — approve a content piece
-- PATCH /api/v1/content/{id} — reject a content piece
-- GET /api/v1/content/{id}/image — serve rendered PNG
-- GET /api/v1/content/{id}/pdf — serve rendered carousel PDF
-- PATCH /api/v1/content/{id}/visual-choice — choose A/B variant
+- GET /api/v1/content - list content items with status counts
+- GET /api/v1/content - empty when no queue files
+- GET /api/v1/content/{id} - full detail for a piece
+- GET /api/v1/content/{id} - 404 for missing piece
+- PATCH /api/v1/content/{id} - approve a content piece
+- PATCH /api/v1/content/{id} - reject a content piece
+- GET /api/v1/content/{id}/image - serve rendered PNG
+- GET /api/v1/content/{id}/pdf - serve rendered carousel PDF
+- PATCH /api/v1/content/{id}/visual-choice - choose A/B variant
 """
 
 from __future__ import annotations
@@ -377,7 +377,9 @@ class TestCreateContentFromThought:
             _patch_queue_dir(content_queue_dir),
             patch(
                 "holus.agents.marketing.thought_pipeline.ThoughtContentPipeline._extract_from_url",
-                new=AsyncMock(return_value="A public thought about turning one source into native content."),
+                new=AsyncMock(
+                    return_value="A public thought about turning one source into native content."
+                ),
             ),
         ):
             resp = client.post(
@@ -532,7 +534,9 @@ class TestPatchContent:
 class TestPublishAndScheduleContent:
     """Explicit Holus Social API publish/schedule endpoints."""
 
-    def test_publish_dry_run_uses_platforms_payload(self, client, content_queue_dir, sample_yaml_piece):
+    def test_publish_dry_run_uses_platforms_payload(
+        self, client, content_queue_dir, sample_yaml_piece
+    ):
         """Dry-run publish returns the payload and does not update the queue file."""
         with _patch_queue_dir(content_queue_dir):
             resp = client.post("/api/v1/content/piece-001/publish", json={"dry_run": True})

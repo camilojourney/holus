@@ -30,6 +30,32 @@ class FailingAdapter:
         raise RuntimeError("feed down")
 
 
+class OneTimeFailingScorer:
+    uses_heuristic_fallback = True
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def __call__(
+        self,
+        item: RawResearchItem,
+        _interests: str,
+        _products: dict[str, Any],
+    ) -> ResearchScore:
+        self.calls += 1
+        if self.calls == 1:
+            raise RuntimeError("curator unavailable")
+        return _candidate_score(item, _interests, _products)
+
+
+def _always_failing_scorer(
+    _item: RawResearchItem,
+    _interests: str,
+    _products: dict[str, Any],
+) -> ResearchScore:
+    raise RuntimeError("invalid scorer output")
+
+
 def _write_config(root: Path) -> None:
     (root / "config").mkdir()
     (root / "config" / "research.yaml").write_text(
@@ -104,6 +130,7 @@ async def test_run_radar_dedupes_seen_items_and_preserves_same_day_digest(tmp_pa
     )
     digest_path = Path(first.digest_path or "")
     first_digest = digest_path.read_text(encoding="utf-8")
+    assert digest_path.name.startswith("digest-2026-06-25-")
     second = await run_radar(
         repo_root=tmp_path,
         source_adapters=[adapter],
@@ -116,6 +143,7 @@ async def test_run_radar_dedupes_seen_items_and_preserves_same_day_digest(tmp_pa
     assert second.scored == 0
     assert second.candidates_created == 0
     assert digest_path.read_text(encoding="utf-8") == first_digest
+    assert Path(second.digest_path or "") == digest_path
 
 
 @pytest.mark.asyncio
@@ -153,6 +181,46 @@ async def test_run_radar_continues_when_one_source_fails(tmp_path: Path) -> None
     assert failed.status == "failed"
     assert failed.error == "feed down"
     assert report.scored == 1
+    assert report.degraded is True
+    assert any("rss: feed down" in reason for reason in report.failure_reasons)
+
+
+@pytest.mark.asyncio
+async def test_run_radar_reports_scorer_fallbacks(tmp_path: Path) -> None:
+    _write_config(tmp_path)
+    item = _item("arxiv", "2401.1", "https://arxiv.org/abs/2401.1")
+    scorer = OneTimeFailingScorer()
+
+    report = await run_radar(
+        repo_root=tmp_path,
+        source_adapters=[StubAdapter("arxiv", [item])],
+        scorer=scorer,
+        run_date=date(2026, 6, 25),
+    )
+
+    assert report.scored == 1
+    assert report.heuristic_fallbacks == 1
+    assert report.degraded is True
+    assert any("heuristic-fallback" in reason for reason in report.failure_reasons)
+
+
+@pytest.mark.asyncio
+async def test_run_radar_accounts_for_terminal_scoring_failures(tmp_path: Path) -> None:
+    _write_config(tmp_path)
+    item = _item("arxiv", "2401.1", "https://arxiv.org/abs/2401.1")
+
+    report = await run_radar(
+        repo_root=tmp_path,
+        source_adapters=[StubAdapter("arxiv", [item])],
+        scorer=_always_failing_scorer,
+        run_date=date(2026, 6, 25),
+    )
+
+    failures_path = tmp_path / "data" / "research" / "scoring-failures.jsonl"
+    assert report.scoring_failures == 1
+    assert report.degraded is True
+    assert "terminal_skip_after_bounded_retries" in failures_path.read_text(encoding="utf-8")
+    assert (tmp_path / "data" / "research" / "seen.jsonl").exists()
 
 
 def test_candidate_store_reject_and_outcome_hook(tmp_path: Path) -> None:

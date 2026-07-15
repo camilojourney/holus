@@ -22,9 +22,9 @@ from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 logger = logging.getLogger(__name__)
 
 DEFAULT_TRAJECTORY_PATH = Path(".self-improvement/memory/trajectory.jsonl")
-DEFAULT_MEMORY_PATH = Path(".self-improvement/MEMORY.md")
-DEFAULT_KNOWLEDGE_DIR = Path(".self-improvement/knowledge/current")
-DEFAULT_ARCHIVE_DIR = Path(".self-improvement/knowledge/archive")
+DEFAULT_MEMORY_PATH = Path("agentic/memory/MEMORY.md")
+DEFAULT_KNOWLEDGE_DIR = Path("agentic/memory/knowledge/current")
+DEFAULT_ARCHIVE_DIR = Path("agentic/memory/knowledge/archive")
 
 MIN_DATA_POINTS = 5
 
@@ -72,7 +72,7 @@ class WeeklyLearningLoop:
     1. Read trajectory data (last *lookback_days* days).
     2. Aggregate by content_type / platform / product.
     3. Check minimum sample size (*min_data_points*).
-    4. Extract patterns (statistical, not LLM — keeps cost zero).
+    4. Extract patterns (statistical, not LLM - keeps cost zero).
     5. Update ``MEMORY.md`` with new insights (append, never overwrite).
     6. Update ``performance-patterns.md`` knowledge file.
     7. Process open knowledge gap requests.
@@ -104,7 +104,7 @@ class WeeklyLearningLoop:
         start = datetime.now(UTC)
         report = LearningReport()
 
-        # 1 — Read trajectory data
+        # 1 - Read trajectory data
         cutoff = (datetime.now(UTC) - timedelta(days=self.lookback_days)).isoformat()
         all_entries = self.trajectory.read_all()
         recent = [e for e in all_entries if e.timestamp >= cutoff]
@@ -118,31 +118,31 @@ class WeeklyLearningLoop:
             self._log_cycle(report, start)
             return report
 
-        # 2 — Aggregate patterns
+        # 2 - Aggregate patterns
         patterns = self._aggregate_patterns(recent)
 
-        # 3 — Extract insights
+        # 3 - Extract insights
         insights = self._extract_insights(patterns, recent)
         report.insights = insights
 
-        # 4 — Update MEMORY.md
+        # 4 - Update MEMORY.md
         if insights:
             self._update_memory(insights)
             report.memory_updated = True
 
-        # 5 — Update performance-patterns.md
+        # 5 - Update performance-patterns.md
         if insights:
             updated = self._update_performance_patterns(insights, patterns)
             if updated:
                 report.knowledge_files_updated.append("performance-patterns.md")
 
-        # 6 — Detect score drift (trigger optimization if quality is declining)
+        # 6 - Detect score drift (trigger optimization if quality is declining)
         drift_agents = self._detect_drift(all_entries)
         if drift_agents:
             for agent_id in drift_agents:
                 insights.append(
                     Insight(
-                        pattern=f"DRIFT DETECTED: {agent_id} — 30-day avg dropped 0.1+ from peak",
+                        pattern=f"DRIFT DETECTED: {agent_id} - 30-day avg dropped 0.1+ from peak",
                         confidence="medium",
                         sample_size=len(recent),
                         source="trajectory",
@@ -150,7 +150,7 @@ class WeeklyLearningLoop:
                 )
             logger.warning("Drift detected for agents: %s", drift_agents)
 
-        # 7 — Detect capability/data gaps from failure patterns
+        # 7 - Detect capability/data gaps from failure patterns
         try:
             from holus.self_improvement.gap_detector import detect_gaps, write_gap_request
 
@@ -165,7 +165,7 @@ class WeeklyLearningLoop:
             gaps = list_open_gaps()
             report.gaps_processed = len(gaps)
 
-        # 8 — Log the cycle
+        # 8 - Log the cycle
         self._log_cycle(report, start)
 
         logger.info(
@@ -320,7 +320,7 @@ class WeeklyLearningLoop:
         today = datetime.now(UTC).date().isoformat()
 
         insight_lines = [
-            f"\n### Learning Loop — {today}\n",
+            f"\n### Learning Loop - {today}\n",
             (f"_Auto-generated from {sum(i.sample_size for i in insights)} data points._\n"),
         ]
         for insight in insights:

@@ -1,0 +1,36 @@
+cases:
+  - id: raw_thought_builder_note
+    source_type: text
+    thought: "The strongest AI teams are not the ones with the most tools. They are the ones with the clearest handoff between judgment, context, and execution."
+    expected_intent: raw_thought
+    expected_brief_prefix: "raw_thought:"
+    expected_success_signal: "clear source context"
+
+  - id: pasted_url_article
+    source_type: url
+    source_url: "https://example.com/ai-agent-operations"
+    extracted_text: "A new article explains why AI agent operations need explicit review gates, observable fallbacks, and source evidence before teams trust automated content distribution. The useful lesson is that autonomy works when every handoff leaves enough context for a human reviewer to understand the decision."
+    expected_intent: online_article
+    expected_brief_prefix: "online_article:"
+    expected_success_signal: "source evidence"
+
+  - id: research_note_agents
+    source_type: text
+    thought: "Research note: agent benchmarks keep rewarding isolated task completion, but production teams need evaluations that measure recovery, review quality, and whether failures are visible."
+    expected_intent: research_note
+    expected_brief_prefix: "research_note:"
+    expected_success_signal: "research implication"
+
+  - id: product_context_pilaster
+    source_type: text
+    thought: "Pilaster proves that image generation is not only about prettier assets. The real value is a repeatable system for reviewing prompts, variants, and final images before a campaign uses them."
+    expected_intent: product_context
+    expected_brief_prefix: "product_context:"
+    expected_success_signal: "product facts"
+
+  - id: campaign_idea_distribution
+    source_type: text
+    thought: "Campaign idea: show the same raw thought becoming a LinkedIn post, a carousel, and a Threads note, with the review gate visible in every step."
+    expected_intent: campaign_idea
+    expected_brief_prefix: "campaign_idea:"
+    expected_success_signal: "campaign direction"

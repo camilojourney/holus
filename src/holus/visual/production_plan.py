@@ -67,166 +67,188 @@ def build_visual_production_plan(
     ]
 
     if route.mode == VisualProximityMode.WORKFLOW:
-        return _with_linkedin_lens(VisualProductionPlan(
-            plan_id=plan_id,
-            route_mode=route.mode,
-            concept=f"Show the operating sequence behind: {takeaway}",
-            viewer_test="A viewer should be able to name the sequence and the bottleneck without reading the caption.",
-            scene_script=(
-                "A clean operating board where each step is a distinct station. The system should "
-                "feel planned, not magical."
+        return _with_linkedin_lens(
+            VisualProductionPlan(
+                plan_id=plan_id,
+                route_mode=route.mode,
+                concept=f"Show the operating sequence behind: {takeaway}",
+                viewer_test="A viewer should be able to name the sequence and the bottleneck without reading the caption.",
+                scene_script=(
+                    "A clean operating board where each step is a distinct station. The system should "
+                    "feel planned, not magical."
+                ),
+                composition_script=(
+                    "Five visible stages arranged left-to-right with a single flow direction. Put the "
+                    "small model/component inside the flow, not as the hero."
+                ),
+                required_elements=[
+                    "five distinct process stages",
+                    "one visible handoff path",
+                    "one small model/component as part of the system",
+                    "clear before/after or input/output boundary",
+                ],
+                text_policy=(
+                    "Readable labels are allowed only for exact stage names from the plan. No random UI text."
+                ),
+                forbidden_elements=common_forbidden,
+                compliance_checks=[
+                    "Does the image show a sequence?",
+                    "Is each job visually separate?",
+                    "Is the model only one part of the system?",
+                ],
             ),
-            composition_script=(
-                "Five visible stages arranged left-to-right with a single flow direction. Put the "
-                "small model/component inside the flow, not as the hero."
-            ),
-            required_elements=[
-                "five distinct process stages",
-                "one visible handoff path",
-                "one small model/component as part of the system",
-                "clear before/after or input/output boundary",
-            ],
-            text_policy=(
-                "Readable labels are allowed only for exact stage names from the plan. No random UI text."
-            ),
-            forbidden_elements=common_forbidden,
-            compliance_checks=[
-                "Does the image show a sequence?",
-                "Is each job visually separate?",
-                "Is the model only one part of the system?",
-            ],
-        ), route, source)
+            route,
+            source,
+        )
 
     if route.mode == VisualProximityMode.CHART:
-        return _with_linkedin_lens(VisualProductionPlan(
-            plan_id=plan_id,
-            route_mode=route.mode,
-            concept=f"Turn the evidence into one simple chart: {takeaway}",
-            viewer_test="A viewer should understand the comparison in under three seconds.",
-            scene_script="A clean editorial chart surface with one highlighted conclusion.",
-            composition_script=(
-                "One chart only. Large conclusion at top, simple axes or bars, one highlighted point."
+        return _with_linkedin_lens(
+            VisualProductionPlan(
+                plan_id=plan_id,
+                route_mode=route.mode,
+                concept=f"Turn the evidence into one simple chart: {takeaway}",
+                viewer_test="A viewer should understand the comparison in under three seconds.",
+                scene_script="A clean editorial chart surface with one highlighted conclusion.",
+                composition_script=(
+                    "One chart only. Large conclusion at top, simple axes or bars, one highlighted point."
+                ),
+                required_elements=[
+                    "one chart type",
+                    "one highlighted winner or anomaly",
+                    "minimal supporting labels",
+                ],
+                text_policy="Readable text is allowed only for the main conclusion and chart labels.",
+                forbidden_elements=common_forbidden,
+                compliance_checks=[
+                    "Is there exactly one chart?",
+                    "Is the conclusion visually highlighted?",
+                    "Is there no decorative data clutter?",
+                ],
             ),
-            required_elements=[
-                "one chart type",
-                "one highlighted winner or anomaly",
-                "minimal supporting labels",
-            ],
-            text_policy="Readable text is allowed only for the main conclusion and chart labels.",
-            forbidden_elements=common_forbidden,
-            compliance_checks=[
-                "Is there exactly one chart?",
-                "Is the conclusion visually highlighted?",
-                "Is there no decorative data clutter?",
-            ],
-        ), route, source)
+            route,
+            source,
+        )
 
     if route.mode == VisualProximityMode.PERSON_STORY:
-        return _with_linkedin_lens(VisualProductionPlan(
-            plan_id=plan_id,
-            route_mode=route.mode,
-            concept=f"Show the human moment behind: {takeaway}",
-            viewer_test="A viewer should understand who is deciding and what artifact caused the decision.",
-            scene_script=(
-                "One believable founder/operator/reviewer moment. The person is reacting to a concrete "
-                "artifact, not posing for a generic office photo."
+        return _with_linkedin_lens(
+            VisualProductionPlan(
+                plan_id=plan_id,
+                route_mode=route.mode,
+                concept=f"Show the human moment behind: {takeaway}",
+                viewer_test="A viewer should understand who is deciding and what artifact caused the decision.",
+                scene_script=(
+                    "One believable founder/operator/reviewer moment. The person is reacting to a concrete "
+                    "artifact, not posing for a generic office photo."
+                ),
+                composition_script=(
+                    "Person on one side, decision artifact on the other. Use posture, gaze, or hand position "
+                    "to show the moment of judgment."
+                ),
+                required_elements=[
+                    "one human decision-maker",
+                    "one concrete artifact",
+                    "visible moment of pause, pointing, marking, or choosing",
+                ],
+                text_policy="Avoid readable text except one short marked line or simple annotation if needed.",
+                forbidden_elements=common_forbidden,
+                compliance_checks=[
+                    "Is there a real story moment?",
+                    "Is the artifact visible?",
+                    "Does it avoid generic corporate stock-photo energy?",
+                ],
             ),
-            composition_script=(
-                "Person on one side, decision artifact on the other. Use posture, gaze, or hand position "
-                "to show the moment of judgment."
-            ),
-            required_elements=[
-                "one human decision-maker",
-                "one concrete artifact",
-                "visible moment of pause, pointing, marking, or choosing",
-            ],
-            text_policy="Avoid readable text except one short marked line or simple annotation if needed.",
-            forbidden_elements=common_forbidden,
-            compliance_checks=[
-                "Is there a real story moment?",
-                "Is the artifact visible?",
-                "Does it avoid generic corporate stock-photo energy?",
-            ],
-        ), route, source)
+            route,
+            source,
+        )
 
     if route.mode == VisualProximityMode.OBJECT_METAPHOR:
-        return _with_linkedin_lens(VisualProductionPlan(
-            plan_id=plan_id,
-            route_mode=route.mode,
-            concept=f"Use one physical metaphor for: {takeaway}",
-            viewer_test="A viewer should be able to explain the metaphor in one sentence.",
-            scene_script="One hero object or small object arrangement, directly mapped to the idea.",
-            composition_script="Single focal point, clear negative space, no secondary metaphors competing.",
-            required_elements=[
-                "one hero metaphor object",
-                "a visible tension or imbalance",
-                "simple environment that does not steal attention",
-            ],
-            text_policy="No readable text unless the object itself requires a short real-world label.",
-            forbidden_elements=common_forbidden,
-            compliance_checks=[
-                "Is there one metaphor only?",
-                "Can the metaphor be explained in one sentence?",
-                "Is the scene not just a pretty object collection?",
-            ],
-        ), route, source)
+        return _with_linkedin_lens(
+            VisualProductionPlan(
+                plan_id=plan_id,
+                route_mode=route.mode,
+                concept=f"Use one physical metaphor for: {takeaway}",
+                viewer_test="A viewer should be able to explain the metaphor in one sentence.",
+                scene_script="One hero object or small object arrangement, directly mapped to the idea.",
+                composition_script="Single focal point, clear negative space, no secondary metaphors competing.",
+                required_elements=[
+                    "one hero metaphor object",
+                    "a visible tension or imbalance",
+                    "simple environment that does not steal attention",
+                ],
+                text_policy="No readable text unless the object itself requires a short real-world label.",
+                forbidden_elements=common_forbidden,
+                compliance_checks=[
+                    "Is there one metaphor only?",
+                    "Can the metaphor be explained in one sentence?",
+                    "Is the scene not just a pretty object collection?",
+                ],
+            ),
+            route,
+            source,
+        )
 
     if route.mode == VisualProximityMode.PRODUCT_SCENE:
-        return _with_linkedin_lens(VisualProductionPlan(
+        return _with_linkedin_lens(
+            VisualProductionPlan(
+                plan_id=plan_id,
+                route_mode=route.mode,
+                concept=f"Show the product behavior behind: {takeaway}",
+                viewer_test="A viewer should see what changed in the product or review surface.",
+                scene_script=(
+                    "A plausible product/review interface shown as a work surface. The state change or "
+                    "decision reason must be visible."
+                ),
+                composition_script=(
+                    "Screen or board as the hero. Use one selected item, one reason panel, and one outcome state."
+                ),
+                required_elements=[
+                    "one selected content/review item",
+                    "one visible reason or fit signal",
+                    "one decision state",
+                ],
+                text_policy="Use abstract UI blocks or a few intentional labels only. No fake paragraphs.",
+                forbidden_elements=common_forbidden,
+                compliance_checks=[
+                    "Is the product job visible?",
+                    "Is the reason shown next to the item?",
+                    "Is the UI plausible and not random widgets?",
+                ],
+            ),
+            route,
+            source,
+        )
+
+    return _with_linkedin_lens(
+        VisualProductionPlan(
             plan_id=plan_id,
             route_mode=route.mode,
-            concept=f"Show the product behavior behind: {takeaway}",
-            viewer_test="A viewer should see what changed in the product or review surface.",
-            scene_script=(
-                "A plausible product/review interface shown as a work surface. The state change or "
-                "decision reason must be visible."
-            ),
-            composition_script=(
-                "Screen or board as the hero. Use one selected item, one reason panel, and one outcome state."
-            ),
+            concept=f"Make the thesis itself the visual: {takeaway}",
+            viewer_test="A viewer should understand the thesis without any caption.",
+            scene_script="A precise editorial thesis card with no illustrative scene.",
+            composition_script="Large thesis, one support line, restrained accent, strong negative space.",
             required_elements=[
-                "one selected content/review item",
-                "one visible reason or fit signal",
-                "one decision state",
+                "one exact thesis",
+                "one short support line",
+                "clear type hierarchy",
             ],
-            text_policy="Use abstract UI blocks or a few intentional labels only. No fake paragraphs.",
+            text_policy="Readable text is required, but only the planned thesis and support line.",
             forbidden_elements=common_forbidden,
             compliance_checks=[
-                "Is the product job visible?",
-                "Is the reason shown next to the item?",
-                "Is the UI plausible and not random widgets?",
+                "Is the text legible?",
+                "Is the thesis exact?",
+                "Is there no decorative filler?",
             ],
-        ), route, source)
-
-    return _with_linkedin_lens(VisualProductionPlan(
-        plan_id=plan_id,
-        route_mode=route.mode,
-        concept=f"Make the thesis itself the visual: {takeaway}",
-        viewer_test="A viewer should understand the thesis without any caption.",
-        scene_script="A precise editorial thesis card with no illustrative scene.",
-        composition_script="Large thesis, one support line, restrained accent, strong negative space.",
-        required_elements=[
-            "one exact thesis",
-            "one short support line",
-            "clear type hierarchy",
-        ],
-        text_policy="Readable text is required, but only the planned thesis and support line.",
-        forbidden_elements=common_forbidden,
-        compliance_checks=[
-            "Is the text legible?",
-            "Is the thesis exact?",
-            "Is there no decorative filler?",
-        ],
-    ), route, source)
+        ),
+        route,
+        source,
+    )
 
 
 def _takeaway(source: Any, fallback: str) -> str:
     if isinstance(source, dict):
         return str(source.get("intended_takeaway") or source.get("topic") or fallback)
     return str(
-        getattr(source, "intended_takeaway", None)
-        or getattr(source, "topic", None)
-        or fallback
+        getattr(source, "intended_takeaway", None) or getattr(source, "topic", None) or fallback
     )
 
 

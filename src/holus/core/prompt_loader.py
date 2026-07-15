@@ -1,9 +1,9 @@
 """Three-layer prompt resolution for Holus agents.
 
 Resolution order (first hit wins):
-  1. ``config/prompts/{agent_id}/current.md`` — optimizer-promoted variant
-  2. ``agents/{role}/{agent_id}.md``           — canonical .md (default)
-  3. Hardcoded Python ``fallback`` constant    — safety net during bootstrapping
+  1. ``config/prompts/{agent_id}/current.md`` - optimizer-promoted variant
+  2. ``agentic/agents/{role}/{agent_id}.md``   - canonical .md (default)
+  3. Hardcoded Python ``fallback`` constant    - safety net during bootstrapping
 
 The canonical path for layer 2 is resolved via AGENTS.yaml so callers do not
 need to know which sub-folder the agent lives in.
@@ -39,7 +39,8 @@ class PromptLoader:
 
     def __init__(self, repo_root: Path | None = None) -> None:
         self._repo_root = repo_root or _DEFAULT_REPO_ROOT
-        self._agents_yaml_path = self._repo_root / "agents" / "AGENTS.yaml"
+        self._agent_base_dir = self._resolve_agent_base_dir()
+        self._agents_yaml_path = self._agent_base_dir / "AGENTS.yaml"
         self._agents_data: dict[str, Any] | None = None
 
     # -- Internal helpers --------------------------------------------------
@@ -61,21 +62,27 @@ class PromptLoader:
         prompt_rel = info.get("prompt", "")
         if not prompt_rel:
             return None
-        result: Path = self._repo_root / "agents" / prompt_rel
+        result: Path = self._agent_base_dir / prompt_rel
         return result
+
+    def _resolve_agent_base_dir(self) -> Path:
+        migrated = self._repo_root / "agentic" / "agents"
+        if migrated.exists() or not (self._repo_root / "agents").exists():
+            return migrated
+        return self._repo_root / "agents"
 
     # -- Public API --------------------------------------------------------
 
     def get_prompt(self, agent_id: str, fallback: str = "") -> str:
         """Resolve a prompt through the three-layer hierarchy.
 
-        Layer 1 — optimizer variant
+        Layer 1 - optimizer variant
             ``config/prompts/{agent_id}/current.md``
 
-        Layer 2 — canonical .md file
-            ``agents/{prompt_path}`` (from AGENTS.yaml)
+        Layer 2 - canonical .md file
+            ``agentic/agents/{prompt_path}`` (from AGENTS.yaml)
 
-        Layer 3 — hardcoded Python constant
+        Layer 3 - hardcoded Python constant
             *fallback* parameter (emits WARNING)
 
         Args:
@@ -85,7 +92,7 @@ class PromptLoader:
         Returns:
             The resolved prompt text.
         """
-        # Layer 1 — optimizer variant
+        # Layer 1 - optimizer variant
         layer1 = self._repo_root / "config" / "prompts" / agent_id / "current.md"
         if layer1.exists():
             text = layer1.read_text(encoding="utf-8")
@@ -96,7 +103,7 @@ class PromptLoader:
             )
             return text
 
-        # Layer 2 — canonical .md file
+        # Layer 2 - canonical .md file
         layer2 = self._canonical_path(agent_id)
         if layer2 is not None and layer2.exists():
             text = layer2.read_text(encoding="utf-8")
@@ -107,9 +114,9 @@ class PromptLoader:
             )
             return text
 
-        # Layer 3 — hardcoded Python fallback
+        # Layer 3 - hardcoded Python fallback
         logger.warning(
-            "prompt_loader: no .md file for %s — falling back to Python string (layer 3)",
+            "prompt_loader: no .md file for %s - falling back to Python string (layer 3)",
             agent_id,
         )
         return fallback

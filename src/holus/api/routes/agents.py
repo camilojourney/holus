@@ -1,4 +1,4 @@
-"""Agent registry routes — GET /api/v1/agents."""
+"""Agent registry routes - GET /api/v1/agents."""
 
 from __future__ import annotations
 
@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/agents", tags=["agents"])
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-AGENTS_YAML = REPO_ROOT / "agents" / "AGENTS.yaml"
+AGENTS_YAML = REPO_ROOT / "agentic" / "agents" / "AGENTS.yaml"
 
 
 def _load_agents_yaml() -> dict[str, Any]:
-    """Load agents/AGENTS.yaml and return the agents dict."""
+    """Load agentic/agents/AGENTS.yaml and return the agents dict."""
     if not AGENTS_YAML.exists():
         raise HTTPException(status_code=503, detail="agents registry unavailable")
     try:

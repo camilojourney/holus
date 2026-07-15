@@ -249,11 +249,11 @@ export const demoContent: ContentItem[] = [
 // --- Knowledge Files ---
 
 export const demoKnowledge: KnowledgeFile[] = [
-  { path: '.self-improvement/MEMORY.md', name: 'System Memory', modified_at: '2026-03-13T10:00:00Z', size_bytes: 4200, freshness: 'fresh' },
+  { path: 'agentic/memory/MEMORY.md', name: 'System Memory', modified_at: '2026-03-13T10:00:00Z', size_bytes: 4200, freshness: 'fresh' },
   { path: '.self-improvement/memory/lessons.json', name: 'Lessons Learned', modified_at: '2026-03-12T18:30:00Z', size_bytes: 8100, freshness: 'fresh' },
   { path: '.self-improvement/memory/trajectory.jsonl', name: 'Decision Trajectory', modified_at: '2026-03-13T09:15:00Z', size_bytes: 32000, freshness: 'fresh' },
   { path: 'config/products.yaml', name: 'Product Definitions', modified_at: '2026-03-10T14:00:00Z', size_bytes: 1200, freshness: 'fresh' },
-  { path: 'agents/AGENTS.yaml', name: 'Agent Registry', modified_at: '2026-03-12T20:00:00Z', size_bytes: 6800, freshness: 'fresh' },
+  { path: 'agentic/agents/AGENTS.yaml', name: 'Agent Registry', modified_at: '2026-03-12T20:00:00Z', size_bytes: 6800, freshness: 'fresh' },
   { path: 'config/guardrails.yaml', name: 'Guardrails (safety-critical)', modified_at: '2026-03-01T10:00:00Z', size_bytes: 950, freshness: 'aging' },
 ];
 
@@ -504,7 +504,7 @@ export const demoMemoryContent: MemoryContent = {
 
 - **Tutorials outperform promo posts 4:1** on LinkedIn (validated across 30+ posts)
 - **Carousels get 3x more saves** than text posts on LinkedIn
-- **Technical depth correlates with engagement** — shallow tips underperform deep dives
+- **Technical depth correlates with engagement** - shallow tips underperform deep dives
 - **Best posting window:** Tuesday-Thursday, 8-10am EST for LinkedIn
 - **Instagram Reels** drive more followers than static posts (2.3x growth rate)
 
@@ -518,7 +518,7 @@ export const demoMemoryContent: MemoryContent = {
 
 - Direct, technical but accessible
 - First person, builder perspective
-- Show the work — code snippets, architecture diagrams, real metrics
+- Show the work - code snippets, architecture diagrams, real metrics
 - Never salesy, never "10 tips" listicles
 
 ## What Not to Do
@@ -540,7 +540,7 @@ export const demoLessons: LessonsResponse = {
     { id: '3', date: '2026-03-12', lesson: 'Thread format on Twitter/X works better for technical content than single tweets', source: 'performance_data', agent_id: 'marketing-strategist', category: 'content_format' },
     { id: '4', date: '2026-03-11', lesson: 'Carousel posts need a strong CTA on the last slide or saves drop by 40%', source: 'analytics_review', agent_id: 'carousel-architect', category: 'content_format' },
     { id: '5', date: '2026-03-11', lesson: 'SEO keywords with "how to" prefix convert 3x better than bare technical terms', source: 'keyword_research', agent_id: 'seo-researcher', category: 'seo' },
-    { id: '6', date: '2026-03-10', lesson: 'Brand safety violations most common in automated caption generation — always review', source: 'evaluation_audit', agent_id: 'brand-safety-judge', category: 'safety' },
+    { id: '6', date: '2026-03-10', lesson: 'Brand safety violations most common in automated caption generation - always review', source: 'evaluation_audit', agent_id: 'brand-safety-judge', category: 'safety' },
     { id: '7', date: '2026-03-10', lesson: 'Tutorial posts should include a "before/after" comparison for maximum shareability', source: 'performance_data', agent_id: 'tutorial-specialist', category: 'content_format' },
     { id: '8', date: '2026-03-09', lesson: 'Reposting top content to Threads 48h after LinkedIn gets 60% of original engagement', source: 'cross_post_test', agent_id: 'marketing-strategist', category: 'distribution' },
     { id: '9', date: '2026-03-09', lesson: 'Narrative posts with personal failure stories outperform pure success stories 2:1', source: 'analytics_review', agent_id: 'narrative-specialist', category: 'storytelling' },

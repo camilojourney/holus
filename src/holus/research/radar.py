@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import uuid
 from collections.abc import Sequence  # noqa: TC003 - used in public runtime signature.
@@ -13,7 +14,12 @@ from typing import Any
 import yaml
 
 from holus.research.candidates import CandidateStore
-from holus.research.curator import AsyncScoreCallable, ResearchCurator, ScoreCallable
+from holus.research.curator import (
+    AsyncScoreCallable,
+    ResearchCurator,
+    ScoreCallable,
+    default_agent_scorer,
+)
 from holus.research.digest import write_digest
 from holus.research.models import RadarRunReport, RadarSourceResult, RawResearchItem, ResearchScore
 from holus.research.seen_store import SeenStore
@@ -82,37 +88,67 @@ async def run_radar(
     root = Path(repo_root)
     config = load_config(root)
     started_at = datetime.now(UTC)
+    run_id = uuid.uuid4().hex
     digest_date = run_date or started_at.date()
     adapters = list(source_adapters) if source_adapters is not None else _default_adapters(config)
     seen_store = SeenStore(config.seen_path)
     candidate_store = CandidateStore(
         config.candidates_dir, queue_dir=root / "data" / "content-queue"
     )
+    resolved_scorer = scorer if scorer is not None else default_agent_scorer(root)
     curator = ResearchCurator(
         interests=_read_text(config.interests_path),
         products=_read_products(root),
-        scorer=scorer,
+        scorer=resolved_scorer,
     )
+    if scorer is None and resolved_scorer is not None:
+        curator.scorer_mode = "agent-backed"
 
+    async def fetch_adapter(
+        adapter: SourceAdapter,
+    ) -> tuple[str, list[RawResearchItem], str | None]:
+        try:
+            return adapter.source, await adapter.fetch(config.window_days), None
+        except Exception as exc:
+            return adapter.source, [], str(exc)
+
+    fetch_results = await asyncio.gather(*(fetch_adapter(adapter) for adapter in adapters))
     fetched_by_source: dict[str, list[RawResearchItem]] = {}
     source_errors: dict[str, str] = {}
-    for adapter in adapters:
-        try:
-            fetched_by_source[adapter.source] = await adapter.fetch(config.window_days)
-        except Exception as exc:
-            fetched_by_source[adapter.source] = []
-            source_errors[adapter.source] = str(exc)
+    for source, items, error in fetch_results:
+        fetched_by_source[source] = items
+        if error:
+            source_errors[source] = error
 
     new_items_by_source: dict[str, int] = {adapter.source: 0 for adapter in adapters}
-    new_items = _dedupe_new_items(fetched_by_source, seen_store, new_items_by_source)
+    new_items, dedupe_collisions = _dedupe_new_items(
+        fetched_by_source,
+        seen_store,
+        new_items_by_source,
+    )
+    if dedupe_collisions:
+        _append_jsonl(config.research_dir / "dedupe-collisions.jsonl", dedupe_collisions)
     digest_entries: list[tuple[RawResearchItem, ResearchScore]] = []
     candidates_created = 0
     scored = 0
+    scoring_failures: list[dict[str, Any]] = []
 
     for item in new_items:
         try:
-            score = await curator.score(item)
-        except Exception:
+            score = await _score_with_retries(curator, item, attempts=2)
+        except Exception as exc:
+            scoring_failures.append(
+                {
+                    "run_id": run_id,
+                    "item_id": item.item_id,
+                    "source": item.source,
+                    "source_id": item.source_id,
+                    "url": str(item.url),
+                    "failed_at": datetime.now(UTC).isoformat(),
+                    "error": str(exc),
+                    "policy": "terminal_skip_after_bounded_retries",
+                }
+            )
             continue
         scored += 1
         if score.should_read >= config.digest_threshold:
@@ -123,9 +159,17 @@ async def run_radar(
         ):
             candidate_store.create(item, score)
             candidates_created += 1
-        seen_store.mark_seen(item)
 
-    digest_path = _write_or_preserve_digest(config.research_dir, digest_date, digest_entries)
+    digest_path = _write_or_preserve_digest(
+        config.research_dir,
+        digest_date,
+        run_id,
+        digest_entries,
+    )
+    if scoring_failures:
+        _append_jsonl(config.research_dir / "scoring-failures.jsonl", scoring_failures)
+    for item in new_items:
+        seen_store.mark_seen(item)
     source_results = [
         RadarSourceResult(
             source=adapter.source,
@@ -137,13 +181,23 @@ async def run_radar(
         for adapter in adapters
     ]
     return RadarRunReport(
-        run_id=uuid.uuid4().hex,
+        run_id=run_id,
         started_at=started_at,
         finished_at=datetime.now(UTC),
         sources=source_results,
         scored=scored,
         digest_path=str(digest_path) if digest_path else None,
         candidates_created=candidates_created,
+        scoring_failures=len(scoring_failures),
+        degraded=bool(source_errors or scoring_failures or curator.fallback_count),
+        failure_reasons=[
+            *(f"{source}: {error}" for source, error in sorted(source_errors.items())),
+            *(f"scoring:{failure['item_id']}: {failure['error']}" for failure in scoring_failures),
+            *(f"heuristic-fallback:{reason}" for reason in curator.fallback_reasons),
+        ],
+        dedupe_collisions=len(dedupe_collisions),
+        scorer_mode=curator.scorer_mode,
+        heuristic_fallbacks=curator.fallback_count,
     )
 
 
@@ -195,7 +249,7 @@ def _dedupe_new_items(
     fetched_by_source: dict[str, list[RawResearchItem]],
     seen_store: SeenStore,
     new_items_by_source: dict[str, int],
-) -> list[RawResearchItem]:
+) -> tuple[list[RawResearchItem], list[dict[str, Any]]]:
     all_items = [
         item
         for items in fetched_by_source.values()
@@ -204,26 +258,75 @@ def _dedupe_new_items(
     ]
     all_items.sort(key=lambda item: (SOURCE_PRIORITY.get(item.source, 99), str(item.published_at)))
     seen_urls: set[str] = set()
+    canonical_owners: dict[str, RawResearchItem] = {}
     deduped: list[RawResearchItem] = []
+    collisions: list[dict[str, Any]] = []
     for item in all_items:
         item_url = canonical_url(str(item.url))
         if item_url in seen_urls:
+            owner = canonical_owners[item_url]
+            collisions.append(
+                {
+                    "canonical_url": item_url,
+                    "kept_item_id": owner.item_id,
+                    "kept_source": owner.source,
+                    "dropped_item_id": item.item_id,
+                    "dropped_source": item.source,
+                    "observed_at": datetime.now(UTC).isoformat(),
+                }
+            )
             continue
         seen_urls.add(item_url)
+        canonical_owners[item_url] = item
         deduped.append(item)
         new_items_by_source[item.source] = new_items_by_source.get(item.source, 0) + 1
-    return deduped
+    return deduped, collisions
 
 
 def _write_or_preserve_digest(
     research_dir: Path,
     digest_date: date,
+    run_id: str,
     digest_entries: list[tuple[RawResearchItem, ResearchScore]],
 ) -> Path:
-    path = research_dir / f"digest-{digest_date.isoformat()}.md"
-    if not digest_entries and path.exists():
-        return path
-    return write_digest(digest_entries, research_dir=research_dir, digest_date=digest_date)
+    if not digest_entries:
+        latest = _latest_digest_for_date(research_dir, digest_date)
+        if latest is not None:
+            return latest
+    return write_digest(
+        digest_entries,
+        research_dir=research_dir,
+        digest_date=digest_date,
+        run_id=run_id,
+    )
+
+
+def _latest_digest_for_date(research_dir: Path, digest_date: date) -> Path | None:
+    candidates = sorted(research_dir.glob(f"digest-{digest_date.isoformat()}*.md"))
+    return candidates[-1] if candidates else None
+
+
+async def _score_with_retries(
+    curator: ResearchCurator,
+    item: RawResearchItem,
+    *,
+    attempts: int,
+) -> ResearchScore:
+    last_error: Exception | None = None
+    for _ in range(max(1, attempts)):
+        try:
+            return await curator.score(item)
+        except Exception as exc:
+            last_error = exc
+    assert last_error is not None
+    raise last_error
+
+
+def _append_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        for row in rows:
+            fh.write(json.dumps(row, sort_keys=True) + "\n")
 
 
 def _read_text(path: Path) -> str:

@@ -92,8 +92,8 @@ class MarketingAgent(BaseAgent):
 
     _PRODUCTS_PATH = Path("config/products.yaml")
     _BRAND_PATH = Path("config/brand.yaml")
-    _KNOWLEDGE_DIR = Path(".self-improvement/knowledge/current")
-    _MEMORY_PATH = Path(".self-improvement/MEMORY.md")
+    _KNOWLEDGE_DIR = Path("agentic/memory/knowledge/current")
+    _MEMORY_PATH = Path("agentic/memory/MEMORY.md")
     _QUEUE_DIR = Path("data/content-queue")
     _TRAJECTORY_PATH = Path(".self-improvement/memory/trajectory.jsonl")
 
@@ -183,7 +183,7 @@ class MarketingAgent(BaseAgent):
 
         Every phase transition is logged to trajectory.jsonl.  If a blocking
         preflight check fails, the cycle is aborted before any work starts.
-        A trajectory entry is always written — even on hard failures — so the
+        A trajectory entry is always written - even on hard failures - so the
         watchdog and self-improvement system have complete data.
 
         After the trajectory entry is written, ``consecutive_failure_check``
@@ -221,7 +221,7 @@ class MarketingAgent(BaseAgent):
                 )
 
             # ------------------------------------------------------------------
-            # LOADING_STATE phase — compile graph and prepare initial state
+            # LOADING_STATE phase - compile graph and prepare initial state
             # ------------------------------------------------------------------
             current_phase = "loading_state"
             ctx.transition(CycleState.LOADING_STATE)
@@ -255,7 +255,7 @@ class MarketingAgent(BaseAgent):
             ctx.capability_gaps.extend(final_state.get("capability_gaps", []))
 
             # ------------------------------------------------------------------
-            # QUALITY_CHECK phase — already performed inside act(), record result
+            # QUALITY_CHECK phase - already performed inside act(), record result
             # ------------------------------------------------------------------
             current_phase = "quality_check"
             ctx.transition(CycleState.QUALITY_CHECK)
@@ -339,17 +339,17 @@ class MarketingAgent(BaseAgent):
 
         finally:
             # ------------------------------------------------------------------
-            # Trajectory entry — always written (DONE or FAILED)
+            # Trajectory entry - always written (DONE or FAILED)
             # ------------------------------------------------------------------
             ctx.finish()
             write_trajectory_entry(ctx)
 
             # ------------------------------------------------------------------
-            # Consecutive-failure guard — 3 failures → BUILD_PAUSED alert
+            # Consecutive-failure guard - 3 failures → BUILD_PAUSED alert
             # ------------------------------------------------------------------
             if consecutive_failure_check(ctx.trajectory_path, threshold=3):
                 logger.error(
-                    "BUILD_PAUSED: 3 consecutive marketing cycle failures — "
+                    "BUILD_PAUSED: 3 consecutive marketing cycle failures - "
                     "operator review required [cycle_id=%s, trajectory=%s]",
                     ctx.cycle_id,
                     str(ctx.trajectory_path),
@@ -495,7 +495,7 @@ class MarketingAgent(BaseAgent):
 
             parts = ["## Prior Cycle Feedback (learn from these mistakes)\n"]
             for r in recent[-5:]:  # Last 5 failures max
-                parts.append(f"- [{r['platform'].upper()} — {r['verdict']}] {r['feedback'][:200]}")
+                parts.append(f"- [{r['platform'].upper()} - {r['verdict']}] {r['feedback'][:200]}")
                 if r["weak_dims"]:
                     weak = ", ".join(f"{k}={v:.2f}" for k, v in r["weak_dims"].items())
                     parts.append(f"  Weak dimensions: {weak}")
@@ -508,7 +508,7 @@ class MarketingAgent(BaseAgent):
         """Extract platform-specific generation feedback from prior judge results.
 
         Filters the full prior_judge_feedback (loaded in observe) to entries
-        matching the target platform. Returns concise writing guidance — what
+        matching the target platform. Returns concise writing guidance - what
         to avoid, which dimensions were weak.
 
         Parameters
@@ -530,7 +530,7 @@ class MarketingAgent(BaseAgent):
         platform_upper = platform.upper()
         relevant_lines: list[str] = []
         for line in prior_feedback.splitlines():
-            # Match lines like "- [THREADS — PARTIAL] ..."
+            # Match lines like "- [THREADS - PARTIAL] ..."
             if platform_upper in line.upper() or line.startswith("  Weak"):
                 relevant_lines.append(line)
 
@@ -567,11 +567,17 @@ class MarketingAgent(BaseAgent):
 
         Returns a dict with ``summary`` (aggregate stats) and ``top_posts``
         (best performing recent posts).  Returns empty dict if the API is
-        unreachable or credentials are missing — the agent continues without
+        unreachable or credentials are missing - the agent continues without
         analytics (cold start behavior).
         """
-        api_key = self.config.holus_social_api_key or self.config.posting_api_key
-        base_url = self.config.holus_social_api_base_url or self.config.social_media_api_base_url
+        api_key = getattr(self.config, "holus_social_api_key", "") or getattr(
+            self.config, "posting_api_key", ""
+        )
+        base_url = getattr(self.config, "holus_social_api_base_url", "") or getattr(
+            self.config,
+            "social_media_api_base_url",
+            "http://localhost:8000",
+        )
         if not api_key:
             logger.info("Analytics fetch skipped: no HOLUS_SOCIAL_API_KEY configured")
             return {}
@@ -596,11 +602,17 @@ class MarketingAgent(BaseAgent):
         """Register a generated piece with Holus Social API for approval.
 
         Returns the schedule_id from the API, or None if scheduling fails.
-        The local content queue remains the source of truth — this is a
+        The local content queue remains the source of truth - this is a
         secondary registration so Holus Social API can track pending posts.
         """
-        api_key = self.config.holus_social_api_key or self.config.posting_api_key
-        base_url = self.config.holus_social_api_base_url or self.config.social_media_api_base_url
+        api_key = getattr(self.config, "holus_social_api_key", "") or getattr(
+            self.config, "posting_api_key", ""
+        )
+        base_url = getattr(self.config, "holus_social_api_base_url", "") or getattr(
+            self.config,
+            "social_media_api_base_url",
+            "http://localhost:8000",
+        )
         async with SocialMediaClient(
             base_url=base_url,
             api_key=api_key,
@@ -622,7 +634,7 @@ class MarketingAgent(BaseAgent):
 
     # -- Niche research sub-step -----------------------------------------------
 
-    _NICHE_QUERIES_PATH = Path(".self-improvement/knowledge/current/niche-research-queries.md")
+    _NICHE_QUERIES_PATH = Path("agentic/memory/knowledge/current/niche-research-queries.md")
     _NICHE_STATE_PATH = Path("data/.niche-research-state.json")
     _NICHE_MAX_QUERIES = 5
     _NICHE_TIMEOUT_SECONDS = 30
@@ -862,7 +874,7 @@ class MarketingAgent(BaseAgent):
     async def reason(self, state: MarketingState) -> dict[str, Any]:
         """Reason phase: produce validated ContentDecision objects.
 
-        Uses authority-building framing — decides ONE LinkedIn-first post that
+        Uses authority-building framing - decides ONE LinkedIn-first post that
         maps to a content pillar, targets consulting prospects, and uses
         Camilo's builder-philosopher voice.
         """
@@ -1012,7 +1024,7 @@ class MarketingAgent(BaseAgent):
                     model_used=model_used,
                 )
 
-                # Quality gate — score before queuing
+                # Quality gate - score before queuing
                 brand_anti_phrases = brand.get("anti_patterns", {}).get("language", [])
                 quality = score_content(piece, brand_anti_patterns=brand_anti_phrases)
 
@@ -1039,7 +1051,11 @@ class MarketingAgent(BaseAgent):
 
                 # Register with Holus Social API for approval tracking
                 schedule_id = None
-                if self.config.holus_social_api_key or self.config.posting_api_key:
+                has_social_api_key = bool(
+                    getattr(self.config, "holus_social_api_key", "")
+                    or getattr(self.config, "posting_api_key", "")
+                )
+                if has_social_api_key:
                     try:
                         schedule_id = await self._schedule_for_approval(piece)
                     except Exception as sched_exc:
@@ -1154,7 +1170,7 @@ class MarketingAgent(BaseAgent):
             text = piece_data.get("text", "")
 
             # Determine if this piece needs visual rendering
-            # video_reel is excluded — video rendering is not yet built
+            # video_reel is excluded - video rendering is not yet built
             is_carousel = content_type == "carousel"
             is_visual_pillar = content_pillar in ("ai_frameworks", "results_proof")
 
@@ -1488,7 +1504,7 @@ class MarketingAgent(BaseAgent):
                     platform=Platform.LINKEDIN,
                     content_type=ContentType.TUTORIAL,
                     content_pillar="builder_stories",
-                    topic=f"What I learned building {product_key.capitalize()} — lessons for AI teams",
+                    topic=f"What I learned building {product_key.capitalize()} - lessons for AI teams",
                     hook=f"I built {product_key.capitalize()} from scratch. Here's what surprised me.",
                     framework="original",
                     reasoning="Fallback strategy: builder stories demonstrate consulting expertise.",
@@ -1508,7 +1524,7 @@ class MarketingAgent(BaseAgent):
                 platform=Platform.LINKEDIN,
                 content_type=ContentType.TUTORIAL,
                 content_pillar="builder_stories",
-                topic="What I learned building 3 AI products — patterns every team should know",
+                topic="What I learned building 3 AI products - patterns every team should know",
                 hook="I built 3 AI products in production. Here's what I wish someone told me.",
                 framework="original",
                 reasoning="Cold-start fallback: builder story as consulting proof point.",

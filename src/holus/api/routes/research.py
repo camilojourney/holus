@@ -11,13 +11,13 @@ from fastapi.responses import PlainTextResponse
 
 from holus.research.candidates import CandidateStore, candidate_to_api_dict
 from holus.research.models import RadarRunReport
-from holus.research.radar import run_radar
+from holus.research.radar import ResearchRadarConfig, load_config, run_radar
 
 router = APIRouter(prefix="/research", tags=["research"])
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-RESEARCH_DIR = REPO_ROOT / "data" / "research"
-CANDIDATES_DIR = RESEARCH_DIR / "candidates"
+RESEARCH_DIR: Path | None = None
+CANDIDATES_DIR: Path | None = None
 CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
 DIGEST_DATE_QUERY = Query(default=None, alias="date")
 AS_JSON_QUERY = Query(default=True)
@@ -47,7 +47,8 @@ async def get_research_digest(
 @router.get("/candidates")
 async def list_research_candidates(status: str | None = Query(default=None)) -> dict[str, Any]:
     """List research candidates, optionally filtered by status."""
-    store = CandidateStore(CANDIDATES_DIR, queue_dir=CONTENT_QUEUE_DIR)
+    config = _research_config()
+    store = CandidateStore(_candidates_dir(config), queue_dir=CONTENT_QUEUE_DIR)
     return {
         "candidates": [candidate_to_api_dict(candidate) for candidate in store.list(status=status)]
     }
@@ -56,7 +57,8 @@ async def list_research_candidates(status: str | None = Query(default=None)) -> 
 @router.post("/candidates/{candidate_id}/approve")
 async def approve_research_candidate(candidate_id: str) -> dict[str, Any]:
     """Approve a candidate into the existing from-thought pipeline."""
-    store = CandidateStore(CANDIDATES_DIR, queue_dir=CONTENT_QUEUE_DIR)
+    config = _research_config()
+    store = CandidateStore(_candidates_dir(config), queue_dir=CONTENT_QUEUE_DIR)
     try:
         candidate = await store.approve(candidate_id)
     except FileNotFoundError as exc:
@@ -69,7 +71,8 @@ async def approve_research_candidate(candidate_id: str) -> dict[str, Any]:
 @router.post("/candidates/{candidate_id}/reject")
 async def reject_research_candidate(candidate_id: str) -> dict[str, Any]:
     """Mark a pending candidate as rejected."""
-    store = CandidateStore(CANDIDATES_DIR, queue_dir=CONTENT_QUEUE_DIR)
+    config = _research_config()
+    store = CandidateStore(_candidates_dir(config), queue_dir=CONTENT_QUEUE_DIR)
     try:
         candidate = store.reject(candidate_id)
     except FileNotFoundError as exc:
@@ -78,9 +81,23 @@ async def reject_research_candidate(candidate_id: str) -> dict[str, Any]:
 
 
 def _digest_path(digest_date: date | None) -> Path | None:
+    research_dir = _research_dir(_research_config())
     if digest_date is not None:
-        return RESEARCH_DIR / f"digest-{digest_date.isoformat()}.md"
-    if not RESEARCH_DIR.exists():
+        candidates = sorted(research_dir.glob(f"digest-{digest_date.isoformat()}*.md"))
+        return candidates[-1] if candidates else None
+    if not research_dir.exists():
         return None
-    candidates = sorted(RESEARCH_DIR.glob("digest-*.md"))
+    candidates = sorted(research_dir.glob("digest-*.md"))
     return candidates[-1] if candidates else None
+
+
+def _research_config() -> ResearchRadarConfig:
+    return load_config(REPO_ROOT)
+
+
+def _research_dir(config: ResearchRadarConfig) -> Path:
+    return RESEARCH_DIR if RESEARCH_DIR is not None else config.research_dir
+
+
+def _candidates_dir(config: ResearchRadarConfig) -> Path:
+    return CANDIDATES_DIR if CANDIDATES_DIR is not None else config.candidates_dir

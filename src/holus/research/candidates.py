@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import fcntl
 from collections.abc import Callable
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol, cast
 
+import httpx
 import yaml
 
 from holus.agents.marketing.thought_pipeline import DEFAULT_CHANNELS, ThoughtContentPipeline
@@ -87,38 +90,39 @@ class CandidateStore:
         return candidates
 
     async def approve(self, candidate_id: str) -> ResearchCandidate:
-        candidate = self.get(candidate_id)
-        if candidate.status == "approved" and candidate.approved_group_id:
-            return candidate
-        pipeline = self._make_pipeline()
-        thought = self._approval_text(candidate)
-        try:
-            content_set = await pipeline.create_content_set(
-                thought=thought,
-                channels=list(DEFAULT_CHANNELS),
-                source_type="url",
-                source_url=str(candidate.item.url),
-            )
-        except Exception as url_exc:
+        with self._approval_lock(candidate_id):
+            candidate = self.get(candidate_id)
+            if candidate.status == "approved" and candidate.approved_group_id:
+                return candidate
+            pipeline = self._make_pipeline()
+            thought = self._approval_text(candidate)
             try:
                 content_set = await pipeline.create_content_set(
                     thought=thought,
                     channels=list(DEFAULT_CHANNELS),
-                    source_type="text",
-                    source_url=None,
+                    source_type="url",
+                    source_url=str(candidate.item.url),
                 )
-            except Exception as text_exc:
-                candidate.status = "failed"
-                candidate.failure_reason = (
-                    f"url approval failed: {url_exc}; text fallback failed: {text_exc}"
-                )
-                self.save(candidate)
-                raise
-        candidate.status = "approved"
-        candidate.approved_group_id = content_set.group_id
-        candidate.failure_reason = None
-        self.save(candidate)
-        return candidate
+            except (httpx.HTTPError, ValueError) as url_exc:
+                try:
+                    content_set = await pipeline.create_content_set(
+                        thought=thought,
+                        channels=list(DEFAULT_CHANNELS),
+                        source_type="text",
+                        source_url=None,
+                    )
+                except Exception as text_exc:
+                    candidate.status = "failed"
+                    candidate.failure_reason = (
+                        f"url approval failed: {url_exc}; text fallback failed: {text_exc}"
+                    )
+                    self.save(candidate)
+                    raise
+            candidate.status = "approved"
+            candidate.approved_group_id = content_set.group_id
+            candidate.failure_reason = None
+            self.save(candidate)
+            return candidate
 
     def reject(self, candidate_id: str) -> ResearchCandidate:
         candidate = self.get(candidate_id)
@@ -134,6 +138,17 @@ class CandidateStore:
 
     def _path(self, candidate_id: str) -> Path:
         return self.directory / f"{candidate_id}.yaml"
+
+    @contextmanager
+    def _approval_lock(self, candidate_id: str) -> Any:
+        self.directory.mkdir(parents=True, exist_ok=True)
+        lock_path = self.directory / f"{candidate_id}.approval.lock"
+        with lock_path.open("w", encoding="utf-8") as lock_file:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
     @staticmethod
     def _approval_text(candidate: ResearchCandidate) -> str:

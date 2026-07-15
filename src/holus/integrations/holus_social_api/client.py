@@ -46,7 +46,7 @@ def resolve_base_url(base_url: str | None = None) -> str:
 
 def resolve_api_key(api_key: str | None = None) -> str:
     """Resolve Holus Social API key with legacy fallback."""
-    return api_key or os.getenv(HOLUS_SOCIAL_API_KEY_ENV) or os.getenv(LEGACY_API_KEY_ENV, "")
+    return api_key or os.getenv(HOLUS_SOCIAL_API_KEY_ENV) or os.getenv(LEGACY_API_KEY_ENV) or ""
 
 
 def normalize_platform(platform: str) -> str:

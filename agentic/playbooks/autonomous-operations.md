@@ -15,19 +15,19 @@ monitoring, troubleshooting, and manual intervention.
 
 ## Daily Monitoring (5 min)
 
-1. **Check Telegram** — any gap alerts or rejection notifications?
-2. **Check Observatory** — `localhost:3000/improvement`
+1. **Check Telegram** - any gap alerts or rejection notifications?
+2. **Check Observatory** - `localhost:3000/improvement`
    - Score trends: is average score trending up?
    - Drift alerts: any agents degrading?
    - Activation gates: which mechanisms are active?
-3. **Check gaps** — `just gaps` or browse `capability-requests/`
+3. **Check gaps** - `just gaps` or browse `capability-requests/`
 
 ## Weekly Review (15 min)
 
-1. **Review PARTIAL content** — approve or reject with reason
-2. **Check learning report** — `cat .self-improvement/MEMORY.md | tail -50`
-3. **Check prompt evolution** — `ls config/prompts/*/population.json`
-4. **Review gap requests** — decide build/skip/defer for each
+1. **Review PARTIAL content** - approve or reject with reason
+2. **Check learning report** - `cat agentic/memory/MEMORY.md | tail -50`
+3. **Check prompt evolution** - `ls config/prompts/*/population.json`
+4. **Review gap requests** - decide build/skip/defer for each
 
 ## Troubleshooting
 
