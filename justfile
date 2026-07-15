@@ -416,4 +416,14 @@ rotate-logs:
 
 # Verify repo integrity before committing (checks duplicates, specs, schema, dead modules)
 verify:
-    python3 /Users/mini/.openclaw/workspace/github/~Projects/system/shared/scripts/repo_verify.py --repo holus --skip tests || [ $? -eq 2 ]
+    @repo_verify="/Users/mini/github/fleet-system/system/shared/scripts/repo_verify.py"; \
+    if [ ! -f "$repo_verify" ]; then \
+        echo "repo_verify.py not found at $repo_verify" >&2; \
+        exit 127; \
+    fi; \
+    python3 "$repo_verify" --repo holus --skip tests; \
+    status=$?; \
+    if [ "$status" -eq 2 ]; then \
+        exit 0; \
+    fi; \
+    exit "$status"
