@@ -38,8 +38,8 @@ def _run_verify(tmp_path: Path, env: dict[str, str | None]) -> subprocess.Comple
     if not python_link.exists():
         python_link.symlink_to(sys.executable)
     path_parts = [str(python_bin), *os.defpath.split(os.pathsep)]
-    if env.get("PATH"):
-        path_parts.insert(0, env["PATH"])
+    if path_override := env.get("PATH"):
+        path_parts.insert(0, path_override)
     run_env = {
         "HOME": str(tmp_path / "home"),
         "PATH": os.pathsep.join(path_parts),
