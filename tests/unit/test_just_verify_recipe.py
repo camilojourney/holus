@@ -200,3 +200,33 @@ def test_verify_fails_with_override_guidance_when_home_is_unset(tmp_path: Path) 
     assert "add executable repo_verify.py to PATH" in result.stderr
     assert "set FLEET_SYSTEM_ROOT=/path/to/fleet-system" in result.stderr
     assert "unbound variable" not in result.stderr
+
+
+def test_verify_accepts_recognized_warning_result(tmp_path: Path) -> None:
+    verifier = tmp_path / "repo_verify.py"
+    _write_verifier(verifier, "RESULT: PASS WITH WARNINGS", exit_code=2)
+
+    result = _run_verify(tmp_path, {"REPO_VERIFY_PATH": str(verifier), "PATH": ""})
+
+    assert result.returncode == 0
+    assert "RESULT: PASS WITH WARNINGS" in result.stdout
+
+
+def test_verify_rejects_unrecognized_exit_two_result(tmp_path: Path) -> None:
+    verifier = tmp_path / "repo_verify.py"
+    _write_verifier(verifier, "RESULT: FAIL", exit_code=2)
+
+    result = _run_verify(tmp_path, {"REPO_VERIFY_PATH": str(verifier), "PATH": ""})
+
+    assert result.returncode == 2
+    assert "RESULT: FAIL" in result.stdout
+
+
+def test_verify_preserves_non_warning_failure_with_warning_text(tmp_path: Path) -> None:
+    verifier = tmp_path / "repo_verify.py"
+    _write_verifier(verifier, "RESULT: PASS WITH WARNINGS", exit_code=1)
+
+    result = _run_verify(tmp_path, {"REPO_VERIFY_PATH": str(verifier), "PATH": ""})
+
+    assert result.returncode == 1
+    assert "RESULT: PASS WITH WARNINGS" in result.stdout

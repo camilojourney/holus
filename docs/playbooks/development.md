@@ -10,6 +10,7 @@ How to get Holus running locally from zero.
 |------|---------|---------|
 | Python | 3.12+ | `brew install python@3.12` |
 | uv | latest | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| just | latest | `brew install just` |
 | OrbStack | latest | `brew install --cask orbstack` (replaces Docker Desktop) |
 | Docker Compose | v2+ | Included with OrbStack |
 | Redis CLI | latest | `brew install redis` (for kill switch and debugging) |
@@ -114,6 +115,26 @@ uv run ruff check src/ tests/
 uv run ruff format --check src/ tests/
 ```
 
+## Verifying Repository Integrity
+
+Run the repository verifier before committing:
+
+```bash
+just verify
+```
+
+The recipe locates `repo_verify.py` in this order:
+
+1. The file set by `REPO_VERIFY_PATH`.
+2. An executable `repo_verify.py` on `PATH`.
+3. `$FLEET_SYSTEM_ROOT/system/shared/scripts/repo_verify.py`.
+4. `$HOME/github/fleet-system/system/shared/scripts/repo_verify.py`.
+
+If the verifier cannot be found, the command exits with status 127 and explains
+how to configure `REPO_VERIFY_PATH`, `PATH`, or `FLEET_SYSTEM_ROOT`. A verifier
+exit status of 2 is accepted only when its output contains a line beginning with
+`RESULT: PASS WITH WARNINGS`; all other exit statuses are preserved.
+
 ## Common Tasks
 
 ### Kill Switch (Emergency Stop)
@@ -155,4 +176,4 @@ redis-cli XRANGE holus:stream:holus.marketing.content - + COUNT 10
 
 ---
 
-**Last updated:** 2026-02-24
+**Last updated:** 2026-07-15
