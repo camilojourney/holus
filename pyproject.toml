@@ -196,5 +196,14 @@ exclude_lines = [
 
 [dependency-groups]
 dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
     "types-pyyaml>=6.0.12.20250915",
 ]
+
+[tool.uv]
+default-groups = ["dev"]

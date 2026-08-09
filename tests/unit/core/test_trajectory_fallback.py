@@ -55,7 +55,12 @@ class TestAppendJsonlFallback:
             _append_jsonl(unwritable_path, entry)
 
             # Primary should not exist (parent mkdir failed)
-            assert not unwritable_path.exists()
+            try:
+                primary_missing = not unwritable_path.exists()
+            except PermissionError:
+                # macOS: stat on a path under a read-only dir raises PermissionError
+                primary_missing = True
+            assert primary_missing
 
             # Either fallback file was written or stderr was used — no exception raised
         finally:
