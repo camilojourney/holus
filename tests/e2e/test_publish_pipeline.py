@@ -257,6 +257,145 @@ class TestFullPublishPipeline:
         assert data["status"] == "approved"
 
 
+class TestReviewGateContract:
+    """SPEC-032 explicit review gate: humanize → approve before any publish attempt.
+
+    Contract: publish_all only touches approved content and never calls a live
+    Holus Social API client (SocialMediaClient is always mocked in these tests).
+    """
+
+    def test_cannot_approve_without_humanization(self, queue_dir):
+        """Approve is blocked until content passes the humanization gate."""
+        enqueue(_make_content(piece_id="gate1"))
+
+        with pytest.raises(ValueError, match="must be humanized first"):
+            approve("gate1")
+
+        data = _read_yaml(queue_dir / "gate1.yaml")
+        assert data["status"] == "pending_review"
+
+    def test_humanize_rejects_excessive_edit_distance(self, queue_dir):
+        """Humanize rejects rewrites that exceed the SPEC-032 edit-distance limit."""
+        enqueue(
+            _make_content(
+                piece_id="gate2",
+                text="Original text about AI engineering and building reliable systems.",
+            )
+        )
+
+        with pytest.raises(ValueError, match=r"exceeds.*limit"):
+            humanize(
+                "gate2",
+                "Completely different topic about cooking pasta and gardening tips.",
+            )
+
+        data = _read_yaml(queue_dir / "gate2.yaml")
+        assert data["status"] == "pending_review"
+
+    def test_pending_review_not_published(self, queue_dir, monkeypatch):
+        """Content still in pending_review must not be published."""
+        monkeypatch.setenv("POSTING_API_KEY", "test-key-123")
+        enqueue(_make_content(piece_id="gate3"))
+
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+
+        with patch(
+            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            return_value=mock_client,
+        ):
+            asyncio.run(publish_all())
+
+        mock_client.publish.assert_not_called()
+        assert _read_yaml(queue_dir / "gate3.yaml")["status"] == "pending_review"
+
+    def test_humanized_but_unapproved_not_published(self, queue_dir, monkeypatch):
+        """Humanized content that was never approved must not be published."""
+        monkeypatch.setenv("POSTING_API_KEY", "test-key-123")
+        enqueue(_make_content(piece_id="gate4"))
+        humanize(
+            "gate4",
+            "I built an AI image platform with memory! Here is what I learned.",
+        )
+
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+
+        with patch(
+            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            return_value=mock_client,
+        ):
+            asyncio.run(publish_all())
+
+        mock_client.publish.assert_not_called()
+        assert _read_yaml(queue_dir / "gate4.yaml")["status"] == "humanized"
+
+    def test_rejected_content_never_published(self, queue_dir, monkeypatch):
+        """Rejected content is skipped by publish_all."""
+        monkeypatch.setenv("POSTING_API_KEY", "test-key-123")
+        enqueue(_make_content(piece_id="gate5"))
+        reject("gate5", reason="off-brand")
+
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+
+        with patch(
+            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            return_value=mock_client,
+        ):
+            asyncio.run(publish_all())
+
+        mock_client.publish.assert_not_called()
+        assert _read_yaml(queue_dir / "gate5.yaml")["status"] == "rejected"
+
+    def test_publish_all_never_instantiates_live_httpx(
+        self, queue_dir, mock_publish_success, monkeypatch
+    ):
+        """Contract: publish_all uses mocked SocialMediaClient — no live httpx I/O."""
+        monkeypatch.setenv("POSTING_API_KEY", "test-key-123")
+        enqueue(_make_content(piece_id="gate6"))
+        _humanize_and_approve("gate6")
+
+        mock_client = AsyncMock()
+        mock_client.publish.return_value = mock_publish_success
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+
+        with (
+            patch(
+                "holus.agents.marketing.publish_approved.SocialMediaClient",
+                return_value=mock_client,
+            ),
+            patch("httpx.AsyncClient") as live_httpx,
+        ):
+            asyncio.run(publish_all())
+
+        live_httpx.assert_not_called()
+        mock_client.publish.assert_called_once()
+
+    def test_lifecycle_transitions_are_sequential(self, queue_dir):
+        """Contract: pending_review → humanized → approved → published."""
+        enqueue(_make_content(piece_id="lifecycle1"))
+        assert _read_yaml(queue_dir / "lifecycle1.yaml")["status"] == "pending_review"
+
+        humanize(
+            "lifecycle1",
+            "I built an AI image platform with memory! Here is what I learned.",
+        )
+        assert _read_yaml(queue_dir / "lifecycle1.yaml")["status"] == "humanized"
+
+        approve("lifecycle1")
+        assert _read_yaml(queue_dir / "lifecycle1.yaml")["status"] == "approved"
+
+        mark_published("lifecycle1", "job-contract")
+        data = _read_yaml(queue_dir / "lifecycle1.yaml")
+        assert data["status"] == "published"
+        assert data["post_id"] == "job-contract"
+
+
 class TestMultiPiecePipeline:
     """Multiple content pieces flowing through the pipeline together."""
 
