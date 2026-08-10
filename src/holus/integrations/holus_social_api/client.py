@@ -33,6 +33,13 @@ PLATFORM_CHAR_LIMITS: dict[str, int] = {
 
 VALID_PLATFORMS = frozenset(PLATFORM_CHAR_LIMITS)
 
+_RETRY_ON_HTTP_ERROR = retry(
+    retry=retry_if_exception_type(httpx.HTTPStatusError),
+    wait=wait_exponential(multiplier=1, min=4, max=60),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
+
 
 def resolve_base_url(base_url: str | None = None) -> str:
     """Resolve Holus Social API base URL with legacy fallback."""
@@ -54,6 +61,26 @@ def normalize_platform(platform: str) -> str:
     if platform == "twitter_x":
         return "twitter"
     return platform
+
+
+def _unwrap_envelope(data: Any) -> Any:
+    """Unwrap {"status": "ok", "data": {...}} responses when present."""
+    if isinstance(data, dict) and "data" in data:
+        return data["data"]
+    return data
+
+
+def _with_optional_media(
+    payload: dict[str, Any],
+    *,
+    media_url: str | None,
+    media_type: str | None,
+) -> dict[str, Any]:
+    if media_url:
+        payload["media_url"] = media_url
+    if media_type:
+        payload["media_type"] = media_type
+    return payload
 
 
 class PublishRequest(BaseModel):
@@ -160,34 +187,38 @@ class HolusSocialAPIClient:
                 violations.append(f"{platform}: {len(text)} chars exceeds {limit} limit")
         return violations
 
-    @retry(
-        retry=retry_if_exception_type(httpx.HTTPStatusError),
-        wait=wait_exponential(multiplier=1, min=4, max=60),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
-    async def publish(self, request: PublishRequest) -> PublishResult:
-        """Publish content through Holus Social API."""
-        platforms = [normalize_platform(platform) for platform in request.platforms]
-        violations = self.validate_content(request.content, platforms)
+    def _ensure_valid_content(self, content: str, platforms: list[str]) -> None:
+        violations = self.validate_content(content, platforms)
         if violations:
             raise ValueError(f"Content validation failed: {violations}")
 
-        payload: dict[str, Any] = {
-            "content": request.content,
-            "platforms": platforms,
-        }
-        if request.media_url:
-            payload["media_url"] = request.media_url
-        if request.media_type:
-            payload["media_type"] = request.media_type
+    async def _get_json(self, path: str, *, params: dict[str, Any] | None = None) -> dict[str, Any]:
+        if params is None:
+            response = await self.client.get(path)
+        else:
+            response = await self.client.get(path, params=params)
+        response.raise_for_status()
+        data: dict[str, Any] = response.json()
+        return data
 
-        response = await self.client.post("/api/v1/publish", json=payload)
+    async def _post_json(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
+        response = await self.client.post(path, json=payload)
         response.raise_for_status()
         data = response.json()
-        if isinstance(data, dict) and "data" in data:
-            data = data["data"]
-        return PublishResult.model_validate(data)
+        return _unwrap_envelope(data)
+
+    @_RETRY_ON_HTTP_ERROR
+    async def publish(self, request: PublishRequest) -> PublishResult:
+        """Publish content through Holus Social API."""
+        platforms = [normalize_platform(platform) for platform in request.platforms]
+        self._ensure_valid_content(request.content, platforms)
+
+        payload = _with_optional_media(
+            {"content": request.content, "platforms": platforms},
+            media_url=request.media_url,
+            media_type=request.media_type,
+        )
+        return PublishResult.model_validate(await self._post_json("/api/v1/publish", payload))
 
     async def get_status(self, publish_id: str) -> PublishResult:
         """Check a publish operation status."""
@@ -197,10 +228,7 @@ class HolusSocialAPIClient:
 
     async def health(self) -> dict[str, Any]:
         """Check Holus Social API health."""
-        response = await self.client.get("/api/v1/health")
-        response.raise_for_status()
-        data: dict[str, Any] = response.json()
-        return data
+        return await self._get_json("/api/v1/health")
 
     async def get_analytics(
         self,
@@ -212,17 +240,11 @@ class HolusSocialAPIClient:
         params: dict[str, Any] = {"days": days}
         if platform:
             params["platform"] = normalize_platform(platform)
-        response = await self.client.get("/api/v1/analytics", params=params)
-        response.raise_for_status()
-        data: dict[str, Any] = response.json()
-        return data
+        return await self._get_json("/api/v1/analytics", params=params)
 
     async def get_post_analytics(self, post_id: str) -> dict[str, Any]:
         """Fetch the latest engagement snapshot for one published post."""
-        response = await self.client.get(f"/api/v1/analytics/posts/{post_id}/latest")
-        response.raise_for_status()
-        data: dict[str, Any] = response.json()
-        return data
+        return await self._get_json(f"/api/v1/analytics/posts/{post_id}/latest")
 
     async def get_top_posts(
         self,
@@ -233,43 +255,28 @@ class HolusSocialAPIClient:
     ) -> dict[str, Any]:
         """Fetch top performing published posts."""
         params: dict[str, Any] = {"limit": limit, "days": days, "metric": metric}
-        response = await self.client.get("/api/v1/analytics/top-posts", params=params)
-        response.raise_for_status()
-        data: dict[str, Any] = response.json()
-        return data
+        return await self._get_json("/api/v1/analytics/top-posts", params=params)
 
-    @retry(
-        retry=retry_if_exception_type(httpx.HTTPStatusError),
-        wait=wait_exponential(multiplier=1, min=4, max=60),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
+    @_RETRY_ON_HTTP_ERROR
     async def schedule_post(self, request: ScheduleRequest) -> ScheduleResult:
         """Schedule content through Holus Social API."""
         platforms = request.platforms or ([request.platform] if request.platform else [])
         platforms = [normalize_platform(platform) for platform in platforms]
-        violations = self.validate_content(request.content, platforms)
-        if violations:
-            raise ValueError(f"Content validation failed: {violations}")
+        self._ensure_valid_content(request.content, platforms)
 
-        payload: dict[str, Any] = {
-            "content": request.content,
-            "platforms": platforms,
-            "approval_required": request.approval_required,
-        }
+        payload = _with_optional_media(
+            {
+                "content": request.content,
+                "platforms": platforms,
+                "approval_required": request.approval_required,
+            },
+            media_url=request.media_url,
+            media_type=request.media_type,
+        )
         if request.scheduled_at:
             payload["scheduled_at"] = request.scheduled_at
-        if request.media_url:
-            payload["media_url"] = request.media_url
-        if request.media_type:
-            payload["media_type"] = request.media_type
 
-        response = await self.client.post("/api/v1/schedule", json=payload)
-        response.raise_for_status()
-        data = response.json()
-        if isinstance(data, dict) and "data" in data:
-            data = data["data"]
-        return ScheduleResult.model_validate(data)
+        return ScheduleResult.model_validate(await self._post_json("/api/v1/schedule", payload))
 
     async def close(self) -> None:
         """Close the HTTP client."""
