@@ -55,6 +55,7 @@ class LineageStore:
     def __init__(self, directory: Path | str) -> None:
         self.directory = Path(directory)
         self.path = self.directory / "events.jsonl"
+        self.lock_path = self.directory / ".lineage.lock"
 
     def record(self, node: LineageNode, edges: list[LineageEdge] | None = None) -> bool:
         """Append a node event once; return false when its deterministic event exists."""
@@ -66,9 +67,9 @@ class LineageStore:
             }
         )
         self.directory.mkdir(parents=True, exist_ok=True)
-        with self.path.open("a+", encoding="utf-8") as handle:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-            try:
+        with self.lock_path.open("a+", encoding="utf-8") as lock:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            with self.path.open("a+", encoding="utf-8") as handle:
                 handle.seek(0)
                 existing = [self._decode(line) for line in handle if line.strip()]
                 events = [event for event in existing if event is not None]
@@ -91,24 +92,31 @@ class LineageStore:
                 handle.flush()
                 os.fsync(handle.fileno())
                 return True
-            finally:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def events(self) -> tuple[list[dict[str, Any]], list[int]]:
         """Return valid raw events and malformed line numbers without raising."""
-        if not self.path.exists():
-            return [], []
-        events: list[dict[str, Any]] = []
-        malformed: list[int] = []
-        for line_number, line in enumerate(self.path.read_text(encoding="utf-8").splitlines(), 1):
-            if not line.strip():
-                continue
-            event = self._decode(line)
-            if event is None:
-                malformed.append(line_number)
-            else:
-                events.append(event)
-        return events, malformed
+        self.directory.mkdir(parents=True, exist_ok=True)
+        with self.lock_path.open("a+", encoding="utf-8") as lock:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_SH)
+            try:
+                if not self.path.exists():
+                    return [], []
+                events: list[dict[str, Any]] = []
+                malformed: list[int] = []
+                for line_number, line in enumerate(
+                    self.path.read_text(encoding="utf-8").splitlines(), 1
+                ):
+                    if not line.strip():
+                        continue
+                    event = self._decode(line)
+                    if event is None:
+                        malformed.append(line_number)
+                    else:
+                        events.append(event)
+                return events, malformed
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def manifest(self, *, cursor: int = 0, limit: int = 500) -> dict[str, Any]:
         """Return deterministic, cursor-paged JSON suitable for a read-only consumer."""
@@ -260,7 +268,7 @@ class LineageStore:
                 raw
                 if isinstance(raw, dict)
                 and isinstance(raw.get("schema_version"), str)
-                and raw["schema_version"].startswith("1.")
+                and raw["schema_version"] == SCHEMA_VERSION
                 else None
             )
         except json.JSONDecodeError:

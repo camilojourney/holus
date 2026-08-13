@@ -34,6 +34,7 @@ except ImportError:
     redis_lib = None  # type: ignore[assignment]
 
 from holus.core.cycle_state import HealthResult
+from holus.core.config import HolusConfig
 from holus.lineage.store import LineageStore
 
 logger = structlog.get_logger()
@@ -124,7 +125,8 @@ class HealthCheck:
 
     def check_lineage(self) -> dict[str, Any]:
         """Check the optional lineage owner and surface incomplete chains honestly."""
-        directory = Path("data/lineage")
+        configured = HolusConfig.load().lineage_dir
+        directory = configured if configured.is_absolute() else Path.cwd() / configured
         store = LineageStore(directory)
         if not store.path.exists():
             return {"status": "healthy", "exists": False, "note": "No lineage emitted yet"}

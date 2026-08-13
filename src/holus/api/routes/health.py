@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from holus.api.models import HealthStatus, KPIMetrics
 from holus.api.routes.evaluations import EVAL_HISTORY_PATH
 from holus.api.routes.trajectory import TRAJECTORY_PATH, _load_trajectory
+from holus.core.config import HolusConfig
 from holus.lineage.store import LineageStore
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,13 @@ AGENTS_YAML = REPO_ROOT / "agentic" / "agents" / "AGENTS.yaml"
 GUARDRAILS_YAML = REPO_ROOT / "config" / "guardrails.yaml"
 CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
 LINEAGE_DIR = REPO_ROOT / "data" / "lineage"
+
+
+def _configured_lineage_dir() -> Path:
+    if LINEAGE_DIR != REPO_ROOT / "data" / "lineage":
+        return LINEAGE_DIR
+    configured = HolusConfig.load().lineage_dir
+    return configured if configured.is_absolute() else REPO_ROOT / configured
 
 
 def _is_kill_switch_active() -> bool:
@@ -91,7 +99,7 @@ async def health() -> HealthStatus:
     if not AGENTS_YAML.exists():
         logger.warning("AGENTS.yaml not found at %s", AGENTS_YAML)
 
-    lineage_store = LineageStore(LINEAGE_DIR)
+    lineage_store = LineageStore(_configured_lineage_dir())
     lineage = lineage_store.validate()
     return HealthStatus(
         kill_switch_active=_is_kill_switch_active(),

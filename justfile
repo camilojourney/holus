@@ -314,14 +314,6 @@ collect-analytics:
 improve-cycle:
     uv run python -m holus.agents.marketing.orchestrator improve
 
-# Auto-publish pending content based on judge scores
-auto-publish:
-    uv run python -c "import asyncio; from holus.agents.marketing.auto_publish import process_queue; print(asyncio.run(process_queue()))"
-
-# Auto-publish dry run (preview without actually posting)
-auto-publish-dry:
-    uv run python -c "import asyncio; from holus.agents.marketing.auto_publish import process_queue; print(asyncio.run(process_queue(dry_run=True)))"
-
 # Show open capability + knowledge gaps
 gaps:
     @echo "=== Capability Gaps (need /code to fix) ==="

@@ -344,33 +344,14 @@ async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
             continue
 
         if score >= PASS_THRESHOLD and verdict != "FAIL":
-            # AUTO-PUBLISH: high confidence + no safety flags
-            if dry_run:
-                action = "would_publish"
-                publish_id = None
-            else:
-                publish_id = await _publish_piece(item)
-                if publish_id:
-                    _update_item(
-                        file_path,
-                        {
-                            "status": "published",
-                            "post_id": publish_id,
-                            "published_at": datetime.now(tz=UTC).isoformat(),
-                            "auto_published": True,
-                        },
-                    )
-                    action = "published"
-                    _send_telegram_notification(item, "auto_published", score)
-                else:
-                    action = "publish_failed"
-
+            action = "would_review" if dry_run else "needs_review"
+            publish_id = None
             results.append(
                 {
                     "piece_id": piece_id,
                     "action": action,
                     "score": score,
-                    "publish_id": publish_id if not dry_run else None,
+                    "publish_id": None,
                 }
             )
 

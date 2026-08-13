@@ -562,7 +562,7 @@ async def schedule_content(
     _record_lineage_outcome(raw, ArtifactType.PUBLICATION_REQUEST, "intent_recorded")
     if intent.status == "accepted":
         raw["schedule_id"] = intent.external_id
-        raw["schedule_status"] = "pending_approval"
+        raw["schedule_status"] = intent.external_status or "accepted"
         schedule_id = intent.external_id
         schedule_status = raw["schedule_status"]
     else:
@@ -570,7 +570,12 @@ async def schedule_content(
             result = await client.schedule_post(
                 ScheduleRequest(**payload, idempotency_key=intent.request_id)
             )
-        _dispatch_outbox().mark_result(intent, status="accepted", external_id=result.schedule_id)
+        _dispatch_outbox().mark_result(
+            intent,
+            status="accepted",
+            external_id=result.schedule_id,
+            external_status=result.status,
+        )
         raw["schedule_id"] = result.schedule_id
         raw["schedule_status"] = result.status
         schedule_id = result.schedule_id

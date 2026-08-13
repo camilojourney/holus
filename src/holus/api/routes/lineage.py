@@ -7,11 +7,19 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from holus.core.config import HolusConfig
 from holus.lineage.store import LineageStore
 
 router = APIRouter(prefix="/lineage", tags=["lineage"])
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
 LINEAGE_DIR = REPO_ROOT / "data" / "lineage"
+
+
+def _configured_lineage_dir() -> Path:
+    if LINEAGE_DIR != REPO_ROOT / "data" / "lineage":
+        return LINEAGE_DIR
+    configured = HolusConfig.load().lineage_dir
+    return configured if configured.is_absolute() else REPO_ROOT / configured
 
 
 @router.get("/manifest")
@@ -20,7 +28,7 @@ async def lineage_manifest(
     limit: int = Query(default=500, ge=1, le=1000),
 ) -> dict[str, Any]:
     """Return the versioned, privacy-safe manifest only when its ledger validates."""
-    store = LineageStore(LINEAGE_DIR)
+    store = LineageStore(_configured_lineage_dir())
     if not store.validate().valid:
         raise HTTPException(status_code=409, detail="LINEAGE_INVALID")
     return store.manifest(cursor=cursor, limit=limit)
@@ -33,7 +41,7 @@ async def export_lineage(
 ) -> dict[str, Any]:
     """Return only a validated, sequence-cursored committed ledger snapshot."""
     try:
-        return LineageStore(LINEAGE_DIR).export(after_seq=after_seq, limit=limit)
+        return LineageStore(_configured_lineage_dir()).export(after_seq=after_seq, limit=limit)
     except ValueError as exc:
         if str(exc) == "LINEAGE_INVALID":
             raise HTTPException(status_code=409, detail="LINEAGE_INVALID") from exc
@@ -43,13 +51,16 @@ async def export_lineage(
 @router.get("/validate")
 async def validate_lineage() -> dict[str, Any]:
     """Return completeness diagnostics; a partial graph is explicitly not complete."""
-    return LineageStore(LINEAGE_DIR).validate().to_dict()
+    return LineageStore(_configured_lineage_dir()).validate().to_dict()
 
 
 @router.get("/nodes/{node_id}")
 async def get_lineage_node(node_id: str) -> dict[str, Any]:
     """Return one node and its adjacent edges from the same read-only owner."""
-    manifest = LineageStore(LINEAGE_DIR).manifest(limit=100_000)
+    store = LineageStore(_configured_lineage_dir())
+    if not store.validate().valid:
+        raise HTTPException(status_code=409, detail="LINEAGE_INVALID")
+    manifest = store.manifest(limit=100_000)
     nodes = [node for node in manifest["nodes"] if node["node_id"] == node_id]
     if not nodes:
         raise HTTPException(status_code=404, detail=f"Lineage node {node_id!r} not found")

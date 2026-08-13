@@ -16,6 +16,20 @@ _SECRET_KEY = re.compile(r"(?:api[_-]?key|token|secret|password|authorization)",
 _SECRET_VALUE = re.compile(r"(?:sk-|bearer\s+|ghp_)[A-Za-z0-9_-]+", re.I)
 
 
+def _redact_metadata(value: dict[str, Any]) -> dict[str, str | int | float | bool | None]:
+    safe: dict[str, str | int | float | bool | None] = {}
+    for key, item in value.items():
+        if _SECRET_KEY.search(str(key)):
+            continue
+        if isinstance(item, str):
+            if _SECRET_VALUE.search(item):
+                continue
+            safe[str(key)] = item[:512]
+        elif isinstance(item, (int, float, bool)) or item is None:
+            safe[str(key)] = item
+    return safe
+
+
 class ArtifactType(StrEnum):
     """Artifact classes emitted by currently implemented Holus stages."""
 
@@ -52,7 +66,7 @@ class LineageNode(BaseModel):
     @field_validator("schema_version")
     @classmethod
     def _schema_is_supported(cls, value: str) -> str:
-        if not value.startswith("1."):
+        if value != SCHEMA_VERSION:
             msg = f"Unsupported lineage schema version: {value}"
             raise ValueError(msg)
         return value
@@ -70,17 +84,7 @@ class LineageNode(BaseModel):
     @field_validator("metadata")
     @classmethod
     def _safe_metadata(cls, value: dict[str, Any]) -> dict[str, str | int | float | bool | None]:
-        safe: dict[str, str | int | float | bool | None] = {}
-        for key, item in value.items():
-            if _SECRET_KEY.search(str(key)):
-                continue
-            if isinstance(item, str):
-                if _SECRET_VALUE.search(item):
-                    continue
-                safe[str(key)] = item[:512]
-            elif isinstance(item, (int, float, bool)) or item is None:
-                safe[str(key)] = item
-        return safe
+        return _redact_metadata(value)
 
 
 class LineageEdge(BaseModel):
@@ -98,10 +102,15 @@ class LineageEdge(BaseModel):
     @field_validator("schema_version")
     @classmethod
     def _schema_is_supported(cls, value: str) -> str:
-        if not value.startswith("1."):
+        if value != SCHEMA_VERSION:
             msg = f"Unsupported lineage schema version: {value}"
             raise ValueError(msg)
         return value
+
+    @field_validator("metadata")
+    @classmethod
+    def _safe_metadata(cls, value: dict[str, Any]) -> dict[str, str | int | float | bool | None]:
+        return _redact_metadata(value)
 
 
 def stable_hash(value: Any) -> str:

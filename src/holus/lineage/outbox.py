@@ -28,6 +28,7 @@ class DispatchIntent:
     status: str
     created_at: str
     external_id: str | None = None
+    external_status: str | None = None
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> DispatchIntent:
@@ -40,6 +41,7 @@ class DispatchIntent:
             status=str(raw["status"]),
             created_at=str(raw["created_at"]),
             external_id=raw.get("external_id"),
+            external_status=raw.get("external_status"),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -52,6 +54,7 @@ class DispatchIntent:
             "status": self.status,
             "created_at": self.created_at,
             "external_id": self.external_id,
+            "external_status": self.external_status,
         }
 
 
@@ -96,7 +99,12 @@ class DispatchOutbox:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def mark_result(
-        self, intent: DispatchIntent, *, status: str, external_id: str | None
+        self,
+        intent: DispatchIntent,
+        *,
+        status: str,
+        external_id: str | None,
+        external_status: str | None = None,
     ) -> DispatchIntent:
         """Atomically persist the observed result; callers retry the same request ID."""
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -112,7 +120,14 @@ class DispatchOutbox:
                             path = candidate
                             break
                 updated = DispatchIntent(
-                    **(intent.to_dict() | {"status": status, "external_id": external_id})
+                    **(
+                        intent.to_dict()
+                        | {
+                            "status": status,
+                            "external_id": external_id,
+                            "external_status": external_status,
+                        }
+                    )
                 )
                 _atomic_json_replace(path, updated.to_dict())
                 return updated
