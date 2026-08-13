@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import Any
 
 import yaml
@@ -13,21 +12,10 @@ from holus.agents.marketing.content_queue import (
     enqueue,
     humanize,
     list_humanizable,
-    mark_published,
     reject,
 )
-from holus.integrations.holus_social_api import HolusSocialAPIClient, PublishRequest
 
 # Configuration and Environment Validation
-HOLUS_SOCIAL_API_KEY = os.environ.get("HOLUS_SOCIAL_API_KEY") or os.environ.get("POSTING_API_KEY")
-HOLUS_SOCIAL_API_BASE_URL = os.environ.get("HOLUS_SOCIAL_API_BASE_URL") or os.environ.get(
-    "SOCIAL_MEDIA_API_BASE_URL",
-    "http://localhost:8000",
-)
-POSTING_API_KEY = HOLUS_SOCIAL_API_KEY
-SOCIAL_MEDIA_API_BASE_URL = HOLUS_SOCIAL_API_BASE_URL
-SocialMediaClient = HolusSocialAPIClient
-
 mcp = FastMCP("holus")
 
 
@@ -170,8 +158,10 @@ async def holus_publish(
     product: str = "openclaw",
     media_url: str | None = None,
     media_type: str | None = None,
+    piece_id: str | None = None,
+    expected_revision: str | None = None,
 ) -> dict[str, Any]:
-    """Immediately publish content through Holus Social API, bypassing the queue.
+    """Publish an already human-approved queue piece through the guarded API.
 
     Args:
         text: The final text to publish.
@@ -179,53 +169,30 @@ async def holus_publish(
         product: Related product.
         media_url: Optional URL to an image or video.
         media_type: 'image' or 'video'.
+        piece_id: Approved queue piece to publish.
+        expected_revision: Exact immutable approved content revision.
     """
-    api_key = HOLUS_SOCIAL_API_KEY or POSTING_API_KEY
-    if not api_key:
-        return {"error": "HOLUS_SOCIAL_API_KEY environment variable is not set"}
-
-    content = QueuedContent(
-        product=product,
-        platform=platform,
-        content_type="educational",
-        topic="",
-        text=text,
-        reasoning="Immediate publish via MCP",
-        media_url=media_url,
-        media_type=media_type,
-    )
-    enqueue(content)
-    piece_id = content.piece_id
-
+    if not piece_id or not expected_revision:
+        return {"error": "APPROVAL_REQUIRED", "piece_id": piece_id}
     try:
-        # SPEC-032: Mark as humanized and approved before publishing
-        humanize(piece_id, text)
-        approve(piece_id)
+        from holus.api.models import ContentPublishRequest
+        from holus.api.routes.content import _find_content_raw, publish_content
 
-        async with SocialMediaClient(
-            api_key=api_key,
-            base_url=HOLUS_SOCIAL_API_BASE_URL or SOCIAL_MEDIA_API_BASE_URL,
-        ) as client:
-            result = await client.publish(
-                PublishRequest(
-                    content=text,
-                    platforms=[platform],
-                    media_url=media_url,
-                    media_type=media_type,
-                )
-            )
-
-        mark_published(piece_id, result.publish_id)
+        _, raw = _find_content_raw(piece_id)
+        if raw.get("text") != text or raw.get("platform") != platform:
+            return {"error": "REVISION_CONFLICT", "piece_id": piece_id}
+        response = await publish_content(
+            piece_id,
+            ContentPublishRequest(expected_revision=expected_revision),
+        )
+        return {
+            "piece_id": piece_id,
+            "publish_id": response.publish_id,
+            "platform": platform,
+            "status": response.status,
+        }
     except Exception as exc:
         return {"error": str(exc), "piece_id": piece_id}
-
-    return {
-        "piece_id": piece_id,
-        "publish_id": result.publish_id,
-        "platform": platform,
-        "status": "published",
-        "targets": [target.model_dump() for target in result.targets],
-    }
 
 
 if __name__ == "__main__":

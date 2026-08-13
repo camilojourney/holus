@@ -16,6 +16,8 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, Field
 
+from holus.lineage.models import stable_hash
+
 # Valid status transitions (SPEC-032 state machine)
 VALID_STATUSES = {
     "pending_review",
@@ -55,6 +57,8 @@ class QueuedContent(BaseModel):
     humanized_text: str | None = None
     humanized_at: datetime | None = None
     edit_distance: float | None = None
+    content_revision: str | None = None
+    review_decision_id: str | None = None
 
 
 QUEUE_DIR = Path("data/content-queue")
@@ -244,6 +248,21 @@ def approve(piece_id: str) -> None:
         )
 
     data["status"] = "approved"
+    revision = stable_hash(
+        {
+            key: data.get(key)
+            for key in (
+                "piece_id",
+                "text",
+                "platform",
+                "rendered_image_path",
+                "rendered_pdf_path",
+                "visual_spec",
+            )
+        }
+    )
+    data["content_revision"] = revision
+    data["review_decision_id"] = f"review-{piece_id}-{revision[:16]}"
     path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
 
 

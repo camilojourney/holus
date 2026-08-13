@@ -68,7 +68,13 @@ def _lineage_recorder() -> LineageRecorder:
 
 
 def _dispatch_outbox() -> DispatchOutbox:
-    return DispatchOutbox(CONTENT_QUEUE_DIR.parent / "lineage" / "outbox")
+    default_queue = REPO_ROOT / "data" / "content-queue"
+    if CONTENT_QUEUE_DIR != default_queue:
+        lineage_dir = CONTENT_QUEUE_DIR.parent / "lineage"
+    else:
+        configured = HolusConfig.load().lineage_dir
+        lineage_dir = configured if configured.is_absolute() else REPO_ROOT / configured
+    return DispatchOutbox(lineage_dir / "outbox")
 
 
 def _content_revision(raw: dict[str, Any]) -> str:

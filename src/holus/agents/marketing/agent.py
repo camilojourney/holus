@@ -50,7 +50,7 @@ from holus.core.cycle_state import CycleContext, CycleState, write_trajectory_en
 from holus.core.health import run_preflight_checks
 from holus.core.watchdog import consecutive_failure_check
 from holus.integrations.claude_api.client import CachedPrompt
-from holus.integrations.social_media import ScheduleRequest, SocialMediaClient
+from holus.integrations.social_media import SocialMediaClient
 from holus.memory.trajectory import TrajectoryEntry, TrajectoryLogger
 
 logger = logging.getLogger(__name__)
@@ -599,38 +599,14 @@ class MarketingAgent(BaseAgent):
     # -- Schedule for approval --------------------------------------------------
 
     async def _schedule_for_approval(self, piece: GeneratedPiece) -> str | None:
-        """Register a generated piece with Holus Social API for approval.
+        """Refuse pre-review scheduling; the reviewed API owns dispatch.
 
         Returns the schedule_id from the API, or None if scheduling fails.
         The local content queue remains the source of truth - this is a
         secondary registration so Holus Social API can track pending posts.
         """
-        api_key = getattr(self.config, "holus_social_api_key", "") or getattr(
-            self.config, "posting_api_key", ""
-        )
-        base_url = getattr(self.config, "holus_social_api_base_url", "") or getattr(
-            self.config,
-            "social_media_api_base_url",
-            "http://localhost:8000",
-        )
-        async with SocialMediaClient(
-            base_url=base_url,
-            api_key=api_key,
-        ) as client:
-            request = ScheduleRequest(
-                content=piece.text,
-                platform=piece.platform.value,
-                approval_required=True,
-                media_url=piece.visual_attachment_path,
-                media_type=piece.visual_format,
-            )
-            result = await client.schedule_post(request)
-            logger.info(
-                "Scheduled %s for approval: schedule_id=%s",
-                piece.piece_id,
-                result.schedule_id,
-            )
-            return result.schedule_id
+        logger.info("Deferred scheduling for %s until human review", piece.piece_id)
+        return None
 
     # -- Niche research sub-step -----------------------------------------------
 

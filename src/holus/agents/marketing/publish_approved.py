@@ -7,26 +7,19 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import os
 import sys
-from typing import Any
 
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from holus.integrations.social_media import (
-    HOLUS_SOCIAL_API_BASE_URL_ENV,
-    HOLUS_SOCIAL_API_KEY_ENV,
-    PLATFORM_CHAR_LIMITS,
-    HolusSocialAPIClient,
-    PublishRequest,
-)
+from holus.api.models import ContentPublishRequest
+from holus.api.routes.content import publish_content
+from holus.integrations.social_media import PLATFORM_CHAR_LIMITS
 
-from .content_queue import list_approved, mark_published
+from .content_queue import list_approved
 
 console = Console()
-SocialMediaClient = HolusSocialAPIClient
 
 
 def dry_run() -> None:
@@ -85,19 +78,7 @@ def dry_run() -> None:
 
 
 async def publish_all() -> None:
-    """Publish all approved content pieces via Holus Social API."""
-    api_key = os.getenv(HOLUS_SOCIAL_API_KEY_ENV) or os.getenv("POSTING_API_KEY", "")
-    if not api_key:
-        console.print("[red]ERROR: HOLUS_SOCIAL_API_KEY not set in environment[/red]")
-        console.print("[dim]Set HOLUS_SOCIAL_API_KEY or legacy POSTING_API_KEY.[/dim]")
-        sys.exit(1)
-
-    base_url = os.getenv(HOLUS_SOCIAL_API_BASE_URL_ENV) or os.getenv(
-        "SOCIAL_MEDIA_API_BASE_URL",
-        "http://localhost:8000",
-    )
-
-    # Get approved content
+    """Publish approved content through the guarded content API boundary."""
     approved = list_approved()
     if not approved:
         console.print("[yellow]No approved content to publish.[/yellow]")
@@ -105,54 +86,30 @@ async def publish_all() -> None:
 
     console.print(f"[cyan]Found {len(approved)} approved content pieces[/cyan]\n")
 
-    async with SocialMediaClient(base_url=base_url, api_key=api_key) as client:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            for content in approved:
-                task = progress.add_task(
-                    f"Publishing {content.piece_id} to {content.platform}...",
-                    total=None,
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        for content in approved:
+            task = progress.add_task(
+                f"Publishing {content.piece_id} to {content.platform}...",
+                total=None,
+            )
+            try:
+                if not content.review_decision_id or not content.content_revision:
+                    raise ValueError("APPROVAL_REQUIRED")
+                result = await publish_content(
+                    content.piece_id,
+                    ContentPublishRequest(expected_revision=content.content_revision),
                 )
-
-                try:
-                    # Build request with media attachment if rendered visual exists
-                    publish_kwargs: dict[str, Any] = {
-                        "content": content.text,
-                        "platforms": [content.platform],
-                        "style": "raw",  # Content is already written by the agent
-                    }
-
-                    if content.rendered_pdf_path:
-                        publish_kwargs["media_url"] = content.rendered_pdf_path
-                        publish_kwargs["media_type"] = "document"
-                    elif content.rendered_image_path:
-                        publish_kwargs["media_url"] = content.rendered_image_path
-                        publish_kwargs["media_type"] = "image"
-
-                    request = PublishRequest(**publish_kwargs)
-
-                    result = await client.publish(request)
-
-                    if result.failed_targets:
-                        for target in result.failed_targets:
-                            console.print(
-                                f"[red]x Failed {content.piece_id} on "
-                                f"{target.platform}: {target.error}[/red]"
-                            )
-                    else:
-                        console.print(
-                            f"[green]v Published {content.piece_id} to "
-                            f"{content.platform} (id: {result.publish_id})[/green]"
-                        )
-                        mark_published(content.piece_id, result.publish_id)
-
-                except Exception as e:
-                    console.print(f"[red]x Error publishing {content.piece_id}: {e}[/red]")
-
-                progress.remove_task(task)
+                console.print(
+                    f"[green]v Published {content.piece_id} to "
+                    f"{content.platform} (id: {result.publish_id})[/green]"
+                )
+            except Exception as exc:
+                console.print(f"[red]x Error publishing {content.piece_id}: {exc}[/red]")
+            progress.remove_task(task)
 
     console.print("\n[cyan]Publishing complete![/cyan]")
 
