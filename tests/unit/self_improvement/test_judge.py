@@ -215,9 +215,8 @@ class TestCallLlm:
         with patch("requests.post", return_value=mock_resp), pytest.raises(Exception, match="401"):
             judge._call_llm("test message")
 
-    @pytest.mark.parametrize("model", [DEFAULT_JUDGE_MODEL, OVERRIDE_JUDGE_MODEL])
-    def test_payload_uses_registered_selected_model_without_network(self, model: str):
-        judge = JudgeAgent(model=model, proxy_url="http://test.invalid")
+    def test_payload_uses_registered_default_model_without_network(self):
+        judge = JudgeAgent(proxy_url="http://test.invalid")
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {"choices": [{"message": {"content": "{}"}}]}
@@ -226,6 +225,20 @@ class TestCallLlm:
             judge._call_llm("test message")
 
         payload = mock_post.call_args.kwargs["json"]
-        assert payload["model"] == model
+        assert payload["model"] == DEFAULT_JUDGE_MODEL
+        assert payload["model"] in _registered_proxy_models()
+        mock_post.assert_called_once()
+
+    def test_payload_uses_registered_explicit_model_override_without_network(self):
+        judge = JudgeAgent(model=OVERRIDE_JUDGE_MODEL, proxy_url="http://test.invalid")
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"choices": [{"message": {"content": "{}"}}]}
+
+        with patch("requests.post", return_value=mock_resp) as mock_post:
+            judge._call_llm("test message")
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["model"] == OVERRIDE_JUDGE_MODEL
         assert payload["model"] in _registered_proxy_models()
         mock_post.assert_called_once()
