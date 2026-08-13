@@ -473,14 +473,7 @@ async def update_content_status(piece_id: str, body: ContentPatchRequest) -> Con
         raw["review_decision_id"] = f"review-{raw['piece_id']}-{raw['content_revision'][:16]}"
 
     # Write back
-    try:
-        if target_path.suffix == ".json":
-            target_path.write_text(json.dumps(raw, indent=2), encoding="utf-8")
-        else:
-            target_path.write_text(yaml.dump(raw, default_flow_style=False), encoding="utf-8")
-    except OSError as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to write file: {exc}") from exc
-
+    _write_raw_content(target_path, raw)
     _record_lineage_outcome(raw, ArtifactType.REVIEW_DECISION, str(raw.get("status", "updated")))
     return _raw_to_detail(raw, target_path.stem)
 
@@ -512,6 +505,7 @@ async def publish_content(
     if intent.status == "accepted":
         raw["status"] = "published"
         raw["post_id"] = intent.external_id
+        publish_id = intent.external_id
     else:
         async with HolusSocialAPIClient() as client:
             result = await client.publish(
@@ -524,14 +518,19 @@ async def publish_content(
         )
         raw["status"] = "published" if result.succeeded else raw.get("status", "approved")
         raw["post_id"] = result.publish_id
-    raw["published_at"] = datetime.now(tz=UTC).isoformat()
+        publish_id = result.publish_id
+        raw["publish_status"] = "accepted" if result.succeeded else "failed"
+    if raw["status"] == "published":
+        raw["published_at"] = datetime.now(tz=UTC).isoformat()
+    else:
+        raw.pop("published_at", None)
     _write_raw_content(target_path, raw)
     _record_lineage_outcome(raw, ArtifactType.PUBLISH_OUTCOME, str(raw["status"]))
 
     return ContentPublishResponse(
         piece=_raw_to_detail(raw, target_path.stem),
         payload=payload,
-        publish_id=result.publish_id,
+        publish_id=publish_id,
         status=raw["status"],
     )
 
@@ -564,6 +563,8 @@ async def schedule_content(
     if intent.status == "accepted":
         raw["schedule_id"] = intent.external_id
         raw["schedule_status"] = "pending_approval"
+        schedule_id = intent.external_id
+        schedule_status = raw["schedule_status"]
     else:
         async with HolusSocialAPIClient() as client:
             result = await client.schedule_post(
@@ -572,6 +573,8 @@ async def schedule_content(
         _dispatch_outbox().mark_result(intent, status="accepted", external_id=result.schedule_id)
         raw["schedule_id"] = result.schedule_id
         raw["schedule_status"] = result.status
+        schedule_id = result.schedule_id
+        schedule_status = result.status
     raw["lineage_updated_at"] = datetime.now(tz=UTC).isoformat()
     _write_raw_content(target_path, raw)
     _record_lineage_outcome(raw, ArtifactType.SCHEDULE_OUTCOME, str(raw["schedule_status"]))
@@ -579,8 +582,8 @@ async def schedule_content(
     return ContentPublishResponse(
         piece=_raw_to_detail(raw, target_path.stem),
         payload=payload,
-        schedule_id=result.schedule_id,
-        status=result.status,
+        schedule_id=schedule_id,
+        status=schedule_status,
     )
 
 
@@ -605,9 +608,15 @@ def _write_raw_content(path: Path, raw: dict[str, Any]) -> None:
 
 def _media_payload(raw: dict[str, Any]) -> dict[str, str]:
     if raw.get("rendered_pdf_path"):
-        return {"media_url": str(raw["rendered_pdf_path"]), "media_type": "document"}
+        path = _media_path(raw["rendered_pdf_path"])
+        if path is None:
+            raise HTTPException(status_code=400, detail="INVALID_RENDERED_MEDIA_PATH")
+        return {"media_url": str(path), "media_type": "document"}
     if raw.get("rendered_image_path"):
-        return {"media_url": str(raw["rendered_image_path"]), "media_type": "image"}
+        path = _media_path(raw["rendered_image_path"])
+        if path is None:
+            raise HTTPException(status_code=400, detail="INVALID_RENDERED_MEDIA_PATH")
+        return {"media_url": str(path), "media_type": "image"}
     return {}
 
 
