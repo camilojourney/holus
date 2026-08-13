@@ -55,11 +55,12 @@ class LineageRecorder:
             model_hash=stable_hash("holus/deterministic-thought-pipeline"),
             metadata={"variant_count": len(records), "stage": "strategy_and_generation"},
         )
-        self._record(
-            source_node,
-            [self._edge(source_id, set_id, "planned_into", group_id, created_at)],
+        self._record_batch(
+            [
+                (source_node, [self._edge(source_id, set_id, "planned_into", group_id, created_at)]),
+                (set_node, []),
+            ]
         )
-        self._record(set_node)
         for record in records:
             self.record_content_variant(record, parent_node_id=set_id)
 
@@ -187,6 +188,12 @@ class LineageRecorder:
             self.store.record(node, edges)
         except OSError:
             logger.exception("lineage_recording_failed", extra={"node_id": node.node_id})
+
+    def _record_batch(self, entries: list[tuple[LineageNode, list[LineageEdge]]]) -> None:
+        try:
+            self.store.record_batch(entries)
+        except OSError:
+            logger.exception("lineage_batch_recording_failed")
 
     @staticmethod
     def _edge(

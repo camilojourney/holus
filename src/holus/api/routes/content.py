@@ -39,6 +39,7 @@ from holus.api.models import (
     ContentStatusCounts,
     PostingDestination,
 )
+from holus.core.config import HolusConfig
 from holus.core.storage import atomic_write_text
 from holus.integrations.holus_social_api import (
     HolusSocialAPIClient,
@@ -59,7 +60,11 @@ CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
 
 def _lineage_recorder() -> LineageRecorder:
     """Keep lineage next to the queue owner, including isolated test queues."""
-    return LineageRecorder(CONTENT_QUEUE_DIR.parent / "lineage")
+    default_queue = REPO_ROOT / "data" / "content-queue"
+    if CONTENT_QUEUE_DIR != default_queue:
+        return LineageRecorder(CONTENT_QUEUE_DIR.parent / "lineage")
+    configured = HolusConfig.load().lineage_dir
+    return LineageRecorder(configured if configured.is_absolute() else REPO_ROOT / configured)
 
 
 def _dispatch_outbox() -> DispatchOutbox:

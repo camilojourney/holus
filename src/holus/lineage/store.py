@@ -59,13 +59,14 @@ class LineageStore:
 
     def record(self, node: LineageNode, edges: list[LineageEdge] | None = None) -> bool:
         """Append a node event once; return false when its deterministic event exists."""
-        edge_list = edges or []
-        event_id = stable_hash(
-            {
-                "node": node.model_dump(mode="json"),
-                "edges": [edge.model_dump(mode="json") for edge in edge_list],
-            }
-        )
+        return self.record_batch([(node, edges or [])]) > 0
+
+    def record_batch(self, entries: list[tuple[LineageNode, list[LineageEdge]]]) -> int:
+        """Append a group of events under one writer lock."""
+        if not entries:
+            return 0
+        recorded = 0
+        existing_ids: set[str] = set()
         self.directory.mkdir(parents=True, exist_ok=True)
         with self.lock_path.open("a+", encoding="utf-8") as lock:
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
@@ -73,25 +74,38 @@ class LineageStore:
                 handle.seek(0)
                 existing = [self._decode(line) for line in handle if line.strip()]
                 events = [event for event in existing if event is not None]
-                if event_id in {event.get("event_id") for event in events}:
-                    return False
+                existing_ids = {str(event.get("event_id")) for event in events}
                 previous = events[-1] if events else None
-                event = {
-                    "schema_version": SCHEMA_VERSION,
-                    "event_id": event_id,
-                    "seq": int(previous.get("seq", len(events))) + 1 if previous else 1,
-                    "recorded_at": datetime.now(UTC).isoformat(),
-                    "node": node.model_dump(mode="json"),
-                    "edges": [edge.model_dump(mode="json") for edge in edge_list],
-                    "prev_event_hash": previous.get("event_hash") if previous else None,
-                }
-                event["event_hash"] = stable_hash(event)
-                encoded = json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n"
-                handle.seek(0, os.SEEK_END)
-                handle.write(encoded)
-                handle.flush()
-                os.fsync(handle.fileno())
-                return True
+                pending: list[str] = []
+                for node, edge_list in entries:
+                    event_id = stable_hash(
+                        {
+                            "node": node.model_dump(mode="json"),
+                            "edges": [edge.model_dump(mode="json") for edge in edge_list],
+                        }
+                    )
+                    if event_id in existing_ids:
+                        continue
+                    event = {
+                        "schema_version": SCHEMA_VERSION,
+                        "event_id": event_id,
+                        "seq": int(previous.get("seq", len(events))) + 1 if previous else 1,
+                        "recorded_at": datetime.now(UTC).isoformat(),
+                        "node": node.model_dump(mode="json"),
+                        "edges": [edge.model_dump(mode="json") for edge in edge_list],
+                        "prev_event_hash": previous.get("event_hash") if previous else None,
+                    }
+                    event["event_hash"] = stable_hash(event)
+                    pending.append(json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n")
+                    existing_ids.add(event_id)
+                    previous = event
+                    recorded += 1
+                if pending:
+                    handle.seek(0, os.SEEK_END)
+                    handle.write("".join(pending))
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                return recorded
             fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def events(self) -> tuple[list[dict[str, Any]], list[int]]:

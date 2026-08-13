@@ -14,12 +14,14 @@ from pydantic import BaseModel, Field, field_validator
 SCHEMA_VERSION = "1.0"
 _SECRET_KEY = re.compile(r"(?:api[_-]?key|token|secret|password|authorization)", re.I)
 _SECRET_VALUE = re.compile(r"(?:sk-|bearer\s+|ghp_)[A-Za-z0-9_-]+", re.I)
+_PRIVATE_KEY = re.compile(r"(?:raw|text|content|input|body|prompt|summary|url|uri|path|filename)", re.I)
+_ABSOLUTE_REF = re.compile(r"^(?:[A-Za-z]:[\\/]|[\\/]|[A-Za-z][A-Za-z0-9+.-]*://)")
 
 
 def _redact_metadata(value: dict[str, Any]) -> dict[str, str | int | float | bool | None]:
     safe: dict[str, str | int | float | bool | None] = {}
     for key, item in value.items():
-        if _SECRET_KEY.search(str(key)):
+        if _SECRET_KEY.search(str(key)) or _PRIVATE_KEY.search(str(key)):
             continue
         if isinstance(item, str):
             if _SECRET_VALUE.search(item):
@@ -76,7 +78,7 @@ class LineageNode(BaseModel):
     def _relative_reference(cls, value: str | None) -> str | None:
         if value is None:
             return value
-        if value.startswith("/") or ".." in value.split("/"):
+        if _ABSOLUTE_REF.search(value) or ".." in re.split(r"[/\\]", value):
             msg = "artifact_ref must be a stable relative path"
             raise ValueError(msg)
         return value

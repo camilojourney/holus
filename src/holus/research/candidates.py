@@ -16,6 +16,8 @@ import httpx
 import yaml
 
 from holus.agents.marketing.thought_pipeline import DEFAULT_CHANNELS, ThoughtContentPipeline
+from holus.core.config import HolusConfig
+from holus.core.storage import atomic_write_text
 from holus.lineage.recorder import LineageRecorder
 from holus.research.models import RawResearchItem, ResearchCandidate, ResearchScore
 
@@ -49,12 +51,16 @@ class CandidateStore:
         directory: Path | str = "data/research/candidates",
         *,
         queue_dir: Path | str = "data/content-queue",
+        lineage_dir: Path | str | None = None,
         pipeline_factory: PipelineFactory | None = None,
     ) -> None:
         self.directory = Path(directory)
         self.queue_dir = Path(queue_dir)
         self._pipeline_factory = pipeline_factory
-        self.lineage_recorder = LineageRecorder(self.queue_dir.parent / "lineage")
+        configured = Path(lineage_dir) if lineage_dir is not None else HolusConfig.load().lineage_dir
+        self.lineage_recorder = LineageRecorder(
+            configured if configured.is_absolute() else Path.cwd() / configured
+        )
 
     def create(self, item: RawResearchItem, score: ResearchScore) -> ResearchCandidate:
         path = self._path(item.item_id)
@@ -74,7 +80,7 @@ class CandidateStore:
         self.directory.mkdir(parents=True, exist_ok=True)
         path = self._path(candidate.candidate_id)
         data = candidate.model_dump(mode="json")
-        path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+        atomic_write_text(path, yaml.safe_dump(data, sort_keys=False))
         return path
 
     def get(self, candidate_id: str) -> ResearchCandidate:
