@@ -328,6 +328,9 @@ def run_from_idea(raw_idea: str) -> list[dict[str, Any]]:
         try:
             record = json.loads(Path(result["queue_path"]).read_text(encoding="utf-8"))
             if isinstance(record, dict):
+                record["queue_path"] = str(
+                    Path(result["queue_path"]).relative_to(queue_dir.parent)
+                )
                 records.append(record)
         except (OSError, json.JSONDecodeError):
             logger.warning("Could not load generated record for lineage: %s", result["queue_path"])

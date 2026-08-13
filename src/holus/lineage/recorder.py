@@ -94,7 +94,14 @@ class LineageRecorder:
         group_id = str(record.get("group_id", piece_id))
         created_at = _recorded_at(record.get("generated_at"))
         node_id = f"content:{piece_id}"
-        queue_ref = f"content-queue/{piece_id}.yaml"
+        queue_ref = str(record.get("queue_path") or f"content-queue/{piece_id}.yaml")
+        queue_path = Path(queue_ref)
+        if queue_path.is_absolute():
+            checksum_path = queue_path
+        else:
+            checksum_path = self.store.directory.parent.parent / queue_path
+            if not checksum_path.is_file():
+                checksum_path = self.store.directory.parent / queue_path
         node = LineageNode(
             node_id=node_id,
             artifact_type=ArtifactType.CONTENT_VARIANT,
@@ -110,7 +117,7 @@ class LineageRecorder:
                 {key: record.get(key) for key in ("platform", "content_type", "content_job_plan")}
             ),
             model_hash=stable_hash(str(record.get("model_used", "unknown"))),
-            checksum=_sha256_path(self.store.directory.parent / queue_ref),
+            checksum=_sha256_path(checksum_path),
             metadata={
                 "platform": str(record.get("platform", "unknown")),
                 "content_type": str(record.get("content_type", "unknown")),
