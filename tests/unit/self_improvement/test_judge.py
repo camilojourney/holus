@@ -3,11 +3,26 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+import yaml
 
 from holus.self_improvement.judge import JudgeAgent, JudgeVerdict
+
+DEFAULT_JUDGE_MODEL = "anthropic/claude-sonnet-4-6"
+OVERRIDE_JUDGE_MODEL = "anthropic/claude-opus-4-6"
+
+
+def _registered_proxy_models() -> set[str]:
+    models_path = Path(__file__).parents[3] / "config" / "models.yaml"
+    registry = yaml.safe_load(models_path.read_text(encoding="utf-8"))
+    return {
+        f"{provider}/{model}"
+        for provider, models in registry["available_models"].items()
+        for model in models
+    }
 
 
 def _valid_judge_response(verdict: str = "PASS", score: float = 0.85) -> str:
@@ -199,3 +214,31 @@ class TestCallLlm:
 
         with patch("requests.post", return_value=mock_resp), pytest.raises(Exception, match="401"):
             judge._call_llm("test message")
+
+    def test_payload_uses_registered_default_model_without_network(self):
+        judge = JudgeAgent(proxy_url="http://test.invalid")
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"choices": [{"message": {"content": "{}"}}]}
+
+        with patch("requests.post", return_value=mock_resp) as mock_post:
+            judge._call_llm("test message")
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["model"] == DEFAULT_JUDGE_MODEL
+        assert payload["model"] in _registered_proxy_models()
+        mock_post.assert_called_once()
+
+    def test_payload_uses_registered_explicit_model_override_without_network(self):
+        judge = JudgeAgent(model=OVERRIDE_JUDGE_MODEL, proxy_url="http://test.invalid")
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"choices": [{"message": {"content": "{}"}}]}
+
+        with patch("requests.post", return_value=mock_resp) as mock_post:
+            judge._call_llm("test message")
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["model"] == OVERRIDE_JUDGE_MODEL
+        assert payload["model"] in _registered_proxy_models()
+        mock_post.assert_called_once()
