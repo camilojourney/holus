@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import fcntl
+import logging
+import re
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -14,7 +16,10 @@ import httpx
 import yaml
 
 from holus.agents.marketing.thought_pipeline import DEFAULT_CHANNELS, ThoughtContentPipeline
+from holus.lineage.recorder import LineageRecorder
 from holus.research.models import RawResearchItem, ResearchCandidate, ResearchScore
+
+logger = logging.getLogger(__name__)
 
 
 class ContentSetProtocol(Protocol):
@@ -49,6 +54,7 @@ class CandidateStore:
         self.directory = Path(directory)
         self.queue_dir = Path(queue_dir)
         self._pipeline_factory = pipeline_factory
+        self.lineage_recorder = LineageRecorder(self.queue_dir.parent / "lineage")
 
     def create(self, item: RawResearchItem, score: ResearchScore) -> ResearchCandidate:
         path = self._path(item.item_id)
@@ -61,6 +67,7 @@ class CandidateStore:
             created_at=datetime.now(UTC),
         )
         self.save(candidate)
+        self._record_lineage(candidate)
         return candidate
 
     def save(self, candidate: ResearchCandidate) -> Path:
@@ -126,6 +133,7 @@ class CandidateStore:
             candidate.approved_group_id = content_set.group_id
             candidate.failure_reason = None
             self.save(candidate)
+            self._record_lineage(candidate)
             return candidate
 
     def reject(self, candidate_id: str) -> ResearchCandidate:
@@ -133,7 +141,17 @@ class CandidateStore:
         if candidate.status == "pending":
             candidate.status = "rejected"
             self.save(candidate)
+            self._record_lineage(candidate)
         return candidate
+
+    def _record_lineage(self, candidate: ResearchCandidate) -> None:
+        """Keep research persistence successful if optional provenance storage fails."""
+        try:
+            self.lineage_recorder.record_candidate(candidate)
+        except Exception:
+            logger.exception(
+                "lineage_emission_failed", extra={"candidate_id": candidate.candidate_id}
+            )
 
     def _make_pipeline(self) -> ThoughtPipelineProtocol:
         if self._pipeline_factory is not None:
@@ -141,6 +159,11 @@ class CandidateStore:
         return cast("ThoughtPipelineProtocol", ThoughtContentPipeline(queue_dir=self.queue_dir))
 
     def _path(self, candidate_id: str) -> Path:
+        if (
+            not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", candidate_id)
+            or ".." in candidate_id
+        ):
+            raise ValueError("Invalid candidate ID")
         return self.directory / f"{candidate_id}.yaml"
 
     @asynccontextmanager

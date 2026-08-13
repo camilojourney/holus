@@ -91,6 +91,7 @@ def test_overall_degraded_when_check_degraded() -> None:
             return_value={"status": "degraded", "files_count": 0, "files": []},
         ),
         patch.object(hc, "check_content_queue", return_value={"status": "healthy", "pending": 0}),
+        patch.object(hc, "check_lineage", return_value={"status": "healthy", "exists": False}),
         patch.object(hc, "check_logs", return_value={"status": "healthy", "directory": "logs"}),
     ):
         result = hc.run()
@@ -112,6 +113,7 @@ def test_overall_unhealthy_when_check_unhealthy() -> None:
             return_value={"status": "healthy", "files_count": 1, "files": ["a.md"]},
         ),
         patch.object(hc, "check_content_queue", return_value={"status": "healthy", "pending": 0}),
+        patch.object(hc, "check_lineage", return_value={"status": "healthy", "exists": False}),
         patch.object(hc, "check_logs", return_value={"status": "healthy", "directory": "logs"}),
     ):
         result = hc.run()

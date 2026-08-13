@@ -19,3 +19,9 @@ database:
 observability:
   langfuse_enabled: true
   log_level: INFO
+
+# Holus owns lineage as a local, append-only artifact; consumers are read-only.
+lineage:
+  schema_version: "1.0"
+  retention_days: 365
+lineage_dir: data/lineage

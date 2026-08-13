@@ -72,6 +72,22 @@ def main() -> None:
         help="Alternative: --idea 'your idea here'",
     )
 
+    # -- lineage --------------------------------------------------------------
+    lineage_parser = subparsers.add_parser("lineage", help="Read or validate lineage artifacts")
+    lineage_actions = lineage_parser.add_subparsers(dest="lineage_command", required=True)
+    lineage_export = lineage_actions.add_parser("export", help="Export deterministic JSON manifest")
+    lineage_export.add_argument(
+        "--directory", default="data/lineage", help="Lineage owner directory"
+    )
+    lineage_export.add_argument("--output", help="Write JSON to this path instead of stdout")
+    lineage_export.add_argument("--after-seq", type=int, default=0)
+    lineage_export.add_argument("--limit", type=int, default=1000)
+    lineage_validate = lineage_actions.add_parser("validate", help="Validate lineage consistency")
+    lineage_validate.add_argument(
+        "--directory", default="data/lineage", help="Lineage owner directory"
+    )
+    lineage_validate.add_argument("--require-complete", action="store_true")
+
     # -- unkill ---------------------------------------------------------------
     unkill_parser = subparsers.add_parser("unkill", help="Deactivate kill switch")
     unkill_parser.add_argument("--scope", required=True, help="Kill switch scope")
@@ -90,6 +106,8 @@ def main() -> None:
         _show_status()
     elif args.command == "health":
         _run_health_check()
+    elif args.command == "lineage":
+        _run_lineage(args)
     elif args.command == "kill":
         _activate_kill(args.scope, args.reason)
     elif args.command == "unkill":
@@ -203,6 +221,36 @@ def _run_health_check() -> None:
 
     overall = results.get("overall", "unknown")
     if overall == "unhealthy" or not preflight.blocking_ok:
+        sys.exit(1)
+
+
+def _run_lineage(args: argparse.Namespace) -> None:
+    """Export or validate the Holus-owned, read-only lineage contract."""
+    from pathlib import Path
+
+    from holus.lineage.store import LineageStore
+
+    store = LineageStore(Path(args.directory))
+    if args.lineage_command == "export":
+        try:
+            manifest = store.export(after_seq=args.after_seq, limit=args.limit)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            sys.exit(1)
+        payload = json.dumps(manifest, sort_keys=True, indent=2) + "\n"
+        if args.output:
+            output = Path(args.output)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            temporary = output.with_suffix(output.suffix + ".tmp")
+            temporary.write_text(payload, encoding="utf-8")
+            temporary.replace(output)
+        else:
+            print(payload, end="")
+        return
+
+    report = store.validate().to_dict()
+    print(json.dumps(report, sort_keys=True, indent=2))
+    if not report["valid"] or (args.require_complete and not report["complete"]):
         sys.exit(1)
 
 

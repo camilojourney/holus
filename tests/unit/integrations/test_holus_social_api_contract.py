@@ -105,7 +105,10 @@ class TestPublishHTTPContract:
     async def test_no_extra_httpx_calls_during_publish(self, mock_http: AsyncMock) -> None:
         """Contract: one AsyncClient at init; publish uses it without extra constructors."""
         mock_http.post.return_value = _ok_response(
-            {"publish_id": "contract-pub-3", "targets": [{"platform": "linkedin", "status": "queued"}]}
+            {
+                "publish_id": "contract-pub-3",
+                "targets": [{"platform": "linkedin", "status": "queued"}],
+            }
         )
 
         with patch("httpx.AsyncClient", return_value=mock_http) as live_ctor:

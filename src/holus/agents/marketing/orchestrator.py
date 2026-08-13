@@ -26,12 +26,11 @@ logger = logging.getLogger(__name__)
 
 
 async def content_cycle(idea: str | None = None) -> dict[str, Any]:
-    """Generate content, evaluate with judge, auto-publish.
+    """Generate content and leave every generated item for human review.
 
-    If no idea provided, uses the cold-start calendar or generates
-    from trending topics.
+    If no idea provided, uses the cold-start calendar or generates from
+    trending topics. Phase 1 deliberately has no scheduled publish action.
     """
-    from holus.agents.marketing.auto_publish import process_queue
     from holus.agents.marketing.idea_runner import run_from_bandit, run_from_idea
 
     logger.info("=== CONTENT CYCLE START (%s) ===", datetime.now(UTC).isoformat())
@@ -44,8 +43,9 @@ async def content_cycle(idea: str | None = None) -> dict[str, Any]:
             "Share an insight from building AI agents that self-improve",
         )
 
-    # Auto-publish based on judge scores
-    publish_results = await process_queue()
+    # A judge score is evidence, not human approval. Publishing remains an
+    # explicit API/CLI action after a reviewed transition.
+    publish_results: list[dict[str, Any]] = []
 
     summary = {
         "generated": len(results),

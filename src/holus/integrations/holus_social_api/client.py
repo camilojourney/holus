@@ -93,6 +93,7 @@ class PublishRequest(BaseModel):
     media_type: str | None = None
     bilingual: bool = False
     source_language: str = "en"
+    idempotency_key: str | None = None
 
 
 class ScheduleRequest(BaseModel):
@@ -105,6 +106,7 @@ class ScheduleRequest(BaseModel):
     scheduled_at: str | None = None
     media_url: str | None = None
     media_type: str | None = None
+    idempotency_key: str | None = None
 
     @model_validator(mode="after")
     def normalize_platforms(self) -> ScheduleRequest:
@@ -201,11 +203,17 @@ class HolusSocialAPIClient:
         data: dict[str, Any] = response.json()
         return data
 
-    async def _post_json(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
-        response = await self.client.post(path, json=payload)
+    async def _post_json(
+        self, path: str, payload: dict[str, Any], *, idempotency_key: str | None = None
+    ) -> dict[str, Any]:
+        headers = {"Idempotency-Key": idempotency_key} if idempotency_key else None
+        response = await self.client.post(path, json=payload, headers=headers)
         response.raise_for_status()
-        data = response.json()
-        return _unwrap_envelope(data)
+        data = _unwrap_envelope(response.json())
+        if not isinstance(data, dict):
+            msg = f"Expected object response from Holus Social API {path}"
+            raise ValueError(msg)
+        return data
 
     @_RETRY_ON_HTTP_ERROR
     async def publish(self, request: PublishRequest) -> PublishResult:
@@ -218,7 +226,11 @@ class HolusSocialAPIClient:
             media_url=request.media_url,
             media_type=request.media_type,
         )
-        return PublishResult.model_validate(await self._post_json("/api/v1/publish", payload))
+        return PublishResult.model_validate(
+            await self._post_json(
+                "/api/v1/publish", payload, idempotency_key=request.idempotency_key
+            )
+        )
 
     async def get_status(self, publish_id: str) -> PublishResult:
         """Check a publish operation status."""
@@ -276,7 +288,11 @@ class HolusSocialAPIClient:
         if request.scheduled_at:
             payload["scheduled_at"] = request.scheduled_at
 
-        return ScheduleResult.model_validate(await self._post_json("/api/v1/schedule", payload))
+        return ScheduleResult.model_validate(
+            await self._post_json(
+                "/api/v1/schedule", payload, idempotency_key=request.idempotency_key
+            )
+        )
 
     async def close(self) -> None:
         """Close the HTTP client."""

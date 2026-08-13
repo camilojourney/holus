@@ -117,6 +117,7 @@ REVIEW
   -> preserve platform-fit evidence and an explicit approval checklist
   -> run judges and preserve human review as the default gate
   -> PATCH approval/rejection/scheduled state locally only
+  -> append privacy-safe lineage events to data/lineage/events.jsonl
 
 PUBLISH OR SCHEDULE
   -> explicit endpoint calls HolusSocialAPIClient with platforms payload
@@ -254,6 +255,7 @@ products:
 | Agent definitions | `agentic/agents/AGENTS.yaml` + `agentic/agents/**/*.md` | Single registry for all agents |
 | Judge evaluations | `trajectory.jsonl` metadata | Per-piece quality scores from domain evaluators |
 | Observatory data | FastAPI reads from all above files | No new DB — reads JSONL/YAML/MD directly |
+| Provenance manifest | `data/lineage/events.jsonl` | Holus-owned, append-only, privacy-safe read boundary; see [lineage contract](docs/lineage.md) |
 
 ---
 
