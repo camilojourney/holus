@@ -74,7 +74,14 @@ class DispatchOutbox:
         payload: dict[str, Any],
     ) -> tuple[DispatchIntent, bool]:
         """Return the one intent for a content revision, creating it atomically if needed."""
-        key = stable_hash({"operation": operation, "piece_id": piece_id, "revision": revision})
+        key = stable_hash(
+            {
+                "operation": operation,
+                "piece_id": piece_id,
+                "revision": revision,
+                "scheduled_at": payload.get("scheduled_at") if operation == "schedule" else None,
+            }
+        )
         path = self.directory / f"{key}.json"
         self.directory.mkdir(parents=True, exist_ok=True)
         with self.lock_path.open("a+", encoding="utf-8") as lock:

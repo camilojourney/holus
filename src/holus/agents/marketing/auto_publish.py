@@ -96,44 +96,12 @@ def _update_item(file_path: str, updates: dict[str, Any]) -> None:
 
 
 async def _publish_piece(item: dict[str, Any]) -> str | None:
-    """Publish a piece via Holus Social API. Returns publish_id or None."""
-    try:
-        import os
-
-        from holus.integrations.holus_social_api import HolusSocialAPIClient, PublishRequest
-
-        api_key = os.environ.get("HOLUS_SOCIAL_API_KEY") or os.environ.get("POSTING_API_KEY", "")
-        if not api_key:
-            logger.error("HOLUS_SOCIAL_API_KEY not set — cannot publish")
-            return None
-
-        client = HolusSocialAPIClient(api_key=api_key)
-        platform = item.get("platform", "linkedin")
-        # Normalize platform names (holus uses twitter_x, API uses twitter)
-        platform_map = {"twitter_x": "twitter"}
-        api_platform = platform_map.get(platform, platform)
-        request = PublishRequest(
-            content=item.get("text", ""),
-            platforms=[api_platform],
-        )
-
-        # Add PDF/image attachment if available
-        pdf_path = item.get("pdf_path") or item.get("rendered_pdf_path")
-        image_path = item.get("rendered_image_path")
-        if pdf_path:
-            request.media_url = pdf_path
-            request.media_type = "document"
-        elif image_path:
-            request.media_url = image_path
-            request.media_type = "image"
-
-        async with client:
-            result = await client.publish(request)
-        return result.publish_id if result else None
-
-    except Exception as exc:
-        logger.error("Publish failed for %s: %s", item.get("piece_id", "?"), exc)
-        return None
+    """Fail closed; external publishing belongs to the reviewed content API."""
+    logger.warning(
+        "Direct auto-publish rejected for %s; human review is required",
+        item.get("piece_id", "?"),
+    )
+    return None
 
 
 def _send_telegram_notification(item: dict[str, Any], action: str, score: float) -> None:

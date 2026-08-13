@@ -233,43 +233,23 @@ class TestProcessQueueVerdicts:
         assert results == []
 
     @pytest.mark.asyncio()
-    async def test_pass_publishes(self, queue_dir: Path) -> None:
+    async def test_pass_stays_for_review(self, queue_dir: Path) -> None:
         _write_yaml_item(queue_dir, "good", _make_item(score=0.9, verdict="PASS"))
-        mock_result = MagicMock()
-        mock_result.publish_id = "pub-123"
-
-        with (
-            patch(
-                "holus.agents.marketing.auto_publish._publish_piece",
-                new_callable=AsyncMock,
-                return_value="pub-123",
-            ),
-            patch("holus.agents.marketing.auto_publish._send_telegram_notification"),
-        ):
-            results = await process_queue()
+        results = await process_queue()
 
         assert len(results) == 1
-        assert results[0]["action"] == "published"
+        assert results[0]["action"] == "needs_review"
         assert results[0]["score"] == 0.9
 
     @pytest.mark.asyncio()
     async def test_pass_updates_file(self, queue_dir: Path) -> None:
         p = _write_yaml_item(queue_dir, "good", _make_item(score=0.85))
 
-        with (
-            patch(
-                "holus.agents.marketing.auto_publish._publish_piece",
-                new_callable=AsyncMock,
-                return_value="pub-456",
-            ),
-            patch("holus.agents.marketing.auto_publish._send_telegram_notification"),
-        ):
-            await process_queue()
+        await process_queue()
 
         data = yaml.safe_load(p.read_text())
-        assert data["status"] == "published"
-        assert data["post_id"] == "pub-456"
-        assert data["auto_published"] is True
+        assert data["status"] == "pending_review"
+        assert "post_id" not in data
 
     @pytest.mark.asyncio()
     async def test_partial_needs_review(self, queue_dir: Path) -> None:
@@ -329,22 +309,14 @@ class TestProcessQueueVerdicts:
         assert "carousel without rendered PDF" in results[0]["reason"]
 
     @pytest.mark.asyncio()
-    async def test_carousel_with_pdf_publishes(self, queue_dir: Path) -> None:
+    async def test_carousel_with_pdf_stays_for_review(self, queue_dir: Path) -> None:
         _write_yaml_item(
             queue_dir,
             "carousel",
             _make_item(content_type="carousel_outline", score=0.9, pdf_path="/tmp/c.pdf"),
         )
-        with (
-            patch(
-                "holus.agents.marketing.auto_publish._publish_piece",
-                new_callable=AsyncMock,
-                return_value="pub-c",
-            ),
-            patch("holus.agents.marketing.auto_publish._send_telegram_notification"),
-        ):
-            results = await process_queue()
-        assert results[0]["action"] == "published"
+        results = await process_queue()
+        assert results[0]["action"] == "needs_review"
 
     @pytest.mark.asyncio()
     async def test_pass_with_fail_verdict_routes_to_review(self, queue_dir: Path) -> None:
@@ -366,7 +338,7 @@ class TestDryRunMode:
     async def test_dry_run_would_publish(self, queue_dir: Path) -> None:
         _write_yaml_item(queue_dir, "good", _make_item(score=0.9))
         results = await process_queue(dry_run=True)
-        assert results[0]["action"] == "would_publish"
+        assert results[0]["action"] == "would_review"
 
     @pytest.mark.asyncio()
     async def test_dry_run_would_reject(self, queue_dir: Path) -> None:
@@ -400,15 +372,10 @@ class TestDryRunMode:
 
 class TestPublishFailure:
     @pytest.mark.asyncio()
-    async def test_publish_failure_returns_publish_failed(self, queue_dir: Path) -> None:
+    async def test_high_score_never_attempts_publish(self, queue_dir: Path) -> None:
         _write_yaml_item(queue_dir, "good", _make_item(score=0.9))
-        with patch(
-            "holus.agents.marketing.auto_publish._publish_piece",
-            new_callable=AsyncMock,
-            return_value=None,
-        ):
-            results = await process_queue()
-        assert results[0]["action"] == "publish_failed"
+        results = await process_queue()
+        assert results[0]["action"] == "needs_review"
 
 
 # ---------------------------------------------------------------------------
@@ -424,18 +391,13 @@ class TestMultipleItems:
         _write_yaml_item(queue_dir, "c_fail", _make_item(piece_id="p3", score=0.2))
 
         with (
-            patch(
-                "holus.agents.marketing.auto_publish._publish_piece",
-                new_callable=AsyncMock,
-                return_value="pub-1",
-            ),
             patch("holus.agents.marketing.auto_publish._send_telegram_notification"),
             patch("holus.agents.marketing.auto_publish._trigger_reflexion"),
         ):
             results = await process_queue()
 
         actions = {r["piece_id"]: r["action"] for r in results}
-        assert actions["p1"] == "published"
+        assert actions["p1"] == "needs_review"
         assert actions["p2"] == "needs_review"
         assert actions["p3"] == "rejected"
 
