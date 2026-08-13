@@ -95,10 +95,14 @@ def _content_revision(raw: dict[str, Any]) -> str:
 
 
 def _require_approved_dispatch(raw: dict[str, Any], expected_revision: str | None) -> str:
-    if raw.get("status") != "approved" or not raw.get("review_decision_id"):
+    if raw.get("status") not in {"approved", "published", "scheduled"} or not raw.get(
+        "review_decision_id"
+    ):
         raise HTTPException(status_code=409, detail="APPROVAL_REQUIRED")
     revision = _content_revision(raw)
     if not expected_revision or expected_revision != revision:
+        raise HTTPException(status_code=409, detail="REVISION_CONFLICT")
+    if not str(raw["review_decision_id"]).endswith(revision[:16]):
         raise HTTPException(status_code=409, detail="REVISION_CONFLICT")
     return revision
 
@@ -508,9 +512,15 @@ async def publish_content(
         )
 
     revision = _require_approved_dispatch(raw, request_body.expected_revision)
+    if raw.get("status") != "approved" and _dispatch_outbox().find(
+        operation="publish", piece_id=piece_id, revision=revision, payload=payload
+    ) is None:
+        raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
     intent, _created = _dispatch_outbox().reserve(
         operation="publish", piece_id=piece_id, revision=revision, payload=payload
     )
+    if raw.get("status") != "approved" and _created:
+        raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
     raw["dispatch_request_id"] = intent.request_id
     _record_lineage_outcome(raw, ArtifactType.PUBLICATION_REQUEST, "intent_recorded")
     if intent.status == "accepted":
@@ -564,14 +574,20 @@ async def schedule_content(
         )
 
     revision = _require_approved_dispatch(raw, body.expected_revision)
-    raw["status"] = "scheduled"
-    raw["scheduled_at"] = body.scheduled_at
+    if raw.get("status") != "approved" and _dispatch_outbox().find(
+        operation="schedule", piece_id=piece_id, revision=revision, payload=payload
+    ) is None:
+        raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
     intent, _created = _dispatch_outbox().reserve(
         operation="schedule", piece_id=piece_id, revision=revision, payload=payload
     )
+    if raw.get("status") != "approved" and _created:
+        raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
+    raw["scheduled_at"] = body.scheduled_at
     raw["dispatch_request_id"] = intent.request_id
     _record_lineage_outcome(raw, ArtifactType.PUBLICATION_REQUEST, "intent_recorded")
     if intent.status == "accepted":
+        raw["status"] = "scheduled"
         raw["schedule_id"] = intent.external_id
         raw["schedule_status"] = intent.external_status or "accepted"
         schedule_id = intent.external_id
@@ -587,6 +603,7 @@ async def schedule_content(
             external_id=result.schedule_id,
             external_status=result.status,
         )
+        raw["status"] = "scheduled"
         raw["schedule_id"] = result.schedule_id
         raw["schedule_status"] = result.status
         schedule_id = result.schedule_id

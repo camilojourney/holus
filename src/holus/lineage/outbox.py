@@ -105,6 +105,27 @@ class DispatchOutbox:
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
+    def find(
+        self,
+        *,
+        operation: DispatchOperation,
+        piece_id: str,
+        revision: str,
+        payload: dict[str, Any],
+    ) -> DispatchIntent | None:
+        key = stable_hash(
+            {
+                "operation": operation,
+                "piece_id": piece_id,
+                "revision": revision,
+                "scheduled_at": payload.get("scheduled_at") if operation == "schedule" else None,
+            }
+        )
+        path = self.directory / f"{key}.json"
+        if not path.exists():
+            return None
+        return DispatchIntent.from_dict(json.loads(path.read_text(encoding="utf-8")))
+
     def mark_result(
         self,
         intent: DispatchIntent,
