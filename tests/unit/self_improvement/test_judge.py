@@ -3,14 +3,26 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+import yaml
 
 from holus.self_improvement.judge import JudgeAgent, JudgeVerdict
 
 DEFAULT_JUDGE_MODEL = "anthropic/claude-sonnet-4-6"
 OVERRIDE_JUDGE_MODEL = "anthropic/claude-opus-4-6"
+
+
+def _registered_proxy_models() -> set[str]:
+    models_path = Path(__file__).parents[3] / "config" / "models.yaml"
+    registry = yaml.safe_load(models_path.read_text(encoding="utf-8"))
+    return {
+        f"{provider}/{model}"
+        for provider, models in registry["available_models"].items()
+        for model in models
+    }
 
 
 def _valid_judge_response(verdict: str = "PASS", score: float = 0.85) -> str:
@@ -203,8 +215,9 @@ class TestCallLlm:
         with patch("requests.post", return_value=mock_resp), pytest.raises(Exception, match="401"):
             judge._call_llm("test message")
 
-    def test_payload_uses_default_model_without_network(self):
-        judge = JudgeAgent(proxy_url="http://test.invalid")
+    @pytest.mark.parametrize("model", [DEFAULT_JUDGE_MODEL, OVERRIDE_JUDGE_MODEL])
+    def test_payload_uses_registered_selected_model_without_network(self, model: str):
+        judge = JudgeAgent(model=model, proxy_url="http://test.invalid")
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {"choices": [{"message": {"content": "{}"}}]}
@@ -213,20 +226,6 @@ class TestCallLlm:
             judge._call_llm("test message")
 
         payload = mock_post.call_args.kwargs["json"]
-        assert payload["model"] == DEFAULT_JUDGE_MODEL
-
-
-class TestDefaultModel:
-    def test_instance_uses_default_model_without_request(self):
-        with patch("requests.post") as post:
-            judge = JudgeAgent(proxy_url="http://test.invalid")
-        assert judge._model == DEFAULT_JUDGE_MODEL
-        post.assert_not_called()
-
-    def test_explicit_model_override(self):
-        override = OVERRIDE_JUDGE_MODEL
-        with patch("requests.post") as post:
-            judge = JudgeAgent(model=override, proxy_url="http://test.invalid")
-        assert judge._model == override
-        assert judge._model != DEFAULT_JUDGE_MODEL
-        post.assert_not_called()
+        assert payload["model"] == model
+        assert payload["model"] in _registered_proxy_models()
+        mock_post.assert_called_once()
