@@ -9,6 +9,9 @@ import pytest
 
 from holus.self_improvement.judge import JudgeAgent, JudgeVerdict
 
+DEFAULT_JUDGE_MODEL = "anthropic/claude-sonnet-4-6"
+OVERRIDE_JUDGE_MODEL = "anthropic/claude-opus-4-6"
+
 
 def _valid_judge_response(verdict: str = "PASS", score: float = 0.85) -> str:
     return json.dumps(
@@ -199,3 +202,31 @@ class TestCallLlm:
 
         with patch("requests.post", return_value=mock_resp), pytest.raises(Exception, match="401"):
             judge._call_llm("test message")
+
+    def test_payload_uses_default_model_without_network(self):
+        judge = JudgeAgent(proxy_url="http://test.invalid")
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"choices": [{"message": {"content": "{}"}}]}
+
+        with patch("requests.post", return_value=mock_resp) as mock_post:
+            judge._call_llm("test message")
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["model"] == DEFAULT_JUDGE_MODEL
+
+
+class TestDefaultModel:
+    def test_instance_uses_default_model_without_request(self):
+        with patch("requests.post") as post:
+            judge = JudgeAgent(proxy_url="http://test.invalid")
+        assert judge._model == DEFAULT_JUDGE_MODEL
+        post.assert_not_called()
+
+    def test_explicit_model_override(self):
+        override = OVERRIDE_JUDGE_MODEL
+        with patch("requests.post") as post:
+            judge = JudgeAgent(model=override, proxy_url="http://test.invalid")
+        assert judge._model == override
+        assert judge._model != DEFAULT_JUDGE_MODEL
+        post.assert_not_called()
