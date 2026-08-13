@@ -1,0 +1,3 @@
+# Positive declaration that this repository intentionally has no forge CI.
+# Honored only from the trusted default branch. See no-mistakes repo-config no_ci.
+no_ci: true
