@@ -132,6 +132,14 @@ class LineageStore:
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
+    def has_node(self, node_id: str) -> bool:
+        """Return whether a node is present in the current ledger snapshot."""
+        events, _ = self.events()
+        return any(
+            isinstance(event.get("node"), dict) and event["node"].get("node_id") == node_id
+            for event in events
+        )
+
     def manifest(self, *, cursor: int = 0, limit: int = 500) -> dict[str, Any]:
         """Return deterministic, cursor-paged JSON suitable for a read-only consumer."""
         if cursor < 0 or limit < 1:

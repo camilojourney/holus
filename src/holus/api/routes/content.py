@@ -81,17 +81,18 @@ def _content_revision(raw: dict[str, Any]) -> str:
     """Hash publish-relevant mutable fields to make stale dispatches fail closed."""
     return stable_hash(
         {
-            key: raw.get(key)
-            for key in (
-                "piece_id",
-                "text",
-                "platform",
-                "rendered_image_path",
-                "rendered_pdf_path",
-                "visual_spec",
-            )
+            "piece_id": raw.get("piece_id"),
+            "text": _effective_content_text(raw),
+            "platform": raw.get("platform"),
+            "rendered_image_path": raw.get("rendered_image_path"),
+            "rendered_pdf_path": raw.get("rendered_pdf_path"),
+            "visual_spec": raw.get("visual_spec"),
         }
     )
+
+
+def _effective_content_text(raw: dict[str, Any]) -> str:
+    return str(raw.get("humanized_text") or raw.get("text") or "")
 
 
 def _require_approved_dispatch(raw: dict[str, Any], expected_revision: str | None) -> str:
@@ -264,7 +265,7 @@ def _raw_to_detail(raw: dict[str, Any], file_stem: str) -> ContentDetail:
 
     return ContentDetail(
         **item.model_dump(),
-        text=raw.get("text"),
+        text=_effective_content_text(raw),
         hashtags=raw.get("hashtags", []),
         char_count=raw.get("char_count"),
         agent_trace=_parse_agent_trace(raw),
@@ -654,7 +655,7 @@ def _media_payload(raw: dict[str, Any]) -> dict[str, str]:
 
 
 def _publish_payload(raw: dict[str, Any]) -> dict[str, Any]:
-    text = str(raw.get("text", ""))
+    text = _effective_content_text(raw)
     platform = str(raw.get("platform", "linkedin"))
     if not text:
         raise HTTPException(status_code=400, detail="Content piece has no text to publish")
@@ -667,7 +668,7 @@ def _publish_payload(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def _schedule_payload(raw: dict[str, Any], scheduled_at: str) -> dict[str, Any]:
-    text = str(raw.get("text", ""))
+    text = _effective_content_text(raw)
     platform = str(raw.get("platform", "linkedin"))
     if not text:
         raise HTTPException(status_code=400, detail="Content piece has no text to schedule")

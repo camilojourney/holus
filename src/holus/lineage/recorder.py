@@ -150,9 +150,28 @@ class LineageRecorder:
             status=status,
             metadata={"piece_id": piece_id},
         )
-        self._record(
-            node, [self._edge(f"content:{piece_id}", node_id, "resulted_in", group_id, occurred_at)]
+        parent_id = f"content:{piece_id}"
+        edge = self._edge(parent_id, node_id, "resulted_in", group_id, occurred_at)
+        if self.store.has_node(parent_id):
+            self._record(node, [edge])
+            return
+        parent = LineageNode(
+            node_id=parent_id,
+            artifact_type=ArtifactType.CONTENT_VARIANT,
+            artifact_id=piece_id,
+            producer="holus/legacy-queue-reconciler",
+            created_at=occurred_at,
+            run_id=group_id,
+            correlation_id=group_id,
+            status=str(record.get("status", "unknown")),
+            artifact_ref=f"content-queue/{piece_id}.yaml",
+            content_hash=stable_hash(record.get("humanized_text") or record.get("text", "")),
+            metadata={
+                "legacy_reconciled": True,
+                "platform": str(record.get("platform", "unknown")),
+            },
         )
+        self._record_batch([(parent, []), (node, [edge])])
 
     def record_candidate(self, candidate: Any) -> None:
         """Emit Research Radar candidate provenance without its title, summary, or URL."""

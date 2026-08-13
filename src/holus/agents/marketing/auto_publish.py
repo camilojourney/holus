@@ -25,6 +25,8 @@ from typing import Any
 
 import yaml
 
+from holus.core.storage import atomic_write_text
+
 logger = logging.getLogger(__name__)
 
 QUEUE_DIR = Path("data/content-queue")
@@ -88,11 +90,11 @@ def _update_item(file_path: str, updates: dict[str, Any]) -> None:
     if path.suffix == ".yaml":
         data = yaml.safe_load(text) or {}
         data.update(updates)
-        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+        atomic_write_text(path, yaml.dump(data, default_flow_style=False, sort_keys=False))
     else:
         data = json.loads(text)
         data.update(updates)
-        path.write_text(json.dumps(data, indent=2))
+        atomic_write_text(path, json.dumps(data, indent=2))
 
 
 async def _publish_piece(item: dict[str, Any]) -> str | None:
@@ -224,9 +226,11 @@ def process_human_rejection(piece_id: str, reason: str) -> dict[str, Any]:
                     data["rejected_by"] = "human"
                     data["rejected_at"] = datetime.now(tz=UTC).isoformat()
                     if path.suffix == ".yaml":
-                        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+                        atomic_write_text(
+                            path, yaml.dump(data, default_flow_style=False, sort_keys=False)
+                        )
                     else:
-                        path.write_text(json.dumps(data, indent=2))
+                        atomic_write_text(path, json.dumps(data, indent=2))
                     break
             except Exception:
                 continue

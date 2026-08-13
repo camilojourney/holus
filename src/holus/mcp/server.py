@@ -179,7 +179,8 @@ async def holus_publish(
         from holus.api.routes.content import _find_content_raw, publish_content
 
         _, raw = _find_content_raw(piece_id)
-        if raw.get("text") != text or raw.get("platform") != platform:
+        effective_text = str(raw.get("humanized_text") or raw.get("text") or "")
+        if effective_text != text or raw.get("platform") != platform:
             return {"error": "REVISION_CONFLICT", "piece_id": piece_id}
         response = await publish_content(
             piece_id,
