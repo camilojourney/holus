@@ -6,6 +6,7 @@ import hashlib
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from holus.lineage.models import ArtifactType, LineageEdge, LineageNode, stable_edge_id, stable_hash
@@ -63,6 +64,27 @@ class LineageRecorder:
         )
         for record in records:
             self.record_content_variant(record, parent_node_id=set_id)
+
+    def record_generated_set(
+        self,
+        source_text: str,
+        records: list[dict[str, Any]],
+        *,
+        group_id: str,
+        package: dict[str, Any] | None = None,
+    ) -> None:
+        if not records:
+            return
+        source = SimpleNamespace(
+            source_type="text",
+            source_url=None,
+            extracted_text=source_text,
+        )
+        normalized_records = [
+            {**record, "group_id": str(record.get("group_id", group_id))}
+            for record in records
+        ]
+        self.record_content_set(source, normalized_records, package or {})
 
     def record_content_variant(
         self, record: dict[str, Any], *, parent_node_id: str | None = None

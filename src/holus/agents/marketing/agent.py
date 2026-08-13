@@ -1101,7 +1101,7 @@ class MarketingAgent(BaseAgent):
                             "decision": decision.model_dump(mode="json"),
                             "phase": "repurposing",
                         }
-                    )
+                )
 
             except Exception as exc:
                 logger.exception(
@@ -1113,6 +1113,22 @@ class MarketingAgent(BaseAgent):
                         "error": str(exc),
                         "decision": decision.model_dump(mode="json"),
                     }
+                )
+
+        if generated_content:
+            try:
+                from holus.lineage.recorder import LineageRecorder
+
+                LineageRecorder(queue_dir.parent / "lineage").record_generated_set(
+                    str(state.get("strategy_reasoning") or state.get("cycle_id", "marketing-cycle")),
+                    generated_content,
+                    group_id=str(state.get("cycle_id", "marketing-cycle")),
+                    package={"channel_plan": state.get("content_decisions", [])},
+                )
+            except Exception:
+                logger.exception(
+                    "lineage_emission_failed",
+                    extra={"group_id": state.get("cycle_id")},
                 )
 
         return {
