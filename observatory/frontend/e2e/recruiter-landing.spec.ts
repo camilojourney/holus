@@ -69,3 +69,21 @@ test('public content route shows only labelled representative output', async ({ 
   await expect(page.getByText(/Agent event stream/i)).toHaveCount(0);
   expect(observatoryRequests).toEqual([]);
 });
+
+test('public demo redirects legacy Observatory routes before they render', async ({ page }) => {
+  const legacyRoutes = [
+    '/agents',
+    '/agents/marketing-strategist',
+    '/evaluations',
+    '/results',
+    '/knowledge',
+    '/engagement',
+    '/followers',
+  ];
+
+  for (const route of legacyRoutes) {
+    await page.goto(route);
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole('heading', { name: /Orchestration for AI content/i })).toBeVisible();
+  }
+});
