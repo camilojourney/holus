@@ -51,7 +51,7 @@ def test_status_model_excludes_operator_and_cost_fields() -> None:
 
 
 def test_status_model_rejects_stages_outside_the_public_lifecycle() -> None:
-    with pytest.raises(ValueError, match="queued|generating|ready|error"):
+    with pytest.raises(ValueError, match=r"queued|generating|ready|error"):
         GenerationJobStatus(
             request_id="holus-demo-test",
             job_id="holus-mapped-test",

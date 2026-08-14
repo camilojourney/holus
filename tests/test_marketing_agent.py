@@ -1514,3 +1514,82 @@ def test_format_niche_research_empty(marketing_agent):
     """_format_niche_research handles empty research."""
     text = marketing_agent._format_niche_research({})
     assert "No niche research" in text
+
+
+# ---------------------------------------------------------------------------
+# Private generation and decoding contracts
+# ---------------------------------------------------------------------------
+
+
+def test_generate_text_uses_specialist_chain_for_linkedin(marketing_agent):
+    """LinkedIn generation preserves the specialist-chain path when it succeeds."""
+    decision = ContentDecision(
+        product="pilaster",
+        platform=Platform.LINKEDIN,
+        content_type=ContentType.TUTORIAL,
+        topic="Production AI lessons",
+        reasoning="Builder story",
+    )
+    specialist_text = "A" * 60
+    marketing_agent._specialist_chain = MagicMock(return_value=specialist_text)
+    marketing_agent.claude.call = MagicMock()
+
+    text, model = marketing_agent._generate_text_for_decision(
+        decision=decision,
+        knowledge={},
+        products={"products": {}},
+    )
+
+    assert text == specialist_text
+    assert model == f"specialist-chain/{marketing_agent.config.sonnet_model}"
+    marketing_agent._specialist_chain.assert_called_once()
+    marketing_agent.claude.call.assert_not_called()
+
+
+def test_generate_text_falls_back_to_monolithic_after_specialist_failure(marketing_agent):
+    """A specialist failure keeps LinkedIn generation available via Sonnet."""
+    decision = ContentDecision(
+        product="pilaster",
+        platform=Platform.LINKEDIN,
+        content_type=ContentType.TUTORIAL,
+        topic="Production AI lessons",
+        reasoning="Builder story",
+    )
+    marketing_agent._specialist_chain = MagicMock(side_effect=RuntimeError("unavailable"))
+    response = MagicMock()
+    response.content = [MagicMock(text="Recovered monolithic content.")]
+    marketing_agent.claude.call = MagicMock(return_value=response)
+
+    text, model = marketing_agent._generate_text_for_decision(
+        decision=decision,
+        knowledge={},
+        products={"products": {}},
+    )
+
+    assert text == "Recovered monolithic content."
+    assert model == marketing_agent.config.sonnet_model
+    marketing_agent.claude.call.assert_called_once()
+
+
+def test_parse_content_decisions_skips_invalid_items_after_fenced_json(marketing_agent):
+    """Decision parsing recovers after an invalid fence and retains only valid mappings."""
+    response_text = """```json
+not valid JSON
+```
+[
+  {"product": "pilaster", "topic": "A", "reasoning": "R"},
+  "not a decision",
+  {"product": "genpeli", "estimated_engagement": "invalid"}
+]"""
+
+    decisions = marketing_agent._parse_content_decisions(response_text)
+
+    assert [decision.product for decision in decisions] == ["pilaster"]
+
+
+def test_extract_response_text_ignores_non_text_blocks(marketing_agent):
+    """Response extraction ignores tool-like blocks without discarding text blocks."""
+    response = MagicMock()
+    response.content = [MagicMock(text=None), MagicMock(text=42), MagicMock(text=" usable text ")]
+
+    assert marketing_agent._extract_response_text(response) == "usable text"

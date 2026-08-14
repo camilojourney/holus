@@ -140,6 +140,9 @@ class TestMarketingAgentCycle:
         """
         from holus.agents.marketing.agent import MarketingAgent
 
+        # render() writes relative visual output; keep it in pytest storage.
+        monkeypatch.chdir(tmp_path)
+
         # -- Patch path constants to point to tmp_path ---------------------
         monkeypatch.setattr(
             "holus.agents.marketing.agent.MarketingAgent._PRODUCTS_PATH",
@@ -718,7 +721,8 @@ def _make_full_knowledge(tmp_path: Path) -> None:
 
 
 def _patch_agent_paths(monkeypatch: Any, tmp_path: Path) -> None:
-    """Monkeypatch all MarketingAgent path constants to tmp_path."""
+    """Monkeypatch all MarketingAgent paths, including relative render output, to tmp_path."""
+    monkeypatch.chdir(tmp_path)
     prefix = "holus.agents.marketing.agent.MarketingAgent"
     monkeypatch.setattr(f"{prefix}._PRODUCTS_PATH", tmp_path / "config" / "products.yaml")
     monkeypatch.setattr(f"{prefix}._BRAND_PATH", tmp_path / "config" / "brand.yaml")
