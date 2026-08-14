@@ -74,7 +74,7 @@ class GenerationJobStatus(BaseModel):
     request_id: str
     job_id: str
     status: PublicGenerationStatus
-    stage: str | None = None
+    stage: PublicGenerationStatus | None = None
     progress: float | None = Field(default=None, ge=0.0, le=1.0)
     user_message: str | None = None
     preview: PreviewReference

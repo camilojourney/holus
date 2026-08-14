@@ -17,7 +17,8 @@ export const SOCIAL_API_OPENAPI = 'https://api.camilomartinez.co/openapi.json';
 export const SOCIAL_API_CAPABILITY =
   'A versioned API for authenticated teams to publish, schedule, and manage social content across X, Threads, Instagram, Facebook, and LinkedIn from one integration.';
 
-export type PublicGenerationStatus = 'queued' | 'generating' | 'ready' | 'error';
+export const PUBLIC_GENERATION_STAGES = ['queued', 'generating', 'ready', 'error'] as const;
+export type PublicGenerationStatus = (typeof PUBLIC_GENERATION_STAGES)[number];
 export type GenerationSource = 'demo' | 'connection_required' | 'bff';
 export type PreviewAvailability = 'unavailable' | 'local_placeholder';
 export type GenerationMode = 'preview';
@@ -69,7 +70,7 @@ export interface GenerationJobStatus {
   request_id: string;
   job_id: string;
   status: PublicGenerationStatus;
-  stage: string | null;
+  stage: PublicGenerationStatus | null;
   progress: number | null;
   user_message: string | null;
   preview: PreviewReference;
@@ -97,6 +98,12 @@ export function assertSafePublicStatus(status: GenerationJobStatus): void {
   }
   if ('url' in (status.preview as object)) {
     throw new Error('Preview must not include a URL');
+  }
+  if (!(PUBLIC_GENERATION_STAGES as readonly string[]).includes(status.status)) {
+    throw new Error(`Forbidden public status: ${status.status}`);
+  }
+  if (status.stage !== null && !(PUBLIC_GENERATION_STAGES as readonly string[]).includes(status.stage)) {
+    throw new Error(`Forbidden public stage: ${status.stage}`);
   }
 }
 

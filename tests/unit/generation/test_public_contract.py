@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from holus.generation.public_contract import (
     CONTRACT_VERSION,
     FORBIDDEN_PUBLIC_FIELDS,
@@ -46,3 +48,17 @@ def test_status_model_excludes_operator_and_cost_fields() -> None:
         "status",
         "source",
     }
+
+
+def test_status_model_rejects_stages_outside_the_public_lifecycle() -> None:
+    with pytest.raises(ValueError, match="queued|generating|ready|error"):
+        GenerationJobStatus(
+            request_id="holus-demo-test",
+            job_id="holus-mapped-test",
+            status="ready",
+            stage="publishing",
+            progress=1.0,
+            user_message="Not public",
+            preview=PreviewReference(availability="local_placeholder", label="Preview unavailable"),
+            source="bff",
+        )

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CONTRACT_VERSION,
   FORBIDDEN_PUBLIC_FIELDS,
+  PUBLIC_GENERATION_STAGES,
   SOCIAL_API_CAPABILITY,
   SOCIAL_API_ORIGIN,
   assertSafePublicStatus,
@@ -34,5 +35,22 @@ describe('holus.generation.v1 contract', () => {
     expect(FORBIDDEN_PUBLIC_FIELDS).toContain('trace');
     expect(FORBIDDEN_PUBLIC_FIELDS).toContain('artifact_url');
     expect(FORBIDDEN_PUBLIC_FIELDS).toContain('credentials');
+  });
+
+  it('rejects a stage outside the public lifecycle', () => {
+    const status = {
+      contract_version: CONTRACT_VERSION,
+      request_id: 'holus-demo-1',
+      job_id: 'holus-mapped-1',
+      status: 'ready',
+      stage: 'publishing',
+      progress: 1,
+      user_message: 'ok',
+      preview: { availability: 'local_placeholder', label: 'Local placeholder' },
+      source: 'bff',
+    } as unknown as GenerationJobStatus;
+
+    expect(PUBLIC_GENERATION_STAGES).toEqual(['queued', 'generating', 'ready', 'error']);
+    expect(() => assertSafePublicStatus(status)).toThrow(/Forbidden public stage/);
   });
 });
