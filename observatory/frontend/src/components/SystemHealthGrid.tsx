@@ -46,7 +46,9 @@ export default function SystemHealthGrid({ services }: Props) {
               </p>
             )}
             <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
-              Last probe: {new Date(svc.last_checked).toLocaleTimeString()}
+              {svc.status === 'down' && svc.latency_ms === undefined
+                ? 'Connection required — not production telemetry'
+                : `Last probe: ${new Date(svc.last_checked).toLocaleTimeString()}`}
             </p>
           </div>
         );

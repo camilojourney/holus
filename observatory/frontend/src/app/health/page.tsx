@@ -3,6 +3,7 @@ import KillSwitchBanner from '@/components/KillSwitchBanner';
 import SystemHealthGrid from '@/components/SystemHealthGrid';
 import ErrorBanner from '@/components/ErrorBanner';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0; // always fresh for health page
 
 export default async function HealthPage() {
@@ -22,9 +23,9 @@ export default async function HealthPage() {
 
       <div style={{ padding: 'var(--page-padding)' }} className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>System Diagnostics</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Reliability</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Service probes, MCP silo connectivity, and kill switch state
+            Holus system connection status. Live probes require an authenticated backend. This page does not show costs, traces, or external system health as production telemetry.
           </p>
         </div>
 
@@ -63,9 +64,9 @@ export default async function HealthPage() {
                       : 'var(--health-err-text)',
                   }}
                 >
-                  System {health.status}
+                  System {health.status === 'down' ? 'disconnected' : health.status}
                 </p>
-                {health.timestamp && (
+                {health.status !== 'down' && health.timestamp && (
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
                     Last checked: {new Date(health.timestamp).toLocaleString()}
                   </p>

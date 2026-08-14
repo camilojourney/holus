@@ -5,8 +5,10 @@ import CarouselPreview from '@/components/CarouselPreview';
 import ContentKanban from '@/components/ContentKanban';
 import ErrorBanner from '@/components/ErrorBanner';
 import ThoughtComposer from '@/components/ThoughtComposer';
+import ConnectionStatus from '@/components/ConnectionStatus';
 import type { Agent, AgentTraceStep, ContentDetail, ContentItem } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const platformOrder = ['linkedin', 'facebook', 'instagram', 'threads', 'twitter', 'twitter_x'];
@@ -394,8 +396,11 @@ export default async function ContentPage() {
               Turn one thought into a full content set.
             </h1>
             <p className="text-sm mt-2 max-w-2xl leading-6" style={{ color: 'var(--text-secondary)' }}>
-              Draft platform-native posts, inspect generated visuals, approve the package, and schedule it without leaving the creation flow.
+              One thought becomes platform-native drafts for review. Live drafting and publishing require an authenticated backend. Values on this public surface are demonstration state, not production telemetry.
             </p>
+            <div className="mt-3">
+              <ConnectionStatus />
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-3 min-w-full lg:min-w-[26rem]">
             <div className="rounded-xl px-4 py-3" style={{ border: '1px solid var(--border-default)', background: '#ffffff' }}>

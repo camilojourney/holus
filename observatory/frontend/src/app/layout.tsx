@@ -18,13 +18,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Holus Observatory',
-  description: 'Real-time inference monitoring for Holus -- a 32-agent federated AI system with domain-expert quality judges and self-improvement loops.',
+  title: 'Holus',
+  description: 'Holus orchestrates AI content generation, honest job progress, and a versioned social-content API.',
   metadataBase: new URL('https://holus.camilomartinez.co'),
   openGraph: {
-    title: 'Holus Observatory',
-    description: 'Real-time inference monitoring for a 32-agent federated AI system with quality judges and self-improvement loops.',
-    siteName: 'Holus Observatory',
+    title: 'Holus',
+    description: 'Orchestration for AI content, with honest generation progress and a versioned social-content API.',
+    siteName: 'Holus',
     locale: 'en_US',
     type: 'website',
     images: [
@@ -32,14 +32,14 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Holus Observatory -- Multi-Agent Inference Monitor',
+        alt: 'Holus -- AI content orchestration',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Holus Observatory',
-    description: 'Real-time inference monitoring for a 32-agent federated AI system with quality judges and self-improvement loops.',
+    title: 'Holus',
+    description: 'Orchestration for AI content, with honest generation progress and a versioned social-content API.',
     images: ['/og-image.png'],
   },
 };
