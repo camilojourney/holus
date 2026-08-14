@@ -24,6 +24,19 @@ test('studio runs only the local demo lifecycle', async ({ page }) => {
     'href',
     'https://api.camilomartinez.co/',
   );
+  const triggerBox = await page.getByRole('button', { name: 'Open navigation' }).boundingBox();
+  const privateGenerationCopyBox = await page
+    .getByText(/Genpeli remains a private generation system/i)
+    .boundingBox();
+  if (!triggerBox || !privateGenerationCopyBox) {
+    throw new Error('Expected the mobile navigation trigger and generation description to be rendered.');
+  }
+  const overlapsPrivateGenerationCopy =
+    triggerBox.x < privateGenerationCopyBox.x + privateGenerationCopyBox.width &&
+    triggerBox.x + triggerBox.width > privateGenerationCopyBox.x &&
+    triggerBox.y < privateGenerationCopyBox.y + privateGenerationCopyBox.height &&
+    triggerBox.y + triggerBox.height > privateGenerationCopyBox.y;
+  expect(overlapsPrivateGenerationCopy).toBe(false);
   expect(forbidden).toEqual([]);
   await page.screenshot({
     path: `e2e/artifacts/studio-${test.info().project.name}.png`,

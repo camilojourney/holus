@@ -125,7 +125,7 @@ export default function Sidebar() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed top-4 left-4 z-40 md:hidden p-2 rounded-lg shadow-sm focus-ring"
+        className="fixed top-4 right-2 z-40 md:hidden p-2 rounded-lg shadow-sm focus-ring"
         style={{
           background: 'var(--surface-raised)',
           border: '1px solid var(--border-default)',
