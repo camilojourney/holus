@@ -188,6 +188,14 @@ class TestParseResearchQueries:
         result = agent._parse_research_queries()
         assert result == {}
 
+    def test_returns_empty_when_yaml_is_a_list(self, tmp_path: Path) -> None:
+        """Only mapping-shaped YAML is a valid query configuration."""
+        agent = _make_agent(
+            tmp_path, queries_md="# Queries\n```yaml\n- query one\n- query two\n```\n"
+        )
+
+        assert agent._parse_research_queries() == {}
+
 
 # ---------------------------------------------------------------------------
 # Tests: _select_queries()
@@ -280,6 +288,35 @@ class TestSelectQueries:
         config = agent._parse_research_queries()
         queries = agent._select_queries(config, max_queries=5)
         assert "AI deployment challenges enterprise" in queries
+
+    def test_accepts_plain_string_queries_and_skips_invalid_categories(
+        self, tmp_path: Path
+    ) -> None:
+        """Research rotation accepts simple query strings without treating invalid categories as work."""
+        agent = _make_agent(tmp_path)
+        config = {
+            "queries": {
+                "plain": {"rotation": "daily", "queries": ["plain query"]},
+                "empty": {"rotation": "daily", "queries": []},
+                "not_a_list": {"rotation": "daily", "queries": "not a list"},
+            }
+        }
+
+        assert agent._select_queries(config, max_queries=5) == ["plain query"]
+
+    def test_weekly_queries_remain_on_cooldown_after_a_day(self, tmp_path: Path) -> None:
+        """Weekly research is not retried using the shorter daily cooldown."""
+        agent = _make_agent(tmp_path)
+        query = "site:linkedin.com AI consulting 2026"
+        agent._write_niche_state(
+            {
+                "query_history": {query: (datetime.now(UTC) - timedelta(hours=25)).isoformat()},
+                "category_last_used": {},
+            }
+        )
+        config = {"queries": {"weekly": {"rotation": "weekly", "queries": [query]}}}
+
+        assert agent._select_queries(config, max_queries=5) == []
 
 
 # ---------------------------------------------------------------------------

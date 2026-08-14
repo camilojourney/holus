@@ -84,14 +84,14 @@ def queue_dir(tmp_path, monkeypatch):
         "holus.agents.marketing.content_queue.QUEUE_DIR",
         q,
     )
-    # publish_approved imports list_approved and mark_published from content_queue,
-    # so the monkeypatch on QUEUE_DIR is already in effect for those functions.
+    # The guarded API boundary reads the same queue files when publish_all dispatches.
+    monkeypatch.setattr("holus.api.routes.content.CONTENT_QUEUE_DIR", q)
     return q
 
 
 @pytest.fixture()
 def mock_publish_success():
-    """Mock SocialMediaClient.publish that always succeeds."""
+    """Mock HolusSocialAPIClient.publish that always succeeds."""
     return PublishResult(
         publish_id="job-42",
         targets=[
@@ -108,7 +108,7 @@ def mock_publish_success():
 
 @pytest.fixture()
 def mock_publish_failure():
-    """Mock SocialMediaClient.publish that reports a failure."""
+    """Mock HolusSocialAPIClient.publish that reports a failure."""
     return PublishResult(
         publish_id="job-99",
         targets=[
@@ -194,7 +194,7 @@ class TestFullPublishPipeline:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ):
             asyncio.run(publish_all())
@@ -225,15 +225,17 @@ class TestFullPublishPipeline:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ):
             asyncio.run(publish_all())
 
-        # Status should still be approved (not published)
+        # A rejected Social API result preserves approval but records the failed attempt.
         data = _read_yaml(queue_dir / "fail1.yaml")
         assert data["status"] == "approved"
-        assert "post_id" not in data
+        assert data["post_id"] == "job-99"
+        assert data["publish_status"] == "failed"
+        assert "published_at" not in data
 
     def test_publish_all_handles_exception(self, queue_dir, monkeypatch):
         """Exception during publish does NOT mark content as published."""
@@ -248,7 +250,7 @@ class TestFullPublishPipeline:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ):
             asyncio.run(publish_all())
@@ -261,7 +263,7 @@ class TestReviewGateContract:
     """SPEC-032 explicit review gate: humanize → approve before any publish attempt.
 
     Contract: publish_all only touches approved content and never calls a live
-    Holus Social API client (SocialMediaClient is always mocked in these tests).
+    Holus Social API client (HolusSocialAPIClient is always mocked in these tests).
     """
 
     def test_cannot_approve_without_humanization(self, queue_dir):
@@ -302,7 +304,7 @@ class TestReviewGateContract:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ):
             asyncio.run(publish_all())
@@ -324,7 +326,7 @@ class TestReviewGateContract:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ):
             asyncio.run(publish_all())
@@ -343,7 +345,7 @@ class TestReviewGateContract:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ):
             asyncio.run(publish_all())
@@ -354,7 +356,7 @@ class TestReviewGateContract:
     def test_publish_all_never_instantiates_live_httpx(
         self, queue_dir, mock_publish_success, monkeypatch
     ):
-        """Contract: publish_all uses mocked SocialMediaClient — no live httpx I/O."""
+        """Contract: publish_all uses mocked HolusSocialAPIClient — no live httpx I/O."""
         monkeypatch.setenv("POSTING_API_KEY", "test-key-123")
         enqueue(_make_content(piece_id="gate6"))
         _humanize_and_approve("gate6")
@@ -366,7 +368,7 @@ class TestReviewGateContract:
 
         with (
             patch(
-                "holus.agents.marketing.publish_approved.SocialMediaClient",
+                "holus.api.routes.content.HolusSocialAPIClient",
                 return_value=mock_client,
             ),
             patch("httpx.AsyncClient") as live_httpx,
@@ -436,7 +438,7 @@ class TestMultiPiecePipeline:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ):
             asyncio.run(publish_all())
@@ -493,7 +495,7 @@ class TestMultiPiecePipeline:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ):
             asyncio.run(publish_all())
@@ -502,23 +504,29 @@ class TestMultiPiecePipeline:
         assert _read_yaml(queue_dir / "bad1.yaml")["status"] == "approved"
 
 
-class TestNoApiKey:
-    """Publish exits with error when POSTING_API_KEY is missing."""
+class TestPublishBoundary:
+    """publish_all delegates only through the guarded Social API boundary."""
 
-    def test_publish_exits_without_api_key(self, queue_dir, monkeypatch):
+    def test_publish_without_api_key_uses_mocked_social_api_boundary(self, queue_dir, monkeypatch):
+        """No API configuration can cause a live client to be constructed in this test."""
         monkeypatch.delenv("POSTING_API_KEY", raising=False)
-
         enqueue(_make_content(piece_id="nokey"))
         _humanize_and_approve("nokey")
 
-        with pytest.raises(SystemExit) as exc_info:
+        mock_client = AsyncMock()
+        mock_client.publish.return_value = PublishResult(publish_id="job-nokey")
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+
+        with (
+            patch("holus.api.routes.content.HolusSocialAPIClient", return_value=mock_client),
+            patch("httpx.AsyncClient") as live_httpx,
+        ):
             asyncio.run(publish_all())
 
-        assert exc_info.value.code == 1
-
-        # Content should not be modified
-        data = _read_yaml(queue_dir / "nokey.yaml")
-        assert data["status"] == "approved"
+        live_httpx.assert_not_called()
+        mock_client.publish.assert_called_once()
+        assert _read_yaml(queue_dir / "nokey.yaml")["status"] == "published"
 
 
 class TestMarkPublished:

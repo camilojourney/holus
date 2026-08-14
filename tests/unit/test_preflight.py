@@ -300,8 +300,14 @@ class TestCheckDataDirs:
 
 
 class TestRunPreflight:
-    def test_returns_all_checks(self) -> None:
-        results = run_preflight()
+    def test_returns_all_checks(self, tmp_path: Path) -> None:
+        with (
+            patch("holus.preflight._DATA_DIR", tmp_path / "data"),
+            patch("holus.preflight._QUEUE_DIR", tmp_path / "data" / "content-queue"),
+            patch("holus.preflight._TRAJECTORY_DIR", tmp_path / "memory"),
+        ):
+            results = run_preflight()
+
         assert len(results) == 6
         assert all(isinstance(r, CheckResult) for r in results)
 

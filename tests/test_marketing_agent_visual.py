@@ -189,7 +189,7 @@ async def test_render_node_carousel_produces_visual(marketing_agent, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_render_node_text_only_passes_through(marketing_agent):
+async def test_render_node_text_only_passes_through(marketing_agent, tmp_path):
     """Render node with text-only piece (tutorial, builder_stories) passes through unchanged."""
     piece = _make_piece_data(
         content_type="tutorial",
@@ -201,7 +201,15 @@ async def test_render_node_text_only_passes_through(marketing_agent):
         "generated_content": [piece],
     }
 
-    with patch.object(type(marketing_agent), "check_kill_switch"):
+    with (
+        patch.object(type(marketing_agent), "check_kill_switch"),
+        patch(
+            "holus.agents.marketing.agent.Path",
+            side_effect=lambda value: (
+                tmp_path / "rendered" if value == "data/rendered" else Path(value)
+            ),
+        ),
+    ):
         result = await marketing_agent.render(state)
 
     result_piece = result["generated_content"][0]
@@ -315,121 +323,72 @@ def queued_content_image():
 
 
 @pytest.mark.asyncio
-async def test_publish_handles_document_type(queued_content_document):
-    """publish_all() passes media_type=document and media_url for PDF content."""
+async def test_publish_delegates_document_content_to_guarded_api(queued_content_document):
+    """publish_all delegates document queue entries without live Social API I/O."""
     from holus.agents.marketing.publish_approved import publish_all
 
-    mock_result = MagicMock()
-    mock_result.failed_targets = []
-    mock_result.publish_id = "post-123"
-
-    mock_client = AsyncMock()
-    mock_client.publish = AsyncMock(return_value=mock_result)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-
+    queued_content_document.content_revision = "document-revision"
+    queued_content_document.review_decision_id = "review-document-revision"
+    mock_publish = AsyncMock()
     with (
-        patch.dict("os.environ", {"POSTING_API_KEY": "test-key"}),
         patch(
             "holus.agents.marketing.publish_approved.list_approved",
             return_value=[queued_content_document],
         ),
-        patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
-            return_value=mock_client,
-        ),
-        patch("holus.agents.marketing.publish_approved.mark_published"),
+        patch("holus.agents.marketing.publish_approved.publish_content", mock_publish),
         patch("holus.agents.marketing.publish_approved.console"),
     ):
         await publish_all()
 
-    # Verify the PublishRequest was created with document media type
-    mock_client.publish.assert_called_once()
-    call_args = mock_client.publish.call_args
-    request = call_args[0][0]
-
-    from holus.integrations.social_media import PublishRequest
-
-    assert isinstance(request, PublishRequest)
-    assert request.media_type == "document"
-    assert request.media_url == "/tmp/rendered/pub-doc-001.pdf"
+    mock_publish.assert_awaited_once()
+    piece_id, request = mock_publish.call_args.args
+    assert piece_id == queued_content_document.piece_id
+    assert request.expected_revision == "document-revision"
 
 
 @pytest.mark.asyncio
-async def test_publish_handles_image_type(queued_content_image):
-    """publish_all() passes media_type=image and media_url for image content."""
+async def test_publish_delegates_image_content_to_guarded_api(queued_content_image):
+    """publish_all delegates image queue entries without live Social API I/O."""
     from holus.agents.marketing.publish_approved import publish_all
 
-    mock_result = MagicMock()
-    mock_result.failed_targets = []
-    mock_result.publish_id = "post-456"
-
-    mock_client = AsyncMock()
-    mock_client.publish = AsyncMock(return_value=mock_result)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-
+    queued_content_image.content_revision = "image-revision"
+    queued_content_image.review_decision_id = "review-image-revision"
+    mock_publish = AsyncMock()
     with (
-        patch.dict("os.environ", {"POSTING_API_KEY": "test-key"}),
         patch(
             "holus.agents.marketing.publish_approved.list_approved",
             return_value=[queued_content_image],
         ),
-        patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
-            return_value=mock_client,
-        ),
-        patch("holus.agents.marketing.publish_approved.mark_published"),
+        patch("holus.agents.marketing.publish_approved.publish_content", mock_publish),
         patch("holus.agents.marketing.publish_approved.console"),
     ):
         await publish_all()
 
-    mock_client.publish.assert_called_once()
-    call_args = mock_client.publish.call_args
-    request = call_args[0][0]
-
-    from holus.integrations.social_media import PublishRequest
-
-    assert isinstance(request, PublishRequest)
-    assert request.media_type == "image"
-    assert request.media_url == "/tmp/rendered/pub-img-001.png"
+    mock_publish.assert_awaited_once()
+    piece_id, request = mock_publish.call_args.args
+    assert piece_id == queued_content_image.piece_id
+    assert request.expected_revision == "image-revision"
 
 
 @pytest.mark.asyncio
-async def test_publish_text_only_no_media(queued_content_text_only):
-    """publish_all() sends text-only content without media fields."""
+async def test_publish_delegates_text_content_to_guarded_api(queued_content_text_only):
+    """publish_all delegates text queue entries without live Social API I/O."""
     from holus.agents.marketing.publish_approved import publish_all
 
-    mock_result = MagicMock()
-    mock_result.failed_targets = []
-    mock_result.publish_id = "post-789"
-
-    mock_client = AsyncMock()
-    mock_client.publish = AsyncMock(return_value=mock_result)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-
+    queued_content_text_only.content_revision = "text-revision"
+    queued_content_text_only.review_decision_id = "review-text-revision"
+    mock_publish = AsyncMock()
     with (
-        patch.dict("os.environ", {"POSTING_API_KEY": "test-key"}),
         patch(
             "holus.agents.marketing.publish_approved.list_approved",
             return_value=[queued_content_text_only],
         ),
-        patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
-            return_value=mock_client,
-        ),
-        patch("holus.agents.marketing.publish_approved.mark_published"),
+        patch("holus.agents.marketing.publish_approved.publish_content", mock_publish),
         patch("holus.agents.marketing.publish_approved.console"),
     ):
         await publish_all()
 
-    mock_client.publish.assert_called_once()
-    call_args = mock_client.publish.call_args
-    request = call_args[0][0]
-
-    from holus.integrations.social_media import PublishRequest
-
-    assert isinstance(request, PublishRequest)
-    assert request.media_type is None
-    assert request.media_url is None
+    mock_publish.assert_awaited_once()
+    piece_id, request = mock_publish.call_args.args
+    assert piece_id == queued_content_text_only.piece_id
+    assert request.expected_revision == "text-revision"

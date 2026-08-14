@@ -29,12 +29,13 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture()
-def temp_queue(tmp_path: Path):
-    """Create a temp content-queue directory and patch QUEUE_DIR everywhere."""
+def temp_queue(tmp_path: Path, monkeypatch):
+    """Create a temp queue shared by the queue owner and guarded API boundary."""
     queue_dir = tmp_path / "content-queue"
     queue_dir.mkdir()
-    with patch("holus.agents.marketing.content_queue.QUEUE_DIR", queue_dir):
-        yield queue_dir
+    monkeypatch.setattr("holus.agents.marketing.content_queue.QUEUE_DIR", queue_dir)
+    monkeypatch.setattr("holus.api.routes.content.CONTENT_QUEUE_DIR", queue_dir)
+    return queue_dir
 
 
 def _make_content(
@@ -109,7 +110,7 @@ async def test_full_manual_pipeline(temp_queue: Path):
     with (
         patch.dict("os.environ", {"POSTING_API_KEY": "test-key-123"}),
         patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ),
     ):
@@ -157,7 +158,7 @@ async def test_publish_uses_humanized_text_when_available(temp_queue: Path):
     with (
         patch.dict("os.environ", {"POSTING_API_KEY": "test-key-123"}),
         patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ),
     ):
@@ -227,18 +228,22 @@ async def test_pipeline_with_multiple_pieces(temp_queue: Path):
 
 
 @pytest.mark.asyncio
-async def test_publish_skips_if_no_api_key(temp_queue: Path, capsys):
-    """publish_all exits with error when POSTING_API_KEY is missing."""
+async def test_publish_without_api_key_stays_at_mocked_social_api_boundary(temp_queue: Path):
+    """This integration test never constructs a live social API client."""
     content = _make_content(piece_id="nokey001")
     enqueue(content)
     humanize("nokey001", "AI engineering is about shipping systems that learn — not just models.")
     approve("nokey001")
 
-    with (
-        patch.dict("os.environ", {"POSTING_API_KEY": ""}, clear=False),
-        pytest.raises(SystemExit),
-    ):
+    mock_client = AsyncMock()
+    mock_client.publish = AsyncMock(return_value=PublishResult(publish_id="sm-nokey-01"))
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("holus.api.routes.content.HolusSocialAPIClient", return_value=mock_client):
         await publish_all()
+
+    mock_client.publish.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -267,7 +272,7 @@ async def test_publish_handles_api_failure_gracefully(temp_queue: Path):
     with (
         patch.dict("os.environ", {"POSTING_API_KEY": "test-key-123"}),
         patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ),
     ):
@@ -283,9 +288,13 @@ async def test_publish_handles_api_failure_gracefully(temp_queue: Path):
 
 @pytest.mark.asyncio
 async def test_publish_with_media_attachment(temp_queue: Path):
-    """Content with rendered image attaches it to the publish request."""
+    """Content with a managed rendered image reaches the guarded publish boundary."""
+    media_path = temp_queue.parent / "rendered-content" / "infographic.png"
+    media_path.parent.mkdir()
+    media_path.write_bytes(b"test image")
+
     content = _make_content(piece_id="media001")
-    content.rendered_image_path = "/tmp/infographic.png"
+    content.rendered_image_path = str(media_path)
     content.media_type = "image"
     enqueue(content)
     humanize("media001", "AI engineering is about shipping systems that learn — not models.")
@@ -303,7 +312,7 @@ async def test_publish_with_media_attachment(temp_queue: Path):
     with (
         patch.dict("os.environ", {"POSTING_API_KEY": "test-key-123"}),
         patch(
-            "holus.agents.marketing.publish_approved.SocialMediaClient",
+            "holus.api.routes.content.HolusSocialAPIClient",
             return_value=mock_client,
         ),
     ):
@@ -312,5 +321,5 @@ async def test_publish_with_media_attachment(temp_queue: Path):
     # Verify media was included in the request
     mock_client.publish.assert_called_once()
     call_args = mock_client.publish.call_args[0][0]
-    assert call_args.media_url == "/tmp/infographic.png"
+    assert call_args.media_url == str(media_path)
     assert call_args.media_type == "image"
