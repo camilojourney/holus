@@ -79,7 +79,7 @@ describe('connection safety', () => {
       observatoryUrl: 'http://localhost:8003',
       liveEvents: true,
     });
-    expect(state.kind).toBe('connection_required');
+    expect(state.kind).toBe('demo');
     expect(state.liveEventsAllowed).toBe(false);
     expect(
       trajectoryStreamUrl({
@@ -87,6 +87,27 @@ describe('connection safety', () => {
         demoMode: false,
         nodeEnv: 'production',
         observatoryUrl: 'http://localhost:8003',
+        liveEvents: true,
+      }),
+    ).toBeNull();
+  });
+
+  it('treats production SSR as a public demo even with a remote API URL', () => {
+    const state = resolveConnection({
+      hostname: '',
+      demoMode: false,
+      nodeEnv: 'production',
+      observatoryUrl: 'https://observatory.internal.example',
+      liveEvents: true,
+    });
+    expect(state.kind).toBe('demo');
+    expect(state.liveEventsAllowed).toBe(false);
+    expect(
+      trajectoryStreamUrl({
+        hostname: '',
+        demoMode: false,
+        nodeEnv: 'production',
+        observatoryUrl: 'https://observatory.internal.example',
         liveEvents: true,
       }),
     ).toBeNull();

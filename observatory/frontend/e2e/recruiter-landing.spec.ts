@@ -52,3 +52,20 @@ test('recruiter landing tells the Holus story and links the API', async ({ page 
     fullPage: true,
   });
 });
+
+test('public content route shows only labelled representative output', async ({ page }) => {
+  const observatoryRequests: string[] = [];
+  page.on('request', (request) => {
+    const url = request.url();
+    if (/localhost:800\d|127\.0\.0\.1:800\d|observatory\.internal/i.test(url)) {
+      observatoryRequests.push(url);
+    }
+  });
+
+  await page.goto('/content');
+  await expect(page.getByRole('heading', { name: 'Representative output' })).toBeVisible();
+  await expect(page.getByText('Demo data - LinkedIn draft', { exact: true })).toBeVisible();
+  await expect(page.getByText(/This public demo does not create a generation job/i)).toBeVisible();
+  await expect(page.getByText(/Agent event stream/i)).toHaveCount(0);
+  expect(observatoryRequests).toEqual([]);
+});

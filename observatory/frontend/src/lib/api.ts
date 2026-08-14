@@ -115,7 +115,8 @@ function normalizeHealth(raw: Partial<HealthStatus> & Record<string, unknown>): 
 
   return {
     status: status as HealthStatus['status'],
-    kill_switch_active: Boolean(raw.kill_switch_active),
+    kill_switch_active:
+      typeof raw.kill_switch_active === 'boolean' ? raw.kill_switch_active : undefined,
     kill_switch_activated_at: raw.kill_switch_activated_at as string | undefined,
     services,
     timestamp,
@@ -182,7 +183,6 @@ async function withFallback<T>(fetcher: () => Promise<T>, fallback: T): Promise<
 
 const DISCONNECTED_HEALTH: HealthStatus = {
   status: 'down',
-  kill_switch_active: false,
   services: [
     { name: 'Authenticated Observatory backend', status: 'down', last_checked: '2026-01-01T00:00:00.000Z' },
     { name: 'Generation BFF', status: 'down', last_checked: '2026-01-01T00:00:00.000Z' },

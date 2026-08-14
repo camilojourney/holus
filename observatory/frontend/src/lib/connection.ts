@@ -45,33 +45,19 @@ export function resolveConnection(ctx: ConnectionContext = {}): ConnectionState 
   const demoMode = ctx.demoMode ?? envFlag('NEXT_PUBLIC_DEMO_MODE');
   const liveEvents = ctx.liveEvents ?? envFlag('NEXT_PUBLIC_LIVE_EVENTS');
   const nodeEnv = ctx.nodeEnv ?? process.env.NODE_ENV ?? 'development';
-  const observatoryUrl =
-    ctx.observatoryUrl ??
-    process.env.NEXT_PUBLIC_OBSERVATORY_URL ??
-    'http://localhost:8003';
   const hostname = readHostname(ctx.hostname);
 
   const publicHost = hostname !== '' && !isLocalDevHost(hostname);
-  const productionLocalApi = nodeEnv === 'production' && isLocalhostApiUrl(observatoryUrl);
+  const publicDemoRuntime = demoMode || nodeEnv === 'production';
 
-  if (demoMode || publicHost || productionLocalApi) {
+  if (publicDemoRuntime || publicHost) {
     return {
-      kind: demoMode ? 'demo' : 'connection_required',
-      label: demoMode ? 'Demo data' : 'Connection required',
+      kind: publicDemoRuntime ? 'demo' : 'connection_required',
+      label: publicDemoRuntime ? 'Demo data' : 'Connection required',
       liveEventsAllowed: false,
       generationTransport: 'local-demo',
       detail:
         'Live events require an authenticated backend connection. This surface uses a local demonstration adapter and does not create a generation job.',
-    };
-  }
-
-  if (!liveEvents && isLocalhostApiUrl(observatoryUrl) && !isLocalDevHost(hostname) && hostname !== '') {
-    return {
-      kind: 'connection_required',
-      label: 'Connection required',
-      liveEventsAllowed: false,
-      generationTransport: 'unavailable',
-      detail: 'Live events require an authenticated backend connection.',
     };
   }
 

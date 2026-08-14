@@ -6,6 +6,7 @@ import ContentKanban from '@/components/ContentKanban';
 import ErrorBanner from '@/components/ErrorBanner';
 import ThoughtComposer from '@/components/ThoughtComposer';
 import ConnectionStatus from '@/components/ConnectionStatus';
+import { isPublicOrDemoSurface } from '@/lib/connection';
 import type { Agent, AgentTraceStep, ContentDetail, ContentItem } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -291,7 +292,59 @@ function agentRuntimeState(agent: Agent, involvedIds: Set<string>): {
   };
 }
 
+function PublicContentDemo() {
+  return (
+    <div style={studioTheme} className="page-transition">
+      <div className="mx-auto max-w-3xl space-y-6">
+        <header className="rounded-2xl p-6 shadow-sm" style={{ border: '1px solid var(--border-default)', background: 'var(--surface-raised)' }}>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--brand)' }}>
+              Holus Content Studio
+            </p>
+            <ConnectionStatus />
+          </div>
+          <h1 className="text-3xl font-bold mt-3" style={{ color: 'var(--text-primary)' }}>
+            Representative output
+          </h1>
+          <p className="text-sm mt-3 max-w-2xl leading-6" style={{ color: 'var(--text-secondary)' }}>
+            Demo data. This bounded example shows the kind of platform-native copy Holus can orchestrate. It is not a live request or production content.
+          </p>
+        </header>
+
+        <section
+          aria-label="Representative content example"
+          className="rounded-2xl p-6 shadow-sm"
+          style={{ border: '1px solid var(--border-default)', background: 'var(--surface-raised)' }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-tertiary)' }}>
+            Demo data - LinkedIn draft
+          </p>
+          <h2 className="text-xl font-semibold mt-3" style={{ color: 'var(--text-primary)' }}>
+            A reliable content workflow makes progress visible without making private systems public.
+          </h2>
+          <p className="text-sm mt-4 leading-7" style={{ color: 'var(--text-secondary)' }}>
+            Holus turns an idea into platform-native work through a clear, human-controlled path. The public experience communicates safe progress and connection state while generation infrastructure remains private.
+          </p>
+        </section>
+
+        <section className="rounded-2xl p-6" style={{ border: '1px solid var(--border-default)', background: 'var(--surface-raised)' }}>
+          <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Connection required for live content
+          </h2>
+          <p className="text-sm mt-2 leading-6" style={{ color: 'var(--text-secondary)' }}>
+            An authenticated Holus backend is required before live requests or previews are available. This public demo does not create a generation job.
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 export default async function ContentPage() {
+  if (isPublicOrDemoSurface()) {
+    return <PublicContentDemo />;
+  }
+
   let items: ContentItem[] = [];
   let agents: Agent[] = [];
   let featuredGroup: ContentItem[] = [];
