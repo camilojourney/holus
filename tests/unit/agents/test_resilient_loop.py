@@ -4,7 +4,7 @@ Tests verify that:
 - CycleContext is created and transitions are logged on a successful run
 - A blocking preflight failure aborts the cycle before the graph runs
 - Any unhandled exception transitions to FAILED and still writes a trajectory entry
-- 3 consecutive failures trigger the BUILD_PAUSED alert log
+- 3 consecutive failures pause the marketing agent and log MARKETING_AGENT_PAUSED
 - The health CLI command includes preflight, watchdog, and last_trajectory_entry keys
 """
 
@@ -443,11 +443,13 @@ class TestPartialStateSave:
                 pytest.fail(f"_save_partial_state raised {type(exc).__name__}: {exc}")
 
 
-class TestConsecutiveFailureAlert:
-    """3 consecutive failures → BUILD_PAUSED alert logged."""
+class TestConsecutiveFailureMarketingAgentPause:
+    """3 consecutive failures → MARKETING_AGENT_PAUSED and agent kill switch activation."""
 
     @pytest.mark.asyncio
-    async def test_three_failures_trigger_alert(self, tmp_path: Path, caplog: Any) -> None:
+    async def test_three_failed_summaries_pause_marketing_agent(
+        self, tmp_path: Path, caplog: Any
+    ) -> None:
         import logging
 
         trajectory_path = tmp_path / "trajectory.jsonl"
@@ -485,6 +487,7 @@ class TestConsecutiveFailureAlert:
 
             agent = object.__new__(MarketingAgent)
             agent._TRAJECTORY_PATH = trajectory_path  # type: ignore[attr-defined]
+            agent.kill_switch = MagicMock()  # type: ignore[attr-defined]
 
             fake_app = MagicMock()
             fake_app.ainvoke = AsyncMock(side_effect=RuntimeError("3rd failure"))
@@ -493,8 +496,13 @@ class TestConsecutiveFailureAlert:
 
             await agent.run()
 
-        assert any("BUILD_PAUSED" in record.message for record in caplog.records), (
-            "Expected BUILD_PAUSED alert in logs after 3 consecutive failures"
+        assert any("MARKETING_AGENT_PAUSED" in record.message for record in caplog.records), (
+            "Expected MARKETING_AGENT_PAUSED alert after 3 consecutive failures"
+        )
+        agent.kill_switch.activate.assert_called_once_with(
+            scope="marketing-agent",
+            reason="3 consecutive cycle failures",
+            activated_by="circuit_breaker",
         )
 
 

@@ -187,8 +187,8 @@ class MarketingAgent(BaseAgent):
         watchdog and self-improvement system have complete data.
 
         After the trajectory entry is written, ``consecutive_failure_check``
-        is called.  If the last 3 cycles all failed the kill switch is set to
-        BUILD_PAUSED and an alert is logged.
+        is called. If the last 3 cycles all failed the marketing-agent kill
+        switch is activated and a MARKETING_AGENT_PAUSED alert is logged.
         """
         ctx = CycleContext.new(trajectory_path=self._TRAJECTORY_PATH)
         final_state: dict[str, Any] = {}
@@ -345,11 +345,11 @@ class MarketingAgent(BaseAgent):
             write_trajectory_entry(ctx)
 
             # ------------------------------------------------------------------
-            # Consecutive-failure guard - 3 failures → BUILD_PAUSED alert
+            # Consecutive-failure guard - 3 failures → MARKETING_AGENT_PAUSED alert
             # ------------------------------------------------------------------
             if consecutive_failure_check(ctx.trajectory_path, threshold=3):
                 logger.error(
-                    "BUILD_PAUSED: 3 consecutive marketing cycle failures - "
+                    "MARKETING_AGENT_PAUSED: 3 consecutive marketing cycle failures - "
                     "operator review required [cycle_id=%s, trajectory=%s]",
                     ctx.cycle_id,
                     str(ctx.trajectory_path),
