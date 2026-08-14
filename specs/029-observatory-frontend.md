@@ -4,42 +4,49 @@
 **Phase:** Phase 2
 **Author:** Juan
 **Created:** 2026-03-12
-**Updated:** 2026-03-12
+**Updated:** 2026-08-14
 
 ## Problem
 
 The Holus system runs autonomously — agents fire, content gets evaluated, costs accumulate, trajectories update — but there is no way to see any of it without tailing log files. Operators cannot answer basic questions like "which agent failed last night?" or "what did the system spend this week?" without digging through JSONL files manually. Prospective employers and interviewers cannot see the system working at all.
 
-The Observatory API (spec 028) exposes all this data via REST + SSE. What is missing is the frontend that consumes it.
+The Observatory API (spec 028) exposes local authenticated data via REST + SSE.
+The frontend has two explicit modes: local authenticated operation may consume
+that data, while the public Holus demo presents only clearly labelled,
+connection-required state.
 
 ## Goals
 
-- A dashboard loads in < 2s and shows real system health without any manual data wrangling
+- A local authenticated dashboard loads in < 2s and shows real system health without any manual data wrangling
 - Any agent's last 30 cycle results are visible in 3 clicks from the home page
 - The content pipeline state (DRAFT / REVIEW / PUBLISHED) is visible at a glance
 - Eval score trends are visible per-agent over the last 30 days
-- Real-time trajectory events appear within 1s of the SSE push
+- Real-time trajectory events appear within 1s of the SSE push during local authenticated operation
 - `just dev-observatory` starts both Observatory API and the frontend with a single command
 - The UI works on mobile (responsive layout, no horizontal scroll on 375px viewport)
-- Suitable as a live demo for interviews — polished, not prototype-quality
+- A public recruiter demo clearly distinguishes local demonstration state from authenticated operational data
 
 ## Non-Goals
 
-- Authentication / login — the Observatory is internal tooling, not a public product
+- Browser authentication, account management, and operator controls: public visitors only see the safe Holus demo; the future authenticated BFF owns cross-service access
 - Write operations — no editing agents, content, or config from the UI; it is read-only
 - Mobile app (native iOS/Android) — responsive web is sufficient
 - Embedding or replacing Langfuse's own UI — the frontend calls the Observatory API, which calls Langfuse internally; the Langfuse UI is never surfaced
 
 ## Solution
 
-A Next.js 15 App Router application consuming the Observatory API (FastAPI, spec 028) via fetch and SSE. Component stack: shadcn/ui as the base, Tremor for charts and KPI cards, Tailwind CSS for layout and theming. Dark mode via Tailwind's `dark:` class strategy.
+A Next.js 16 App Router application with an explicit public-demo boundary. In
+local authenticated development it consumes the Observatory API (FastAPI, spec
+028) via fetch and SSE. On public/demo surfaces it uses labelled local
+demonstration state and never opens localhost SSE. Component stack: Tremor,
+Tailwind CSS, and Lucide React. Dark mode is user controlled.
 
-The research findings (`.pipeline-state/research-observatory.md`) evaluated SvelteKit as a tighter FastAPI/SSE pairing, but Next.js 15 is chosen here because:
+The research findings (`.pipeline-state/research-observatory.md`) evaluated SvelteKit as a tighter FastAPI/SSE pairing, but Next.js 16 is chosen here because:
 1. The rest of the portfolio (job-tracker, pilaster, genpeli) already uses React — interviewers can ask about the same stack across projects
 2. shadcn/ui + Tremor is the documented 2026 consensus for this exact use case: React dashboard, KPI cards, sparklines, area charts
 3. Next.js App Router supports React Server Components for the data-heavy static sections, while Client Components handle SSE
 
-Data flow:
+Local authenticated data flow:
 
 ```
 Observatory API (FastAPI, :8001)
@@ -55,6 +62,13 @@ Observatory API (FastAPI, :8001)
 Frontend (:3000)
   ├── Server Components fetch non-streaming endpoints (SWR via cache headers)
   └── Client Components subscribe to SSE for trajectory
+```
+
+Public demo flow:
+
+```
+Browser -> Holus UI -> local demo adapter
+          no Genpeli request, no live job, no localhost SSE
 ```
 
 The frontend lives in `observatory/frontend/` alongside the Observatory API at `observatory/api/`.
@@ -145,7 +159,8 @@ observatory/
 
 **`TrajectoryTimeline`**
 - Client Component, uses `lib/sse.ts` hook
-- Subscribes to `GET /trajectory/stream` on mount
+- Subscribes to `GET /trajectory/stream` only in local authenticated development
+- Public/demo mode displays a connection-required state without opening EventSource
 - Cleans up EventSource on unmount to prevent memory leaks
 - Keeps last 100 events in state (prevents unbounded array growth)
 - Each event: timestamp, agent name, event type, short description
@@ -178,7 +193,10 @@ observatory/
 
 ### API Client (`lib/api.ts`)
 
-All fetch calls go to `NEXT_PUBLIC_OBSERVATORY_URL` (env var, default `http://localhost:8001`). Functions return typed responses matching the Observatory API schema. Uses Next.js `fetch` with `{ next: { revalidate: 30 } }` for server-side caching (30s TTL for agent/eval data, no cache for health).
+Local authenticated fetch calls go to `NEXT_PUBLIC_OBSERVATORY_URL` (env var,
+default `http://localhost:8003`). Functions return typed responses matching the
+Observatory API schema. Public/demo mode returns labelled demonstration or
+connection-required state rather than initiating an unauthenticated request.
 
 ### Justfile Integration
 
@@ -222,7 +240,8 @@ Langfuse has its own dashboard for traces, costs, and evals. Rejected because it
 
 ## Edge Cases & Failure Modes
 
-- **Observatory API is down:** All server-fetched pages show a "Service unavailable" banner. SSE hook retries with exponential backoff (max 30s interval). No crash.
+- **Public/demo mode:** No localhost API or SSE request is attempted. The UI says that an authenticated backend connection is required.
+- **Observatory API is down during local authenticated development:** Server-fetched pages show a "Service unavailable" banner. SSE retries with exponential backoff (max 30s interval). No crash.
 - **Agent not found (`/agents/[id]`):** Next.js `notFound()` renders the 404 page. The API returns 404; the frontend propagates it.
 - **SSE connection drops:** Browser reconnects automatically (EventSource spec). If backend is down, retry interval capped at 30s to avoid hammering.
 - **Empty eval data (new agent, no runs):** Heatmap renders empty cells (grey), not blank space. KPI cards show "—" for missing metrics.
@@ -232,11 +251,12 @@ Langfuse has its own dashboard for traces, costs, and evals. Rejected because it
 
 ## Observability
 
-This is a read-only frontend — no server-side state, no mutations, no background jobs. Observability requirements are minimal:
+This is a read-only public frontend - no public server-side state, mutations, or
+background jobs. Local authenticated observability requirements are minimal:
 
-- Browser console logs SSE connection state (connected / disconnected / retrying)
+- SSE connection state is rendered when live events are allowed; public/demo mode renders connection required
 - Next.js built-in error boundaries catch render failures; errors logged to console
-- `NEXT_PUBLIC_OBSERVATORY_URL` visible in network tab for debugging fetch targets
+- `NEXT_PUBLIC_OBSERVATORY_URL` is only used for local authenticated development
 
 ## Rollback Plan
 
@@ -250,10 +270,11 @@ Frontend is a separate directory (`observatory/frontend/`) with no shared code w
 ## Acceptance Criteria
 
 - [ ] `pnpm dev` inside `observatory/frontend/` starts the dashboard on localhost:3000 without errors
-- [ ] Dashboard (`/`) loads real data from Observatory API — KPI cards are not hardcoded
+- [ ] In local authenticated development, dashboard (`/`) loads real data from Observatory API - KPI cards are not hardcoded
 - [ ] Agent status grid shows all registered agents from `agentic/agents/AGENTS.yaml` (via API)
 - [ ] `/agents/[id]` renders per-agent performance chart and cycle history table
-- [ ] TrajectoryTimeline connects via SSE and displays new events within 1s of push
+- [ ] In local authenticated development, TrajectoryTimeline connects via SSE and displays new events within 1s of push
+- [ ] On public/demo surfaces, no client opens localhost SSE and the UI states that live events require an authenticated backend
 - [ ] `/evaluations` heatmap renders without error when eval data is present
 - [ ] `/knowledge` file browser shows freshness indicators (green/yellow/red) correctly
 - [ ] `/health` page shows kill switch state prominently (red banner if ACTIVE)

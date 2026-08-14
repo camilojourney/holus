@@ -219,7 +219,7 @@ The MCP boundary is the contract. If a silo's MCP is down, Holus waits.
 2. **Analytics stay in the silo.** Holus Social API owns all analytics data. Holus reads it via MCP/API boundary, never stores it permanently.
 3. **Trading is isolated.** pythia and milo-to-the-moon are never referenced, called, or monitored by Holus. They are separate businesses.
 4. **Human approval for publishing.** Phase 1: all publish actions require human review before execution. Phase 2+: autonomous with weekly human review.
-5. **Public generation stays Holus-owned.** Canonical product URL is `https://holus.camilomartinez.co`; social-content API is `https://api.camilomartinez.co/`. The typed public contract lives in `src/holus/generation/` and `observatory/frontend/src/lib/generation/`. The browser never calls Genpeli. Public/demo Observatory must not open localhost SSE; see `observatory/frontend/src/lib/connection.ts`.
+5. **Public generation stays Holus-owned.** The browser never calls Genpeli, and public/demo Observatory never opens localhost SSE. See the public generation boundary in `ARCHITECTURE.md`.
 
 ## Context
 

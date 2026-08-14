@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Holus Observatory frontend
 
-## Getting Started
+The Observatory is the public Holus product experience. It demonstrates
+Holus-owned content orchestration, a bounded local generation lifecycle, system
+connection state, and the social-content API entry point.
 
-First, run the development server:
+The public/demo surface never calls Genpeli, creates a live generation job,
+loads secrets, exposes artifacts, or opens a localhost SSE stream. Live
+Observatory data and events require an authenticated backend connection.
+
+## Local development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). By default, local
+development can use the Observatory API configured by
+`NEXT_PUBLIC_OBSERVATORY_URL` (default: `http://localhost:8003`). The public
+deployment runs in demo mode and does not apply this local rewrite.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Public contract
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The future authenticated Holus BFF uses the versioned `holus.generation.v1`
+contract in `src/lib/generation/`. It permits a constrained create request, a
+mapped job status, and a preview reference. It excludes costs, raw traces,
+artifacts or artifact URLs, review, rejection, delivery, publishing,
+credentials, and operator controls. The local adapter is visibly labelled as
+demo data or connection required.
 
-## Learn More
+For the architecture and cross-service boundary, see the repository
+[architecture document](../../ARCHITECTURE.md).
 
-To learn more about Next.js, take a look at the following resources:
+## Checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm lint
+```

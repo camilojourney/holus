@@ -8,9 +8,11 @@ or schedules through Holus Social API, and learns from results.
 **What Holus is not:** A unified codebase that replaces the individual repos.
 Not a trading system. Not an account owner. Not a silent publisher. Not a video
 generator for the current build. Holus Social API owns posting and analytics;
-Genpeli/video is deferred.
+Genpeli/video is deferred as a live integration. The public Holus demo uses a
+local adapter only: the browser never calls Genpeli or opens a localhost event
+stream on a public or demo surface.
 
-**Last updated:** 2026-07-15
+**Last updated:** 2026-08-14
 **Update cadence:** Only on major structural changes.
 
 ---
@@ -30,9 +32,11 @@ Genpeli/video is deferred.
                           ▼
                   social platforms
 
-  Future optional adapters:
-    Pilaster for AI image generation
-    Genpeli for video
+  Public generation demo:
+    local Holus adapter -> bounded lifecycle
+
+  Future authenticated seam:
+    Holus BFF -> mapped Genpeli job
 ```
 
 Holus holds the BRAIN and studio state: source metadata, decisions, generated
@@ -42,6 +46,29 @@ analytics, and performance snapshots.
 
 Data never flows back into Holus permanently.
 Holus reads silo data to make decisions, but the source of truth stays in the silo.
+
+### Public generation boundary
+
+Holus owns the public product experience at
+`https://holus.camilomartinez.co` and its future authenticated BFF. Genpeli is
+a private generation capability, not a public application or browser
+integration. The only planned cross-service seam is a Holus BFF that can create
+one mapped Genpeli job, read that mapped job's restricted status, and proxy its
+preview. The browser does not contact Genpeli.
+
+The versioned `holus.generation.v1` contract is implemented in
+`src/holus/generation/` and
+`observatory/frontend/src/lib/generation/`. It permits only a constrained create
+request, a mapped job status, and a preview reference. It deliberately excludes
+costs, raw traces, artifacts or artifact URLs, review, rejection, delivery,
+publishing, credentials, and operator controls. Until an authenticated BFF is
+connected, the local adapter is visibly labelled as demo data or connection
+required and never creates a live job.
+
+Public Observatory pages also do not claim unavailable real-time telemetry:
+live events require an authenticated backend connection and public/demo mode
+does not open localhost SSE. This behavior is owned by
+`observatory/frontend/src/lib/connection.ts`.
 
 ---
 
@@ -152,23 +179,19 @@ Legacy environment aliases remain supported:
 `SOCIAL_MEDIA_API_BASE_URL` -> `HOLUS_SOCIAL_API_BASE_URL`,
 `POSTING_API_KEY` -> `HOLUS_SOCIAL_API_KEY`.
 
-### Genpeli (future video adapter)
+### Genpeli (private future video capability)
 
 **What it is:** An AI video editing pipeline for human footage. Takes raw video,
 removes silences and fillers, burns word-by-word captions, normalizes audio,
 and delivers polished shorts. Not a video creator from scratch — a video editor.
 
 **What it owns:** Video processing pipeline, ffmpeg workflows, Whisper transcription.
-**What Holus calls:**
-```python
-genpeli.process_video(video_urls: list[str], instruction: str) → JobResult
-genpeli.check_video_status(job_id: str) → JobStatus
-genpeli.get_video_preview(job_id: str) → PreviewResult
-genpeli.approve_video(job_id: str) → ApprovalResult
-genpeli.reject_video(job_id: str, reason: str) → RejectionResult
-```
-**Data stays in:** Genpeli's own storage. This integration is deferred until
-the text/image/carousel workflow is solid.
+**Holus integration:** Deferred. If connected, an authenticated Holus BFF - not
+the browser - will use the public-generation boundary above to create a mapped
+job, read its restricted status, and proxy its preview. Approval, rejection,
+delivery, artifacts, and operator controls are not public BFF contract fields.
+**Data stays in:** Genpeli's own storage. This integration remains deferred
+until the text/image/carousel workflow is solid.
 
 ### Pilaster (future optional AI-image adapter)
 
