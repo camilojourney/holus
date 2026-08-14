@@ -16,6 +16,9 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, Field
 
+from holus.core.storage import atomic_write_text
+from holus.lineage.models import stable_hash
+
 # Valid status transitions (SPEC-032 state machine)
 VALID_STATUSES = {
     "pending_review",
@@ -55,9 +58,20 @@ class QueuedContent(BaseModel):
     humanized_text: str | None = None
     humanized_at: datetime | None = None
     edit_distance: float | None = None
+    content_revision: str | None = None
+    review_decision_id: str | None = None
 
 
 QUEUE_DIR = Path("data/content-queue")
+
+
+def _write_queue_file(path: Path, data: dict[str, Any]) -> None:
+    content = (
+        json.dumps(data, indent=2)
+        if path.suffix == ".json"
+        else yaml.dump(data, default_flow_style=False, sort_keys=False)
+    )
+    atomic_write_text(path, content)
 
 
 def _iter_queue_files(queue_dir: Path | None = None) -> list[Path]:
@@ -111,7 +125,7 @@ def enqueue(content: QueuedContent) -> Path:
     data = content.model_dump()
     data["generated_at"] = content.generated_at.isoformat()
 
-    path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+    _write_queue_file(path, data)
     return path
 
 
@@ -209,7 +223,7 @@ def humanize(piece_id: str, humanized_text: str) -> QueuedContent:
     data["edit_distance"] = round(distance, 4)
     data["status"] = "humanized"
 
-    path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+    _write_queue_file(path, data)
 
     if isinstance(data.get("generated_at"), str):
         data["generated_at"] = datetime.fromisoformat(data["generated_at"])
@@ -244,7 +258,19 @@ def approve(piece_id: str) -> None:
         )
 
     data["status"] = "approved"
-    path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+    revision = stable_hash(
+        {
+            "piece_id": data.get("piece_id"),
+            "text": data.get("humanized_text") or data.get("text"),
+            "platform": data.get("platform"),
+            "rendered_image_path": data.get("rendered_image_path"),
+            "rendered_pdf_path": data.get("rendered_pdf_path"),
+            "visual_spec": data.get("visual_spec"),
+        }
+    )
+    data["content_revision"] = revision
+    data["review_decision_id"] = f"review-{piece_id}-{revision[:16]}"
+    _write_queue_file(path, data)
 
 
 def reject(piece_id: str, reason: str = "") -> None:
@@ -264,7 +290,7 @@ def reject(piece_id: str, reason: str = "") -> None:
 
     data["status"] = "rejected"
     data["rejection_reason"] = reason
-    path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+    _write_queue_file(path, data)
 
 
 def mark_published(piece_id: str, post_id: str) -> None:
@@ -285,7 +311,7 @@ def mark_published(piece_id: str, post_id: str) -> None:
     data["status"] = "published"
     data["post_id"] = post_id
     data["published_at"] = datetime.now(tz=UTC).isoformat()
-    path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+    _write_queue_file(path, data)
 
 
 def expire_stale() -> list[str]:
@@ -314,7 +340,7 @@ def expire_stale() -> list[str]:
                 generated = generated.replace(tzinfo=UTC)
             if generated < cutoff:
                 data["status"] = "expired"
-                file_path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+                _write_queue_file(file_path, data)
                 expired_ids.append(data.get("piece_id", file_path.stem))
         except Exception:
             continue

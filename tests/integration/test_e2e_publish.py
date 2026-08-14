@@ -66,14 +66,14 @@ def _write_queue_item(
 
 
 @pytest.mark.asyncio
-async def test_dry_run_high_score_would_publish(temp_queue: Path):
-    """Score >= 0.8 with PASS verdict → would_publish."""
+async def test_dry_run_high_score_stays_for_review(temp_queue: Path):
+    """Score >= 0.8 with PASS verdict still requires human review."""
     _write_queue_item(temp_queue, "high-001", judge_score=0.92, judge_verdict="PASS")
 
     results = await process_queue(dry_run=True)
 
     assert len(results) == 1
-    assert results[0]["action"] == "would_publish"
+    assert results[0]["action"] == "would_review"
     assert results[0]["score"] == 0.92
 
 
@@ -123,7 +123,7 @@ async def test_dry_run_multiple_items_routes_correctly(temp_queue: Path):
     results = await process_queue(dry_run=True)
 
     actions = {r["piece_id"]: r["action"] for r in results}
-    assert actions["a"] == "would_publish"
+    assert actions["a"] == "would_review"
     assert actions["b"] == "needs_review"
     assert actions["c"] == "would_reject"
     assert actions["d"] == "skipped"
@@ -147,8 +147,8 @@ async def test_dry_run_pass_score_but_fail_verdict_not_published(temp_queue: Pat
 
 
 @pytest.mark.asyncio
-async def test_full_publish_updates_queue_file(temp_queue: Path):
-    """Actual publish (non-dry-run) updates the queue file status."""
+async def test_full_publish_requires_review_and_does_not_call_social_api(temp_queue: Path):
+    """A high-scoring item cannot publish without an immutable review decision."""
     path = _write_queue_item(temp_queue, "pub-001", judge_score=0.90, judge_verdict="PASS")
 
     mock_publish = AsyncMock(return_value="post-12345")
@@ -160,15 +160,14 @@ async def test_full_publish_updates_queue_file(temp_queue: Path):
         results = await process_queue(dry_run=False)
 
     assert len(results) == 1
-    assert results[0]["action"] == "published"
-    assert results[0]["publish_id"] == "post-12345"
+    assert results[0]["action"] == "needs_review"
+    mock_publish.assert_not_awaited()
 
     # Verify the queue file was updated
     updated = json.loads(path.read_text())
-    assert updated["status"] == "published"
-    assert updated["post_id"] == "post-12345"
-    assert updated["auto_published"] is True
-    assert "published_at" in updated
+    assert updated["status"] == "pending_review"
+    assert "post_id" not in updated
+    assert "auto_published" not in updated
 
 
 @pytest.mark.asyncio
@@ -199,13 +198,13 @@ async def test_empty_queue_returns_empty(temp_queue: Path):
 
 
 @pytest.mark.asyncio
-async def test_threshold_boundary_at_pass(temp_queue: Path):
-    """Score exactly at PASS_THRESHOLD should auto-publish."""
+async def test_threshold_boundary_at_pass_stays_for_review(temp_queue: Path):
+    """Score exactly at PASS_THRESHOLD still requires human review."""
     _write_queue_item(temp_queue, "boundary-001", judge_score=PASS_THRESHOLD, judge_verdict="PASS")
 
     results = await process_queue(dry_run=True)
 
-    assert results[0]["action"] == "would_publish"
+    assert results[0]["action"] == "would_review"
 
 
 @pytest.mark.asyncio

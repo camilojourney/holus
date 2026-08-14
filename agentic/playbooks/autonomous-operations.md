@@ -9,7 +9,7 @@ monitoring, troubleshooting, and manual intervention.
 
 | Cycle | Schedule | Command | What it does |
 |-------|----------|---------|-------------|
-| Content | Every 6h | `python -m holus.agents.marketing.orchestrator content` | Generate → Judge → Auto-publish |
+| Content | Every 6h | `python -m holus.agents.marketing.orchestrator content` | Generate → Judge → Human review queue |
 | Analytics | Daily 6am | `python -m holus.agents.marketing.orchestrator analytics` | Fetch engagement → Compute rewards |
 | Improvement | Weekly Sun | `python -m holus.agents.marketing.orchestrator improve` | Learn → Evolve prompts → Evaluate A/B |
 
@@ -69,10 +69,9 @@ launchctl unload infra/launchd/com.holus.improve.plist
 First 30 days after activation:
 1. Run cold-start calendar: `config/cold-start-calendar.yaml` (20 pieces in 4 days)
 2. Judge + Reflexion only (no Thompson Sampling, no prompt evolution)
-3. Manually review ALL content (no auto-publish for first 2 weeks)
-4. After 30 days: enable auto-publish for PASS content
-5. After 100 paired observations: enable blended reward
-6. After 500 entries: enable prompt evolution
+3. Manually review ALL content; scheduled auto-publish is not enabled
+4. After 100 paired observations: enable blended reward
+5. After 500 entries: enable prompt evolution
 
 ## Activation Gates
 

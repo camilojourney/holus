@@ -73,10 +73,11 @@ For text-only content (no visual), only text judge runs.
 
 **Status:** Not yet implemented. Sprint 1.2.
 
-### Tier 3: Human Review (PARTIAL content only)
+### Tier 3: Human Review
 
-Content with judge score 0.5-0.8 goes to human review via Telegram notification.
-PASS content auto-publishes. FAIL content auto-rejects.
+Content with any judge score goes through the human review queue. A passing score
+does not authorize publication: dispatch still requires an immutable approved
+review decision for the exact content revision.
 
 Over time, as prompts evolve and quality improves, PARTIAL rate should decrease.
 

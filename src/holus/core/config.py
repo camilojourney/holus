@@ -104,6 +104,7 @@ class HolusConfig(BaseSettings):
     agent_name: str = Field(default="holus", alias="HOLUS_AGENT_NAME")
     config_dir: Path = Field(default=Path("config"))
     data_dir: Path = Field(default=Path("data"))
+    lineage_dir: Path = Field(default=Path("data/lineage"), alias="HOLUS_LINEAGE_DIR")
 
     # ---- Model identifiers (defaults match config/models.yaml) -------------
     opus_model: str = "claude-opus-4-6"
@@ -122,7 +123,7 @@ class HolusConfig(BaseSettings):
     agents: dict[str, AgentConfig] = Field(default_factory=dict)
 
     # ---- Validators --------------------------------------------------------
-    @field_validator("config_dir", "data_dir", mode="before")
+    @field_validator("config_dir", "data_dir", "lineage_dir", mode="before")
     @classmethod
     def _coerce_path(cls, v: Any) -> Path:
         return Path(v)

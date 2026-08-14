@@ -70,6 +70,7 @@ Desktop.ini
 # ---- Data: Runtime ----
 data/runtime/
 data/content-queue/
+data/lineage/
 data/research/
 data/test-runs/
 data/.niche-research-state.json

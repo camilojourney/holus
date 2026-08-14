@@ -121,6 +121,8 @@ class ContentItem(BaseModel):
     idea_source: str | None = None
     source_type: str | None = None
     source_url: str | None = None
+    revision: str | None = None
+    review_decision_id: str | None = None
     quality: ContentQuality | None = None
     posting_destination: PostingDestination | None = None
 
@@ -156,11 +158,14 @@ class ContentCreateRequest(BaseModel):
 
 class ContentPublishRequest(BaseModel):
     dry_run: bool = False
+    # Required for external dispatch; optional only so legacy dry-run previews remain usable.
+    expected_revision: str | None = None
 
 
 class ContentScheduleRequest(BaseModel):
     scheduled_at: str
     dry_run: bool = False
+    expected_revision: str | None = None
 
 
 class ContentPublishResponse(BaseModel):
@@ -264,6 +269,10 @@ class HealthStatus(BaseModel):
     agents_yaml_exists: bool
     content_queue_count: int
     error_rate_1h: float | None = None
+    lineage_file_exists: bool = False
+    lineage_valid: bool = True
+    lineage_complete: bool = False
+    lineage_node_count: int = 0
 
 
 class KPIMetrics(BaseModel):

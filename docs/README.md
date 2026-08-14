@@ -18,6 +18,12 @@ Reference documentation for architecture decisions, operational playbooks, and s
 | [0002](decisions/0002-claude-first-intelligence.md) | Claude-first intelligence layer (no local LLMs for reasoning) | Accepted |
 | [0003](decisions/0003-langgraph-for-agents.md) | LangGraph as agent orchestration framework | Accepted |
 
+## Data Contracts
+
+| File | Audience | Description |
+|------|----------|-------------|
+| [lineage.md](lineage.md) | Operators / Holusight consumers | Versioned, read-only provenance contract, export, validation, privacy, and recovery |
+
 ## Playbooks
 
 | File | Audience | Description |

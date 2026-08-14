@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
+import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -23,6 +24,10 @@ from holus.agents.marketing.creative_strategy import (
     choose_creative_strategy,
     editorial_card_copy,
 )
+from holus.core.storage import atomic_write_text
+from holus.lineage.recorder import LineageRecorder
+
+logger = logging.getLogger(__name__)
 
 SourceType = Literal["text", "url"]
 
@@ -376,11 +381,13 @@ class ThoughtContentPipeline:
         *,
         queue_dir: Path | str = "data/content-queue",
         rendered_dir: Path | str | None = None,
+        lineage_dir: Path | str | None = None,
     ) -> None:
         self.queue_dir = Path(queue_dir)
         self.rendered_dir = (
             Path(rendered_dir) if rendered_dir else self.queue_dir.parent / "rendered-content"
         )
+        self.lineage_recorder = LineageRecorder(lineage_dir or self.queue_dir.parent / "lineage")
 
     async def normalize_source(
         self,
@@ -456,6 +463,12 @@ class ThoughtContentPipeline:
         if write_records:
             for record in records:
                 self.write_queue_record(record)
+            # Provenance is observational: an I/O failure must not invalidate
+            # successfully persisted review artifacts.
+            try:
+                self.lineage_recorder.record_content_set(source, records, package)
+            except Exception:
+                logger.exception("lineage_emission_failed", extra={"group_id": group_id})
         return ContentSet(
             group_id=group_id,
             thought=source.extracted_text,
@@ -467,7 +480,7 @@ class ThoughtContentPipeline:
         """Persist one generated variant to the content queue."""
         self.queue_dir.mkdir(parents=True, exist_ok=True)
         path = self.queue_dir / f"{record['piece_id']}.yaml"
-        path.write_text(yaml.safe_dump(record, sort_keys=False), encoding="utf-8")
+        atomic_write_text(path, yaml.safe_dump(record, sort_keys=False))
         return path
 
     async def _extract_from_url(self, url: str) -> str:

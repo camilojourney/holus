@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 
+from holus.core.config import HolusConfig
 from holus.research.candidates import CandidateStore, candidate_to_api_dict
 from holus.research.models import RadarRunReport
 from holus.research.radar import ResearchRadarConfig, load_config, run_radar
@@ -48,7 +49,11 @@ async def get_research_digest(
 async def list_research_candidates(status: str | None = Query(default=None)) -> dict[str, Any]:
     """List research candidates, optionally filtered by status."""
     config = _research_config()
-    store = CandidateStore(_candidates_dir(config), queue_dir=CONTENT_QUEUE_DIR)
+    store = CandidateStore(
+        _candidates_dir(config),
+        queue_dir=CONTENT_QUEUE_DIR,
+        lineage_dir=HolusConfig.load().lineage_dir,
+    )
     return {
         "candidates": [candidate_to_api_dict(candidate) for candidate in store.list(status=status)]
     }
@@ -58,7 +63,11 @@ async def list_research_candidates(status: str | None = Query(default=None)) -> 
 async def approve_research_candidate(candidate_id: str) -> dict[str, Any]:
     """Idempotently approve a candidate and return its updated state."""
     config = _research_config()
-    store = CandidateStore(_candidates_dir(config), queue_dir=CONTENT_QUEUE_DIR)
+    store = CandidateStore(
+        _candidates_dir(config),
+        queue_dir=CONTENT_QUEUE_DIR,
+        lineage_dir=HolusConfig.load().lineage_dir,
+    )
     try:
         candidate = await store.approve(candidate_id)
     except FileNotFoundError as exc:
@@ -72,7 +81,11 @@ async def approve_research_candidate(candidate_id: str) -> dict[str, Any]:
 async def reject_research_candidate(candidate_id: str) -> dict[str, Any]:
     """Mark a pending candidate as rejected."""
     config = _research_config()
-    store = CandidateStore(_candidates_dir(config), queue_dir=CONTENT_QUEUE_DIR)
+    store = CandidateStore(
+        _candidates_dir(config),
+        queue_dir=CONTENT_QUEUE_DIR,
+        lineage_dir=HolusConfig.load().lineage_dir,
+    )
     try:
         candidate = store.reject(candidate_id)
     except FileNotFoundError as exc:

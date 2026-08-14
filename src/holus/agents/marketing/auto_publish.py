@@ -25,6 +25,8 @@ from typing import Any
 
 import yaml
 
+from holus.core.storage import atomic_write_text
+
 logger = logging.getLogger(__name__)
 
 QUEUE_DIR = Path("data/content-queue")
@@ -88,52 +90,20 @@ def _update_item(file_path: str, updates: dict[str, Any]) -> None:
     if path.suffix == ".yaml":
         data = yaml.safe_load(text) or {}
         data.update(updates)
-        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+        atomic_write_text(path, yaml.dump(data, default_flow_style=False, sort_keys=False))
     else:
         data = json.loads(text)
         data.update(updates)
-        path.write_text(json.dumps(data, indent=2))
+        atomic_write_text(path, json.dumps(data, indent=2))
 
 
 async def _publish_piece(item: dict[str, Any]) -> str | None:
-    """Publish a piece via Holus Social API. Returns publish_id or None."""
-    try:
-        import os
-
-        from holus.integrations.holus_social_api import HolusSocialAPIClient, PublishRequest
-
-        api_key = os.environ.get("HOLUS_SOCIAL_API_KEY") or os.environ.get("POSTING_API_KEY", "")
-        if not api_key:
-            logger.error("HOLUS_SOCIAL_API_KEY not set — cannot publish")
-            return None
-
-        client = HolusSocialAPIClient(api_key=api_key)
-        platform = item.get("platform", "linkedin")
-        # Normalize platform names (holus uses twitter_x, API uses twitter)
-        platform_map = {"twitter_x": "twitter"}
-        api_platform = platform_map.get(platform, platform)
-        request = PublishRequest(
-            content=item.get("text", ""),
-            platforms=[api_platform],
-        )
-
-        # Add PDF/image attachment if available
-        pdf_path = item.get("pdf_path") or item.get("rendered_pdf_path")
-        image_path = item.get("rendered_image_path")
-        if pdf_path:
-            request.media_url = pdf_path
-            request.media_type = "document"
-        elif image_path:
-            request.media_url = image_path
-            request.media_type = "image"
-
-        async with client:
-            result = await client.publish(request)
-        return result.publish_id if result else None
-
-    except Exception as exc:
-        logger.error("Publish failed for %s: %s", item.get("piece_id", "?"), exc)
-        return None
+    """Fail closed; external publishing belongs to the reviewed content API."""
+    logger.warning(
+        "Direct auto-publish rejected for %s; human review is required",
+        item.get("piece_id", "?"),
+    )
+    return None
 
 
 def _send_telegram_notification(item: dict[str, Any], action: str, score: float) -> None:
@@ -256,9 +226,11 @@ def process_human_rejection(piece_id: str, reason: str) -> dict[str, Any]:
                     data["rejected_by"] = "human"
                     data["rejected_at"] = datetime.now(tz=UTC).isoformat()
                     if path.suffix == ".yaml":
-                        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+                        atomic_write_text(
+                            path, yaml.dump(data, default_flow_style=False, sort_keys=False)
+                        )
                     else:
-                        path.write_text(json.dumps(data, indent=2))
+                        atomic_write_text(path, json.dumps(data, indent=2))
                     break
             except Exception:
                 continue
@@ -344,33 +316,13 @@ async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
             continue
 
         if score >= PASS_THRESHOLD and verdict != "FAIL":
-            # AUTO-PUBLISH: high confidence + no safety flags
-            if dry_run:
-                action = "would_publish"
-                publish_id = None
-            else:
-                publish_id = await _publish_piece(item)
-                if publish_id:
-                    _update_item(
-                        file_path,
-                        {
-                            "status": "published",
-                            "post_id": publish_id,
-                            "published_at": datetime.now(tz=UTC).isoformat(),
-                            "auto_published": True,
-                        },
-                    )
-                    action = "published"
-                    _send_telegram_notification(item, "auto_published", score)
-                else:
-                    action = "publish_failed"
-
+            action = "would_review" if dry_run else "needs_review"
             results.append(
                 {
                     "piece_id": piece_id,
                     "action": action,
                     "score": score,
-                    "publish_id": publish_id if not dry_run else None,
+                    "publish_id": None,
                 }
             )
 

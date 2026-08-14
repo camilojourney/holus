@@ -54,6 +54,7 @@ from holus.agents.marketing.visual_pipeline import (  # noqa: F401, E402
     _generate_visual_spec,
     _render_visual,
 )
+from holus.lineage.recorder import LineageRecorder  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Step 2.5: Judge evaluation
@@ -148,6 +149,8 @@ def save_piece(
     decision: dict[str, Any],
     generated: dict[str, Any],
     queue_dir: Path,
+    *,
+    group_id: str | None = None,
 ) -> Path:
     piece_id = uuid.uuid4().hex[:16]
     now = datetime.now(UTC)
@@ -171,6 +174,7 @@ def save_piece(
 
     data: dict[str, Any] = {
         "piece_id": piece_id,
+        "group_id": group_id or piece_id,
         "platform": decision.get("platform", "linkedin"),
         "content_type": decision.get("format", "text_post"),
         "content_pillar": decision.get("pillar", "ai_engineering"),
@@ -272,6 +276,7 @@ def run_from_idea(raw_idea: str) -> list[dict[str, Any]]:
     Returns a list of results with piece_id, platform, format, and queue_path.
     """
     queue_dir = Path("data/content-queue")
+    group_id = uuid.uuid4().hex
     queue_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"\nIdea: {raw_idea}\n")
@@ -297,7 +302,7 @@ def run_from_idea(raw_idea: str) -> list[dict[str, Any]]:
             generated["judge_dimensions"] = judge_result.get("dimension_scores", {})
             print(f"  → Judge: {judge_result['verdict']} ({judge_result['score']:.2f})")
 
-        path = save_piece(raw_idea, decision, generated, queue_dir)
+        path = save_piece(raw_idea, decision, generated, queue_dir, group_id=group_id)
         hook = generated.get("hook_score", "?")
         voice = generated.get("voice_check", "?")
         char = len(generated.get("text", ""))
@@ -317,6 +322,26 @@ def run_from_idea(raw_idea: str) -> list[dict[str, Any]]:
                 "judge_score": judge_result["score"] if judge_result else None,
             }
         )
+
+    records: list[dict[str, Any]] = []
+    for result in results:
+        try:
+            record = json.loads(Path(result["queue_path"]).read_text(encoding="utf-8"))
+            if isinstance(record, dict):
+                record["queue_path"] = str(Path(result["queue_path"]).relative_to(queue_dir.parent))
+                records.append(record)
+        except (OSError, json.JSONDecodeError):
+            logger.warning("Could not load generated record for lineage: %s", result["queue_path"])
+    if records:
+        try:
+            LineageRecorder(queue_dir.parent / "lineage").record_generated_set(
+                raw_idea,
+                records,
+                group_id=group_id,
+                package={"channel_plan": [{"piece_id": r["piece_id"]} for r in records]},
+            )
+        except Exception:
+            logger.exception("lineage_emission_failed", extra={"group_id": group_id})
 
     print(f"\nDone. {len(results)} piece(s) in data/content-queue/")
     print("Review in Observatory → localhost:3000/content\n")

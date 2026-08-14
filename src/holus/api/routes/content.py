@@ -39,11 +39,16 @@ from holus.api.models import (
     ContentStatusCounts,
     PostingDestination,
 )
+from holus.core.config import HolusConfig
+from holus.core.storage import atomic_write_text
 from holus.integrations.holus_social_api import (
     HolusSocialAPIClient,
     PublishRequest,
     ScheduleRequest,
 )
+from holus.lineage.models import ArtifactType, stable_hash
+from holus.lineage.outbox import DispatchOutbox
+from holus.lineage.recorder import LineageRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -53,12 +58,78 @@ REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
 CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
 
 
+def _lineage_recorder() -> LineageRecorder:
+    """Keep lineage next to the queue owner, including isolated test queues."""
+    default_queue = REPO_ROOT / "data" / "content-queue"
+    if default_queue != CONTENT_QUEUE_DIR:
+        return LineageRecorder(CONTENT_QUEUE_DIR.parent / "lineage")
+    configured = HolusConfig.load().lineage_dir
+    return LineageRecorder(configured if configured.is_absolute() else REPO_ROOT / configured)
+
+
+def _dispatch_outbox() -> DispatchOutbox:
+    default_queue = REPO_ROOT / "data" / "content-queue"
+    if default_queue != CONTENT_QUEUE_DIR:
+        lineage_dir = CONTENT_QUEUE_DIR.parent / "lineage"
+    else:
+        configured = HolusConfig.load().lineage_dir
+        lineage_dir = configured if configured.is_absolute() else REPO_ROOT / configured
+    return DispatchOutbox(lineage_dir / "outbox")
+
+
+def _content_revision(raw: dict[str, Any]) -> str:
+    """Hash publish-relevant mutable fields to make stale dispatches fail closed."""
+    return stable_hash(
+        {
+            "piece_id": raw.get("piece_id"),
+            "text": _effective_content_text(raw),
+            "platform": raw.get("platform"),
+            "rendered_image_path": raw.get("rendered_image_path"),
+            "rendered_pdf_path": raw.get("rendered_pdf_path"),
+            "visual_spec": raw.get("visual_spec"),
+        }
+    )
+
+
+def _effective_content_text(raw: dict[str, Any]) -> str:
+    return str(raw.get("humanized_text") or raw.get("text") or "")
+
+
+def _require_approved_dispatch(raw: dict[str, Any], expected_revision: str | None) -> str:
+    if raw.get("status") not in {"approved", "published", "scheduled"} or not raw.get(
+        "review_decision_id"
+    ):
+        raise HTTPException(status_code=409, detail="APPROVAL_REQUIRED")
+    revision = _content_revision(raw)
+    if not expected_revision or expected_revision != revision:
+        raise HTTPException(status_code=409, detail="REVISION_CONFLICT")
+    if not str(raw["review_decision_id"]).endswith(revision[:16]):
+        raise HTTPException(status_code=409, detail="REVISION_CONFLICT")
+    return revision
+
+
+def _record_lineage_outcome(raw: dict[str, Any], outcome: ArtifactType, status: str) -> None:
+    try:
+        _lineage_recorder().record_outcome(raw, outcome=outcome, status=status)
+    except Exception:
+        logger.exception("lineage_emission_failed", extra={"piece_id": raw.get("piece_id")})
+
+
 def _media_path(value: Any) -> Path | None:
+    """Resolve media only inside Holus-managed rendered roots, never arbitrary files."""
     if not value or not isinstance(value, str):
         return None
-    path = Path(value)
-    if not path.is_absolute():
-        path = REPO_ROOT / path
+    candidate = Path(value)
+    path = (candidate if candidate.is_absolute() else REPO_ROOT / candidate).resolve()
+    allowed_roots = (
+        CONTENT_QUEUE_DIR.parent / "rendered-content",
+        CONTENT_QUEUE_DIR.parent / "rendered",
+    )
+    if path.is_symlink() or not path.is_file():
+        return None
+    if not any(path.is_relative_to(root.resolve()) for root in allowed_roots):
+        logger.warning("Rejected media path outside rendered roots")
+        return None
     return path
 
 
@@ -170,6 +241,8 @@ def _raw_to_item(raw: dict[str, Any], file_stem: str) -> ContentItem:
         idea_source=raw.get("idea_source"),
         source_type=raw.get("source_type"),
         source_url=raw.get("source_url"),
+        revision=raw.get("content_revision") or _content_revision(raw),
+        review_decision_id=raw.get("review_decision_id"),
         quality=_parse_quality(raw),
         posting_destination=_parse_posting_destination(raw),
     )
@@ -192,7 +265,7 @@ def _raw_to_detail(raw: dict[str, Any], file_stem: str) -> ContentDetail:
 
     return ContentDetail(
         **item.model_dump(),
-        text=raw.get("text"),
+        text=_effective_content_text(raw),
         hashtags=raw.get("hashtags", []),
         char_count=raw.get("char_count"),
         agent_trace=_parse_agent_trace(raw),
@@ -364,9 +437,9 @@ async def choose_visual_variant(piece_id: str, variant: str = "a") -> ContentDet
             raw["visual_chosen"] = "a"
 
         if path.suffix == ".json":
-            path.write_text(json.dumps(raw, indent=2), encoding="utf-8")
+            atomic_write_text(path, json.dumps(raw, indent=2))
         else:
-            path.write_text(yaml.dump(raw, default_flow_style=False), encoding="utf-8")
+            atomic_write_text(path, yaml.dump(raw, default_flow_style=False))
 
         return _raw_to_detail(raw, path.stem)
 
@@ -396,19 +469,28 @@ async def update_content_status(piece_id: str, body: ContentPatchRequest) -> Con
 
     # Apply updates
     if body.status is not None:
+        current_status = str(raw.get("status", "pending_review"))
+        allowed_transitions = {
+            "draft": {"pending_review", "approved", "rejected"},
+            "pending_review": {"approved", "rejected"},
+            "approved": {"rejected"},
+            "rejected": {"pending_review"},
+        }
+        if body.status != current_status and body.status not in allowed_transitions.get(
+            current_status, set()
+        ):
+            raise HTTPException(status_code=409, detail="INVALID_STATUS_TRANSITION")
         raw["status"] = body.status
     if body.scheduled_at is not None:
         raw["scheduled_at"] = body.scheduled_at
+    raw["lineage_updated_at"] = datetime.now(tz=UTC).isoformat()
+    raw["content_revision"] = _content_revision(raw)
+    if raw.get("status") == "approved":
+        raw["review_decision_id"] = f"review-{raw['piece_id']}-{raw['content_revision'][:16]}"
 
     # Write back
-    try:
-        if target_path.suffix == ".json":
-            target_path.write_text(json.dumps(raw, indent=2), encoding="utf-8")
-        else:
-            target_path.write_text(yaml.dump(raw, default_flow_style=False), encoding="utf-8")
-    except OSError as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to write file: {exc}") from exc
-
+    _write_raw_content(target_path, raw)
+    _record_lineage_outcome(raw, ArtifactType.REVIEW_DECISION, str(raw.get("status", "updated")))
     return _raw_to_detail(raw, target_path.stem)
 
 
@@ -430,18 +512,51 @@ async def publish_content(
             status="dry_run",
         )
 
-    async with HolusSocialAPIClient() as client:
-        result = await client.publish(PublishRequest(**payload))
-
-    raw["status"] = "published" if result.succeeded else raw.get("status", "approved")
-    raw["post_id"] = result.publish_id
-    raw["published_at"] = datetime.now(tz=UTC).isoformat()
+    revision = _require_approved_dispatch(raw, request_body.expected_revision)
+    if (
+        raw.get("status") != "approved"
+        and _dispatch_outbox().find(
+            operation="publish", piece_id=piece_id, revision=revision, payload=payload
+        )
+        is None
+    ):
+        raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
+    intent, _created = _dispatch_outbox().reserve(
+        operation="publish", piece_id=piece_id, revision=revision, payload=payload
+    )
+    if raw.get("status") != "approved" and _created:
+        raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
+    raw["dispatch_request_id"] = intent.request_id
+    _record_lineage_outcome(raw, ArtifactType.PUBLICATION_REQUEST, "intent_recorded")
+    if intent.status == "accepted":
+        raw["status"] = "published"
+        raw["post_id"] = intent.external_id
+        publish_id = intent.external_id
+    else:
+        async with HolusSocialAPIClient() as client:
+            result = await client.publish(
+                PublishRequest(**payload, idempotency_key=intent.request_id)
+            )
+        _dispatch_outbox().mark_result(
+            intent,
+            status="accepted" if result.succeeded else "failed",
+            external_id=result.publish_id,
+        )
+        raw["status"] = "published" if result.succeeded else raw.get("status", "approved")
+        raw["post_id"] = result.publish_id
+        publish_id = result.publish_id
+        raw["publish_status"] = "accepted" if result.succeeded else "failed"
+    if raw["status"] == "published":
+        raw["published_at"] = datetime.now(tz=UTC).isoformat()
+    else:
+        raw.pop("published_at", None)
     _write_raw_content(target_path, raw)
+    _record_lineage_outcome(raw, ArtifactType.PUBLISH_OUTCOME, str(raw["status"]))
 
     return ContentPublishResponse(
         piece=_raw_to_detail(raw, target_path.stem),
         payload=payload,
-        publish_id=result.publish_id,
+        publish_id=publish_id,
         status=raw["status"],
     )
 
@@ -455,8 +570,6 @@ async def schedule_content(
     target_path, raw = _find_content_raw(piece_id)
     payload = _schedule_payload(raw, body.scheduled_at)
 
-    raw["status"] = "scheduled"
-    raw["scheduled_at"] = body.scheduled_at
     if body.dry_run:
         return ContentPublishResponse(
             piece=_raw_to_detail(raw, target_path.stem),
@@ -465,18 +578,54 @@ async def schedule_content(
             status="dry_run",
         )
 
-    async with HolusSocialAPIClient() as client:
-        result = await client.schedule_post(ScheduleRequest(**payload))
-
-    raw["schedule_id"] = result.schedule_id
-    raw["schedule_status"] = result.status
+    revision = _require_approved_dispatch(raw, body.expected_revision)
+    if (
+        raw.get("status") != "approved"
+        and _dispatch_outbox().find(
+            operation="schedule", piece_id=piece_id, revision=revision, payload=payload
+        )
+        is None
+    ):
+        raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
+    intent, _created = _dispatch_outbox().reserve(
+        operation="schedule", piece_id=piece_id, revision=revision, payload=payload
+    )
+    if raw.get("status") != "approved" and _created:
+        raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
+    raw["scheduled_at"] = body.scheduled_at
+    raw["dispatch_request_id"] = intent.request_id
+    _record_lineage_outcome(raw, ArtifactType.PUBLICATION_REQUEST, "intent_recorded")
+    if intent.status == "accepted":
+        raw["status"] = "scheduled"
+        raw["schedule_id"] = intent.external_id
+        raw["schedule_status"] = intent.external_status or "accepted"
+        schedule_id = intent.external_id
+        schedule_status = raw["schedule_status"]
+    else:
+        async with HolusSocialAPIClient() as client:
+            result = await client.schedule_post(
+                ScheduleRequest(**payload, idempotency_key=intent.request_id)
+            )
+        _dispatch_outbox().mark_result(
+            intent,
+            status="accepted",
+            external_id=result.schedule_id,
+            external_status=result.status,
+        )
+        raw["status"] = "scheduled"
+        raw["schedule_id"] = result.schedule_id
+        raw["schedule_status"] = result.status
+        schedule_id = result.schedule_id
+        schedule_status = result.status
+    raw["lineage_updated_at"] = datetime.now(tz=UTC).isoformat()
     _write_raw_content(target_path, raw)
+    _record_lineage_outcome(raw, ArtifactType.SCHEDULE_OUTCOME, str(raw["schedule_status"]))
 
     return ContentPublishResponse(
         piece=_raw_to_detail(raw, target_path.stem),
         payload=payload,
-        schedule_id=result.schedule_id,
-        status=result.status,
+        schedule_id=schedule_id,
+        status=schedule_status,
     )
 
 
@@ -492,23 +641,29 @@ def _find_content_raw(piece_id: str) -> tuple[Path, dict[str, Any]]:
 def _write_raw_content(path: Path, raw: dict[str, Any]) -> None:
     try:
         if path.suffix == ".json":
-            path.write_text(json.dumps(raw, indent=2), encoding="utf-8")
+            atomic_write_text(path, json.dumps(raw, indent=2))
         else:
-            path.write_text(yaml.dump(raw, default_flow_style=False), encoding="utf-8")
+            atomic_write_text(path, yaml.dump(raw, default_flow_style=False))
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Failed to write file: {exc}") from exc
 
 
 def _media_payload(raw: dict[str, Any]) -> dict[str, str]:
     if raw.get("rendered_pdf_path"):
-        return {"media_url": str(raw["rendered_pdf_path"]), "media_type": "document"}
+        path = _media_path(raw["rendered_pdf_path"])
+        if path is None:
+            raise HTTPException(status_code=400, detail="INVALID_RENDERED_MEDIA_PATH")
+        return {"media_url": str(path), "media_type": "document"}
     if raw.get("rendered_image_path"):
-        return {"media_url": str(raw["rendered_image_path"]), "media_type": "image"}
+        path = _media_path(raw["rendered_image_path"])
+        if path is None:
+            raise HTTPException(status_code=400, detail="INVALID_RENDERED_MEDIA_PATH")
+        return {"media_url": str(path), "media_type": "image"}
     return {}
 
 
 def _publish_payload(raw: dict[str, Any]) -> dict[str, Any]:
-    text = str(raw.get("text", ""))
+    text = _effective_content_text(raw)
     platform = str(raw.get("platform", "linkedin"))
     if not text:
         raise HTTPException(status_code=400, detail="Content piece has no text to publish")
@@ -521,7 +676,7 @@ def _publish_payload(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def _schedule_payload(raw: dict[str, Any], scheduled_at: str) -> dict[str, Any]:
-    text = str(raw.get("text", ""))
+    text = _effective_content_text(raw)
     platform = str(raw.get("platform", "linkedin"))
     if not text:
         raise HTTPException(status_code=400, detail="Content piece has no text to schedule")

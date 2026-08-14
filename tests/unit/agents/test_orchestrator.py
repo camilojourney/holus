@@ -46,12 +46,8 @@ class FakeDiagnosticReport:
 
 @pytest.mark.asyncio
 async def test_content_cycle_with_idea():
-    """When an idea is provided, run_from_idea is used and summary is correct."""
+    """When an idea is provided, run_from_idea is used without auto-publishing."""
     fake_results = [{"piece_id": "p1"}, {"piece_id": "p2"}]
-    fake_publish = [
-        {"action": "published"},
-        {"action": "needs_review"},
-    ]
 
     with (
         patch(
@@ -61,11 +57,6 @@ async def test_content_cycle_with_idea():
         patch(
             "holus.agents.marketing.idea_runner.run_from_bandit",
         ) as mock_bandit,
-        patch(
-            "holus.agents.marketing.auto_publish.process_queue",
-            new_callable=AsyncMock,
-            return_value=fake_publish,
-        ),
     ):
         from holus.agents.marketing.orchestrator import content_cycle
 
@@ -75,9 +66,9 @@ async def test_content_cycle_with_idea():
     mock_bandit.assert_not_called()
     assert summary == {
         "generated": 2,
-        "publish_actions": 2,
-        "published": 1,
-        "needs_review": 1,
+        "publish_actions": 0,
+        "published": 0,
+        "needs_review": 0,
         "rejected": 0,
     }
 
@@ -86,7 +77,6 @@ async def test_content_cycle_with_idea():
 async def test_content_cycle_auto_mode():
     """Without an idea, run_from_bandit is used (auto-mode)."""
     fake_results = [{"piece_id": "p1"}]
-    fake_publish = [{"action": "published"}]
 
     with (
         patch(
@@ -96,11 +86,6 @@ async def test_content_cycle_auto_mode():
             "holus.agents.marketing.idea_runner.run_from_bandit",
             return_value=fake_results,
         ) as mock_bandit,
-        patch(
-            "holus.agents.marketing.auto_publish.process_queue",
-            new_callable=AsyncMock,
-            return_value=fake_publish,
-        ),
     ):
         from holus.agents.marketing.orchestrator import content_cycle
 
@@ -109,22 +94,15 @@ async def test_content_cycle_auto_mode():
     mock_idea.assert_not_called()
     mock_bandit.assert_called_once()
     assert summary["generated"] == 1
-    assert summary["published"] == 1
+    assert summary["published"] == 0
 
 
 @pytest.mark.asyncio
 async def test_content_cycle_empty_results():
     """Edge case: no content generated and nothing to publish."""
-    with (
-        patch(
-            "holus.agents.marketing.idea_runner.run_from_bandit",
-            return_value=[],
-        ),
-        patch(
-            "holus.agents.marketing.auto_publish.process_queue",
-            new_callable=AsyncMock,
-            return_value=[],
-        ),
+    with patch(
+        "holus.agents.marketing.idea_runner.run_from_bandit",
+        return_value=[],
     ):
         from holus.agents.marketing.orchestrator import content_cycle
 

@@ -14,7 +14,6 @@ import yaml
 
 from holus.agents.marketing import content_queue
 from holus.agents.marketing.content_queue import QueuedContent
-from holus.integrations.social_media.client import PublishRequest, PublishResult, PublishTarget
 from holus.mcp import server
 
 
@@ -161,64 +160,18 @@ def test_holus_reject_calls_reject_and_returns_rejected(queue_dir: Path):
 
 
 @pytest.mark.asyncio
-async def test_holus_publish_queues_humanizes_approves_and_publishes(
-    monkeypatch: pytest.MonkeyPatch,
+async def test_holus_publish_requires_approved_piece_and_revision(
     queue_dir: Path,
 ):
-    """holus_publish runs the one-shot flow and returns publish metadata."""
-    # Arrange
-    monkeypatch.setenv("POSTING_API_KEY", "test-posting-key")
-    monkeypatch.setattr(server, "POSTING_API_KEY", "test-posting-key")
-    mock_result = PublishResult(
-        publish_id="pub-123",
-        targets=[PublishTarget(platform="linkedin", status="published")],
+    """MCP publishing fails closed without an immutable reviewed revision."""
+    result = await server.holus_publish(
+        text="Publish this update.",
+        platform="linkedin",
+        product="pilaster",
     )
 
-    with patch("holus.mcp.server.SocialMediaClient") as mock_cls:
-        mock_client = mock_cls.return_value.__aenter__.return_value
-        mock_client.publish = AsyncMock(return_value=mock_result)
-
-        # Act
-        result = await server.holus_publish(
-            text="Publish this update.",
-            platform="linkedin",
-            product="pilaster",
-            media_url="https://example.com/post.png",
-            media_type="image",
-        )
-
-    # Assert
-    assert result["publish_id"] == "pub-123"
-    assert result["platform"] == "linkedin"
-    assert result["status"] == "published"
-    assert result["targets"] == [
-        {
-            "platform": "linkedin",
-            "account": "",
-            "language": "en",
-            "status": "published",
-            "error": None,
-            "job_id": None,
-        }
-    ]
-
-    mock_cls.assert_called_once_with(
-        api_key="test-posting-key",
-        base_url="http://localhost:8000",
-    )
-    mock_client.publish.assert_awaited_once()
-
-    publish_request = mock_client.publish.await_args.args[0]
-    assert isinstance(publish_request, PublishRequest)
-    assert publish_request.content == "Publish this update."
-    assert publish_request.platforms == ["linkedin"]
-    assert publish_request.media_url == "https://example.com/post.png"
-    assert publish_request.media_type == "image"
-
-    saved_entry = _read_queue_entry(queue_dir, result["piece_id"])
-    assert saved_entry["status"] == "published"
-    assert saved_entry["post_id"] == "pub-123"
-    assert saved_entry["humanized_text"] == "Publish this update."
+    assert result == {"error": "APPROVAL_REQUIRED", "piece_id": None}
+    assert list(queue_dir.glob("*")) == []
 
 
 def test_holus_approve_returns_error_when_piece_not_found():

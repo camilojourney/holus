@@ -302,7 +302,7 @@ health:
 
 # -- Autonomous Content Engine -----------------------------------------------
 
-# Run ONE autonomous content cycle: generate → judge → auto-publish
+# Run ONE autonomous content cycle: generate → judge → human review queue
 content-cycle *args:
     uv run python -m holus.agents.marketing.orchestrator content {{args}}
 
@@ -313,14 +313,6 @@ collect-analytics:
 # Run improvement cycle: learn → evolve prompts → evaluate A/B tests
 improve-cycle:
     uv run python -m holus.agents.marketing.orchestrator improve
-
-# Auto-publish pending content based on judge scores
-auto-publish:
-    uv run python -c "import asyncio; from holus.agents.marketing.auto_publish import process_queue; print(asyncio.run(process_queue()))"
-
-# Auto-publish dry run (preview without actually posting)
-auto-publish-dry:
-    uv run python -c "import asyncio; from holus.agents.marketing.auto_publish import process_queue; print(asyncio.run(process_queue(dry_run=True)))"
 
 # Show open capability + knowledge gaps
 gaps:

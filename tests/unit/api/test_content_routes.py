@@ -128,7 +128,7 @@ def sample_rejected_piece(content_queue_dir: Path) -> Path:
 def piece_with_image(content_queue_dir: Path, tmp_path: Path) -> tuple[Path, Path]:
     """Write a content piece that references a rendered image."""
     # Create a fake PNG (minimal valid header)
-    img_path = tmp_path / "rendered" / "piece-004.png"
+    img_path = content_queue_dir.parent / "rendered-content" / "piece-004.png"
     img_path.parent.mkdir(parents=True, exist_ok=True)
     # Minimal PNG: 8-byte signature
     img_path.write_bytes(
@@ -139,7 +139,7 @@ def piece_with_image(content_queue_dir: Path, tmp_path: Path) -> tuple[Path, Pat
         + b"\x00\x00\x00\x00IEND\xaeB`\x82"
     )
 
-    img_b_path = tmp_path / "rendered" / "piece-004-b.png"
+    img_b_path = content_queue_dir.parent / "rendered-content" / "piece-004-b.png"
     img_b_path.write_bytes(img_path.read_bytes())
 
     data = {
@@ -162,7 +162,7 @@ def piece_with_image(content_queue_dir: Path, tmp_path: Path) -> tuple[Path, Pat
 @pytest.fixture
 def piece_with_pdf(content_queue_dir: Path, tmp_path: Path) -> tuple[Path, Path]:
     """Write a carousel content piece that references a rendered PDF."""
-    pdf_path = tmp_path / "rendered" / "piece-005.pdf"
+    pdf_path = content_queue_dir.parent / "rendered-content" / "piece-005.pdf"
     pdf_path.parent.mkdir(parents=True, exist_ok=True)
     pdf_path.write_bytes(b"%PDF-1.4\n% Holus test carousel\n")
 
@@ -574,6 +574,41 @@ class TestPublishAndScheduleContent:
         assert updated["scheduled_at"] == "2026-03-25T14:00:00Z"
 
 
+class TestDispatchGuards:
+    """External dispatch must never bypass the Phase-1 human approval gate."""
+
+    def test_pending_review_publish_and_schedule_are_rejected_without_client(
+        self, client, content_queue_dir, sample_yaml_piece
+    ):
+        with _patch_queue_dir(content_queue_dir):
+            publish = client.post(
+                "/api/v1/content/piece-001/publish", json={"expected_revision": "stale"}
+            )
+            schedule = client.post(
+                "/api/v1/content/piece-001/schedule",
+                json={"scheduled_at": "2026-04-01T12:00:00Z", "expected_revision": "stale"},
+            )
+        assert publish.status_code == 409
+        assert publish.json()["detail"] == "APPROVAL_REQUIRED"
+        assert schedule.status_code == 409
+        assert schedule.json()["detail"] == "APPROVAL_REQUIRED"
+        raw = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
+        assert raw["status"] == "pending_review"
+        assert "dispatch_request_id" not in raw
+
+    def test_approved_dispatch_requires_exact_revision(
+        self, client, content_queue_dir, sample_yaml_piece
+    ):
+        with _patch_queue_dir(content_queue_dir):
+            approved = client.patch("/api/v1/content/piece-001", json={"status": "approved"})
+            assert approved.status_code == 200
+            response = client.post(
+                "/api/v1/content/piece-001/publish", json={"expected_revision": "wrong"}
+            )
+        assert response.status_code == 409
+        assert response.json()["detail"] == "REVISION_CONFLICT"
+
+
 class TestContentImage:
     """GET /api/v1/content/{piece_id}/image."""
 
@@ -593,6 +628,18 @@ class TestContentImage:
 
         assert resp.status_code == 200
         assert resp.headers["content-type"] == "image/png"
+
+    def test_content_image_rejects_path_outside_rendered_roots(
+        self, client, content_queue_dir, sample_yaml_piece, tmp_path
+    ):
+        outside = tmp_path / "outside.png"
+        outside.write_bytes(b"not a real image")
+        raw = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
+        raw["rendered_image_path"] = str(outside)
+        sample_yaml_piece.write_text(yaml.safe_dump(raw), encoding="utf-8")
+        with _patch_queue_dir(content_queue_dir):
+            response = client.get("/api/v1/content/piece-001/image")
+        assert response.status_code == 404
 
     def test_content_image_not_found_piece(self, client, content_queue_dir):
         """Returns 404 when piece does not exist."""

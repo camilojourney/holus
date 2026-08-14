@@ -33,7 +33,9 @@ try:
 except ImportError:
     redis_lib = None  # type: ignore[assignment]
 
+from holus.core.config import HolusConfig
 from holus.core.cycle_state import HealthResult
+from holus.lineage.store import LineageStore
 
 logger = structlog.get_logger()
 
@@ -56,6 +58,7 @@ class HealthCheck:
         results["checks"]["trajectory"] = self.check_trajectory()
         results["checks"]["knowledge"] = self.check_knowledge()
         results["checks"]["content_queue"] = self.check_content_queue()
+        results["checks"]["lineage"] = self.check_lineage()
         results["checks"]["logs"] = self.check_logs()
 
         # Overall: unhealthy if any check is unhealthy
@@ -119,6 +122,22 @@ class HealthCheck:
             return {"status": "healthy", "pending": 0, "note": "Queue not created yet"}
         pending = list(queue_dir.glob("*.yaml")) + list(queue_dir.glob("*.json"))
         return {"status": "healthy", "pending": len(pending)}
+
+    def check_lineage(self) -> dict[str, Any]:
+        """Check the optional lineage owner and surface incomplete chains honestly."""
+        configured = HolusConfig.load().lineage_dir
+        directory = configured if configured.is_absolute() else Path.cwd() / configured
+        store = LineageStore(directory)
+        if not store.path.exists():
+            return {"status": "healthy", "exists": False, "note": "No lineage emitted yet"}
+        report = store.validate()
+        if not report.valid:
+            return {"status": "unhealthy", "exists": True, **report.to_dict()}
+        return {
+            "status": "healthy" if report.complete else "degraded",
+            "exists": True,
+            **report.to_dict(),
+        }
 
     def check_logs(self) -> dict[str, Any]:
         """Check logs directory exists."""
