@@ -1,14 +1,17 @@
 import type { NextConfig } from "next";
 
 const OBSERVATORY_API = process.env.NEXT_PUBLIC_OBSERVATORY_URL || "http://localhost:8003";
+const isPublicDemo = process.env.NODE_ENV === "production" || process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_OBSERVATORY_URL: OBSERVATORY_API,
-    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE ?? "false",
+    NEXT_PUBLIC_DEMO_MODE: isPublicDemo ? "true" : "false",
   },
-  // Proxy /api/v1/* to the Observatory API so the browser only needs port 3000
   async rewrites() {
+    if (isPublicDemo) {
+      return [];
+    }
     return [
       {
         source: "/api/v1/:path*",

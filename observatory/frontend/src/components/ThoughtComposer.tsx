@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Send, CheckCircle2, AlertCircle, FileText, Image as ImageIcon, MessageSquare, PanelsTopLeft } from 'lucide-react';
 import { createContentFromThought } from '@/lib/api';
+import { resolveConnection } from '@/lib/connection';
 
 const platforms = [
   { id: 'linkedin_text', label: 'LinkedIn Post', format: 'Authority copy', icon: FileText },
@@ -17,6 +18,8 @@ const platforms = [
 
 export default function ThoughtComposer() {
   const router = useRouter();
+  const connection = resolveConnection();
+  const liveDrafting = connection.kind === 'local_dev';
   const [thought, setThought] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState(platforms.map((platform) => platform.id));
   const [busy, setBusy] = useState(false);
@@ -33,6 +36,10 @@ export default function ThoughtComposer() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!liveDrafting) {
+      setError('Live drafting requires an authenticated Holus backend. No request was sent.');
+      return;
+    }
     setBusy(true);
     setError(null);
     setResult(null);
@@ -51,7 +58,7 @@ export default function ThoughtComposer() {
     }
   }
 
-  const canSubmit = thought.trim().length >= 8 && selectedPlatforms.length > 0 && !busy;
+  const canSubmit = liveDrafting && thought.trim().length >= 8 && selectedPlatforms.length > 0 && !busy;
 
   return (
     <form
@@ -71,6 +78,11 @@ export default function ThoughtComposer() {
             <h2 className="text-xl font-semibold mt-1" style={{ color: 'var(--text-primary)' }}>
               What thought should Holus turn into content?
             </h2>
+            {!liveDrafting && (
+              <p className="text-xs mt-2" style={{ color: 'var(--warning)' }}>
+                {connection.label} — live drafting is unavailable. No request is sent from this public demo.
+              </p>
+            )}
           </div>
           <span
             className="text-xs px-2 py-1 rounded font-medium"

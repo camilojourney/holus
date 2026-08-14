@@ -488,3 +488,26 @@ body {
   visibility: visible;
   opacity: 1;
 }
+
+.generation-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.generation-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-default);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .generation-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

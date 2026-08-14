@@ -9,7 +9,7 @@ interface Props {
 export default function KillSwitchBanner({ health, compact = false }: Props) {
   if (!health) return null;
 
-  if (health.kill_switch_active) {
+  if (health.kill_switch_active === true) {
     return (
       <div
         role="alert"
@@ -30,7 +30,7 @@ export default function KillSwitchBanner({ health, compact = false }: Props) {
     );
   }
 
-  if (!compact) {
+  if (health.kill_switch_active === false && !compact) {
     return (
       <div
         className="w-full flex items-center gap-3 px-6 py-3"
@@ -38,6 +38,19 @@ export default function KillSwitchBanner({ health, compact = false }: Props) {
       >
         <ShieldCheck size={20} aria-hidden="true" />
         <span className="font-medium">System running normally -- Kill switch INACTIVE</span>
+      </div>
+    );
+  }
+
+  if (!compact) {
+    return (
+      <div
+        role="status"
+        className="w-full flex items-center gap-3 px-6 py-3"
+        style={{ background: 'var(--warning-subtle)', color: 'var(--warning)' }}
+      >
+        <ShieldAlert size={20} aria-hidden="true" />
+        <span className="font-medium">Kill switch state unavailable - authenticated backend connection required</span>
       </div>
     );
   }

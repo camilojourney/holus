@@ -46,7 +46,7 @@ The core philosophy: **intelligence is the primary constraint, not cost.** Every
 - Performance data is rich enough to detect what content categories convert per product
 - Coordinator synthesis identifies cross-product patterns (e.g., tutorial posts for Pilaster drive invoz signups)
 - Prompt optimizer has run 3+ cycles with statistically significant A/B test results
-- Observatory dashboard serves as a portfolio artifact: shows a fully autonomous agent system operating live
+- Observatory serves as a portfolio artifact: its public demo shows bounded, labelled demonstration state, while live operational views require an authenticated backend connection
 
 ### Ongoing Metrics
 

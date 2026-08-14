@@ -22,9 +22,9 @@ import type {
   MemoryContent,
   LessonsResponse,
 } from './types';
+import { isPublicOrDemoSurface } from './connection';
 import {
   demoAgents,
-  demoHealth,
   demoMetrics,
   demoEvaluations,
   demoContent,
@@ -40,8 +40,6 @@ import {
 const API_BASE_SERVER =
   process.env.NEXT_PUBLIC_OBSERVATORY_URL || 'http://localhost:8003';
 const isServer = typeof window === 'undefined';
-
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
 function inferModelTier(model?: string): ModelTier {
   const normalized = model?.toLowerCase() ?? '';
@@ -117,7 +115,8 @@ function normalizeHealth(raw: Partial<HealthStatus> & Record<string, unknown>): 
 
   return {
     status: status as HealthStatus['status'],
-    kill_switch_active: Boolean(raw.kill_switch_active),
+    kill_switch_active:
+      typeof raw.kill_switch_active === 'boolean' ? raw.kill_switch_active : undefined,
     kill_switch_activated_at: raw.kill_switch_activated_at as string | undefined,
     services,
     timestamp,
@@ -174,13 +173,23 @@ async function apiFetch<T>(
 }
 
 async function withFallback<T>(fetcher: () => Promise<T>, fallback: T): Promise<T> {
-  if (DEMO_MODE) return fallback;
+  if (isPublicOrDemoSurface()) return fallback;
   try {
     return await fetcher();
   } catch {
     return fallback;
   }
 }
+
+const DISCONNECTED_HEALTH: HealthStatus = {
+  status: 'down',
+  services: [
+    { name: 'Authenticated Observatory backend', status: 'down', last_checked: '2026-01-01T00:00:00.000Z' },
+    { name: 'Generation BFF', status: 'down', last_checked: '2026-01-01T00:00:00.000Z' },
+    { name: 'Live event stream', status: 'down', last_checked: '2026-01-01T00:00:00.000Z' },
+  ],
+  timestamp: '2026-01-01T00:00:00.000Z',
+};
 
 // Health
 export async function fetchHealth(): Promise<HealthStatus> {
@@ -190,7 +199,7 @@ export async function fetchHealth(): Promise<HealthStatus> {
       { revalidate: 0 },
     );
     return normalizeHealth(raw);
-  }, demoHealth);
+  }, DISCONNECTED_HEALTH);
 }
 
 // Agents list
@@ -282,9 +291,24 @@ export async function fetchContent(): Promise<ContentItem[]> {
 }
 
 // Create platform drafts from one thought. This only queues drafts for review.
+const PUBLIC_MUTATION_BLOCKED =
+  'Live drafting requires an authenticated Holus backend. No request was sent.';
+
+function demoContentDetail(id: string): ContentDetail {
+  const item = demoContent.find((entry) => entry.id === id) ?? demoContent[0];
+  return {
+    ...item,
+    text: 'Demonstration draft. Labelled demonstration state, not a live generation artifact.',
+    agent_trace: [],
+  };
+}
+
 export async function createContentFromThought(
   body: CreateContentRequest,
 ): Promise<CreateContentResponse> {
+  if (isPublicOrDemoSurface()) {
+    throw new Error(PUBLIC_MUTATION_BLOCKED);
+  }
   const res = await fetch('/api/v1/content/from-thought', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -299,7 +323,10 @@ export async function createContentFromThought(
 
 // Content detail (full text + agent trace)
 export async function fetchContentDetail(id: string): Promise<ContentDetail> {
-  return apiFetch<ContentDetail>(`/api/v1/content/${id}`, { revalidate: 0 });
+  return withFallback(
+    () => apiFetch<ContentDetail>(`/api/v1/content/${id}`, { revalidate: 0 }),
+    demoContentDetail(id),
+  );
 }
 
 // Approve / reject / reschedule a content piece (client-side, no cache)
@@ -307,6 +334,9 @@ export async function patchContent(
   id: string,
   body: PatchContentRequest,
 ): Promise<ContentDetail> {
+  if (isPublicOrDemoSurface()) {
+    throw new Error(PUBLIC_MUTATION_BLOCKED);
+  }
   const res = await fetch(`/api/v1/content/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -324,6 +354,9 @@ export async function chooseVisual(
   id: string,
   variant: 'a' | 'b',
 ): Promise<ContentDetail> {
+  if (isPublicOrDemoSurface()) {
+    throw new Error(PUBLIC_MUTATION_BLOCKED);
+  }
   const res = await fetch(`/api/v1/content/${id}/visual-choice?variant=${variant}`, {
     method: 'PATCH',
   });
@@ -362,20 +395,15 @@ export async function fetchKnowledge(): Promise<KnowledgeFile[]> {
 export async function fetchCosts(): Promise<CostBreakdown[]> {
   return withFallback(
     () => apiFetch<CostBreakdown[]>('/api/v1/costs'),
-    [
-      { agent_id: 'marketing-strategist', agent_name: 'Marketing Strategist', cost_usd: 1.42, percentage: 37.2 },
-      { agent_id: 'blog-writer', agent_name: 'Blog Writer', cost_usd: 0.89, percentage: 23.3 },
-      { agent_id: 'judge-agent', agent_name: 'Judge Agent', cost_usd: 0.64, percentage: 16.8 },
-      { agent_id: 'seo-researcher', agent_name: 'SEO Researcher', cost_usd: 0.52, percentage: 13.6 },
-      { agent_id: 'hook-architect', agent_name: 'Hook Architect', cost_usd: 0.35, percentage: 9.1 },
-    ],
+    [],
   );
 }
 
-// SSE stream URL (used directly by EventSource)
-export function trajectoryStreamUrl(): string {
-  const base = typeof window === 'undefined' ? API_BASE_SERVER : '';
-  return `${base}/api/v1/trajectory/stream`;
+export { trajectoryStreamUrl } from './connection';
+
+// Is demo / public surface active?
+export function isDemoMode(): boolean {
+  return isPublicOrDemoSurface();
 }
 
 // Results / Growth
@@ -400,9 +428,4 @@ export async function fetchLessons(limit = 20): Promise<LessonsResponse> {
     () => apiFetch<LessonsResponse>(`/api/v1/knowledge/lessons/recent?limit=${limit}`),
     demoLessons,
   );
-}
-
-// Is demo mode active?
-export function isDemoMode(): boolean {
-  return DEMO_MODE;
 }

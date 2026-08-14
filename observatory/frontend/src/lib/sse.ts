@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { TrajectoryEvent } from './types';
-import { trajectoryStreamUrl, isDemoMode } from './api';
-import { demoTrajectoryEvents } from './demo-data';
+import { allowsLiveEventStream, trajectoryStreamUrl } from './connection';
 
 const MAX_EVENTS = 100;
 const MAX_RETRY_INTERVAL_MS = 30_000;
@@ -11,36 +10,40 @@ const MAX_RETRY_INTERVAL_MS = 30_000;
 export function useTrajectoryStream(): {
   events: TrajectoryEvent[];
   connected: boolean;
+  liveEventsAllowed: boolean;
 } {
-  const demoMode = isDemoMode();
-  const [events, setEvents] = useState<TrajectoryEvent[]>(
-    () => (demoMode ? demoTrajectoryEvents : []),
-  );
-  const [connected, setConnected] = useState(demoMode);
+  const liveEventsAllowed = allowsLiveEventStream();
+  const [events, setEvents] = useState<TrajectoryEvent[]>([]);
+  const [connected, setConnected] = useState(false);
   const retryDelay = useRef(1_000);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    // In demo mode, return static trajectory events without opening an EventSource
-    if (demoMode) return;
+    // Public/demo surfaces must not open EventSource, including localhost targets.
+    if (!liveEventsAllowed) return;
+
+    const url = trajectoryStreamUrl();
+    if (!url) return;
+    if (typeof window !== 'undefined' && /localhost|127\.0\.0\.1|\[::1\]/i.test(url)) {
+      const host = window.location.hostname;
+      if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1') return;
+    }
 
     let cancelled = false;
 
     function connect() {
       if (cancelled) return;
+      const streamUrl = trajectoryStreamUrl();
+      if (!streamUrl) return;
 
-      const url = trajectoryStreamUrl();
-      console.log('[SSE] Connecting to', url);
-
-      const source = new EventSource(url);
+      const source = new EventSource(streamUrl);
       sourceRef.current = source;
 
       source.onopen = () => {
         if (cancelled) { source.close(); return; }
-        console.log('[SSE] Connected');
         setConnected(true);
-        retryDelay.current = 1_000; // reset backoff on success
+        retryDelay.current = 1_000;
       };
 
       source.onmessage = (ev) => {
@@ -49,13 +52,12 @@ export function useTrajectoryStream(): {
           const event = JSON.parse(ev.data) as TrajectoryEvent;
           setEvents((prev) => [event, ...prev].slice(0, MAX_EVENTS));
         } catch {
-          console.warn('[SSE] Failed to parse event', ev.data);
+          // Ignore malformed frames rather than retrying against a bad payload.
         }
       };
 
       source.onerror = () => {
         if (cancelled) return;
-        console.warn('[SSE] Connection error, retrying in', retryDelay.current, 'ms');
         setConnected(false);
         source.close();
         sourceRef.current = null;
@@ -77,7 +79,7 @@ export function useTrajectoryStream(): {
         sourceRef.current = null;
       }
     };
-  }, [demoMode]);
+  }, [liveEventsAllowed]);
 
-  return { events, connected };
+  return { events, connected, liveEventsAllowed };
 }

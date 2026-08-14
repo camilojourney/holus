@@ -1,13 +1,13 @@
 # Design System — Holus Observatory
 
-**Last updated:** 2026-03-12
-**Status:** PARTIALLY IMPLEMENTED — colors and typography via Tailwind, component library in use (Tremor), but not yet fully leveraged.
+**Last updated:** 2026-08-14
+**Status:** PUBLIC DEMO + LOCAL DEVELOPMENT: the product presents safe demonstration state publicly and requires an authenticated backend for live operational data.
 
 ---
 
 ## Brand Identity
 
-The Observatory is an internal monitoring dashboard, not a consumer product. It must look professional enough to serve as a portfolio demo for job interviews. The aesthetic is: modern data dashboard — clean, spacious, information-dense without clutter. Think: Vercel Analytics, Linear, Grafana Cloud. Not: Notion, colorful SaaS marketing pages.
+The Observatory is Holus's public product experience and a recruiter-facing demonstration of its orchestration layer. It must make the safe demo boundary unmistakable: local demonstration state is labelled, while live operational data requires an authenticated backend. The aesthetic is: modern AI product surface - clear, spacious, and selectively information-dense. Think: Vercel Analytics, Linear, Grafana Cloud. Not: Notion or generic dashboard-card sprawl.
 
 Dark mode is the primary mode — operators monitor dashboards in varied lighting, and dark backgrounds make colored status indicators (green/yellow/red) more visible.
 
@@ -53,8 +53,8 @@ Tailwind CSS 4 color tokens. All colors used via Tailwind utility classes.
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| Sans font | `Geist` (via `next/font/google`) | All UI text |
-| Mono font | `Geist Mono` (via `next/font/google`) | Agent IDs, timestamps, scores, file paths |
+| Sans font | `Plus Jakarta Sans` (via `next/font/google`) | All UI text |
+| Mono font | `JetBrains Mono` (via `next/font/google`) | Request IDs, permitted job state, timestamps |
 | Page heading | `text-2xl font-bold` (24px) | Page titles |
 | Section heading | `text-sm font-semibold` (13px) | Section labels ("Agents (32)") |
 | Body | `text-sm` (14px) | Card content, table cells |
@@ -86,7 +86,7 @@ Tailwind default spacing scale (4px base).
 | Base components | Tailwind CSS 4 | ^4 | Layout, spacing, colors, responsive |
 | Chart components | Tremor | ^3.18.7 | KPI cards, area charts, donut charts, line charts |
 | Low-level charts | Recharts | ^3.8.0 | Custom chart configurations (under Tremor) |
-| Icons | *Not yet chosen* | — | Need: Lucide React or Heroicons. Currently using Unicode characters. |
+| Icons | Lucide React | ^0.577.0 | Navigation and status affordances |
 
 ### Component Mapping (spec 029 → library)
 
@@ -134,7 +134,7 @@ Tailwind default spacing scale (4px base).
 | `sm` (640px+) | 2-column KPI, 2-column agent grid |
 | Mobile (<640px) | Sidebar collapses to hamburger menu, 1-column everything |
 
-**Current state:** Mobile responsive is NOT implemented. Sidebar is fixed at 224px. Pages break below ~700px viewport.
+**Current state:** Mobile navigation uses a drawer below the `md` breakpoint; the desktop sidebar remains 224px wide.
 
 ---
 
@@ -144,7 +144,7 @@ Tailwind default spacing scale (4px base).
 |---------|---------------|
 | Navigation | Sidebar links with active state highlight (indigo) |
 | Data refresh | RSC with 30s `revalidate` — no manual refresh button |
-| Real-time updates | SSE via EventSource hook (TrajectoryTimeline only) |
+| Real-time updates | SSE via EventSource hook for local authenticated development only; public/demo mode states that a connection is required |
 | Error handling | `Promise.allSettled` + `ErrorBanner` on API failure |
 | Empty states | Text fallback ("No agents registered", "Unable to load") |
 | Click-through | Agent card → agent detail page |
@@ -152,8 +152,8 @@ Tailwind default spacing scale (4px base).
 
 ### What Should NOT Exist
 
-- No edit buttons, forms, or mutations — the Observatory is read-only
-- No authentication flow — internal tool, no login screen
+- No live publishing, operator, or account-management controls on the public surface
+- No browser authentication flow: authenticated connections belong behind the future Holus BFF
 - No onboarding or tutorials — the user is the builder
 - No notification toasts — status is shown inline via banners and colors
 - No chat interface — Holus is not a chatbot
@@ -163,8 +163,8 @@ Tailwind default spacing scale (4px base).
 ## Dark Mode
 
 - Implementation: Tailwind `dark:` variant classes
-- Trigger: System preference (`prefers-color-scheme: dark`)
-- Manual toggle: Not yet implemented (should be in sidebar footer)
+- Trigger: Persisted sidebar toggle, defaulting to dark mode
+- Manual toggle: Available in the sidebar footer
 - Primary mode for development and demo
 
 ---

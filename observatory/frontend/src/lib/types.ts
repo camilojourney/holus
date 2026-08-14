@@ -47,7 +47,7 @@ export interface CycleRecord {
 
 export interface HealthStatus {
   status: 'healthy' | 'degraded' | 'down';
-  kill_switch_active: boolean;
+  kill_switch_active?: boolean;
   kill_switch_activated_at?: string;
   services: ServiceStatus[];
   timestamp: string;
