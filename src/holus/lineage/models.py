@@ -14,7 +14,9 @@ from pydantic import BaseModel, Field, field_validator
 SCHEMA_VERSION = "1.0"
 _SECRET_KEY = re.compile(r"(?:api[_-]?key|token|secret|password|authorization)", re.I)
 _SECRET_VALUE = re.compile(r"(?:sk-|bearer\s+|ghp_)[A-Za-z0-9_-]+", re.I)
-_PRIVATE_KEY = re.compile(r"(?:raw|text|content|input|body|prompt|summary|url|uri|path|filename)", re.I)
+_PRIVATE_KEY = re.compile(
+    r"(?:raw|text|content|input|body|prompt|summary|url|uri|path|filename)", re.I
+)
 _ABSOLUTE_REF = re.compile(r"^(?:[A-Za-z]:[\\/]|[\\/]|[A-Za-z][A-Za-z0-9+.-]*://)")
 
 

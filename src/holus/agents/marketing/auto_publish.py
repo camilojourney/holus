@@ -317,7 +317,6 @@ async def process_queue(*, dry_run: bool = False) -> list[dict[str, Any]]:
 
         if score >= PASS_THRESHOLD and verdict != "FAIL":
             action = "would_review" if dry_run else "needs_review"
-            publish_id = None
             results.append(
                 {
                     "piece_id": piece_id,

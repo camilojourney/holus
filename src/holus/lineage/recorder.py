@@ -58,7 +58,10 @@ class LineageRecorder:
         )
         self._record_batch(
             [
-                (source_node, [self._edge(source_id, set_id, "planned_into", group_id, created_at)]),
+                (
+                    source_node,
+                    [self._edge(source_id, set_id, "planned_into", group_id, created_at)],
+                ),
                 (set_node, []),
             ]
         )
@@ -81,8 +84,7 @@ class LineageRecorder:
             extracted_text=source_text,
         )
         normalized_records = [
-            {**record, "group_id": str(record.get("group_id", group_id))}
-            for record in records
+            {**record, "group_id": str(record.get("group_id", group_id))} for record in records
         ]
         self.record_content_set(source, normalized_records, package or {})
 

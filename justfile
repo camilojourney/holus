@@ -302,7 +302,7 @@ health:
 
 # -- Autonomous Content Engine -----------------------------------------------
 
-# Run ONE autonomous content cycle: generate → judge → auto-publish
+# Run ONE autonomous content cycle: generate → judge → human review queue
 content-cycle *args:
     uv run python -m holus.agents.marketing.orchestrator content {{args}}
 

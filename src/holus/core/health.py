@@ -33,8 +33,8 @@ try:
 except ImportError:
     redis_lib = None  # type: ignore[assignment]
 
-from holus.core.cycle_state import HealthResult
 from holus.core.config import HolusConfig
+from holus.core.cycle_state import HealthResult
 from holus.lineage.store import LineageStore
 
 logger = structlog.get_logger()

@@ -61,7 +61,7 @@ CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
 def _lineage_recorder() -> LineageRecorder:
     """Keep lineage next to the queue owner, including isolated test queues."""
     default_queue = REPO_ROOT / "data" / "content-queue"
-    if CONTENT_QUEUE_DIR != default_queue:
+    if default_queue != CONTENT_QUEUE_DIR:
         return LineageRecorder(CONTENT_QUEUE_DIR.parent / "lineage")
     configured = HolusConfig.load().lineage_dir
     return LineageRecorder(configured if configured.is_absolute() else REPO_ROOT / configured)
@@ -69,7 +69,7 @@ def _lineage_recorder() -> LineageRecorder:
 
 def _dispatch_outbox() -> DispatchOutbox:
     default_queue = REPO_ROOT / "data" / "content-queue"
-    if CONTENT_QUEUE_DIR != default_queue:
+    if default_queue != CONTENT_QUEUE_DIR:
         lineage_dir = CONTENT_QUEUE_DIR.parent / "lineage"
     else:
         configured = HolusConfig.load().lineage_dir
@@ -513,9 +513,13 @@ async def publish_content(
         )
 
     revision = _require_approved_dispatch(raw, request_body.expected_revision)
-    if raw.get("status") != "approved" and _dispatch_outbox().find(
-        operation="publish", piece_id=piece_id, revision=revision, payload=payload
-    ) is None:
+    if (
+        raw.get("status") != "approved"
+        and _dispatch_outbox().find(
+            operation="publish", piece_id=piece_id, revision=revision, payload=payload
+        )
+        is None
+    ):
         raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
     intent, _created = _dispatch_outbox().reserve(
         operation="publish", piece_id=piece_id, revision=revision, payload=payload
@@ -575,9 +579,13 @@ async def schedule_content(
         )
 
     revision = _require_approved_dispatch(raw, body.expected_revision)
-    if raw.get("status") != "approved" and _dispatch_outbox().find(
-        operation="schedule", piece_id=piece_id, revision=revision, payload=payload
-    ) is None:
+    if (
+        raw.get("status") != "approved"
+        and _dispatch_outbox().find(
+            operation="schedule", piece_id=piece_id, revision=revision, payload=payload
+        )
+        is None
+    ):
         raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
     intent, _created = _dispatch_outbox().reserve(
         operation="schedule", piece_id=piece_id, revision=revision, payload=payload

@@ -54,7 +54,7 @@ from holus.agents.marketing.visual_pipeline import (  # noqa: F401, E402
     _generate_visual_spec,
     _render_visual,
 )
-from holus.lineage.recorder import LineageRecorder
+from holus.lineage.recorder import LineageRecorder  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Step 2.5: Judge evaluation
@@ -328,9 +328,7 @@ def run_from_idea(raw_idea: str) -> list[dict[str, Any]]:
         try:
             record = json.loads(Path(result["queue_path"]).read_text(encoding="utf-8"))
             if isinstance(record, dict):
-                record["queue_path"] = str(
-                    Path(result["queue_path"]).relative_to(queue_dir.parent)
-                )
+                record["queue_path"] = str(Path(result["queue_path"]).relative_to(queue_dir.parent))
                 records.append(record)
         except (OSError, json.JSONDecodeError):
             logger.warning("Could not load generated record for lineage: %s", result["queue_path"])

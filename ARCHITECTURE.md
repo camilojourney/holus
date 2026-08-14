@@ -116,7 +116,7 @@ GENERATE
 REVIEW
   -> preserve platform-fit evidence and an explicit approval checklist
   -> run judges and preserve human review as the default gate
-  -> PATCH approval/rejection/scheduled state locally only
+  -> PATCH review state locally; reserve an outbox intent before explicit dispatch
   -> append privacy-safe lineage events to data/lineage/events.jsonl
 
 PUBLISH OR SCHEDULE
@@ -319,7 +319,8 @@ Not needed until then.
 - Make `/api/v1/content/from-thought` the primary intake
 - Generate text, image, and carousel variants from one thought
 - Render PNG/PDF assets with the Holus visual engine
-- Keep review/schedule/publish as explicit local actions
+- Keep review and dispatch explicit; persist the outbox intent locally before any
+  schedule or publish request reaches Holus Social API
 - Rename and wire Holus Social API with legacy env aliases
 - Log every decision to trajectory.jsonl
 

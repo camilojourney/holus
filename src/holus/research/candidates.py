@@ -57,7 +57,9 @@ class CandidateStore:
         self.directory = Path(directory)
         self.queue_dir = Path(queue_dir)
         self._pipeline_factory = pipeline_factory
-        configured = Path(lineage_dir) if lineage_dir is not None else HolusConfig.load().lineage_dir
+        configured = (
+            Path(lineage_dir) if lineage_dir is not None else HolusConfig.load().lineage_dir
+        )
         self.lineage_recorder = LineageRecorder(
             configured if configured.is_absolute() else Path.cwd() / configured
         )

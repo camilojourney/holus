@@ -13,8 +13,8 @@
 - [ ] Brand-safety judge is a HARD gate (cannot be bypassed)
 - [ ] `guardrails.yaml` requires human approval to modify
 - [ ] Kill switch activates on 3+ consecutive failures
-- [ ] Auto-publish only for judge score >= 0.8 (PASS threshold)
-- [ ] PARTIAL content (0.5-0.8) ALWAYS requires human review
+- [ ] Every external dispatch has an immutable approved review decision for the exact revision
+- [ ] Judge scores never bypass the human review gate
 - [ ] No content about trading, financial advice, or investment
 - [ ] Forbidden topics list in `quality_score.py` CONTENT_ANTI_PATTERNS
 
