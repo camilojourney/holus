@@ -8,7 +8,9 @@ import httpx
 import pytest
 
 from holus.integrations.social_media import (
+    EXTERNAL_DELIVERY_CONTAINED_MESSAGE,
     PLATFORM_CHAR_LIMITS,
+    ExternalDeliveryContainedError,
     PublishRequest,
     PublishResult,
     PublishTarget,
@@ -66,100 +68,45 @@ class TestPublish:
 
     @pytest.mark.asyncio
     async def test_publish_validates_content(self, client):
-        """Publishing validates content before API call."""
+        """Publishing is contained before validation can trigger outbound behavior."""
         request = PublishRequest(
             content="x" * 300,
             platforms=["twitter"],
         )
-        with pytest.raises(ValueError, match="Content validation failed"):
+        with pytest.raises(ExternalDeliveryContainedError):
             await client.publish(request)
 
     @pytest.mark.asyncio
-    async def test_publish_successful(self, client, mock_httpx_client):
-        """Successful publish returns PublishResult."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "publish_id": "pub_42",
-            "targets": [
-                {
-                    "platform": "linkedin",
-                    "account": "experience",
-                    "language": "en",
-                    "status": "queued",
-                    "error": None,
-                    "job_id": 42,
-                }
-            ],
-            "warnings": [],
-            "en_content": "Enhanced content here",
-            "es_content": None,
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
-
+    async def test_publish_is_contained_without_post(self, client, mock_httpx_client):
+        """Publish fails closed with the central containment error before POST."""
         with patch.object(client, "client", mock_httpx_client):
-            request = PublishRequest(
-                content="Hello world!",
-                platforms=["linkedin"],
-            )
-            result = await client.publish(request)
+            request = PublishRequest(content="Hello world!", platforms=["linkedin"])
+            with pytest.raises(ExternalDeliveryContainedError) as exc_info:
+                await client.publish(request)
 
-            assert isinstance(result, PublishResult)
-            assert result.publish_id == "pub_42"
-            assert len(result.targets) == 1
-            assert result.targets[0].platform == "linkedin"
-            assert result.succeeded is True
+        assert str(exc_info.value) == EXTERNAL_DELIVERY_CONTAINED_MESSAGE
+        mock_httpx_client.post.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_publish_with_failed_targets(self, client, mock_httpx_client):
-        """Failed targets are reported correctly."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "publish_id": "pub_43",
-            "targets": [
-                {
-                    "platform": "linkedin",
-                    "account": "experience",
-                    "language": "en",
-                    "status": "queued",
-                },
-                {
-                    "platform": "twitter",
-                    "account": "main",
-                    "language": "en",
-                    "status": "failed",
-                    "error": "Rate limit exceeded",
-                },
-            ],
-            "warnings": [],
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
-
+    async def test_publish_failed_target_delivery_is_contained_without_post(
+        self, client, mock_httpx_client
+    ):
+        """Legacy failed-target publish paths no longer reach outbound delivery."""
         with patch.object(client, "client", mock_httpx_client):
             request = PublishRequest(
                 content="Test post",
                 platforms=["linkedin", "twitter"],
             )
-            result = await client.publish(request)
+            with pytest.raises(ExternalDeliveryContainedError):
+                await client.publish(request)
 
-            assert result.succeeded is False
-            assert len(result.failed_targets) == 1
-            assert result.failed_targets[0].platform == "twitter"
-            assert result.failed_targets[0].error == "Rate limit exceeded"
+        mock_httpx_client.post.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_publish_sends_correct_payload(self, client, mock_httpx_client):
-        """Publish sends the right payload to the API."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "publish_id": "pub_44",
-            "targets": [],
-            "warnings": [],
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
-
+    async def test_publish_with_media_is_contained_without_payload_post(
+        self, client, mock_httpx_client
+    ):
+        """Publish validates media-bearing requests but does not POST a payload."""
         with patch.object(client, "client", mock_httpx_client):
             request = PublishRequest(
                 content="Test content",
@@ -168,31 +115,14 @@ class TestPublish:
                 media_url="https://example.com/image.jpg",
                 media_type="image",
             )
-            await client.publish(request)
+            with pytest.raises(ExternalDeliveryContainedError):
+                await client.publish(request)
 
-            mock_httpx_client.post.assert_called_once()
-            call_args = mock_httpx_client.post.call_args
-            assert call_args[0][0] == "/api/v1/publish"
-            payload = call_args[1]["json"]
-            assert payload["content"] == "Test content"
-            assert payload["platforms"] == ["linkedin"]
-            assert payload["media_url"] == "https://example.com/image.jpg"
-            assert payload["media_type"] == "image"
+        mock_httpx_client.post.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_publish_bilingual(self, client, mock_httpx_client):
-        """Bilingual publish sets correct payload fields."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "publish_id": "pub_45_46",
-            "targets": [],
-            "warnings": [],
-            "en_content": "English",
-            "es_content": "Spanish",
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
-
+    async def test_publish_bilingual_is_contained_without_post(self, client, mock_httpx_client):
+        """Bilingual compatibility parameters still fail closed before POST."""
         with patch.object(client, "client", mock_httpx_client):
             request = PublishRequest(
                 content="Test content",
@@ -200,12 +130,10 @@ class TestPublish:
                 bilingual=True,
                 source_language="en",
             )
-            result = await client.publish(request)
+            with pytest.raises(ExternalDeliveryContainedError):
+                await client.publish(request)
 
-            # bilingual/source_language not sent to API (not in API schema yet)
-            # but the response may contain bilingual content
-            assert result.en_content == "English"
-            assert result.es_content == "Spanish"
+        mock_httpx_client.post.assert_not_called()
 
 
 class TestGetStatus:
@@ -420,51 +348,34 @@ class TestSchedulePost:
     """Test schedule_post method."""
 
     @pytest.mark.asyncio
-    async def test_schedule_post_successful(self, client, mock_httpx_client):
-        """Successful schedule returns ScheduleResult."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "schedule_id": "sched_1",
-            "status": "pending_approval",
-            "platform": "linkedin",
-            "approval_required": True,
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
-
+    async def test_schedule_post_is_contained_without_post(self, client, mock_httpx_client):
+        """Schedule fails closed with the central containment error before POST."""
         with patch.object(client, "client", mock_httpx_client):
             request = ScheduleRequest(
                 content="Test scheduled content",
                 platform="linkedin",
             )
-            result = await client.schedule_post(request)
+            with pytest.raises(ExternalDeliveryContainedError) as exc_info:
+                await client.schedule_post(request)
 
-            assert isinstance(result, ScheduleResult)
-            assert result.schedule_id == "sched_1"
-            assert result.status == "pending_approval"
-            assert result.approval_required is True
+        assert str(exc_info.value) == EXTERNAL_DELIVERY_CONTAINED_MESSAGE
+        mock_httpx_client.post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_schedule_post_validates_content(self, client):
-        """Schedule validates content before sending."""
+        """Schedule is contained before validation can trigger outbound behavior."""
         request = ScheduleRequest(
             content="x" * 300,
             platform="twitter",
         )
-        with pytest.raises(ValueError, match="Content validation failed"):
+        with pytest.raises(ExternalDeliveryContainedError):
             await client.schedule_post(request)
 
     @pytest.mark.asyncio
-    async def test_schedule_post_sends_correct_payload(self, client, mock_httpx_client):
-        """Schedule sends the right payload to the API."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "schedule_id": "sched_2",
-            "status": "scheduled",
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
-
+    async def test_schedule_post_payload_path_is_contained_without_post(
+        self, client, mock_httpx_client
+    ):
+        """Schedule validates payload-shaped input but does not POST it."""
         with patch.object(client, "client", mock_httpx_client):
             request = ScheduleRequest(
                 content="Scheduled post",
@@ -472,29 +383,16 @@ class TestSchedulePost:
                 approval_required=False,
                 scheduled_at="2026-03-25T10:00:00Z",
             )
-            await client.schedule_post(request)
+            with pytest.raises(ExternalDeliveryContainedError):
+                await client.schedule_post(request)
 
-            mock_httpx_client.post.assert_called_once()
-            call_args = mock_httpx_client.post.call_args
-            assert call_args[0][0] == "/api/v1/schedule"
-            payload = call_args[1]["json"]
-            assert payload["content"] == "Scheduled post"
-            assert payload["platforms"] == ["linkedin"]
-            assert "platform" not in payload
-            assert payload["approval_required"] is False
-            assert payload["scheduled_at"] == "2026-03-25T10:00:00Z"
+        mock_httpx_client.post.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_schedule_post_with_media(self, client, mock_httpx_client):
-        """Schedule includes media fields when provided."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "schedule_id": "sched_3",
-            "status": "pending_approval",
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
-
+    async def test_schedule_post_with_media_is_contained_without_post(
+        self, client, mock_httpx_client
+    ):
+        """Schedule accepts media fields at the model layer but does not POST."""
         with patch.object(client, "client", mock_httpx_client):
             request = ScheduleRequest(
                 content="Post with image",
@@ -502,33 +400,22 @@ class TestSchedulePost:
                 media_url="https://example.com/photo.jpg",
                 media_type="image",
             )
-            await client.schedule_post(request)
+            with pytest.raises(ExternalDeliveryContainedError):
+                await client.schedule_post(request)
 
-            payload = mock_httpx_client.post.call_args[1]["json"]
-            assert payload["media_url"] == "https://example.com/photo.jpg"
-            assert payload["media_type"] == "image"
+        mock_httpx_client.post.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_schedule_post_unwraps_data_envelope(self, client, mock_httpx_client):
-        """Schedule unwraps {"status": "ok", "data": {...}} envelope."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "status": "ok",
-            "data": {
-                "schedule_id": "sched_4",
-                "status": "pending_approval",
-                "platform": "linkedin",
-                "approval_required": True,
-            },
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
-
+    async def test_schedule_post_envelope_path_is_contained_without_post(
+        self, client, mock_httpx_client
+    ):
+        """Legacy envelope schedule path is now contained before HTTP."""
         with patch.object(client, "client", mock_httpx_client):
             request = ScheduleRequest(content="Envelope test", platform="linkedin")
-            result = await client.schedule_post(request)
+            with pytest.raises(ExternalDeliveryContainedError):
+                await client.schedule_post(request)
 
-            assert result.schedule_id == "sched_4"
+        mock_httpx_client.post.assert_not_called()
 
 
 class TestGetPostAnalytics:
@@ -580,19 +467,14 @@ class TestErrorHandling:
     """Test HTTP error handling across methods."""
 
     @pytest.mark.asyncio
-    async def test_publish_raises_on_5xx(self, client, mock_httpx_client):
-        """Publish raises HTTPStatusError on 5xx."""
-        mock_httpx_client.post.side_effect = httpx.HTTPStatusError(
-            "Internal Server Error",
-            request=httpx.Request("POST", "http://localhost:8000/api/v1/publish"),
-            response=httpx.Response(500),
-        )
-
+    async def test_publish_containment_prevents_5xx_post(self, client, mock_httpx_client):
+        """Publish containment prevents POST/retry error paths from executing."""
         with patch.object(client, "client", mock_httpx_client):
             request = PublishRequest(content="Test", platforms=["linkedin"])
-            with pytest.raises(httpx.HTTPStatusError):
-                # Call underlying function directly to skip tenacity retry waits
+            with pytest.raises(ExternalDeliveryContainedError):
                 await SocialMediaClient.publish.__wrapped__(client, request)
+
+        mock_httpx_client.post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_get_analytics_raises_on_timeout(self, client, mock_httpx_client):
@@ -648,46 +530,24 @@ class TestErrorHandling:
             await client.get_status("missing_id")
 
     @pytest.mark.asyncio
-    async def test_schedule_post_raises_on_5xx(self, client, mock_httpx_client):
-        """schedule_post raises on server error."""
-        mock_httpx_client.post.side_effect = httpx.HTTPStatusError(
-            "Service Unavailable",
-            request=httpx.Request("POST", "http://localhost:8000/api/v1/schedule"),
-            response=httpx.Response(503),
-        )
-
+    async def test_schedule_post_containment_prevents_5xx_post(self, client, mock_httpx_client):
+        """Schedule containment prevents POST/retry error paths from executing."""
         with patch.object(client, "client", mock_httpx_client):
             request = ScheduleRequest(content="Test", platform="linkedin")
-            with pytest.raises(httpx.HTTPStatusError):
-                # Call underlying function directly to skip tenacity retry waits
+            with pytest.raises(ExternalDeliveryContainedError):
                 await SocialMediaClient.schedule_post.__wrapped__(client, request)
 
-    @pytest.mark.asyncio
-    async def test_publish_unwraps_data_envelope(self, client, mock_httpx_client):
-        """Publish correctly unwraps {"status": "ok", "data": {...}} envelope."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "status": "ok",
-            "data": {
-                "publish_id": "pub_99",
-                "targets": [
-                    {
-                        "platform": "linkedin",
-                        "status": "queued",
-                    }
-                ],
-                "warnings": [],
-            },
-        }
-        mock_response.raise_for_status = MagicMock()
-        mock_httpx_client.post.return_value = mock_response
+        mock_httpx_client.post.assert_not_called()
 
+    @pytest.mark.asyncio
+    async def test_publish_envelope_path_is_contained_without_post(self, client, mock_httpx_client):
+        """Legacy envelope publish path is now contained before HTTP."""
         with patch.object(client, "client", mock_httpx_client):
             request = PublishRequest(content="Envelope test", platforms=["linkedin"])
-            result = await client.publish(request)
+            with pytest.raises(ExternalDeliveryContainedError):
+                await client.publish(request)
 
-            assert result.publish_id == "pub_99"
-            assert len(result.targets) == 1
+        mock_httpx_client.post.assert_not_called()
 
 
 class TestScheduleModels:

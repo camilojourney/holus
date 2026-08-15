@@ -14,6 +14,8 @@ import httpx
 from pydantic import BaseModel, Field, model_validator
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
+from holus.integrations.holus_social_api.containment import raise_external_delivery_contained
+
 if TYPE_CHECKING:
     from types import TracebackType
 
@@ -39,6 +41,8 @@ _RETRY_ON_HTTP_ERROR = retry(
     stop=stop_after_attempt(3),
     reraise=True,
 )
+
+_CONTAINED_WRITE_PATHS = frozenset({"/api/v1/publish", "/api/v1/schedule"})
 
 
 def resolve_base_url(base_url: str | None = None) -> str:
@@ -206,6 +210,8 @@ class HolusSocialAPIClient:
     async def _post_json(
         self, path: str, payload: dict[str, Any], *, idempotency_key: str | None = None
     ) -> dict[str, Any]:
+        if path in _CONTAINED_WRITE_PATHS:
+            raise_external_delivery_contained()
         headers = {"Idempotency-Key": idempotency_key} if idempotency_key else None
         response = await self.client.post(path, json=payload, headers=headers)
         response.raise_for_status()
@@ -219,18 +225,8 @@ class HolusSocialAPIClient:
     async def publish(self, request: PublishRequest) -> PublishResult:
         """Publish content through Holus Social API."""
         platforms = [normalize_platform(platform) for platform in request.platforms]
+        raise_external_delivery_contained()
         self._ensure_valid_content(request.content, platforms)
-
-        payload = _with_optional_media(
-            {"content": request.content, "platforms": platforms},
-            media_url=request.media_url,
-            media_type=request.media_type,
-        )
-        return PublishResult.model_validate(
-            await self._post_json(
-                "/api/v1/publish", payload, idempotency_key=request.idempotency_key
-            )
-        )
 
     async def get_status(self, publish_id: str) -> PublishResult:
         """Check a publish operation status."""
@@ -274,25 +270,8 @@ class HolusSocialAPIClient:
         """Schedule content through Holus Social API."""
         platforms = request.platforms or ([request.platform] if request.platform else [])
         platforms = [normalize_platform(platform) for platform in platforms]
+        raise_external_delivery_contained()
         self._ensure_valid_content(request.content, platforms)
-
-        payload = _with_optional_media(
-            {
-                "content": request.content,
-                "platforms": platforms,
-                "approval_required": request.approval_required,
-            },
-            media_url=request.media_url,
-            media_type=request.media_type,
-        )
-        if request.scheduled_at:
-            payload["scheduled_at"] = request.scheduled_at
-
-        return ScheduleResult.model_validate(
-            await self._post_json(
-                "/api/v1/schedule", payload, idempotency_key=request.idempotency_key
-            )
-        )
 
     async def close(self) -> None:
         """Close the HTTP client."""

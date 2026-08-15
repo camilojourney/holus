@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING, Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -258,6 +258,33 @@ class TestProcessQueueVerdicts:
             results = await process_queue()
         assert results[0]["action"] == "needs_review"
         assert results[0]["score"] == 0.65
+
+    @pytest.mark.asyncio()
+    async def test_p0_partial_notifies_review_without_external_delivery(
+        self, queue_dir: Path
+    ) -> None:
+        _write_yaml_item(queue_dir, "mid", _make_item(score=0.65, verdict="PARTIAL"))
+        with (
+            patch(
+                "holus.agents.marketing.auto_publish._send_telegram_notification",
+            ) as mock_notify,
+            patch(
+                "holus.agents.marketing.auto_publish._publish_piece",
+                new_callable=AsyncMock,
+            ) as mock_publish,
+        ):
+            results = await process_queue()
+
+        assert results == [
+            {
+                "piece_id": "test-001",
+                "action": "needs_review",
+                "score": 0.65,
+                "reason": "Good quality",
+            }
+        ]
+        mock_notify.assert_called_once()
+        mock_publish.assert_not_awaited()
 
     @pytest.mark.asyncio()
     async def test_fail_rejects(self, queue_dir: Path) -> None:

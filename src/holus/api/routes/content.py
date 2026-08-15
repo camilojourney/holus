@@ -42,9 +42,8 @@ from holus.api.models import (
 from holus.core.config import HolusConfig
 from holus.core.storage import atomic_write_text
 from holus.integrations.holus_social_api import (
+    EXTERNAL_DELIVERY_CONTAINED_STATUS,
     HolusSocialAPIClient,
-    PublishRequest,
-    ScheduleRequest,
 )
 from holus.lineage.models import ArtifactType, stable_hash
 from holus.lineage.outbox import DispatchOutbox
@@ -56,6 +55,10 @@ router = APIRouter(prefix="/content", tags=["content"])
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
 CONTENT_QUEUE_DIR = REPO_ROOT / "data" / "content-queue"
+
+# Integration/E2E tests patch this route-module seam to prove the contained
+# route flow never constructs or delivers through the social API client.
+_ROUTE_CLIENT_IMPORT_SEAM = HolusSocialAPIClient
 
 
 def _lineage_recorder() -> LineageRecorder:
@@ -113,6 +116,30 @@ def _record_lineage_outcome(raw: dict[str, Any], outcome: ArtifactType, status: 
         _lineage_recorder().record_outcome(raw, outcome=outcome, status=status)
     except Exception:
         logger.exception("lineage_emission_failed", extra={"piece_id": raw.get("piece_id")})
+
+
+def _record_publication_intent(raw: dict[str, Any], request_id: str) -> None:
+    raw["dispatch_request_id"] = request_id
+    _record_lineage_outcome(raw, ArtifactType.PUBLICATION_REQUEST, "intent_recorded")
+
+
+def _record_contained_dispatch_result(
+    outbox: DispatchOutbox,
+    intent: Any,
+    raw: dict[str, Any],
+    *,
+    id_field: str,
+    status_field: str,
+) -> None:
+    outbox.mark_result(
+        intent,
+        status=EXTERNAL_DELIVERY_CONTAINED_STATUS,
+        external_id=None,
+        external_status=EXTERNAL_DELIVERY_CONTAINED_STATUS,
+    )
+    raw["status"] = raw.get("status", "approved")
+    raw.pop(id_field, None)
+    raw[status_field] = EXTERNAL_DELIVERY_CONTAINED_STATUS
 
 
 def _media_path(value: Any) -> Path | None:
@@ -521,31 +548,26 @@ async def publish_content(
         is None
     ):
         raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
-    intent, _created = _dispatch_outbox().reserve(
+    outbox = _dispatch_outbox()
+    intent, _created = outbox.reserve(
         operation="publish", piece_id=piece_id, revision=revision, payload=payload
     )
     if raw.get("status") != "approved" and _created:
         raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
-    raw["dispatch_request_id"] = intent.request_id
-    _record_lineage_outcome(raw, ArtifactType.PUBLICATION_REQUEST, "intent_recorded")
+    _record_publication_intent(raw, intent.request_id)
     if intent.status == "accepted":
         raw["status"] = "published"
         raw["post_id"] = intent.external_id
         publish_id = intent.external_id
     else:
-        async with HolusSocialAPIClient() as client:
-            result = await client.publish(
-                PublishRequest(**payload, idempotency_key=intent.request_id)
-            )
-        _dispatch_outbox().mark_result(
+        _record_contained_dispatch_result(
+            outbox,
             intent,
-            status="accepted" if result.succeeded else "failed",
-            external_id=result.publish_id,
+            raw,
+            id_field="post_id",
+            status_field="publish_status",
         )
-        raw["status"] = "published" if result.succeeded else raw.get("status", "approved")
-        raw["post_id"] = result.publish_id
-        publish_id = result.publish_id
-        raw["publish_status"] = "accepted" if result.succeeded else "failed"
+        publish_id = None
     if raw["status"] == "published":
         raw["published_at"] = datetime.now(tz=UTC).isoformat()
     else:
@@ -557,7 +579,7 @@ async def publish_content(
         piece=_raw_to_detail(raw, target_path.stem),
         payload=payload,
         publish_id=publish_id,
-        status=raw["status"],
+        status=raw.get("publish_status", raw["status"]),
     )
 
 
@@ -587,14 +609,14 @@ async def schedule_content(
         is None
     ):
         raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
-    intent, _created = _dispatch_outbox().reserve(
+    outbox = _dispatch_outbox()
+    intent, _created = outbox.reserve(
         operation="schedule", piece_id=piece_id, revision=revision, payload=payload
     )
     if raw.get("status") != "approved" and _created:
         raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
     raw["scheduled_at"] = body.scheduled_at
-    raw["dispatch_request_id"] = intent.request_id
-    _record_lineage_outcome(raw, ArtifactType.PUBLICATION_REQUEST, "intent_recorded")
+    _record_publication_intent(raw, intent.request_id)
     if intent.status == "accepted":
         raw["status"] = "scheduled"
         raw["schedule_id"] = intent.external_id
@@ -602,21 +624,15 @@ async def schedule_content(
         schedule_id = intent.external_id
         schedule_status = raw["schedule_status"]
     else:
-        async with HolusSocialAPIClient() as client:
-            result = await client.schedule_post(
-                ScheduleRequest(**payload, idempotency_key=intent.request_id)
-            )
-        _dispatch_outbox().mark_result(
+        _record_contained_dispatch_result(
+            outbox,
             intent,
-            status="accepted",
-            external_id=result.schedule_id,
-            external_status=result.status,
+            raw,
+            id_field="schedule_id",
+            status_field="schedule_status",
         )
-        raw["status"] = "scheduled"
-        raw["schedule_id"] = result.schedule_id
-        raw["schedule_status"] = result.status
-        schedule_id = result.schedule_id
-        schedule_status = result.status
+        schedule_id = None
+        schedule_status = EXTERNAL_DELIVERY_CONTAINED_STATUS
     raw["lineage_updated_at"] = datetime.now(tz=UTC).isoformat()
     _write_raw_content(target_path, raw)
     _record_lineage_outcome(raw, ArtifactType.SCHEDULE_OUTCOME, str(raw["schedule_status"]))

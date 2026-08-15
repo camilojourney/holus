@@ -15,6 +15,7 @@ from rich.table import Table
 
 from holus.api.models import ContentPublishRequest
 from holus.api.routes.content import publish_content
+from holus.integrations.holus_social_api import EXTERNAL_DELIVERY_CONTAINED_STATUS
 from holus.integrations.social_media import PLATFORM_CHAR_LIMITS
 
 from .content_queue import list_approved
@@ -103,10 +104,16 @@ async def publish_all() -> None:
                     content.piece_id,
                     ContentPublishRequest(expected_revision=content.content_revision),
                 )
-                console.print(
-                    f"[green]v Published {content.piece_id} to "
-                    f"{content.platform} (id: {result.publish_id})[/green]"
-                )
+                if result.status == EXTERNAL_DELIVERY_CONTAINED_STATUS:
+                    console.print(
+                        f"[yellow]! Contained {content.piece_id} to "
+                        f"{content.platform}; no external delivery attempted[/yellow]"
+                    )
+                else:
+                    console.print(
+                        f"[green]v Published {content.piece_id} to "
+                        f"{content.platform} (id: {result.publish_id})[/green]"
+                    )
             except Exception as exc:
                 console.print(f"[red]x Error publishing {content.piece_id}: {exc}[/red]")
             progress.remove_task(task)

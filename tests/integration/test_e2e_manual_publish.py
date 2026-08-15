@@ -7,11 +7,13 @@ Uses temp queue directories and mocked social media client.
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
+import yaml
 
 from holus.agents.marketing.content_queue import (
     QueuedContent,
@@ -22,7 +24,6 @@ from holus.agents.marketing.content_queue import (
     list_pending,
 )
 from holus.agents.marketing.publish_approved import publish_all
-from holus.integrations.social_media import PublishResult, PublishTarget
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -55,6 +56,19 @@ def _make_content(
         reasoning="Authority-building post targeting AI engineering leaders",
         generated_at=datetime.now(tz=UTC),
     )
+
+
+def _outbox_records(queue_dir: Path) -> list[dict]:
+    outbox_dir = queue_dir.parent / "lineage" / "outbox"
+    return [json.loads(path.read_text(encoding="utf-8")) for path in outbox_dir.glob("*.json")]
+
+
+def _assert_contained_publish_state(raw: dict) -> None:
+    assert raw["status"] == "approved"
+    assert raw["publish_status"] == "contained"
+    assert raw["dispatch_request_id"]
+    assert "post_id" not in raw
+    assert "published_at" not in raw
 
 
 # ---------------------------------------------------------------------------
@@ -90,45 +104,22 @@ async def test_full_manual_pipeline(temp_queue: Path):
     assert len(approved) == 1
     assert approved[0].status == "approved"
 
-    # Step 4: Publish via mocked social media API
-    mock_result = PublishResult(
-        publish_id="sm-post-99",
-        targets=[
-            PublishTarget(
-                platform="linkedin",
-                account="juan-camilo",
-                status="queued",
-            )
-        ],
-    )
-
-    mock_client = AsyncMock()
-    mock_client.publish = AsyncMock(return_value=mock_result)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-
+    # Step 4: Publish through the route boundary. P0 containment must not construct a client.
     with (
         patch.dict("os.environ", {"POSTING_API_KEY": "test-key-123"}),
         patch(
             "holus.api.routes.content.HolusSocialAPIClient",
-            return_value=mock_client,
-        ),
+            side_effect=AssertionError("social client constructed"),
+        ) as social_client_cls,
     ):
         await publish_all()
 
-    # Step 5: Verify final state
-    # The queue file should now be marked as published
+    # Step 5: Verify final contained state
     import yaml
 
     final_data = yaml.safe_load(path.read_text())
-    assert final_data["status"] == "published"
-    assert final_data["post_id"] == "sm-post-99"
-    assert "published_at" in final_data
-
-    # Verify the client was called with the humanized text (publish uses content.text)
-    mock_client.publish.assert_called_once()
-    call_args = mock_client.publish.call_args[0][0]
-    assert "linkedin" in call_args.platforms
+    _assert_contained_publish_state(final_data)
+    social_client_cls.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -146,26 +137,20 @@ async def test_publish_uses_humanized_text_when_available(temp_queue: Path):
     )
     approve("htext01")
 
-    mock_result = PublishResult(
-        publish_id="sm-post-100",
-        targets=[PublishTarget(platform="linkedin", status="queued")],
-    )
-    mock_client = AsyncMock()
-    mock_client.publish = AsyncMock(return_value=mock_result)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-
     with (
         patch.dict("os.environ", {"POSTING_API_KEY": "test-key-123"}),
         patch(
             "holus.api.routes.content.HolusSocialAPIClient",
-            return_value=mock_client,
-        ),
+            side_effect=AssertionError("social client constructed"),
+        ) as social_client_cls,
     ):
         await publish_all()
 
-    # Verify publish was called
-    mock_client.publish.assert_called_once()
+    social_client_cls.assert_not_called()
+    [intent] = _outbox_records(temp_queue)
+    assert intent["payload"]["content"] == "Original AI engineering post content updated."
+    assert intent["payload"]["platforms"] == ["linkedin"]
+    assert intent["status"] == "contained"
 
 
 @pytest.mark.asyncio
@@ -235,15 +220,15 @@ async def test_publish_without_api_key_stays_at_mocked_social_api_boundary(temp_
     humanize("nokey001", "AI engineering is about shipping systems that learn — not just models.")
     approve("nokey001")
 
-    mock_client = AsyncMock()
-    mock_client.publish = AsyncMock(return_value=PublishResult(publish_id="sm-nokey-01"))
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-
-    with patch("holus.api.routes.content.HolusSocialAPIClient", return_value=mock_client):
+    with patch(
+        "holus.api.routes.content.HolusSocialAPIClient",
+        side_effect=AssertionError("social client constructed"),
+    ) as social_client_cls:
         await publish_all()
 
-    mock_client.publish.assert_awaited_once()
+    social_client_cls.assert_not_called()
+    final_data = yaml.safe_load((temp_queue / "nokey001.yaml").read_text())
+    _assert_contained_publish_state(final_data)
 
 
 @pytest.mark.asyncio
@@ -254,36 +239,22 @@ async def test_publish_handles_api_failure_gracefully(temp_queue: Path):
     humanize("fail0001", "AI engineering is about shipping systems that learn — not models.")
     approve("fail0001")
 
-    mock_result = PublishResult(
-        publish_id="sm-fail-01",
-        targets=[
-            PublishTarget(
-                platform="linkedin",
-                status="failed",
-                error="Rate limit exceeded",
-            )
-        ],
-    )
-    mock_client = AsyncMock()
-    mock_client.publish = AsyncMock(return_value=mock_result)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-
     with (
         patch.dict("os.environ", {"POSTING_API_KEY": "test-key-123"}),
         patch(
             "holus.api.routes.content.HolusSocialAPIClient",
-            return_value=mock_client,
-        ),
+            side_effect=AssertionError("social client constructed"),
+        ) as social_client_cls,
     ):
         await publish_all()
 
-    # Piece should remain approved (not marked published) since the target failed
+    # Piece remains approved because P0 contains delivery before any API result can exist.
     import yaml
 
     path = temp_queue / "fail0001.yaml"
     final_data = yaml.safe_load(path.read_text())
-    assert final_data["status"] == "approved"
+    _assert_contained_publish_state(final_data)
+    social_client_cls.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -300,26 +271,17 @@ async def test_publish_with_media_attachment(temp_queue: Path):
     humanize("media001", "AI engineering is about shipping systems that learn — not models.")
     approve("media001")
 
-    mock_result = PublishResult(
-        publish_id="sm-media-01",
-        targets=[PublishTarget(platform="linkedin", status="queued")],
-    )
-    mock_client = AsyncMock()
-    mock_client.publish = AsyncMock(return_value=mock_result)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-
     with (
         patch.dict("os.environ", {"POSTING_API_KEY": "test-key-123"}),
         patch(
             "holus.api.routes.content.HolusSocialAPIClient",
-            return_value=mock_client,
-        ),
+            side_effect=AssertionError("social client constructed"),
+        ) as social_client_cls,
     ):
         await publish_all()
 
-    # Verify media was included in the request
-    mock_client.publish.assert_called_once()
-    call_args = mock_client.publish.call_args[0][0]
-    assert call_args.media_url == str(media_path)
-    assert call_args.media_type == "image"
+    social_client_cls.assert_not_called()
+    [intent] = _outbox_records(temp_queue)
+    assert intent["payload"]["media_url"] == str(media_path)
+    assert intent["payload"]["media_type"] == "image"
+    assert intent["status"] == "contained"
