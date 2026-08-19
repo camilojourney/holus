@@ -75,7 +75,7 @@ def dry_run() -> None:
     else:
         console.print("\n[green]All content within platform limits.[/green]")
 
-    console.print("\n[dim]Run [bold]just publish-approved[/bold] to publish for real.[/dim]")
+    console.print("\n[dim]External delivery is currently contained; run [bold]just publish-approved[/bold] to record local intents for review. No external posting occurs.[/dim]")
 
 
 async def publish_all() -> None:
@@ -118,7 +118,7 @@ async def publish_all() -> None:
                 console.print(f"[red]x Error publishing {content.piece_id}: {exc}[/red]")
             progress.remove_task(task)
 
-    console.print("\n[cyan]Publishing complete![/cyan]")
+    console.print("\n[cyan]Contained processing complete — intents recorded locally, no external delivery.[/cyan]")
 
 
 def main() -> None:
