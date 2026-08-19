@@ -17,7 +17,7 @@ source thought / approved research candidate
   -> explicit schedule or publish result (schedule_outcome / publish_outcome)
 ```
 
-The central emission points are `ThoughtContentPipeline.create_content_set` (after queue persistence), `CandidateStore` (candidate state), and the content API after review/publish/schedule writes. External publish/schedule first reserves a local durable outbox intent keyed by piece ID, content revision, and operation; the same request ID is sent as `Idempotency-Key` to Holus Social API before its result is projected into the queue. Lineage errors are logged and never roll back or corrupt the content artifact.
+The central emission points are `ThoughtContentPipeline.create_content_set` (after queue persistence), `CandidateStore` (candidate state), and the content API after review/publish/schedule writes. External publish/schedule first reserves a local durable outbox intent keyed by piece ID, content revision, and operation. Delivery is currently contained: the intent is marked with status `contained` and no request is sent to Holus Social API (its write methods raise `ExternalDeliveryContainedError`); when an authenticated approval-grant sender exists, the same request ID will be sent as `Idempotency-Key` before the result is projected into the queue. Lineage errors are logged and never roll back or corrupt the content artifact.
 
 ## Canonical IDs and storage
 

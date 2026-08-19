@@ -573,6 +573,53 @@ class TestPublishAndScheduleContent:
         assert updated["status"] == "pending_review"
         assert updated["scheduled_at"] == "2026-03-25T14:00:00Z"
 
+    def test_p0_publish_external_delivery_is_contained_without_success_state(
+        self, client, content_queue_dir, sample_yaml_piece
+    ):
+        with _patch_queue_dir(content_queue_dir):
+            approved = client.patch("/api/v1/content/piece-001", json={"status": "approved"})
+            revision = approved.json()["revision"]
+            resp = client.post(
+                "/api/v1/content/piece-001/publish",
+                json={"expected_revision": revision},
+            )
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "contained"
+        assert data["publish_id"] is None
+
+        updated = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
+        assert updated["status"] == "approved"
+        assert updated["dispatch_request_id"]
+        assert "post_id" not in updated
+        assert "published_at" not in updated
+
+    def test_p0_schedule_external_delivery_is_contained_without_scheduled_state(
+        self, client, content_queue_dir, sample_yaml_piece
+    ):
+        with _patch_queue_dir(content_queue_dir):
+            approved = client.patch("/api/v1/content/piece-001", json={"status": "approved"})
+            revision = approved.json()["revision"]
+            resp = client.post(
+                "/api/v1/content/piece-001/schedule",
+                json={
+                    "scheduled_at": "2026-04-01T12:00:00Z",
+                    "expected_revision": revision,
+                },
+            )
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "contained"
+        assert data["schedule_id"] is None
+
+        updated = yaml.safe_load(sample_yaml_piece.read_text(encoding="utf-8"))
+        assert updated["status"] == "approved"
+        assert updated["dispatch_request_id"]
+        assert "schedule_id" not in updated
+        assert updated.get("schedule_status") == "contained"
+
 
 class TestDispatchGuards:
     """External dispatch must never bypass the Phase-1 human approval gate."""

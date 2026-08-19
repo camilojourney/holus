@@ -50,7 +50,7 @@ and learning from what works to improve over time.
 3. Plans one content set for the requested platform activations.
 4. Generates platform-native text, images, and carousels.
 5. Keeps human review as the default gate.
-6. Schedules or publishes explicitly through Holus Social API.
+6. Records schedule/publish intents; external delivery is currently contained (see README).
 7. Reads performance snapshots from Holus Social API and improves strategy.
 
 ## Silo Tools (MCP servers Holus calls)

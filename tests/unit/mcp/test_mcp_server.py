@@ -14,6 +14,7 @@ import yaml
 
 from holus.agents.marketing import content_queue
 from holus.agents.marketing.content_queue import QueuedContent
+from holus.api.routes import content as content_routes
 from holus.mcp import server
 
 
@@ -172,6 +173,37 @@ async def test_holus_publish_requires_approved_piece_and_revision(
 
     assert result == {"error": "APPROVAL_REQUIRED", "piece_id": None}
     assert list(queue_dir.glob("*")) == []
+
+
+@pytest.mark.asyncio
+async def test_p0_holus_publish_returns_contained_before_delivery_side_effects(
+    queue_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """Immediate MCP publish is contained after approval and before client delivery."""
+    monkeypatch.setattr(content_routes, "CONTENT_QUEUE_DIR", queue_dir)
+    content = _make_content(piece_id="piece-contained", status="pending_review")
+    content_queue.enqueue(content)
+    server.holus_approve("piece-contained")
+    revision = _read_queue_entry(queue_dir, "piece-contained")["content_revision"]
+
+    result = await server.holus_publish(
+        text=content.text,
+        platform="linkedin",
+        product="pilaster",
+        piece_id="piece-contained",
+        expected_revision=str(revision),
+    )
+
+    assert result == {
+        "piece_id": "piece-contained",
+        "publish_id": None,
+        "platform": "linkedin",
+        "status": "contained",
+    }
+    saved_entry = _read_queue_entry(queue_dir, "piece-contained")
+    assert saved_entry["status"] == "approved"
+    assert "post_id" not in saved_entry
 
 
 def test_holus_approve_returns_error_when_piece_not_found():

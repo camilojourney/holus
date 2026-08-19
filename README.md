@@ -30,6 +30,10 @@ reviews content; the Social API owns accounts, posting, scheduling, and platform
 analytics. Genpeli/video remains a future adapter, not a blocker for the current
 text/image/carousel build.
 
+External publishing and scheduling from Holus are currently contained pending a
+future authenticated approval-grant sender. Local intake, generation, visual
+assets, review, dry-run inspection, and read-only analytics remain available.
+
 The public Holus experience is a safe demonstration: it presents a local,
 bounded generation lifecycle without creating a job or contacting Genpeli.
 Holus owns the presentation and the future authenticated backend boundary; see

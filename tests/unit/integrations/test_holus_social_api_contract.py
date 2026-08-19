@@ -16,6 +16,7 @@ from holus.integrations.holus_social_api.client import (
     PublishRequest,
     ScheduleRequest,
 )
+from holus.integrations.holus_social_api.containment import ExternalDeliveryContainedError
 
 
 @pytest.fixture
@@ -35,11 +36,11 @@ def _ok_response(data: dict) -> MagicMock:
 
 
 class TestPublishHTTPContract:
-    """Publish endpoint contract — mocked HTTP only."""
+    """Publish endpoint is contained before outbound HTTP."""
 
     @pytest.mark.asyncio
-    async def test_publish_posts_to_v1_endpoint(self, mock_http: AsyncMock) -> None:
-        """POST /api/v1/publish with content and platforms payload."""
+    async def test_publish_is_contained_before_v1_endpoint(self, mock_http: AsyncMock) -> None:
+        """publish fails closed before POST /api/v1/publish."""
         mock_http.post.return_value = _ok_response(
             {
                 "publish_id": "contract-pub-1",
@@ -49,17 +50,12 @@ class TestPublishHTTPContract:
 
         with patch("httpx.AsyncClient", return_value=mock_http):
             client = HolusSocialAPIClient(base_url="http://contract.test", api_key="contract-key")
-            result = await client.publish(
-                PublishRequest(content="Contract post", platforms=["linkedin"], style="raw")
-            )
+            with pytest.raises(ExternalDeliveryContainedError, match="contain"):
+                await client.publish(
+                    PublishRequest(content="Contract post", platforms=["linkedin"], style="raw")
+                )
 
-        mock_http.post.assert_called_once()
-        call_args = mock_http.post.call_args
-        assert call_args[0][0] == "/api/v1/publish"
-        payload = call_args[1]["json"]
-        assert payload["content"] == "Contract post"
-        assert payload["platforms"] == ["linkedin"]
-        assert result.publish_id == "contract-pub-1"
+        mock_http.post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_publish_sends_api_key_header(self, mock_http: AsyncMock) -> None:
@@ -79,31 +75,31 @@ class TestPublishHTTPContract:
 
     @pytest.mark.asyncio
     async def test_publish_validation_blocks_http(self, mock_http: AsyncMock) -> None:
-        """Char-limit validation runs before any HTTP request."""
+        """Containment runs before validation and any HTTP request."""
         with patch("httpx.AsyncClient", return_value=mock_http):
             client = HolusSocialAPIClient(base_url="http://contract.test", api_key="contract-key")
-            with pytest.raises(ValueError, match="Content validation failed"):
+            with pytest.raises(ExternalDeliveryContainedError, match="contain"):
                 await client.publish(PublishRequest(content="x" * 300, platforms=["twitter"]))
 
         mock_http.post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_publish_normalizes_twitter_x_platform(self, mock_http: AsyncMock) -> None:
-        """twitter_x platform label is normalized to twitter in the API payload."""
+        """Containment prevents payload construction for normalized platforms."""
         mock_http.post.return_value = _ok_response({"publish_id": "contract-pub-2", "targets": []})
 
         with patch("httpx.AsyncClient", return_value=mock_http):
             client = HolusSocialAPIClient(base_url="http://contract.test", api_key="contract-key")
-            await client.publish(
-                PublishRequest(content="Short tweet", platforms=["twitter_x"]),
-            )
+            with pytest.raises(ExternalDeliveryContainedError, match="contain"):
+                await client.publish(
+                    PublishRequest(content="Short tweet", platforms=["twitter_x"]),
+                )
 
-        payload = mock_http.post.call_args[1]["json"]
-        assert payload["platforms"] == ["twitter"]
+        mock_http.post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_no_extra_httpx_calls_during_publish(self, mock_http: AsyncMock) -> None:
-        """Contract: one AsyncClient at init; publish uses it without extra constructors."""
+        """Contract: one AsyncClient at init; publish performs no POST."""
         mock_http.post.return_value = _ok_response(
             {
                 "publish_id": "contract-pub-3",
@@ -113,18 +109,19 @@ class TestPublishHTTPContract:
 
         with patch("httpx.AsyncClient", return_value=mock_http) as live_ctor:
             client = HolusSocialAPIClient(base_url="http://contract.test", api_key="contract-key")
-            await client.publish(PublishRequest(content="ok", platforms=["linkedin"]))
+            with pytest.raises(ExternalDeliveryContainedError, match="contain"):
+                await client.publish(PublishRequest(content="ok", platforms=["linkedin"]))
 
         live_ctor.assert_called_once()
-        mock_http.post.assert_called_once()
+        mock_http.post.assert_not_called()
 
 
 class TestScheduleApprovalContract:
-    """Schedule endpoint enforces approval gate by default."""
+    """Schedule endpoint is contained before outbound HTTP."""
 
     @pytest.mark.asyncio
     async def test_schedule_defaults_approval_required(self, mock_http: AsyncMock) -> None:
-        """Schedule posts with approval_required=True unless explicitly disabled."""
+        """Schedule preserves model defaults but does not POST while contained."""
         mock_http.post.return_value = _ok_response(
             {
                 "schedule_id": "contract-sched-1",
@@ -135,23 +132,19 @@ class TestScheduleApprovalContract:
 
         with patch("httpx.AsyncClient", return_value=mock_http):
             client = HolusSocialAPIClient(base_url="http://contract.test", api_key="contract-key")
-            result = await client.schedule_post(
-                ScheduleRequest(content="Needs review", platform="linkedin"),
-            )
+            request = ScheduleRequest(content="Needs review", platform="linkedin")
+            assert request.approval_required is True
+            with pytest.raises(ExternalDeliveryContainedError, match="contain"):
+                await client.schedule_post(request)
 
-        assert mock_http.post.call_args[0][0] == "/api/v1/schedule"
-        payload = mock_http.post.call_args[1]["json"]
-        assert payload["approval_required"] is True
-        assert payload["platforms"] == ["linkedin"]
-        assert result.approval_required is True
-        assert result.status == "pending_approval"
+        mock_http.post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_schedule_validation_blocks_http(self, mock_http: AsyncMock) -> None:
-        """Schedule validates content before any HTTP request."""
+        """Containment runs before schedule validation and any HTTP request."""
         with patch("httpx.AsyncClient", return_value=mock_http):
             client = HolusSocialAPIClient(base_url="http://contract.test", api_key="contract-key")
-            with pytest.raises(ValueError, match="Content validation failed"):
+            with pytest.raises(ExternalDeliveryContainedError, match="contain"):
                 await client.schedule_post(
                     ScheduleRequest(content="x" * 300, platform="twitter"),
                 )

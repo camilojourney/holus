@@ -1,6 +1,6 @@
-"""Publish all approved content via Holus Social API.
+"""Record publish intents for approved content; external delivery is contained.
 
-Supports --dry-run to preview what would be posted without actually publishing.
+Supports --dry-run to preview what would be processed without recording intents.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from rich.table import Table
 
 from holus.api.models import ContentPublishRequest
 from holus.api.routes.content import publish_content
+from holus.integrations.holus_social_api import EXTERNAL_DELIVERY_CONTAINED_STATUS
 from holus.integrations.social_media import PLATFORM_CHAR_LIMITS
 
 from .content_queue import list_approved
@@ -74,7 +75,9 @@ def dry_run() -> None:
     else:
         console.print("\n[green]All content within platform limits.[/green]")
 
-    console.print("\n[dim]Run [bold]just publish-approved[/bold] to publish for real.[/dim]")
+    console.print(
+        "\n[dim]External delivery is currently contained; run [bold]just publish-approved[/bold] to record local intents for review. No external posting occurs.[/dim]"
+    )
 
 
 async def publish_all() -> None:
@@ -103,15 +106,23 @@ async def publish_all() -> None:
                     content.piece_id,
                     ContentPublishRequest(expected_revision=content.content_revision),
                 )
-                console.print(
-                    f"[green]v Published {content.piece_id} to "
-                    f"{content.platform} (id: {result.publish_id})[/green]"
-                )
+                if result.status == EXTERNAL_DELIVERY_CONTAINED_STATUS:
+                    console.print(
+                        f"[yellow]! Contained {content.piece_id} to "
+                        f"{content.platform}; no external delivery attempted[/yellow]"
+                    )
+                else:
+                    console.print(
+                        f"[green]v Published {content.piece_id} to "
+                        f"{content.platform} (id: {result.publish_id})[/green]"
+                    )
             except Exception as exc:
                 console.print(f"[red]x Error publishing {content.piece_id}: {exc}[/red]")
             progress.remove_task(task)
 
-    console.print("\n[cyan]Publishing complete![/cyan]")
+    console.print(
+        "\n[cyan]Contained processing complete — intents recorded locally, no external delivery.[/cyan]"
+    )
 
 
 def main() -> None:

@@ -137,13 +137,15 @@ class TestMainArgParsing:
             main()
             mock_dry_run.assert_called_once()
 
-    def test_no_flag_runs_publish(self):
-        """No flag runs publish_all."""
+    def test_p0_no_flag_runs_contained_publish_flow(self):
+        """Non-dry-run CLI uses the guarded publish flow without exiting."""
         from holus.agents.marketing.publish_approved import main
 
         with (
             patch("sys.argv", ["publish_approved"]),
+            patch("holus.agents.marketing.publish_approved.publish_all", return_value=object()),
             patch("holus.agents.marketing.publish_approved.asyncio.run") as mock_run,
         ):
             main()
-            mock_run.assert_called_once()
+
+        mock_run.assert_called_once()

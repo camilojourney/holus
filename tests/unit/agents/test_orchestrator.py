@@ -98,6 +98,35 @@ async def test_content_cycle_auto_mode():
 
 
 @pytest.mark.asyncio
+async def test_p0_content_cycle_keeps_generated_content_local_without_external_delivery():
+    """Scheduled content cycle keeps generated work local for review."""
+    fake_results = [
+        {"piece_id": "p1", "judge_score": 0.91, "status": "pending_review"},
+        {"piece_id": "p2", "judge_score": 0.62, "status": "pending_review"},
+    ]
+
+    with (
+        patch(
+            "holus.agents.marketing.idea_runner.run_from_bandit",
+            return_value=fake_results,
+        ),
+        patch("holus.integrations.holus_social_api.HolusSocialAPIClient") as social_client_cls,
+    ):
+        from holus.agents.marketing.orchestrator import content_cycle
+
+        summary = await content_cycle()
+
+    assert summary == {
+        "generated": 2,
+        "publish_actions": 0,
+        "published": 0,
+        "needs_review": 0,
+        "rejected": 0,
+    }
+    social_client_cls.assert_not_called()
+
+
+@pytest.mark.asyncio
 async def test_content_cycle_empty_results():
     """Edge case: no content generated and nothing to publish."""
     with patch(

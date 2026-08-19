@@ -8,17 +8,16 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
 import pytest
 
 from holus.integrations.social_media import (
+    EXTERNAL_DELIVERY_CONTAINED_MESSAGE,
     HOLUS_SOCIAL_API_BASE_URL_ENV,
     HOLUS_SOCIAL_API_KEY_ENV,
+    ExternalDeliveryContainedError,
     HolusSocialAPIClient,
     PublishRequest,
-    PublishResult,
     ScheduleRequest,
-    ScheduleResult,
     SocialMediaClient,
 )
 
@@ -47,38 +46,12 @@ def _ok_response(data: dict, *, status_code: int = 200) -> MagicMock:
     return resp
 
 
-def _error_response(
-    status_code: int, method: str = "GET", url: str = "http://test:8000"
-) -> httpx.HTTPStatusError:
-    """Build an HTTPStatusError for the given status code."""
-    return httpx.HTTPStatusError(
-        f"HTTP {status_code}",
-        request=httpx.Request(method, url),
-        response=httpx.Response(status_code),
-    )
-
-
 class TestPublishContent:
     """test_publish_content -- mock httpx, verify POST to /api/v1/publish with correct payload."""
 
     @pytest.mark.asyncio
     async def test_publish_content(self, client, mock_http):
-        """POST /api/v1/publish is called with correct payload and result is parsed."""
-        mock_http.post.return_value = _ok_response(
-            {
-                "publish_id": "pub_100",
-                "targets": [
-                    {
-                        "platform": "linkedin",
-                        "account": "main",
-                        "language": "en",
-                        "status": "queued",
-                    },
-                ],
-                "warnings": [],
-            }
-        )
-
+        """Publish is contained before any POST is made."""
         with patch.object(client, "client", mock_http):
             request = PublishRequest(
                 content="New feature launched!",
@@ -86,25 +59,11 @@ class TestPublishContent:
                 media_url="https://cdn.example.com/hero.png",
                 media_type="image",
             )
-            result = await client.publish(request)
+            with pytest.raises(ExternalDeliveryContainedError) as exc_info:
+                await client.publish(request)
 
-        # Verify correct endpoint
-        mock_http.post.assert_called_once()
-        call_args = mock_http.post.call_args
-        assert call_args[0][0] == "/api/v1/publish"
-
-        # Verify payload
-        payload = call_args[1]["json"]
-        assert payload["content"] == "New feature launched!"
-        assert payload["platforms"] == ["linkedin"]
-        assert payload["media_url"] == "https://cdn.example.com/hero.png"
-        assert payload["media_type"] == "image"
-
-        # Verify parsed result
-        assert isinstance(result, PublishResult)
-        assert result.publish_id == "pub_100"
-        assert result.targets[0].platform == "linkedin"
-        assert result.succeeded is True
+        assert str(exc_info.value) == EXTERNAL_DELIVERY_CONTAINED_MESSAGE
+        mock_http.post.assert_not_called()
 
 
 class TestHolusSocialAPIEnv:
@@ -148,28 +107,28 @@ class TestHolusSocialAPIEnv:
 
 
 class TestPublishValidatesCharLimit:
-    """test_publish_validates_char_limit -- content exceeding platform limit raises ValueError."""
+    """test_publish_validates_char_limit -- direct publish is contained."""
 
     @pytest.mark.asyncio
     async def test_publish_validates_char_limit_twitter(self, client):
-        """Content over Twitter's 280-char limit raises ValueError before any HTTP call."""
+        """Content over Twitter's limit is contained before any HTTP call."""
         request = PublishRequest(content="x" * 281, platforms=["twitter"])
-        with pytest.raises(ValueError, match="Content validation failed"):
+        with pytest.raises(ExternalDeliveryContainedError):
             await client.publish(request)
 
     @pytest.mark.asyncio
     async def test_publish_validates_char_limit_threads(self, client):
-        """Content over Threads' 500-char limit raises ValueError."""
+        """Content over Threads' limit is contained before any HTTP call."""
         request = PublishRequest(content="y" * 501, platforms=["threads"])
-        with pytest.raises(ValueError, match="Content validation failed"):
+        with pytest.raises(ExternalDeliveryContainedError):
             await client.publish(request)
 
     @pytest.mark.asyncio
     async def test_publish_validates_char_limit_no_http_call(self, client, mock_http):
-        """Validation failure prevents any HTTP request from being made."""
+        """Contained direct publish prevents any HTTP request from being made."""
         with patch.object(client, "client", mock_http):
             request = PublishRequest(content="z" * 3001, platforms=["linkedin"])
-            with pytest.raises(ValueError):
+            with pytest.raises(ExternalDeliveryContainedError):
                 await client.publish(request)
         mock_http.post.assert_not_called()
 
@@ -249,16 +208,7 @@ class TestSchedulePost:
 
     @pytest.mark.asyncio
     async def test_schedule_post(self, client, mock_http):
-        """POST /api/v1/schedule is called with correct payload and result is parsed."""
-        mock_http.post.return_value = _ok_response(
-            {
-                "schedule_id": "sched_10",
-                "status": "pending_approval",
-                "platform": "linkedin",
-                "approval_required": True,
-            }
-        )
-
+        """Schedule is contained before any POST is made."""
         with patch.object(client, "client", mock_http):
             request = ScheduleRequest(
                 content="Scheduled insight",
@@ -266,30 +216,17 @@ class TestSchedulePost:
                 approval_required=True,
                 scheduled_at="2026-04-01T09:00:00Z",
             )
-            result = await client.schedule_post(request)
+            with pytest.raises(ExternalDeliveryContainedError) as exc_info:
+                await client.schedule_post(request)
 
-        # Verify endpoint
-        call_args = mock_http.post.call_args
-        assert call_args[0][0] == "/api/v1/schedule"
-
-        # Verify payload
-        payload = call_args[1]["json"]
-        assert payload["content"] == "Scheduled insight"
-        assert payload["platforms"] == ["linkedin"]
-        assert "platform" not in payload
-        assert payload["approval_required"] is True
-        assert payload["scheduled_at"] == "2026-04-01T09:00:00Z"
-
-        # Verify parsed result
-        assert isinstance(result, ScheduleResult)
-        assert result.schedule_id == "sched_10"
-        assert result.status == "pending_approval"
+        assert str(exc_info.value) == EXTERNAL_DELIVERY_CONTAINED_MESSAGE
+        mock_http.post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_schedule_post_validates_char_limit(self, client):
-        """Schedule validates platform char limit before HTTP call."""
+        """Schedule is contained before platform char-limit validation can post."""
         request = ScheduleRequest(content="x" * 281, platform="twitter")
-        with pytest.raises(ValueError, match="Content validation failed"):
+        with pytest.raises(ExternalDeliveryContainedError):
             await client.schedule_post(request)
 
 
@@ -321,57 +258,42 @@ class TestRetryOnFailure:
     """test_retry_on_failure -- verify tenacity retry on 500 errors."""
 
     @pytest.mark.asyncio
-    async def test_retry_publish_on_500_eventually_succeeds(self, client, mock_http):
-        """Publish retries on HTTPStatusError and succeeds on third attempt."""
-        error = _error_response(500, "POST", "http://test:8000/api/v1/publish")
-        success = _ok_response({"publish_id": "pub_retry", "targets": [], "warnings": []})
-
-        # Fail twice, succeed on third
-        mock_http.post.side_effect = [error, error, success]
-
+    async def test_retry_publish_is_contained_without_post_attempts(self, client, mock_http):
+        """Publish containment happens before HTTP retry paths can POST."""
         with patch.object(client, "client", mock_http):
-            # Patch tenacity wait to avoid real delays
             original_publish = client.publish
             with patch.object(original_publish.retry, "wait", return_value=0):
                 request = PublishRequest(content="Retry me", platforms=["linkedin"])
-                result = await client.publish(request)
+                with pytest.raises(ExternalDeliveryContainedError):
+                    await client.publish(request)
 
-        assert result.publish_id == "pub_retry"
-        assert mock_http.post.call_count == 3
+        mock_http.post.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_retry_publish_exhausted_reraises(self, client, mock_http):
-        """Publish reraises after exhausting all 3 retry attempts."""
-        error = _error_response(500, "POST", "http://test:8000/api/v1/publish")
-        mock_http.post.side_effect = [error, error, error]
-
+    async def test_retry_publish_exhaustion_is_contained_without_post(self, client, mock_http):
+        """Publish containment raises directly instead of exhausting HTTP retries."""
         with (
             patch.object(client, "client", mock_http),
             patch.object(client.publish.retry, "wait", return_value=0),
         ):
             request = PublishRequest(content="Will fail", platforms=["linkedin"])
-            with pytest.raises(httpx.HTTPStatusError):
+            with pytest.raises(ExternalDeliveryContainedError):
                 await client.publish(request)
 
-        assert mock_http.post.call_count == 3
+        mock_http.post.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_retry_schedule_on_500(self, client, mock_http):
-        """schedule_post also retries on HTTPStatusError."""
-        error = _error_response(503, "POST", "http://test:8000/api/v1/schedule")
-        success = _ok_response({"schedule_id": "sched_retry", "status": "pending_approval"})
-
-        mock_http.post.side_effect = [error, success]
-
+    async def test_retry_schedule_is_contained_without_post_attempts(self, client, mock_http):
+        """schedule_post containment happens before HTTP retry paths can POST."""
         with (
             patch.object(client, "client", mock_http),
             patch.object(client.schedule_post.retry, "wait", return_value=0),
         ):
             request = ScheduleRequest(content="Retry schedule", platform="linkedin")
-            result = await client.schedule_post(request)
+            with pytest.raises(ExternalDeliveryContainedError):
+                await client.schedule_post(request)
 
-        assert result.schedule_id == "sched_retry"
-        assert mock_http.post.call_count == 2
+        mock_http.post.assert_not_called()
 
 
 class TestContextManager:
