@@ -1,6 +1,6 @@
-"""Publish all approved content via Holus Social API.
+"""Record publish intents for approved content; external delivery is contained.
 
-Supports --dry-run to preview what would be posted without actually publishing.
+Supports --dry-run to preview what would be processed without recording intents.
 """
 
 from __future__ import annotations
@@ -75,7 +75,9 @@ def dry_run() -> None:
     else:
         console.print("\n[green]All content within platform limits.[/green]")
 
-    console.print("\n[dim]External delivery is currently contained; run [bold]just publish-approved[/bold] to record local intents for review. No external posting occurs.[/dim]")
+    console.print(
+        "\n[dim]External delivery is currently contained; run [bold]just publish-approved[/bold] to record local intents for review. No external posting occurs.[/dim]"
+    )
 
 
 async def publish_all() -> None:
@@ -118,7 +120,9 @@ async def publish_all() -> None:
                 console.print(f"[red]x Error publishing {content.piece_id}: {exc}[/red]")
             progress.remove_task(task)
 
-    console.print("\n[cyan]Contained processing complete — intents recorded locally, no external delivery.[/cyan]")
+    console.print(
+        "\n[cyan]Contained processing complete — intents recorded locally, no external delivery.[/cyan]"
+    )
 
 
 def main() -> None:

@@ -2,8 +2,9 @@
 
 **What Holus is:** A thought-to-content studio for the product portfolio.
 It ingests one thought from a person or online source, transforms it into useful
-platform-native formats, creates text/image/carousel assets, reviews them, posts
-or schedules through Holus Social API, and learns from results.
+platform-native formats, creates text/image/carousel assets, reviews them, records
+schedule/publish intents (external delivery currently contained), and learns from
+results.
 
 **What Holus is not:** A unified codebase that replaces the individual repos.
 Not a trading system. Not an account owner. Not a silent publisher. Not a video
@@ -147,8 +148,10 @@ REVIEW
   -> append privacy-safe lineage events to data/lineage/events.jsonl
 
 PUBLISH OR SCHEDULE
-  -> explicit endpoint calls HolusSocialAPIClient with platforms payload
-  -> dry-run returns the payload without posting
+  -> explicit endpoint reserves a durable outbox intent and marks it contained
+  -> HolusSocialAPIClient publish/schedule write calls fail closed
+     (ExternalDeliveryContainedError) until an authenticated sender exists
+  -> dry-run returns the payload without posting or recording
 
 LEARN
   -> read PerformanceSnapshot data from Holus Social API
@@ -168,11 +171,17 @@ Holus communicates with silos via MCP (Model Context Protocol) tool calls.
 top posts, and performance snapshots.
 **What Holus calls:**
 ```python
-holus_social.publish(content, platforms, media_url, media_type) -> PublishResult
-holus_social.schedule_post(content, platforms, scheduled_at) -> ScheduleResult
+holus_social.publish(content, platforms, media_url, media_type) -> PublishResult  # contained: raises
+holus_social.schedule_post(content, platforms, scheduled_at) -> ScheduleResult    # contained: raises
 holus_social.get_analytics(days: int, platform: str) -> AnalyticsReport
 holus_social.get_top_posts(limit: int, metric: str) -> list[Post]
 ```
+External publish/schedule delivery is currently contained: the client's `publish`
+and `schedule_post` write methods raise `ExternalDeliveryContainedError` (see
+`src/holus/integrations/holus_social_api/containment.py`), and API/MCP/CLI flows
+record durable outbox intents with status `contained` instead of delivering.
+Analytics and status reads remain available. See README for the user-facing
+containment statement.
 **Data stays in:** Holus Social API storage. Holus records references and snapshots
 only when needed for learning.
 
@@ -289,7 +298,8 @@ They run their own cron jobs, their own strategies, never communicate with Holus
 
 **Publishing logic** — Holus Social API handles posting, scheduling,
 rate limiting, account management, bilingual formatting, and analytics.
-Holus prepares reviewed payloads and calls its API explicitly.
+Holus prepares reviewed payloads and records explicit outbox intents; outbound
+delivery is contained pending a future authenticated approval-grant sender.
 
 **Video editing** — Genpeli is deferred. It can later handle ffmpeg,
 whisper, caption burning, and polished shorts, but the current build should
@@ -318,7 +328,8 @@ Minimal shared infrastructure.
 
 The brain and studio. Runs the Thought Studio loop: ingest source thought,
 normalize, plan content set, generate variants, render visuals, review,
-schedule/publish through Holus Social API, then learn from performance.
+record schedule/publish intents (external delivery contained), then learn from
+performance.
 
 ### finance/ — simple weekly report (Phase 1.5)
 

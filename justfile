@@ -106,11 +106,11 @@ approve-content piece_id:
 reject-content piece_id reason="":
     uv run python -m holus.agents.marketing.review --reject {{piece_id}} --reason "{{reason}}"
 
-# Publish approved content (use --dry-run to preview without posting)
+# Process approved content (external delivery contained; --dry-run previews)
 publish *args:
     uv run python -m holus.agents.marketing.publish_approved {{args}}
 
-# Publish all approved content to social media (alias, no dry-run)
+# Process all approved content (alias, no dry-run)
 publish-approved:
     uv run python -m holus.agents.marketing.publish_approved
 

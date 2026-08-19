@@ -526,7 +526,7 @@ async def publish_content(
     piece_id: str,
     body: ContentPublishRequest | None = None,
 ) -> ContentPublishResponse:
-    """Explicitly publish one approved piece through Holus Social API."""
+    """Explicitly record a publish intent for one approved piece; delivery contained."""
     request_body = body or ContentPublishRequest()
     target_path, raw = _find_content_raw(piece_id)
     payload = _publish_payload(raw)
@@ -588,7 +588,7 @@ async def schedule_content(
     piece_id: str,
     body: ContentScheduleRequest,
 ) -> ContentPublishResponse:
-    """Explicitly schedule one piece through Holus Social API."""
+    """Explicitly record a schedule intent for one approved piece; delivery contained."""
     target_path, raw = _find_content_raw(piece_id)
     payload = _schedule_payload(raw, body.scheduled_at)
 

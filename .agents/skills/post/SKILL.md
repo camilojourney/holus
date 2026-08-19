@@ -310,9 +310,14 @@ curl -sS -X POST http://127.0.0.1:8003/api/v1/content/{piece_id}/publish \
   --data '{"dry_run": false}'
 ```
 
-If publish fails, diagnose the Holus Social API boundary. Use `/code holus` for
-Holus-side payload/review-state bugs, or the Holus Social API playbook for
-account, token, queue, or platform API failures.
+External delivery is currently contained: the non-dry endpoint records a
+durable outbox intent and returns status `contained` — no external post occurs
+until an authenticated approval-grant sender exists (see README). Report the
+contained status instead of claiming publication.
+
+If the endpoint errors instead, diagnose the Holus Social API boundary. Use
+`/code holus` for Holus-side payload/review-state bugs, or the Holus Social API
+playbook for account, token, queue, or platform API failures.
 
 ## Step 8: Report Format
 

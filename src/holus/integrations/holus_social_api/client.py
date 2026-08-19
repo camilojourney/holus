@@ -223,7 +223,7 @@ class HolusSocialAPIClient:
 
     @_RETRY_ON_HTTP_ERROR
     async def publish(self, request: PublishRequest) -> PublishResult:
-        """Publish content through Holus Social API."""
+        """Contained write path: raises ExternalDeliveryContainedError, no delivery."""
         platforms = [normalize_platform(platform) for platform in request.platforms]
         raise_external_delivery_contained()
         self._ensure_valid_content(request.content, platforms)
@@ -267,7 +267,7 @@ class HolusSocialAPIClient:
 
     @_RETRY_ON_HTTP_ERROR
     async def schedule_post(self, request: ScheduleRequest) -> ScheduleResult:
-        """Schedule content through Holus Social API."""
+        """Contained write path: raises ExternalDeliveryContainedError, no delivery."""
         platforms = request.platforms or ([request.platform] if request.platform else [])
         platforms = [normalize_platform(platform) for platform in platforms]
         raise_external_delivery_contained()
