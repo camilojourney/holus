@@ -134,16 +134,23 @@ class TestHolusSocialAPIClient:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_holus_social_publish_containment_does_not_retry_post(self):
+    @pytest.mark.parametrize("action", ["publish", "schedule"])
+    async def test_holus_social_containment_does_not_retry_post(self, action: str):
         client = HolusSocialAPIClient(base_url="http://test:8000", api_key="key")
         mock_http = AsyncMock()
+        operation = client.publish if action == "publish" else client.schedule_post
+        request = (
+            PublishRequest(content="Retry", platforms=["linkedin"])
+            if action == "publish"
+            else ScheduleRequest(content="Retry later", platform="linkedin")
+        )
 
         with (
             patch.object(client, "client", mock_http),
-            patch.object(client.publish.retry, "wait", return_value=0),
+            patch.object(operation.retry, "wait", return_value=0),
             pytest.raises(RuntimeError, match="EXTERNAL_DELIVERY_CONTAINED"),
         ):
-            await client.publish(PublishRequest(content="Retry", platforms=["linkedin"]))
+            await operation(request)
 
         mock_http.post.assert_not_called()
         await client.close()

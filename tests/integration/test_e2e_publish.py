@@ -11,11 +11,15 @@ from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
+import yaml
+from fastapi.testclient import TestClient
 
 from holus.agents.marketing.auto_publish import (
     PASS_THRESHOLD,
     process_queue,
 )
+from holus.api.app import create_app
+from holus.integrations.holus_social_api import HolusSocialAPIClient
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -28,6 +32,12 @@ def temp_queue(tmp_path: Path):
     queue_dir.mkdir()
     with patch("holus.agents.marketing.auto_publish.QUEUE_DIR", queue_dir):
         yield queue_dir
+
+
+@pytest.fixture()
+def api_client() -> TestClient:
+    """Exercise the shipped Observatory HTTP entrypoints in-process."""
+    return TestClient(create_app())
 
 
 def _write_queue_item(
@@ -58,6 +68,135 @@ def _write_queue_item(
     path = queue_dir / f"linkedin-text_post-{piece_id}.json"
     path.write_text(json.dumps(data, indent=2))
     return path
+
+
+def _mocked_social_boundary() -> tuple[HolusSocialAPIClient, AsyncMock]:
+    """Build the real Social API client around a deterministic HTTP mock."""
+    mock_http = AsyncMock()
+    mock_http.post = AsyncMock(side_effect=AssertionError("outbound POST attempted"))
+    with patch(
+        "holus.integrations.holus_social_api.client.httpx.AsyncClient",
+        return_value=mock_http,
+    ):
+        social_client = HolusSocialAPIClient(
+            base_url="http://social-api.invalid",
+            api_key="test-key",
+        )
+    return social_client, mock_http
+
+
+# ---------------------------------------------------------------------------
+# Shipped publish and schedule safety boundary
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("status", ["pending_review", "rejected"])
+@pytest.mark.parametrize(
+    ("action", "payload"),
+    [
+        ("publish", {"expected_revision": "premature"}),
+        (
+            "schedule",
+            {
+                "scheduled_at": "2026-04-01T12:00:00Z",
+                "expected_revision": "premature",
+            },
+        ),
+    ],
+)
+def test_unapproved_dispatch_never_reaches_social_api_http_boundary(
+    api_client: TestClient,
+    temp_queue: Path,
+    status: str,
+    action: str,
+    payload: dict[str, object],
+) -> None:
+    """Pending or rejected content cannot cross the Social API client boundary."""
+    path = _write_queue_item(temp_queue, f"guard-{status}-{action}")
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    raw["status"] = status
+    path.write_text(json.dumps(raw, indent=2), encoding="utf-8")
+    social_client, mock_http = _mocked_social_boundary()
+
+    with (
+        patch("holus.api.routes.content.CONTENT_QUEUE_DIR", temp_queue),
+        patch(
+            "holus.api.routes.content.HolusSocialAPIClient",
+            return_value=social_client,
+        ) as social_client_factory,
+    ):
+        response = api_client.post(
+            f"/api/v1/content/{raw['piece_id']}/{action}",
+            json=payload,
+        )
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "APPROVAL_REQUIRED"
+    social_client_factory.assert_not_called()
+    mock_http.post.assert_not_awaited()
+    persisted = json.loads(path.read_text(encoding="utf-8"))
+    assert persisted["status"] == status
+    assert "dispatch_request_id" not in persisted
+    assert "post_id" not in persisted
+    assert "schedule_id" not in persisted
+
+
+@pytest.mark.parametrize(
+    ("action", "payload", "external_id_field", "local_status_field"),
+    [
+        ("publish", {}, "publish_id", "publish_status"),
+        (
+            "schedule",
+            {"scheduled_at": "2026-04-01T12:00:00Z"},
+            "schedule_id",
+            "schedule_status",
+        ),
+    ],
+)
+def test_approved_dispatch_is_observably_contained_and_never_reported_successful(
+    api_client: TestClient,
+    temp_queue: Path,
+    action: str,
+    payload: dict[str, object],
+    external_id_field: str,
+    local_status_field: str,
+) -> None:
+    """A contained attempt stays visible without claiming external delivery."""
+    path = _write_queue_item(temp_queue, f"contained-{action}")
+    social_client, mock_http = _mocked_social_boundary()
+
+    with (
+        patch("holus.api.routes.content.CONTENT_QUEUE_DIR", temp_queue),
+        patch(
+            "holus.api.routes.content.HolusSocialAPIClient",
+            return_value=social_client,
+        ) as social_client_factory,
+    ):
+        approval = api_client.patch(
+            f"/api/v1/content/contained-{action}",
+            json={"status": "approved"},
+        )
+        assert approval.status_code == 200
+        response = api_client.post(
+            f"/api/v1/content/contained-{action}/{action}",
+            json={**payload, "expected_revision": approval.json()["revision"]},
+        )
+
+    assert response.status_code == 200
+    result = response.json()
+    assert result["status"] == "contained"
+    assert result[external_id_field] is None
+    assert result.get("success") is not True
+    social_client_factory.assert_not_called()
+    mock_http.post.assert_not_awaited()
+
+    persisted = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert persisted["status"] == "approved"
+    assert persisted[local_status_field] == "contained"
+    assert persisted["dispatch_request_id"]
+    assert "post_id" not in persisted
+    assert "published_at" not in persisted
+    assert "schedule_id" not in persisted
 
 
 # ---------------------------------------------------------------------------
