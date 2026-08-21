@@ -1,0 +1,27 @@
+schema: holus.company_os_migration.v1
+owner: holus
+migration_mode: additive
+canonical_skill_root: .agents/skills/
+canonical_skills:
+  - company-brand-desk
+  - company-content-desk
+  - company-marketing-desk
+  - company-sales-desk
+  - company-evolve
+  - company-supervisor
+shared_domain_helper: .agents/skills/_shared/company_os.py
+project_contracts:
+  manifest: agentic/manifest.yaml
+  permissions: agentic/permissions.yaml
+  evaluations: agentic/evals.yaml
+  contract_test: tests/unit/agentic/test_company_os_skill_contracts.py
+parity_manifest: agentic/company-os-migration/parity-manifest.yaml
+consumer_manifest: agentic/company-os-migration/consumer-manifest.yaml
+fleet_cleanup_gate:
+  fleet_sources_retained: true
+  removal_is_out_of_scope: true
+  required_before_cleanup:
+    - All parity-manifest verification requirements pass.
+    - Every consumer-manifest entry has its documented proof.
+    - Holus review-before-post and contained external delivery remain intact.
+    - A separate Fleet PR has explicit approval to remove retained copies.

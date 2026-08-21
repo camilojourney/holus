@@ -1,0 +1,35 @@
+schema: fleet.repo_agent_manifest.v1
+repo: holus
+owner: holus
+kind: marketing orchestration domain plane
+memory: agentic/memory.yaml
+permissions: agentic/permissions.yaml
+tools: agentic/tools.yaml
+evals: agentic/evals.yaml
+skills:
+  - name: post
+    path: .agents/skills/post/SKILL.md
+    owner: holus
+  - name: company-brand-desk
+    path: .agents/skills/company-brand-desk/SKILL.md
+    owner: holus
+  - name: company-content-desk
+    path: .agents/skills/company-content-desk/SKILL.md
+    owner: holus
+  - name: company-marketing-desk
+    path: .agents/skills/company-marketing-desk/SKILL.md
+    owner: holus
+  - name: company-sales-desk
+    path: .agents/skills/company-sales-desk/SKILL.md
+    owner: holus
+  - name: company-evolve
+    path: .agents/skills/company-evolve/SKILL.md
+    owner: holus
+  - name: company-supervisor
+    path: .agents/skills/company-supervisor/SKILL.md
+    owner: holus
+agents:
+  - source: AGENTS.md
+    purpose: repository authority, privacy, and external-action boundaries
+  - source: agentic/agents/AGENTS.yaml
+    purpose: Holus agent registry

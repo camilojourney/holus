@@ -109,6 +109,19 @@ Each evaluator has weighted rubric dimensions defined in `agentic/agents/AGENTS.
 - reputation_risk - Could this harm the brand?
 - forbidden_content_check - Trading, financial advice, or competitor mentions?
 
+## Company OS Skill Evaluations
+
+Company OS domain skill contracts are project-local in `.agents/skills/` and
+are evaluated offline by `tests/unit/agentic/test_company_os_skill_contracts.py`.
+The shared adapter reads `agentic/evals.yaml`; it receives only frozen source
+paths and non-sensitive scorecard summaries. The contract verifies trigger
+cases, the `COMPANY_KILL` halt behavior, explicit approval routing, and that a
+handoff never becomes an external action.
+
+```bash
+uv run pytest tests/unit/agentic/test_company_os_skill_contracts.py -q
+```
+
 ## Running Evaluations
 
 ```bash

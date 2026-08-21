@@ -1,0 +1,10 @@
+schema: holus.repo_tools.v1
+repo: holus
+commands:
+  company_os_contract: uv run pytest tests/unit/agentic/test_company_os_skill_contracts.py -q
+  company_os_full_check: just check
+boundaries:
+  network: prohibited for Company OS contract evaluation
+  external_delivery: contained and requires the separate Holus review workflow
+  credentials: never accepted as fixture or export input
+  runtime_data: Fleet may consume only declared aggregate summaries

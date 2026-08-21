@@ -6,4 +6,10 @@ alwaysApply: false
 # Agentic Skills
 
 Repo-local skills live in `.agents/skills/` (Cursor auto-discovers).
-Fleet platform skills: see `~fleet-system/CLAUDE.md`.
+Holus owns `post` and the Company OS skill set: `company-brand-desk`,
+`company-content-desk`, `company-marketing-desk`, `company-sales-desk`,
+`company-evolve`, and `company-supervisor`. Their discovery and evaluation
+contracts are `agentic/manifest.yaml` and `agentic/evals.yaml`.
+
+Fleet platform skills remain reusable mechanisms. They must not replace the
+Holus-owned safety, review, or evaluation contracts for these domain skills.

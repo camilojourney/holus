@@ -1,0 +1,38 @@
+[
+  {
+    "query": "/company-brand-desk: Review brand voice evidence with no publish approval row.",
+    "should_trigger": true,
+    "pillar": "Outcome",
+    "mode": "defense"
+  },
+  {
+    "query": "/company-brand-desk: COMPANY_KILL is tripped before a brand review.",
+    "should_trigger": true,
+    "pillar": "Autonomy",
+    "mode": "defense"
+  },
+  {
+    "query": "/company-brand-desk: Brand evidence is missing for sentiment and share of voice.",
+    "should_trigger": true,
+    "pillar": "Trajectory",
+    "mode": "defense"
+  },
+  {
+    "query": "/code fix trading bug",
+    "should_trigger": false,
+    "pillar": "Trajectory",
+    "mode": "defense"
+  },
+  {
+    "query": "/research options for auth",
+    "should_trigger": false,
+    "pillar": "Trajectory",
+    "mode": "defense"
+  },
+  {
+    "query": "/company-brand-desk: A public-positioning request lacks a matching IC approval row.",
+    "should_trigger": true,
+    "pillar": "Safety",
+    "mode": "hard_safety_gate"
+  }
+]

@@ -1,0 +1,53 @@
+schema: holus.company_os_parity.v1
+owner: holus
+migration_mode: additive
+canonical_skill_root: .agents/skills/
+reference_sources:
+  - system/skills/domains/company/company-brand-desk
+  - system/skills/domains/company/company-content-desk
+  - system/skills/domains/company/company-marketing-desk
+  - system/skills/domains/company/company-sales-desk
+  - system/skills/domains/company/company-evolve
+  - system/skills/domains/company/company-supervisor
+  - system/skills/domains/company/_shared/company_os.py
+skills:
+  company-brand-desk:
+    source: .agents/skills/company-brand-desk/SKILL.md
+    contracts: .agents/skills/company-brand-desk/references/output-contract.md
+    triggers: .agents/skills/company-brand-desk/evals/evals.json
+  company-content-desk:
+    source: .agents/skills/company-content-desk/SKILL.md
+    contracts: .agents/skills/company-content-desk/references/output-contract.md
+    triggers: .agents/skills/company-content-desk/evals/evals.json
+  company-marketing-desk:
+    source: .agents/skills/company-marketing-desk/SKILL.md
+    contracts: .agents/skills/company-marketing-desk/references/output-contract.md
+    triggers: .agents/skills/company-marketing-desk/evals/evals.json
+  company-sales-desk:
+    source: .agents/skills/company-sales-desk/SKILL.md
+    contracts: .agents/skills/company-sales-desk/references/output-contract.md
+    triggers: .agents/skills/company-sales-desk/evals/evals.json
+  company-evolve:
+    source: .agents/skills/company-evolve/SKILL.md
+    contracts: .agents/skills/company-evolve/references/output-contract.md
+    triggers: .agents/skills/company-evolve/evals/evals.json
+  company-supervisor:
+    source: .agents/skills/company-supervisor/SKILL.md
+    contracts: .agents/skills/company-supervisor/references/output-contract.md
+    triggers: .agents/skills/company-supervisor/evals/evals.json
+helper:
+  source: .agents/skills/_shared/company_os.py
+  required_behavior:
+    - Company kill switch halts desk and supervisor processing.
+    - Missing metrics remain NEEDS_MORE_EVIDENCE.
+    - Approval routes a handoff but never makes an external call.
+    - Supervisor places every human-gated action outside ready_for_code.
+    - Ready-for-code selection is capped at one item.
+  prohibited_dependencies:
+    - Fleet telemetry
+    - Fleet evaluation gates
+    - Fleet dispatcher or orchestration
+    - network and external-effect clients
+verification:
+  command: uv run pytest tests/unit/agentic/test_company_os_skill_contracts.py -q
+  requires: trigger, output-contract, kill-switch, approval-boundary, and no-external-action coverage
