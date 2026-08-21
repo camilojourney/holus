@@ -4,6 +4,7 @@ from holus.visual.charts import (
     bar_chart_svg,
     decorative_svg,
     donut_svg,
+    flowchart_svg,
     list_patterns,
     sparkline_svg,
 )
@@ -65,6 +66,56 @@ class TestDonut:
     def test_full_percent(self):
         svg = donut_svg(100)
         assert svg.startswith("<svg")
+
+
+class TestFlowchart:
+    def test_empty_returns_empty(self):
+        assert flowchart_svg([], []) == ""
+
+    def test_vertical_layout_renders_escaped_nodes_and_edge_labels(self):
+        svg = flowchart_svg(
+            [
+                {"id": "start", "label": "Read & plan", "description": "Input <thought>"},
+                {"id": "done", "label": "Publish", "description": ""},
+            ],
+            [{"from_id": "start", "to_id": "done", "label": "then & now"}],
+        )
+
+        assert 'aria-label="Flowchart"' in svg
+        assert "Read &amp; plan" in svg
+        assert "Input &lt;thought&gt;" in svg
+        assert "then &amp; now" in svg
+        assert 'stroke-width="4"' in svg
+
+    def test_horizontal_layout_uses_horizontal_edges(self):
+        svg = flowchart_svg(
+            [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}],
+            [{"from_id": "a", "to_id": "b", "label": "next"}],
+            layout="horizontal",
+        )
+
+        assert 'stroke-width="2"' in svg
+        assert 'text-anchor="middle"' in svg
+        assert "next" in svg
+
+    def test_grid_layout_omits_connectors(self):
+        svg = flowchart_svg(
+            [{"id": str(index), "label": f"Node {index}"} for index in range(4)],
+            [{"from_id": "0", "to_id": "1", "label": "hidden"}],
+            layout="grid",
+        )
+
+        assert 'viewBox="0 0 940 340"' in svg
+        assert "hidden" not in svg
+        assert 'marker id="fc-arrow"' in svg
+
+    def test_invalid_edge_is_ignored(self):
+        svg = flowchart_svg(
+            [{"id": "only", "label": "Only"}],
+            [{"from_id": "missing", "to_id": "only", "label": "ignored"}],
+        )
+
+        assert "ignored" not in svg
 
 
 class TestDecorative:

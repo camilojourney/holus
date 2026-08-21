@@ -19,6 +19,7 @@ Usage::
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -341,6 +342,198 @@ def _wrap_text_lines(text: str, max_chars: int = 30) -> list[str]:
     return lines or [""]
 
 
+@dataclass(frozen=True)
+class _FlowchartLayout:
+    """Calculated dimensions for one flowchart layout."""
+
+    is_vertical: bool
+    is_grid: bool
+    node_width: int
+    node_height: int
+    gap: int
+    svg_width: int
+    svg_height: int
+    columns: int
+
+
+def _flowchart_layout(node_count: int, layout: str, width: int) -> _FlowchartLayout:
+    is_vertical = layout == "vertical"
+    is_grid = layout == "grid"
+    node_width = 250 if is_grid else (160 if not is_vertical else 260)
+    node_height = 116 if is_grid else (126 if not is_vertical else 92)
+    gap = 28 if is_grid else (24 if not is_vertical else 56)
+    columns = 3 if node_count > 3 else node_count
+
+    if is_grid:
+        rows = (node_count + columns - 1) // columns
+        svg_width = width
+        svg_height = rows * node_height + (rows - 1) * gap + 80
+    elif is_vertical:
+        svg_width = width
+        svg_height = node_count * node_height + (node_count - 1) * gap + 80
+    else:
+        total_width = node_count * (node_width + gap) - gap + 80
+        svg_width = max(width, total_width)
+        svg_height = 190
+
+    return _FlowchartLayout(
+        is_vertical=is_vertical,
+        is_grid=is_grid,
+        node_width=node_width,
+        node_height=node_height,
+        gap=gap,
+        svg_width=svg_width,
+        svg_height=svg_height,
+        columns=columns,
+    )
+
+
+def _flowchart_positions(
+    nodes: list[dict[str, str]], layout: _FlowchartLayout
+) -> dict[str, tuple[float, float]]:
+    positions: dict[str, tuple[float, float]] = {}
+    for index, node in enumerate(nodes):
+        if layout.is_grid:
+            total_width = layout.columns * layout.node_width + (layout.columns - 1) * layout.gap
+            start_x = (layout.svg_width - total_width) / 2
+            col = index % layout.columns
+            row = index // layout.columns
+            cx = start_x + col * (layout.node_width + layout.gap) + layout.node_width / 2
+            cy = 40 + row * (layout.node_height + layout.gap) + layout.node_height / 2
+        elif layout.is_vertical:
+            cx = layout.svg_width / 2
+            cy = 40 + index * (layout.node_height + layout.gap) + layout.node_height / 2
+        else:
+            cx = 40 + index * (layout.node_width + layout.gap) + layout.node_width / 2
+            cy = layout.svg_height / 2
+        positions[node["id"]] = (cx, cy)
+    return positions
+
+
+def _flowchart_marker(edge_color: str) -> str:
+    return (
+        "<defs>"
+        f'<marker id="fc-arrow" viewBox="0 0 10 10" refX="10" refY="5" '
+        f'markerWidth="8" markerHeight="8" orient="auto-start-reverse">'
+        f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{edge_color}"/>'
+        "</marker>"
+        "</defs>"
+    )
+
+
+def _flowchart_edge_elements(
+    edges: list[dict[str, str]],
+    positions: dict[str, tuple[float, float]],
+    layout: _FlowchartLayout,
+    edge_color: str,
+) -> list[str]:
+    if layout.is_grid:
+        # The grid layout reads by number; connector lines add clutter at thumbnail size.
+        return []
+
+    elements: list[str] = []
+    for edge in edges:
+        from_id = edge.get("from_id", "")
+        to_id = edge.get("to_id", "")
+        if from_id not in positions or to_id not in positions:
+            continue
+        fx, fy = positions[from_id]
+        tx, ty = positions[to_id]
+        if layout.is_vertical:
+            y1 = fy + layout.node_height / 2
+            y2 = ty - layout.node_height / 2
+            elements.append(
+                f'<line x1="{fx}" y1="{y1}" x2="{tx}" y2="{y2}" '
+                f'stroke="{edge_color}" stroke-width="4" '
+                f'marker-end="url(#fc-arrow)"/>'
+            )
+            edge_label = edge.get("label", "")
+            if edge_label:
+                mid_y = (y1 + y2) / 2
+                mid_x = (fx + tx) / 2 + 12
+                elements.append(
+                    f'<text x="{mid_x}" y="{mid_y}" fill="{edge_color}" '
+                    f'font-size="12" font-family="var(--brand-font-secondary)" '
+                    f'dominant-baseline="middle">'
+                    f"{_escape_xml(edge_label)}</text>"
+                )
+        else:
+            x1 = fx + layout.node_width / 2
+            x2 = tx - layout.node_width / 2
+            elements.append(
+                f'<line x1="{x1}" y1="{fy}" x2="{x2}" y2="{ty}" '
+                f'stroke="{edge_color}" stroke-width="2" '
+                f'marker-end="url(#fc-arrow)"/>'
+            )
+            edge_label = edge.get("label", "")
+            if edge_label:
+                mid_x = (x1 + x2) / 2
+                mid_y = (fy + ty) / 2 - 10
+                elements.append(
+                    f'<text x="{mid_x}" y="{mid_y}" fill="{edge_color}" '
+                    f'font-size="12" font-family="var(--brand-font-secondary)" '
+                    f'text-anchor="middle">'
+                    f"{_escape_xml(edge_label)}</text>"
+                )
+    return elements
+
+
+def _flowchart_node_elements(
+    nodes: list[dict[str, str]],
+    positions: dict[str, tuple[float, float]],
+    layout: _FlowchartLayout,
+    node_color: str,
+    text_color: str,
+    bg_color: str,
+) -> list[str]:
+    elements: list[str] = []
+    label_width = 20 if layout.is_grid else (14 if not layout.is_vertical else 24)
+    for node in nodes:
+        nid = node["id"]
+        label = node.get("label", nid)
+        desc = node.get("description", "")
+        cx, cy = positions[nid]
+        rx = cx - layout.node_width / 2
+        ry = cy - layout.node_height / 2
+
+        elements.append(
+            f'<rect x="{rx}" y="{ry}" width="{layout.node_width}" height="{layout.node_height}" '
+            f'rx="16" fill="{bg_color}" stroke="{node_color}" stroke-width="2"/>'
+        )
+        elements.append(
+            f'<circle cx="{rx + 24}" cy="{ry + 24}" r="14" fill="{node_color}" opacity="0.14"/>'
+        )
+        elements.append(
+            f'<text x="{rx + 24}" y="{ry + 25}" text-anchor="middle" '
+            f'dominant-baseline="middle" fill="{node_color}" '
+            f'font-size="14" font-weight="850" font-family="Inter, sans-serif">'
+            f"{_escape_xml(nid)}</text>"
+        )
+
+        label_lines = _wrap_text_lines(label, label_width)
+        start_y = cy - (len(label_lines[:3]) - 1) * 13
+        for line_index, line in enumerate(label_lines[:3]):
+            elements.append(
+                f'<text x="{cx}" y="{start_y + line_index * 26}" text-anchor="middle" '
+                f'dominant-baseline="middle" fill="{text_color}" '
+                f'font-size="22" font-weight="800" '
+                f'font-family="Inter, sans-serif">'
+                f"{_escape_xml(line)}</text>"
+            )
+
+        if desc:
+            desc_lines = _wrap_text_lines(desc, 28)
+            for line_index, line in enumerate(desc_lines[:2]):
+                elements.append(
+                    f'<text x="{cx}" y="{cy + 12 + line_index * 16}" text-anchor="middle" '
+                    f'dominant-baseline="middle" fill="{text_color}" '
+                    f'font-size="12" opacity="0.7" '
+                    f'font-family="var(--brand-font-secondary)">'
+                    f"{_escape_xml(line)}</text>"
+                )
+    return elements
+
+
 def flowchart_svg(
     nodes: list[dict[str, str]],
     edges: list[dict[str, str]],
@@ -370,159 +563,27 @@ def flowchart_svg(
     if not nodes:
         return ""
 
-    n = len(nodes)
-    is_vertical = layout == "vertical"
-    is_grid = layout == "grid"
+    flow_layout = _flowchart_layout(len(nodes), layout, width)
+    positions = _flowchart_positions(nodes, flow_layout)
 
-    # Node sizing
-    node_w = 250 if is_grid else (160 if not is_vertical else 260)
-    node_h = 116 if is_grid else (126 if not is_vertical else 92)
-    gap = 28 if is_grid else (24 if not is_vertical else 56)
+    elements: list[str] = [_flowchart_marker(edge_color)]
+    elements.extend(_flowchart_edge_elements(edges, positions, flow_layout, edge_color))
 
-    if is_grid:
-        cols = 3 if n > 3 else n
-        rows = (n + cols - 1) // cols
-        svg_w = width
-        svg_h = rows * node_h + (rows - 1) * gap + 80
-    elif is_vertical:
-        total_h = n * node_h + (n - 1) * gap + 80
-        svg_w = width
-        svg_h = total_h
-    else:
-        total_w = n * (node_w + gap) - gap + 80
-        svg_w = max(width, total_w)
-        svg_h = 190
-
-    # Build id→position map
-    positions: dict[str, tuple[float, float]] = {}
-    for i, node in enumerate(nodes):
-        if is_grid:
-            cols = 3 if n > 3 else n
-            total_w = cols * node_w + (cols - 1) * gap
-            start_x = (svg_w - total_w) / 2
-            col = i % cols
-            row = i // cols
-            cx = start_x + col * (node_w + gap) + node_w / 2
-            cy = 40 + row * (node_h + gap) + node_h / 2
-        elif is_vertical:
-            cx = svg_w / 2
-            cy = 40 + i * (node_h + gap) + node_h / 2
-        else:
-            cx = 40 + i * (node_w + gap) + node_w / 2
-            cy = svg_h / 2
-        positions[node["id"]] = (cx, cy)
-
-    # Arrowhead marker
-    marker = (
-        "<defs>"
-        f'<marker id="fc-arrow" viewBox="0 0 10 10" refX="10" refY="5" '
-        f'markerWidth="8" markerHeight="8" orient="auto-start-reverse">'
-        f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{edge_color}"/>'
-        "</marker>"
-        "</defs>"
+    elements.extend(
+        _flowchart_node_elements(
+            nodes,
+            positions,
+            flow_layout,
+            node_color,
+            text_color,
+            bg_color,
+        )
     )
-
-    elements: list[str] = [marker]
-
-    # Draw edges first (behind nodes)
-    for edge in edges:
-        from_id = edge.get("from_id", "")
-        to_id = edge.get("to_id", "")
-        if from_id not in positions or to_id not in positions:
-            continue
-        fx, fy = positions[from_id]
-        tx, ty = positions[to_id]
-
-        if is_grid:
-            # The grid layout reads by number; connector lines add clutter at thumbnail size.
-            continue
-        if is_vertical:
-            y1 = fy + node_h / 2
-            y2 = ty - node_h / 2
-            elements.append(
-                f'<line x1="{fx}" y1="{y1}" x2="{tx}" y2="{y2}" '
-                f'stroke="{edge_color}" stroke-width="4" '
-                f'marker-end="url(#fc-arrow)"/>'
-            )
-            # Edge label
-            edge_label = edge.get("label", "")
-            if edge_label:
-                mid_y = (y1 + y2) / 2
-                mid_x = (fx + tx) / 2 + 12
-                elements.append(
-                    f'<text x="{mid_x}" y="{mid_y}" fill="{edge_color}" '
-                    f'font-size="12" font-family="var(--brand-font-secondary)" '
-                    f'dominant-baseline="middle">'
-                    f"{_escape_xml(edge_label)}</text>"
-                )
-        else:
-            x1 = fx + node_w / 2
-            x2 = tx - node_w / 2
-            elements.append(
-                f'<line x1="{x1}" y1="{fy}" x2="{x2}" y2="{ty}" '
-                f'stroke="{edge_color}" stroke-width="2" '
-                f'marker-end="url(#fc-arrow)"/>'
-            )
-            edge_label = edge.get("label", "")
-            if edge_label:
-                mid_x = (x1 + x2) / 2
-                mid_y = (fy + ty) / 2 - 10
-                elements.append(
-                    f'<text x="{mid_x}" y="{mid_y}" fill="{edge_color}" '
-                    f'font-size="12" font-family="var(--brand-font-secondary)" '
-                    f'text-anchor="middle">'
-                    f"{_escape_xml(edge_label)}</text>"
-                )
-
-    # Draw nodes
-    for node in nodes:
-        nid = node["id"]
-        label = node.get("label", nid)
-        desc = node.get("description", "")
-        cx, cy = positions[nid]
-        rx = cx - node_w / 2
-        ry = cy - node_h / 2
-
-        # Node box
-        elements.append(
-            f'<rect x="{rx}" y="{ry}" width="{node_w}" height="{node_h}" '
-            f'rx="16" fill="{bg_color}" stroke="{node_color}" stroke-width="2"/>'
-        )
-        elements.append(
-            f'<circle cx="{rx + 24}" cy="{ry + 24}" r="14" fill="{node_color}" opacity="0.14"/>'
-        )
-        elements.append(
-            f'<text x="{rx + 24}" y="{ry + 25}" text-anchor="middle" '
-            f'dominant-baseline="middle" fill="{node_color}" '
-            f'font-size="14" font-weight="850" font-family="Inter, sans-serif">'
-            f"{_escape_xml(nid)}</text>"
-        )
-        # Label
-        label_lines = _wrap_text_lines(label, 20 if is_grid else (14 if not is_vertical else 24))
-        start_y = cy - (len(label_lines[:3]) - 1) * 13
-        for li, line in enumerate(label_lines[:3]):
-            elements.append(
-                f'<text x="{cx}" y="{start_y + li * 26}" text-anchor="middle" '
-                f'dominant-baseline="middle" fill="{text_color}" '
-                f'font-size="22" font-weight="800" '
-                f'font-family="Inter, sans-serif">'
-                f"{_escape_xml(line)}</text>"
-            )
-        # Description (smaller, below label)
-        if desc:
-            desc_lines = _wrap_text_lines(desc, 28)
-            for li, line in enumerate(desc_lines[:2]):
-                elements.append(
-                    f'<text x="{cx}" y="{cy + 12 + li * 16}" text-anchor="middle" '
-                    f'dominant-baseline="middle" fill="{text_color}" '
-                    f'font-size="12" opacity="0.7" '
-                    f'font-family="var(--brand-font-secondary)">'
-                    f"{_escape_xml(line)}</text>"
-                )
-
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {svg_w} {svg_h}" '
-        f'width="{svg_w}" height="{svg_h}" role="img" aria-label="Flowchart">'
+        f'<svg xmlns="http://www.w3.org/2000/svg" '
+        f'viewBox="0 0 {flow_layout.svg_width} {flow_layout.svg_height}" '
+        f'width="{flow_layout.svg_width}" height="{flow_layout.svg_height}" '
+        f'role="img" aria-label="Flowchart">'
         f"{''.join(elements)}"
         f"</svg>"
     )

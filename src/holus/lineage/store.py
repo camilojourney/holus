@@ -199,10 +199,30 @@ class LineageStore:
     def validate(self) -> ValidationReport:
         """Report malformed, orphaned, and broken lineage without claiming completeness."""
         events, malformed = self.events()
-        nodes: dict[str, LineageNode] = {}
-        edges: dict[str, LineageEdge] = {}
-        invalid = bool(malformed)
+        nodes, edges, entities_invalid = self._validated_entities(events)
+        invalid = bool(malformed) or entities_invalid or not self._valid_chain(events)
+        broken = self._broken_edges(nodes, edges)
+        orphans = self._orphan_nodes(nodes, edges)
+        counts_by_type, counts_by_status, newest = self._node_summary(nodes)
+        valid = not invalid and not broken
+        complete = valid and self._has_complete_runs(nodes) and not orphans
+        return ValidationReport(
+            valid=valid,
+            complete=complete,
+            node_count=len(nodes),
+            edge_count=len(edges),
+            counts_by_type=counts_by_type,
+            counts_by_status=counts_by_status,
+            orphan_node_ids=orphans,
+            broken_edge_ids=broken,
+            malformed_lines=malformed,
+            newest_at=newest,
+        )
+
+    @staticmethod
+    def _valid_chain(events: list[dict[str, Any]]) -> bool:
         previous_hash: str | None = None
+        valid = True
         for expected_seq, event in enumerate(events, 1):
             recorded_hash = event.get("event_hash")
             hash_input = {key: value for key, value in event.items() if key != "event_hash"}
@@ -211,8 +231,17 @@ class LineageStore:
                 or event.get("prev_event_hash") != previous_hash
                 or recorded_hash != stable_hash(hash_input)
             ):
-                invalid = True
+                valid = False
             previous_hash = recorded_hash if isinstance(recorded_hash, str) else None
+        return valid
+
+    @staticmethod
+    def _validated_entities(
+        events: list[dict[str, Any]],
+    ) -> tuple[dict[str, LineageNode], dict[str, LineageEdge], bool]:
+        nodes: dict[str, LineageNode] = {}
+        edges: dict[str, LineageEdge] = {}
+        invalid = False
         for event in events:
             try:
                 node = LineageNode.model_validate(event["node"])
@@ -222,11 +251,18 @@ class LineageStore:
                     edges[edge.edge_id] = edge
             except (KeyError, ValueError, TypeError):
                 invalid = True
-        broken = sorted(
+        return nodes, edges, invalid
+
+    @staticmethod
+    def _broken_edges(nodes: dict[str, LineageNode], edges: dict[str, LineageEdge]) -> list[str]:
+        return sorted(
             edge_id
             for edge_id, edge in edges.items()
             if edge.from_node_id not in nodes or edge.to_node_id not in nodes
         )
+
+    @staticmethod
+    def _orphan_nodes(nodes: dict[str, LineageNode], edges: dict[str, LineageEdge]) -> list[str]:
         connected = {
             node_id
             for edge in edges.values()
@@ -234,12 +270,17 @@ class LineageStore:
             for node_id in (edge.from_node_id, edge.to_node_id)
         }
         # A source may intentionally be the root. Every non-source must be connected.
-        orphans = sorted(
+        return sorted(
             node_id
             for node_id, node in nodes.items()
             if node.artifact_type.value not in {"source_thought", "research_candidate"}
             and node_id not in connected
         )
+
+    @staticmethod
+    def _node_summary(
+        nodes: dict[str, LineageNode],
+    ) -> tuple[dict[str, int], dict[str, int], str | None]:
         counts_by_type: dict[str, int] = {}
         counts_by_status: dict[str, int] = {}
         for node in nodes.values():
@@ -249,7 +290,10 @@ class LineageStore:
             counts_by_status[node.status] = counts_by_status.get(node.status, 0) + 1
         timestamps = [node.created_at for node in nodes.values()]
         newest = max(timestamps).isoformat() if timestamps else None
-        valid = not invalid and not broken
+        return counts_by_type, counts_by_status, newest
+
+    @staticmethod
+    def _has_complete_runs(nodes: dict[str, LineageNode]) -> bool:
         # "Complete" is deliberately conservative: a source-rooted content run
         # needs its plan and at least one persisted variant. Optional stages
         # (visual, review, publish) are not invented when they did not run.
@@ -268,19 +312,7 @@ class LineageStore:
             )
             for run_id in source_runs
         )
-        complete = valid and bool(source_runs) and complete_runs and not orphans
-        return ValidationReport(
-            valid=valid,
-            complete=complete,
-            node_count=len(nodes),
-            edge_count=len(edges),
-            counts_by_type=counts_by_type,
-            counts_by_status=counts_by_status,
-            orphan_node_ids=orphans,
-            broken_edge_ids=broken,
-            malformed_lines=malformed,
-            newest_at=newest,
-        )
+        return bool(source_runs) and complete_runs
 
     @staticmethod
     def _decode(line: str) -> dict[str, Any] | None:
