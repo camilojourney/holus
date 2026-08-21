@@ -1,0 +1,28 @@
+schema: holus.company_os_consumers.v1
+owner: holus
+fleet_cleanup_precondition: all entries must be complete in a separate verified cutover
+consumers:
+  - id: fleet-skill-registry
+    current_role: discovers Company OS skills
+    required_change: Resolve all six domain skill names to the Holus canonical sources.
+    proof: Discovery integration test resolves each .agents/skills/<name>/SKILL.md.
+  - id: fleet-domain-compatibility-paths
+    current_role: provides retained legacy paths
+    required_change: Repoint or remove only after registry cutover.
+    proof: No active consumer resolves a Fleet-local Company OS source or helper.
+  - id: fleet-evaluation-adapter
+    current_role: runs reusable scorecard and runner machinery
+    required_change: Read Holus agentic/evals.yaml and aggregate-only exports.
+    proof: Adapter test invokes the Holus suite without an absolute runtime path or private payload.
+  - id: machine-skill-installation
+    current_role: exposes installed skill links to harnesses
+    required_change: Rebuild links from canonical discovery output.
+    proof: Every installed Company OS skill resolves to Holus with no dangling link.
+  - id: company-runbooks-and-automation-callers
+    current_role: invokes desk skills or references helper paths
+    required_change: Update invocation documentation and callers to Holus sources.
+    proof: Consumer inventory is empty or each remaining caller has a merged migration PR.
+  - id: fleet-company-os-history
+    current_role: retains existing Company OS hub and mission summary history
+    required_change: Complete an approved private archive and schema-valid reconciliation before any cutover.
+    proof: Counts, hashes, and redacted import reconciliation are reviewed; raw history is not copied into Git.

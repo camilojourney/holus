@@ -1,0 +1,42 @@
+schema: fleet.repo_evals.v1
+repo: holus
+scorecard_schema: fleet.eval_scorecard.v1
+default_scores:
+  task_completion: required
+  trajectory_quality: required
+  tool_accuracy: required
+  safety: required
+  cost_efficiency: optional
+  domain_score: repo_defined
+gate_decisions:
+  - pass
+  - fail
+  - hold
+frozen_inputs:
+  source_paths:
+    - .agents/skills/_shared/company_os.py
+    - .agents/skills/company-*/SKILL.md
+    - .agents/skills/company-*/references/output-contract.md
+    - .agents/skills/company-*/evals/evals.json
+    - tests/unit/agentic/test_company_os_skill_contracts.py
+  environment:
+    python_requires: '>=3.12'
+    dependency_lock: uv.lock
+  privacy:
+    export_only: hashes, scorecards, and non-sensitive summaries
+    never_export: credentials, raw content drafts, queue contents, or runtime JSONL rows
+suites:
+  - name: company-os-trigger-and-contract
+    command: uv run pytest tests/unit/agentic/test_company_os_skill_contracts.py -q
+    inputs: .agents/skills/company-*/evals/evals.json
+    network: prohibited
+    required: true
+  - name: company-os-hard-safety
+    command: uv run pytest tests/unit/agentic/test_company_os_skill_contracts.py -q
+    inputs: .agents/skills/_shared/company_os.py
+    network: prohibited
+    required: true
+export:
+  event_stream: .self-improvement/hub/skill_runs.jsonl
+  trace_dir: .self-improvement/traces/
+  summary_only: true

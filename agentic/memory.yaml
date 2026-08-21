@@ -1,0 +1,34 @@
+schema: holus.memory_policy.v1
+repo: holus
+default_backend: files_and_repo_local_storage
+working:
+  purpose: current desk run and review state
+  locations:
+    - .pipeline-state/
+    - .self-improvement/
+  retention: short_lived
+semantic:
+  purpose: durable marketing and Company OS lessons
+  locations:
+    - agentic/memory/MEMORY.md
+    - agentic/memory/knowledge/
+  retention: curated
+procedural:
+  purpose: versioned instructions and skill contracts
+  locations:
+    - AGENTS.md
+    - agentic/manifest.yaml
+    - agentic/permissions.yaml
+    - agentic/evals.yaml
+    - .agents/skills/
+  retention: versioned
+fleet_visibility:
+  exported_to_fleet:
+    - agentic/manifest.yaml
+    - agentic/evals.yaml
+  not_exported_to_fleet:
+    - secrets
+    - credentials
+    - raw content drafts
+    - content queue payloads
+    - runtime JSONL rows

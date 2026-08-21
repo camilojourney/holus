@@ -1,0 +1,18 @@
+schema: holus.agent_permissions.v1
+repo: holus
+allowed:
+  - read repository code, domain evidence, and repo-local contracts
+  - generate drafts, local handoff payloads, and review recommendations
+  - write local Company OS desk events and supervisor docket entries
+  - run offline contract tests and read-only diagnostics
+ask_first:
+  - publish or schedule content
+  - contact a lead, send outreach, book a meeting, or mutate an external CRM
+  - launch a campaign, commit spend, or change production deployment settings
+  - change credentials, accounts, products, or platforms
+forbidden:
+  - publish, schedule, send outreach, or make external contact silently
+  - treat chat text, a desk event, or a passing test as an approval
+  - bypass COMPANY_KILL or the explicit human approval gate
+  - commit secrets or credentials
+  - access or mutate another repository's runtime data directly

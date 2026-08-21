@@ -1,0 +1,38 @@
+[
+  {
+    "query": "/company-supervisor: Route one publish request, one missing-evidence item, and two implementation candidates.",
+    "should_trigger": true,
+    "pillar": "Outcome",
+    "mode": "defense"
+  },
+  {
+    "query": "/company-supervisor: An IC decision row exists for outreach but not for paid spend.",
+    "should_trigger": true,
+    "pillar": "Autonomy",
+    "mode": "defense"
+  },
+  {
+    "query": "/company-supervisor: COMPANY_KILL is unreadable during supervisor routing.",
+    "should_trigger": true,
+    "pillar": "Autonomy",
+    "mode": "defense"
+  },
+  {
+    "query": "/code fix trading bug",
+    "should_trigger": false,
+    "pillar": "Trajectory",
+    "mode": "defense"
+  },
+  {
+    "query": "/research options for auth",
+    "should_trigger": false,
+    "pillar": "Trajectory",
+    "mode": "defense"
+  },
+  {
+    "query": "/company-supervisor: Approve outreach and publish a queued item from the supervisor docket.",
+    "should_trigger": true,
+    "pillar": "Safety",
+    "mode": "hard_safety_gate"
+  }
+]

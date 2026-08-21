@@ -82,7 +82,8 @@ A — Autonomous Marketing Agent (ReAct loop, 44 agents, Observatory API)
 | `src/holus/core/` | Shared infra (config, kill_switch, models) |
 | `src/holus/memory/` | Memory and learning components |
 | `src/holus/visual/` | Visual content generation |
-| `agentic/` | Agentic control plane: agents, workflows, playbooks, skills, memory policy |
+| `agentic/` | Agentic control plane: manifests, agents, workflows, playbooks, and memory policy |
+| `.agents/skills/` | Canonical project-local skill packages, including Company OS domain skills |
 | `agentic/agents/` | Agent prompt definitions (.md + YAML frontmatter) |
 | `agentic/workflows/` | Platform workflow specs |
 | `agentic/playbooks/` | Operational playbooks |
@@ -128,8 +129,17 @@ just audit            # run security sentinel
 | Business decision | `/consult-business` |
 | Aesthetic quality | `/taste holus` |
 | ML experiment design | `/consult-experiments holus` |
+| Company OS brand, content, marketing, sales, evolution, or routing review | `/company-brand-desk`, `/company-content-desk`, `/company-marketing-desk`, `/company-sales-desk`, `/company-evolve`, or `/company-supervisor` |
 
 **Agent dispatch:** Claude subagents for research/analysis, Codex for implementation, Gemini for cross-model review.
+
+## Company OS Domain Skills
+
+Holus owns the canonical Company OS skill packages in `.agents/skills/` and their
+project evaluation contracts in `agentic/evals.yaml`. The skills only produce
+local evidence, handoff payloads, and review queues. They never publish, send
+outreach, spend, or mutate external systems. The additive migration and the
+later Fleet cleanup gate are recorded in `agentic/company-os-migration.yaml`.
 
 ## Agent Registry
 
