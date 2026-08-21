@@ -11,7 +11,7 @@
 
 - `flowchart_svg` now delegates to focused helpers; its approximation fell from **28 to 2**.
 - The refactor preserves byte-identical SVG output for representative empty, vertical, horizontal, grid, invalid-edge, and custom-style cases.
-- `charts.py` is now 919 lines because the behavior-preserving helper extraction is colocated with the existing chart API; the complexity target is the flowchart function rather than line-count minimization.
+- `charts.py` is now 918 lines because the behavior-preserving helper extraction is colocated with the existing chart API; the complexity target is the flowchart function rather than line-count minimization.
 - Focused chart coverage increased from 17 to 22 passing tests, including XML escaping, layout-specific edge behavior, grid connector suppression, and invalid-edge handling.
 
 The metric is a deterministic AST approximation: base complexity 1 plus `if`, loop, exception, context-manager, comprehension, boolean-operator, and conditional-expression branches.
