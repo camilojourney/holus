@@ -1,44 +1,44 @@
 # Graph Report - holus  (2026-08-21)
 
 ## Corpus Check
-- 637 files · ~4,679,227 words
+- 638 files · ~4,679,719 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 11953 nodes · 21568 edges · 794 communities (712 shown, 82 thin omitted)
-- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 2294 edges (avg confidence: 0.69)
+- 11995 nodes · 21465 edges · 794 communities (703 shown, 91 thin omitted)
+- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 2342 edges (avg confidence: 0.69)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `20eaa6c9`
+- Built from commit: `3e76a080`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - score_content
-- repurpose_content
+- repurpose.py
 - thought_pipeline.py
 - asyncio
-- ContentType
-- EventBus
+- ContentDecision
+- EventType
 - LineageStore
 - _StubAgent
 - src/holus/visual/__init__.py
-- enqueue
+- publish_all
 - MarketingAgent
-- ContentDecision
+- ContentType
 - Path
 - BrandVisualIdentity
 - preflight.py
 - api/models.py
 - content.py
-- PlaywrightEngine
+- _make_agent
 - Phase 1 Close The Loop
 - test_marketing_models.py
 - asyncio
 - display_calendar
 - genpeli
-- Andrew Ng
+- Andrew Ng LinkedIn post - Claude Code course
 - SpecialistDispatcher
 - PromptLoader
 - generation_strategy.py
@@ -47,45 +47,45 @@
 - sources/base.py
 - Agentic AI Layers
 - choose_visual_concept_route
-- approve
+- test_e2e_manual_publish.py
 - select_personal_context
 - Path
-- TrajectoryLogger
+- HealthResult
 - ._minimal_input
 - spec_converter.py
 - Top engagement posts
-- CandidateStore
+- research.py
 - holus/memory/__init__.py
 - contract.ts
-- run_preflight_checks
-- evaluations/page.tsx
+- __main__.py
+- types.ts
 - idea_runner.py
 - visual_pipeline.py
-- ScheduleRequest
+- charts.py
 - api.ts
-- Path
+- WatchdogResult
 - radar.py
-- test_visual_judge.py
+- test_social_media.py
 - asyncio
 - TemplateEngine
-- RawResearchItem
+- ResearchScore
 - DemoGenerationAdapter
-- _render_visual
+- review.py
 - PromptEvolution
 - test_learning_loop.py
-- test_marketing_agent_visual.py
+- QueuedContent
 - agents.py
 - AI Engineering Roadmap 2026
-- routes/health.py
+- app.py
 - Holus Agent Registry
 - Holus Brand Identity
 - test_marketing_agent.py
 - voice_pipeline.py
-- RenderResult
+- test_mcp_tool_dispatch_placeholder
 - BrandVisualIdentityLoader
 - Top engagement posts
-- HolusSocialAPIClient
-- ._make_engine
+- holus_social_api/client.py
+- PlaywrightEngine
 - get_platform_config
 - Brand Designer
 - Top hashtags
@@ -93,28 +93,28 @@
 - Bandit
 - HealthCheck
 - get_proxy_url
-- _normalize_outline
+- orchestrator.py
 - results/page.tsx
 - BanditArm
 - TopicIndex
 - AgentRegistry
-- orchestrator.py
+- diagnostician.py
 - Holus infrastructure Docker Compose
 - connection.ts
 - timedelta
 - HolusClaudeClient
 - plan_content_job
-- Andrew Ng LinkedIn post - Agentic Document Extraction field extraction
+- test_prompts.py
 - CarouselSpec
 - carousel_spec_to_slides
-- test_e2e_publish.py
+- process_queue
 - ._make_engine
 - Ruben Hassid
 - Research: What should Holus do to create reusable, high-impact AI images?
 - content/page.tsx
-- process_queue
+- Path
 - create_app
-- _load_pending_with_scores
+- ScheduleRequest
 - generate_svg
 - Visual necessity gate
 - VS Code extension for FastAPI
@@ -122,7 +122,7 @@
 - Mati Staniszewski
 - compilerOptions
 - collect_analytics
-- holus_social_api/client.py
+- HolusSocialAPIClient
 - Autonomous Operations Runbook
 - Anthropic
 - Claim that Sonnet 4.6 is a light and fast Claude model beating Gemini 3 Pro and sometimes GPT-5.2 on benchmarks
@@ -133,61 +133,61 @@
 - Teams can operationalize Claude by mapping recurring deliverables into Projects with instructions, templates, testing, and rollout
 - FastAPI
 - Visual Design Tool Registry
-- HolusMem0Client
+- ._get_memory
 - publish_approved.py
-- _append_jsonl
-- holus/core/__init__.py
+- _normalize_outline
+- acquire_run_lock
 - KillSwitch
 - LineageRecorder
 - test_content_generator.py
 - _make_agent
 - image+text: 22 posts (55.0%)
-- #LangChain
-- Harrison Chase
+- LangChain Interrupt 2026
+- RenderResult
 - HolusConfig
-- core/health.py
-- donut_svg
+- _render_visual
+- decorative_svg
 - resolve_gradient
 - Self-Improvement Mechanisms Technical Reference
 - DispatchOutbox
 - FastAPI Cloud podcast conversation
-- QueuedContent
-- .publish
+- content_queue.py
+- model_validator
 - test_mcp_server.py
 - detect_gaps
-- TestPublishHTTPContract
+- CandidateStore
 - Agent failure modes
 - Research: Agent Rendering Capabilities For Holus
-- .run
-- test_orchestrator.py
+- TrajectoryLogger
+- patch
 - telegram_gate.py
 - Path
 - Viral Framework Library
-- Holus Worker Registry
+- Evaluations Playbook
 - Deployment Playbook
 - image+text: 9 posts (90.0%)
 - Top engagement posts
 - test_api.py
 - .call
 - CarouselPreview.tsx
-- Specs Index
+- Observatory API
 - _patch_queue_dir
 - Path
 - TestClient
 - Judge Agent
-- Andrew Ng LinkedIn post announcing beginner AI app building course
-- GPT-5.4 Pro, Opus, and Gemini DeepThink are compared on agentic research and PowerPoint creation about advanced dinosaur civilization evidence.
+- Andrew Ng LinkedIn post announcing Document AI course
+- Claude can perform competitive intelligence by comparing job listings with SEC filings
 - ElevenAgents
 - Effective Claude Cowork use depends on selecting the right model, enabling Extended Thinking, and organizing context files before prompting
 - Holus Vision
 - ContentKanban.tsx
 - alerts.py
 - BaseAgent
-- __main__.py
+- ._make_engine
 - LinkedIn Content Playbook
 - Claude in Excel can build and audit financial models that normally require expensive manual services
 - video: 40 posts (100.0%)
-- Andrew Ng LinkedIn post - Agentic Knowledge Graph Construction
+- LLM Engineer Roadmap
 - General / Uncategorized: 38 posts (95.0%)
 - LangSmith
 - simulate_content_intake_cases.py
@@ -203,14 +203,14 @@
 - Research: What content formats get the most engagement on LinkedIn for AI engineers in 2026?
 - routes/config.py
 - Social Media Integration V2
-- decorative_svg
+- Format Converter
 - TestSyllableCounter
 - CorpusDB
 - _make_prompt
 - TestStructuralChecks
 - generate_poll_svg
-- test_radar.py
-- Advanced AI-using organizations increasingly face compute as the binding constraint, matching AI lab warnings.
+- RawResearchItem
+- routes/knowledge.py
 - Thought Update Backlog
 - social-media-automatization Repository
 - Alex Wang: Weaknesses & Gaps
@@ -221,12 +221,12 @@
 - ingest
 - engagement/page.tsx
 - health/page.tsx
-- Marketing Agent
-- Creative Tool Registry
+- LinkedIn Content Pipeline Stage 1
+- Specs Index
 - FewShotMaterializer
-- Evaluations Playbook
+- lineage/models.py
 - General / Uncategorized: 39 posts (97.5%)
-- Knowledge and Learning System
+- Andrew Ng LinkedIn post - Agentic Document Extraction field extraction
 - Revolut Customer Support Agents Selection
 - Activation Gates
 - Research: AI Self-Improvement Architecture — Gap Analysis & Synthesis
@@ -234,22 +234,22 @@
 - Pilaster Integration
 - editorial_card_copy
 - Ethan Mollick
-- test_social_media.py
-- Observability Playbook
+- PublishResult
+- get_trajectory
 - JudgeAgent
 - conftest.py
 - test_content_routes.py
 - test_observatory_api.py
 - Holus AI Marketing Strategist
 - AI app prototyping
-- Deep Agents
+- Harrison Chase
 - Davos Stage Appearance
 - Python version support policy
 - Tribal Knowledge In Fast Moving Teams Video
 - Agent Evaluation & Observability
 - revision_loop.py
-- HealthResult
-- Marketing Strategist Agent
+- .publish
+- Written Content Judge
 - test_linkedin_pipeline_e2e.py
 - test_research_routes.py
 - _make_posts_raw
@@ -266,21 +266,21 @@
 - linkedin-scraper.js
 - Inclusive Career Motivation Repost
 - Carousel Creation Tools
-- process_human_rejection
-- _get_judge_verdict
+- Agent Session Guide
+- TestGetJudgeVerdict
 - Path
 - RssAdapter
 - test_corpus.py
 - Comment Trigger Expert
 - Script Writer
-- Authority Engine Vision
-- Model Registry
+- Knowledge Base Topic Index
+- Portkey Agent Reliability Post
 - Chatbase Shopify Integration
 - Claude Code
 - Allie K. Miller LinkedIn post comparing Sora 2 with Meta-scale social products
 - Andrej Karpathy
 - research_card_to_spec
-- Andrew Ng LinkedIn post - Governing AI Agents
+- DeepLearning.AI
 - Armand Ruiz
 - Open Models Panel Support
 - Whisper open source audio transcription
@@ -293,9 +293,9 @@
 - Architecture Research — Design Patterns & System Design
 - Deterministic Creativity Architecture
 - Holus Observatory Acceptance Criteria
-- WatchdogResult
+- watchdog.py
 - SeenStore
-- TestPlatformEnrichment
+- Claim that an email explains OpenAI request dynamics to Microsoft leaders and the context behind an executive dispute
 - test_health_routes.py
 - _load_plist
 - Chip Huyen
@@ -315,13 +315,13 @@
 - TestContentImage
 - StrategyBandit
 - _run_verify
-- Format Router
+- Marketing Agent
 - Variable Weight Ledger
 - Google Research continual learning
 - LinkedIn Scrape Report: @andrej-karpathy-9a650716
 - Alex Imas now sees macroeconomic productivity data suddenly showing signs of AI productivity gains after prior micro-study evidence.
 - Agent Builder Queuing Messages Post
-- test_cycle_state.py
+- Deep Agents
 - Greek Prime Minister AI Impact Meeting
 - Poland Future Council Appointment
 - Biggest ElevenLabs Summit London Event
@@ -344,7 +344,7 @@
 - Shawn Wang swyx
 - Allie K Miller LinkedIn post on custom commands replacing manual AI context copying
 - A reusable prompt library can cover Claude, Grok, ChatGPT, image, video, Cowork, Excel, and writing workflows
-- DeepLearning.AI
+- Andrew Ng LinkedIn post announcing fine-tuning and reinforcement learning for LLMs course
 - Personal Image Model Training
 - Peer connection reduces imposter syndrome
 - Claude Cowork Dispatch
@@ -358,29 +358,29 @@
 - Sebastian Ramirez Montano
 - Server-Sent Events
 - Gap Detection System
-- Observatory Dashboard
+- Observability Playbook
 - TestSiloConnectivity
 - Genpeli Pipeline
 - build_master_index.py
 - TestContentValidation
-- TestGetPostAnalytics
+- LineageEdge
 - test_agents_routes.py
 - TestPatchContent
 - test_simulate_content_intake_cases.py
 - Holus System Memory
 - Allie K. Miller
-- Andrew Ng LinkedIn post - Building and Evaluating Data Agents
+- compute_blended_reward
 - TinyFish Accelerator Founders Post
 - Daliana Liu audience and reach
 - IBM SQL Teacher AI Assistant Advertisement
-- Andrew Ng LinkedIn post - Build AI Apps with MCP Servers
+- Andrew Ng LinkedIn post - Building Live Voice Agents with Google's ADK
 - A deleted repost still emphasizes that practical alignment for agents is poorly understood because agents inherit context from peers, hostile prompts, environments, long runs, and open weights.
 - Bilingual content strategy experiment
 - Hindi Voice Agents Conversation Post
 - Orchids AI App Builder Post
 - Lemon Voice To Action Agent Post
 - Nebius slide about AI inference and SaaS
-- LangChain Federal GTM Hiring Announcement Post
+- results.py
 - Business Insider Side Hustle Repost
 - Content Type Variables — Image
 - LinkedIn Visual Impact Lens
@@ -391,11 +391,11 @@
 - pilaster Repository
 - [id]/page.tsx
 - Sidebar.tsx
-- .test_content_queue_accepts_linkedin_content
+- donut_svg
 - resolve_api_key
-- Maduro Exfiltration Reaction
-- Juan Voice Profile
-- Niche Research Queries
+- sparkline_svg
+- Dashboard Desktop Screenshot
+- Knowledge and Learning System
 - Research Configuration
 - One true LinkedIn pipeline
 - Alex Wang
@@ -409,18 +409,18 @@
 - Midjourney compared with DALL-E 2 and Stable Diffusion
 - Clarity Before Compute
 - LinkedIn content analysis raw findings
-- app.py
+- _read_trajectory
 - Claim that the author returned to Google Ads for a small personal campaign after years away
 - Audi Revolut F1 Team Grid Partnership
 - Local RAG storage limits are obsolete with LEANN compression
-- lineage.py
-- Claude can perform competitive intelligence by comparing job listings with SEC filings
+- _configured_lineage_dir
+- Claude can produce better presentations when the workflow separates task definition, context files, references, research, outline, Gamma generation, theme, and alignment
 - LinkedIn audience growth can be systematized with profile optimization, ICP discovery, viral formats, comment tactics, and AI-assisted assets
 - Software Engineer Roadmap In 30 Seconds Video
 - AI For Analyst Training And Creator Metrics Posts
 - generate_cards
-- define_tool
-- Constitutional AI Evaluation
+- claude_api/client.py
+- memory/knowledge.py
 - Taste Audit Holus Observatory Frontend
 - TestGetContentDetail
 - Knowledge Keeper
@@ -431,7 +431,7 @@
 - AI-First Definition Gap
 - Plug-and-Play AI Integration Myth
 - Leader Ownership Of AI Work
-- Personal Responsibility Growth Quote
+- check_products_yaml
 - CianaParrot Community Spotlight Post
 - AI Traces Document Behavior Quote Post
 - AI Key Technology Repost
@@ -443,15 +443,15 @@
 - AI Image Direction Standards
 - Video Design Variables
 - Replicate FLUX API
-- auto_publish.py
-- _detect_failure_streaks
+- TestGetJudgeScore
+- TestDetectFailureStreaks
 - Verification Results Holus
 - Golden Content Intake Cases
-- Storyteller
-- Holus Task Priority Queue
+- LinkedIn screenshot tutorial on creating an MCP server and integrating it with an AI agent
+- LinkedIn screenshot of a competitive research multi-agent workflow with DeepSeek R1 running locally
 - holus-canvas-registry.canvas.tsx
 - Blocking compliance gate
-- Andrew Ng LinkedIn post - Building Live Voice Agents with Google's ADK
+- LangChain Federal GTM Hiring Announcement Post
 - Apps Killed By AI Agents
 - Anam Interactive Avatar Preference Statistic
 - Bland AI Soulja Boy Voice Partnership
@@ -460,7 +460,7 @@
 - Alex Wang LinkedIn post on CopilotKit useAgent React hook
 - Alex Wang LinkedIn post on Chatbase Agent Page for business websites
 - teaching AI to strangers
-- TestStrategyBandit
+- Content Desktop Screenshot
 - AI Evals
 - LinkedIn screenshot showing a demo of the Llama API service
 - LinkedIn screenshot of a first Llama 4 demo on watsonx.ai
@@ -474,35 +474,37 @@
 - NotebookLM deep research video
 - Rapid changes in tech and the world create too many possible topics for an upcoming Platzi LIVE.
 - Hands-On Large Language Models Post
-- ._canonical_path
+- .test_content_queue_accepts_linkedin_content
 - Ona AI Maintenance Automation Post
 - 3. Layer 2 -- LLM-as-Judge
 - 3. Layout Systems
 - Generate evaluate diagnose learn loop
 - scripts
 - AgentInfo
-- agents/base.py
-- Design And ML Dinner Post
+- Complexity refactor: flowchart rendering
+- Maduro Exfiltration Reaction
 - UX Review Holus Observatory Frontend
 - TestCreateContentFromThought
 - TestVisualChoice
-- .get_costs
-- Knowledge Base Topic Index
-- Holus Architecture
+- ChatGPT for Excel and Claude for Excel are tested on a difficult macroeconomic workbook with 1,000 years of English history across over 100 tabs.
+- Personal Responsibility Growth Quote
+- Design And ML Dinner Post
 - Carousel hook slide visual baseline
 - Acceptance criteria catalog
 - Vidu Q3 Synced Audio Video Model
 - Plain-Language Legal Workflow Prompt
-- JudgeEvaluation
-- .finish
+- judge.py
+- test_store.py
 - My Computer Capability
 - In modern peer war, attacking datacenters to reduce enemy AI and data capacity will become a priority.
 - SAM Audio
 - Harder AI Leadership
 - LinkedIn screenshot: synthetic versus real intimacy chart
-- Agents Write And Execute Code Claim
+- #LangChain
 - LinkedIn creator research blueprint
 - MasterClass Partnership Announcement
+- evaluations.py
+- Any
 - test_registry.py
 - AI agent builders should assemble open-source components across memory, tools, vector databases, AgentOps, and applications
 - ._parse_response
@@ -517,7 +519,7 @@
 - classify_reference_screenshots.py
 - Spec Template
 - Core Infrastructure
-- test_auto_publish.py
+- TestThresholds
 - TestListContent
 - TestEvaluationsEndpoint
 - TestKnowledgeEndpoint
@@ -558,7 +560,7 @@
 - Event-Driven Agentic Document Workflows
 - Carousel and PDF Design Variables
 - Synthesis: What To Build Now
-- AI prompts can make skill acquisition easier through 80/20 planning, one-pagers, skill ladders, and teach-back loops
+- Stanford CS229 lecture notes make rigorous machine learning education freely accessible
 - Engagement Desktop Screenshot
 - Genpeli PostgreSQL Schema
 - generate_linkedin_post.py
@@ -579,7 +581,6 @@
 - AI Agents Kill Apps Claim
 - Content Humanization Gate
 - Nina Fernanda Duran
-- Allie K. Miller LinkedIn post summarizing OpenAI release cadence
 - Allie K. Miller LinkedIn post on Google Career Dreamer
 - CLAUDE.md Better AI Code Generation Post
 - TestContentPdf
@@ -590,7 +591,6 @@
 - AI Startup Success Interview Post
 - Prompt Repetition Accuracy Post
 - 2. Typography
-- test_preflight.py
 - Using AI to learn can make people retain less knowledge even while they believe they are learning more, and tutoring design matters.
 - AI will not cause massive long-term unemployment; autonomous people who do not need others to direct them will flourish.
 - Claim that Block dismissed more than half of a ten thousand person team
@@ -600,16 +600,12 @@
 - Stanford CME295 Transformers and LLMs Course
 - Stanford CS230 AI And Machine Learning For Coders Post
 - VibeVoice Open Source Voice AI
-- Static Website Templates Post
 - SambaNova Agentic AI Chip Post
 - PolyAI Customer Satisfaction Post
 - OutSystems Groundhog Day Challenge Post
 - Typer 0.23.0 exception locals opt-in change
 - FastAPI full-stack template GitHub milestone
-- Evaluations Desktop Screenshot
 - Followers Desktop Screenshot
-- RenderSpec
-- Knowledge Desktop Screenshot
 - Results Desktop Screenshot
 - Next.js Template README
 - Phase 1 Coherence Audit Every File Has Purpose
@@ -638,10 +634,9 @@
 - Double Failure Rate Principle
 - Longest Roland Garros Final
 - LinkedIn screenshot announcing Langflow integration in watsonx
-- Armand Ruiz
 - LinkedIn screenshot describing a live AI demo for custom interaction cloud
 - LinkedIn screenshot about the Netflix Carlos Alcaraz documentary My Way
-- LinkedIn screenshot announcing an AI Factory Game distinct from a data center game
+- Armand Ruiz
 - LinkedIn screenshot captioned welcome to the future with a stage presentation video
 - LinkedIn screenshot tutorial on building multimodal RAG with IBM Docling and Granite
 - LinkedIn screenshot announcing a HeroCon2025 talk at La Nave de Madrid
@@ -652,7 +647,6 @@
 - AI Bias Comes From Humans
 - Generative AI Providers Sell Potential
 - The AI Forecast Episode
-- Kimi K2.5 Local Running Guide
 - Jensen Huang Served Hot Green Tea
 - Comedy Class For Tech Workers
 - Human birth lottery population model
@@ -686,8 +680,6 @@
 - Google Labs Pomelli
 - LinkedIn post: AI multitasking insanity
 - LinkedIn post: offline AI on a laptop
-- _read_key_from_dotenv
-- check_knowledge_files
 - TestContentEndpoint
 - AI Reliability Paradox
 - AI Scales Human Mistakes
@@ -712,6 +704,7 @@
 - tailwindcss
 - @tailwindcss/postcss
 - @types/node
+- Skilgen Open Source Announcement
 - DeepResearch Bench Top Spot
 - Ignored Built Dependencies
 - postcss.config.mjs
@@ -735,13 +728,11 @@
 - Transparent OG PNG Placeholder
 - Browser Window Icon
 - holus
-- queue_dir
 - Health Desktop Screenshot
-- TestSonnetContentPromptFeedback
 - generate_mock_entry
-- ._load
 - jsdom
 - @types/react
+- TestQueueNotFound
 - CheckResult
 - check_api_key
 - Path
@@ -750,7 +741,6 @@
 - Autonomous Self-Improvement Mechanisms
 - Video Specs and Programmatic Tools
 - eslint-config-next
-- .list_arms
 - test_decode_json_payload_valid
 - test_enforce_platform_limit
 - test_product_info_extraction
@@ -778,10 +768,18 @@
 - test_coerce_decision_valid
 - test_coerce_decision_with_aliases
 - test_coerce_decision_invalid_payload
+- datetime
+- get
+- patch
+- post
+- BaseException
+- BaseModel
+- TracebackType
+- RuntimeError
 
 ## God Nodes (most connected - your core abstractions)
 1. `ContentDecision` - 159 edges
-2. `MarketingAgent` - 97 edges
+2. `MarketingAgent` - 96 edges
 3. `score_content()` - 79 edges
 4. `ContentType` - 67 edges
 5. `PlaywrightEngine` - 62 edges
@@ -792,8 +790,6 @@
 10. `BaseAgent` - 54 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Marketing Strategist Agent` --semantically_similar_to--> `Holus AI Marketing Strategist`  [INFERRED] [semantically similar]
-  agentic/agents/managers/marketing-strategist.md → AGENTS.md
 - `Holus Agent Registry` --semantically_similar_to--> `Agent Registry Single Source Of Truth`  [INFERRED] [semantically similar]
   agentic/agents/AGENTS.yaml → AGENTS.md
 - `LangGraph framework decision` --semantically_similar_to--> `LangGraph orchestration framework`  [INFERRED] [semantically similar]
@@ -802,6 +798,8 @@
   docs/reference/linkedin/Harrison Chase/profile.md → docs/reference/linkedin/Santiago Valdarrama/screenshots/028-deploying-what-you-build-is-what-separat.png
 - `Talking-head video format` --semantically_similar_to--> `Sundas video career content`  [INFERRED] [semantically similar]
   docs/reference/linkedin/Alex Wang/screenshots/002-google-research-is-trying-to-solve-the-b.png → docs/reference/linkedin/Sundas Khalid/scrape-report.md
+- `Content Desktop Screenshot` --conceptually_related_to--> `Current Surfaces`  [INFERRED]
+  e2e/screenshots/audit/2026-03-13/desktop/content.png → docs/ux-state.md
 
 ## Import Cycles
 - None detected.
@@ -910,55 +908,55 @@
 - **Megasprint Phases And Parallel Tracks** — tasks_2026_03_26_plan_20260326_383e52d9_plan_megasprint_phase_1_coherence_audit, tasks_2026_03_26_plan_20260326_383e52d9_plan_megasprint_phase_2_attack_every_gap, tasks_2026_03_26_plan_20260326_383e52d9_plan_megasprint_phase_3_quality_ship, tasks_2026_03_26_plan_20260326_383e52d9_plan_120_agent_sprint [EXTRACTED 1.00]
 - **Observatory UX Quality Findings** — tasks_2026_03_26_cycle_1_taste_report_cycle_1_taste_report, tasks_2026_03_26_taste_audit_taste_audit_holus_observatory_frontend, tasks_2026_03_26_ux_review_ux_review_holus_observatory_frontend, tasks_2026_03_26_verify_results_verification_results_holus [INFERRED 0.85]
 
-## Communities (794 total, 82 thin omitted)
+## Communities (794 total, 91 thin omitted)
 
 ### Community 0 - "score_content"
-Cohesion: 0.02
-Nodes (118): Panel, Marketing agent LangGraph workflow. ReAct loop: 1. observe -- read products…, GeneratedPiece, Platform, Marketing agent data models. Pydantic models for content decisions, generated…, Social media platforms supported by the marketing agent., A content piece generated by the marketing agent. Represents the output of the…, format_anti_patterns() (+110 more)
+Cohesion: 0.04
+Nodes (62): GeneratedPiece, Platform, StrEnum, Social media platforms supported by the marketing agent., A content piece generated by the marketing agent. Represents the output of the…, _check_anti_pattern_phrases(), _check_char_limit(), _check_content_anti_patterns() (+54 more)
 
-### Community 1 - "repurpose_content"
+### Community 1 - "repurpose.py"
 Cohesion: 0.03
 Nodes (71): _adapt_for_platform(), _claude_adapt(), _enforce_limit(), _fallback_adapt(), _format_rules(), _is_thread(), Any, Platform (+63 more)
 
 ### Community 2 - "thought_pipeline.py"
-Cohesion: 0.06
-Nodes (76): ImageDraw, ImageFont, _brand_identity(), _brief_from_profile(), _build_platform_text(), _carousel_headline_for(), _carousel_outline_from_thought(), _carousel_visual_spec_from_outline() (+68 more)
+Cohesion: 0.05
+Nodes (87): ImageDraw, ImageFont, _brand_identity(), _brief_from_profile(), _build_platform_text(), build_posting_destination(), _carousel_headline_for(), _carousel_outline_from_thought() (+79 more)
 
 ### Community 3 - "asyncio"
 Cohesion: 0.08
 Nodes (25): asyncio, Observe stage loads and validates brand identity from brand.yaml., Observe stage loads products, knowledge, and memory., Observe stage counts existing queue items., Observe populates analytics when POSTING_API_KEY is set., Observe continues without analytics if API is unreachable., _fetch_analytics returns dict with summary and top_posts keys., Reason stage calls Claude and parses content decisions. (+17 more)
 
-### Community 4 - "ContentType"
-Cohesion: 0.05
-Nodes (56): ContentType, StrEnum, Types of content the marketing agent can create., build_instruction(), create_video_content(), find_source_footage(), GenpeliClient, GenpeliUnavailableError (+48 more)
-
-### Community 5 - "EventBus"
+### Community 4 - "ContentDecision"
 Cohesion: 0.04
-Nodes (31): EventBus, HolusEvent, BaseModel, Publish an event to both Pub/Sub (real-time) and Streams (persistent). This is…, Subscribe to one or more channels with a callback. The callback receives…, Stop all subscriptions., Read events from the persistent Redis Stream. Args: channel: The logical…, Read events from multiple streams within the last *since_hours*. Convenience… (+23 more)
+Nodes (60): ContentDecision, A strategic decision about what content to create. The reason stage outputs…, build_instruction(), create_video_content(), find_source_footage(), GenpeliClient, GenpeliUnavailableError, NoFootageError (+52 more)
+
+### Community 5 - "EventType"
+Cohesion: 0.04
+Nodes (38): Redis, Abstract base class for all Holus agents. Every domain agent (marketing,…, EventBus, EventType, HolusEvent, BaseModel, StrEnum, Redis-backed event bus for inter-agent communication. Architecture: - Redis… (+30 more)
 
 ### Community 6 - "LineageStore"
-Cohesion: 0.12
-Nodes (21): LineageStore, Any, Path, Return valid raw events and malformed line numbers without raising., Return whether a node is present in the current ledger snapshot., Return deterministic, cursor-paged JSON suitable for a read-only consumer., Export a validated, sequence-cursored snapshot for external consumers., Consistency diagnostics; ``complete`` is never inferred from partial data. (+13 more)
+Cohesion: 0.14
+Nodes (13): LineageStore, Any, Path, Return valid raw events and malformed line numbers without raising., Return whether a node is present in the current ledger snapshot., Return deterministic, cursor-paged JSON suitable for a read-only consumer., Export a validated, sequence-cursored snapshot for external consumers., Consistency diagnostics; ``complete`` is never inferred from partial data. (+5 more)
 
 ### Community 7 - "_StubAgent"
 Cohesion: 0.05
-Nodes (35): EventType, StrEnum, Canonical event types published across the Holus event bus., KillSwitchActive, KillSwitchState, BaseModel, Exception, Persisted state for an active kill switch. (+27 more)
+Nodes (33): KillSwitchActive, KillSwitchState, BaseModel, Exception, Persisted state for an active kill switch., Raised when an operation is blocked by an active kill switch., Any, asyncio (+25 more)
 
 ### Community 8 - "src/holus/visual/__init__.py"
-Cohesion: 0.05
-Nodes (77): AgyCliImageProvider, _attempt_output_path(), CodexCliImageProvider, HtmlRenderProvider, Any, CompletedProcess, Path, RuntimeError (+69 more)
+Cohesion: 0.06
+Nodes (65): CodexCliImageProvider, HtmlRenderProvider, StrEnum, Provider-routed visual asset dispatcher with JSONL audit logs. The dispatcher…, Append-only JSONL logger for visual dispatch events., Import-late wrapper to avoid package import cycles and simplify tests., Deterministic HTML/PDF renderer backed by the existing visual engine., Local/dev AI image provider using ``codex exec $imagegen``. This provider is… (+57 more)
 
-### Community 9 - "enqueue"
-Cohesion: 0.10
-Nodes (33): enqueue(), Save content to the approval queue. Args: content: Content piece to enqueue…, publish_all(), Publish approved content through the guarded content API boundary., _assert_contained_publish_state(), _humanize_and_approve(), _make_content(), _outbox_records() (+25 more)
+### Community 9 - "publish_all"
+Cohesion: 0.07
+Nodes (38): ContentPublishRequest, publish_all(), Publish approved content through the guarded content API boundary., _assert_contained_publish_state(), _humanize_and_approve(), _make_content(), _outbox_records(), fixture (+30 more)
 
 ### Community 10 - "MarketingAgent"
-Cohesion: 0.02
-Nodes (103): MarketingAgent, MarketingState, Any, Path, Platform, StateGraph, Render phase: produce visual attachments for pieces with visual intent. Checks…, Evaluate phase: append cycle entries to trajectory.jsonl. (+95 more)
+Cohesion: 0.03
+Nodes (83): MarketingAgent, MarketingState, Any, Path, Platform, StateGraph, Marketing agent LangGraph workflow. ReAct loop: 1. observe -- read products…, Render phase: produce visual attachments for pieces with visual intent. Checks… (+75 more)
 
-### Community 11 - "ContentDecision"
+### Community 11 - "ContentType"
 Cohesion: 0.04
-Nodes (64): build_image_prompt(), create_image_content(), ExperimentMatch, extract_common_elements(), GenerationFailedError, ImageResult, PilasterClient, PilasterUnavailableError (+56 more)
+Nodes (65): build_image_prompt(), create_image_content(), ExperimentMatch, extract_common_elements(), GenerationFailedError, ImageResult, PilasterClient, PilasterUnavailableError (+57 more)
 
 ### Community 12 - "Path"
 Cohesion: 0.06
@@ -969,20 +967,20 @@ Cohesion: 0.07
 Nodes (38): BrandVisualIdentity, ColorPalette, LayoutConfig, Brand color palette. All values are hex color strings., Brand typography settings., Brand spacing configuration., Layout dimensions for visual content., Safe zones for carousel slides (LinkedIn page counter, etc). (+30 more)
 
 ### Community 14 - "preflight.py"
-Cohesion: 0.17
-Nodes (15): main(), Any, Generate content — run ONE marketing agent cycle without publishing. Preflight…, CLI entry point: preflight → generate → summary., Import and run one marketing agent cycle., _run_agent(), _count_todos(), main() (+7 more)
+Cohesion: 0.16
+Nodes (17): main(), Any, Generate content — run ONE marketing agent cycle without publishing. Preflight…, CLI entry point: preflight → generate → summary., Import and run one marketing agent cycle., _run_agent(), _count_todos(), main() (+9 more)
 
 ### Community 15 - "api/models.py"
-Cohesion: 0.07
-Nodes (50): JSONResponse, KnowledgeFile, LessonsResponse, CalendarDay, ContentCalendarResponse, ContentCreateRequest, ContentCreateResponse, ContentResponse (+42 more)
+Cohesion: 0.10
+Nodes (36): AgentDetailResponse, AgentMetrics, AgentTraceStep, CalendarDay, ContentCalendarResponse, ContentCreateRequest, ContentCreateResponse, ContentDetail (+28 more)
 
 ### Community 16 - "content.py"
-Cohesion: 0.07
-Nodes (73): AgentTraceStep, ContentDetail, ContentItem, ContentQuality, ContentResponse, PostingDestination, build_posting_destination(), Return the pre-publish account destination Holus will show during review. (+65 more)
-
-### Community 17 - "PlaywrightEngine"
 Cohesion: 0.08
-Nodes (24): PlaywrightEngine, BaseException, TracebackType, Playwright-based renderer with browser reuse and timeout protection. Usage::…, Combine multiple HTML pages with CSS page breaks for PDF rendering., mock_browser(), mock_page(), mock_playwright() (+16 more)
+Nodes (67): AgentTraceStep, ArtifactType, ContentCalendarResponse, ContentCreateRequest, ContentCreateResponse, ContentDetail, ContentItem, ContentPatchRequest (+59 more)
+
+### Community 17 - "_make_agent"
+Cohesion: 0.06
+Nodes (31): _make_agent(), _make_claude_response(), Any, asyncio, Path, Create a MarketingAgent with mocked infrastructure., Extracts and parses the YAML block from markdown., Returns empty dict when the queries file doesn't exist. (+23 more)
 
 ### Community 18 - "Phase 1 Close The Loop"
 Cohesion: 0.06
@@ -1004,33 +1002,33 @@ Nodes (36): Console, display_calendar(), list_all(), main(), _parse_datetime(), 
 Cohesion: 0.10
 Nodes (60): AI Readiness Assessment, Architecture Review, Brand YAML Review Brief, Competitor Account Research, config/brand.yaml, Discovery Call CTA, Entry Point Service, Implementation Partnership (+52 more)
 
-### Community 23 - "Andrew Ng"
-Cohesion: 0.06
-Nodes (40): agentic coding assistant, autonomous coding work, Claude Code course, Andrew Ng LinkedIn post - Claude Code course, AI Fund, Andrew Ng, Buildathon, Andrew Ng LinkedIn post - Buildathon event (+32 more)
+### Community 23 - "Andrew Ng LinkedIn post - Claude Code course"
+Cohesion: 0.09
+Nodes (24): agentic coding assistant, autonomous coding work, Claude Code course, Andrew Ng LinkedIn post - Claude Code course, AI Fund, Buildathon, Andrew Ng LinkedIn post - Buildathon event, Rapid Engineering Competition (+16 more)
 
 ### Community 24 - "SpecialistDispatcher"
-Cohesion: 0.08
-Nodes (22): AssembledContent, Specialist dispatch — route content generation to specialized agents. Instead…, Dispatch content generation to specialist agents. Each specialist receives: 1.…, Run independent specialists in parallel, then sequential dependents. Parallel…, Record a judge score for a specific specialist's output. Enables specialist-…, Find the specialist with the lowest average score. Used by prompt evolution to…, Return performance summary for all specialists., Run the full specialist pipeline for a content type. Returns AssembledContent… (+14 more)
+Cohesion: 0.06
+Nodes (29): AssembledContent, _derive_hashtags(), _enrich_for_platform(), Specialist dispatch — route content generation to specialized agents. Instead…, Derive relevant hashtags from content text. Uses simple keyword extraction — no…, Dispatch content generation to specialist agents. Each specialist receives: 1.…, Run independent specialists in parallel, then sequential dependents. Parallel…, Record a judge score for a specific specialist's output. Enables specialist-… (+21 more)
 
 ### Community 25 - "PromptLoader"
-Cohesion: 0.08
-Nodes (24): LogCaptureFixture, Lazy-loaded PromptLoader instance., PromptLoader, Three-layer prompt resolution for Holus agents. Resolution order (first hit…, Return A/B split if ``config/prompts/{agent_id}/ab_test.yaml`` exists. Returns:…, Resolve agent prompts through three ordered layers. Usage:: loader =…, loader(), fixture (+16 more)
+Cohesion: 0.06
+Nodes (30): LogCaptureFixture, Lazy-loaded PromptLoader instance., PromptLoader, Any, Path, Three-layer prompt resolution for Holus agents. Resolution order (first hit…, Return A/B split if ``config/prompts/{agent_id}/ab_test.yaml`` exists. Returns:…, Return all variant .md files under ``config/prompts/{agent_id}/``. Returns:… (+22 more)
 
 ### Community 26 - "generation_strategy.py"
 Cohesion: 0.08
-Nodes (49): ContentJobPlan, BaseModel, Planning decision used before any renderer or image provider runs., build_deterministic_visual_design_brief(), _chart_glyph(), DeterministicVisualDesignBrief, BaseModel, Deterministic visual design contracts for renderer selection. This module is… (+41 more)
+Nodes (51): ContentJobPlan, BaseModel, Planning decision used before any renderer or image provider runs., build_deterministic_visual_design_brief(), _chart_glyph(), DeterministicVisualDesignBrief, BaseModel, Deterministic visual design contracts for renderer selection. This module is… (+43 more)
 
 ### Community 27 - "test_knowledge.py"
-Cohesion: 0.07
-Nodes (53): archive_knowledge_file(), KnowledgeFile, load_knowledge_files(), Path, Knowledge base loader: validate and load knowledge files for agent context.…, Load and validate all knowledge files from the current/ directory. Args:…, Copy a knowledge file to the archive directory before overwriting. The archived…, A parsed and validated knowledge file. (+45 more)
+Cohesion: 0.08
+Nodes (49): archive_knowledge_file(), load_knowledge_files(), Path, Load and validate all knowledge files from the current/ directory. Args:…, Copy a knowledge file to the archive directory before overwriting. The archived…, Parse and validate a single knowledge file's metadata header. Args: path: Path…, validate_knowledge_file(), patch (+41 more)
 
 ### Community 28 - "test_visual_provider_cycle.py"
 Cohesion: 0.08
 Nodes (53): ArgumentParser, append_history(), _aspect_ratio(), build_ai_image_direction(), build_cycle_prompt(), build_improvement_plan(), build_parser(), improvement_directives_from_history() (+45 more)
 
 ### Community 29 - "sources/base.py"
-Cohesion: 0.07
-Nodes (41): HttpUrl, IPv4Address, IPv6Address, ArxivAdapter, AsyncClient, Element, arXiv export API adapter., clean_text() (+33 more)
+Cohesion: 0.06
+Nodes (47): HttpUrl, IPv4Address, IPv6Address, Pydantic boundary models for Research Radar., Append-only seen ledger for Research Radar., ArxivAdapter, AsyncClient, Element (+39 more)
 
 ### Community 30 - "Agentic AI Layers"
 Cohesion: 0.07
@@ -1038,11 +1036,11 @@ Nodes (53): Agentic AI Layers, Agentic AI Is An Architectural Stack Post, APIs A
 
 ### Community 31 - "choose_visual_concept_route"
 Cohesion: 0.10
-Nodes (39): BaseModel, Build a visual source from a Holus queue record., Review-ready content that a visual provider is allowed to use. Raw thoughts are…, RefinedVisualSource, choose_visual_concept_route(), _default_donts(), _has_chart_signal(), _has_founder_artifact_signal() (+31 more)
+Nodes (39): Build a visual source from a Holus queue record., Review-ready content that a visual provider is allowed to use. Raw thoughts are…, RefinedVisualSource, choose_visual_concept_route(), _default_donts(), _has_chart_signal(), _has_founder_artifact_signal(), _has_object_metaphor_signal() (+31 more)
 
-### Community 32 - "approve"
-Cohesion: 0.13
-Nodes (34): approve(), humanize(), _levenshtein_ratio(), Apply human edits to content. SPEC-032 humanization gate. Args: piece_id: ID of…, Approve a content piece for publishing. SPEC-032: must be humanized first.…, Compute Levenshtein edit distance ratio between two strings. Returns a float…, holus_approve(), Approve a content piece for publishing. If the piece is pending… (+26 more)
+### Community 32 - "test_e2e_manual_publish.py"
+Cohesion: 0.15
+Nodes (27): _assert_contained_publish_state(), _make_content(), _outbox_records(), asyncio, fixture, Path, QueuedContent, End-to-end manual publish pipeline tests. Tests the full manual flow: enqueue →… (+19 more)
 
 ### Community 33 - "select_personal_context"
 Cohesion: 0.06
@@ -1050,43 +1048,43 @@ Nodes (33): _load_personal_context(), Load personal context entries for prompt i
 
 ### Community 34 - "Path"
 Cohesion: 0.08
-Nodes (41): skip, _authority_claude_side_effect(), _make_claude_response_mock(), _make_fake_knowledge(), _make_fake_memory(), _make_fake_products(), _make_full_brand_yaml(), _make_full_knowledge() (+33 more)
+Nodes (39): Return the agent's system prompt. Checks PromptLoader first, falls back to…, _authority_claude_side_effect(), _make_claude_response_mock(), _make_fake_knowledge(), _make_fake_memory(), _make_fake_products(), _make_full_brand_yaml(), _make_full_knowledge() (+31 more)
 
-### Community 35 - "TrajectoryLogger"
+### Community 35 - "HealthResult"
 Cohesion: 0.03
-Nodes (83): CycleContext, CycleState, StrEnum, Cycle state machine for the Holus agent loop. Every marketing cycle transitions…, Transition to a new state, logging the event to trajectory.jsonl. Logs every…, All valid states in a Holus marketing cycle., Mutable state for a single agent cycle. Created at cycle start. Passed through…, enforce_quality_gate() (+75 more)
+Nodes (64): CycleContext, CycleState, HealthResult, StrEnum, Cycle state machine for the Holus agent loop. Every marketing cycle transitions…, Transition to a new state, logging the event to trajectory.jsonl. Logs every…, Record the elapsed duration. Call before writing the final entry., All valid states in a Holus marketing cycle. (+56 more)
 
 ### Community 36 - "._minimal_input"
 Cohesion: 0.12
 Nodes (8): before_after_to_spec(), data_viz_to_spec(), Convert brand-designer before/after agent output to a RenderSpec. The designer…, Convert data-visualizer agent output to a RenderSpec. The data-visualizer agent…, Test before_after_to_spec converter., Test data_viz_to_spec converter., TestBeforeAfterToSpec, TestDataVizToSpec
 
 ### Community 37 - "spec_converter.py"
-Cohesion: 0.09
-Nodes (38): architecture_svg(), _blocks(), _circles(), comparison_table_svg(), _escape_xml(), flowchart_svg(), _grid(), Any (+30 more)
+Cohesion: 0.13
+Nodes (23): comparison_table_svg(), Generate a comparison table SVG with two columns and winner indicators. Args:…, OutputFormat, StrEnum, Supported output formats., Specification for a single render job., RenderSpec, architecture_to_spec() (+15 more)
 
 ### Community 38 - "Top engagement posts"
 Cohesion: 0.12
 Nodes (23): Avg post length: 122 words, Career Advice: 4 posts (10.0%), Cheat Sheet / Resource List: 1 posts (2.5%), General / Uncategorized: 12 posts (30.0%), Personal Story / Journey: 3 posts (7.5%), Technical Tutorial: 5 posts (12.5%), Tool Review / Comparison: 9 posts (22.5%), Content type distribution (+15 more)
 
-### Community 39 - "CandidateStore"
-Cohesion: 0.16
-Nodes (13): PipelineFactory, candidate_to_api_dict(), CandidateStore, ContentSetProtocol, Any, Path, Protocol, Research candidate persistence and approval bridge. (+5 more)
+### Community 39 - "research.py"
+Cohesion: 0.12
+Nodes (27): approve_research_candidate(), _candidates_dir(), _digest_path(), get_research_digest(), list_research_candidates(), Any, date, get (+19 more)
 
 ### Community 40 - "holus/memory/__init__.py"
-Cohesion: 0.08
-Nodes (45): Holus memory subsystem: Mem0 integration, trajectory logging, knowledge gaps., file_knowledge_gap(), KnowledgeGap, list_open_gaps(), _parse_gap_file(), Path, Knowledge gap detection: agents file requests when information is missing. When…, Parse a knowledge gap markdown file into a KnowledgeGap. (+37 more)
+Cohesion: 0.09
+Nodes (43): Holus memory subsystem: Mem0 integration, trajectory logging, knowledge gaps., file_knowledge_gap(), KnowledgeGap, list_open_gaps(), _parse_gap_file(), Path, Knowledge gap detection: agents file requests when information is missing. When…, Parse a knowledge gap markdown file into a KnowledgeGap. (+35 more)
 
 ### Community 41 - "contract.ts"
-Cohesion: 0.13
-Nodes (18): assertSafePublicStatus(), CONTRACT_VERSION, CreateGenerationRequest, CreateGenerationResponse, DEMO_REQUEST, FORBIDDEN_PUBLIC_FIELDS, GenerationJobStatus, GenerationMode (+10 more)
+Cohesion: 0.08
+Nodes (26): ExploreApiLink(), Props, GenerationStudio(), Props, STAGES, assertSafePublicStatus(), CONTRACT_VERSION, CreateGenerationRequest (+18 more)
 
-### Community 42 - "run_preflight_checks"
-Cohesion: 0.13
-Nodes (17): Run all cycle-gating preflight checks and return a :class:`HealthResult`.…, run_preflight_checks(), AC-016: run_preflight_checks returns blocking_ok=False and warns about kill…, _make_httpx_fail(), _make_httpx_ok(), Exception, Path, Tests for holus.core.health.run_preflight_checks. (+9 more)
+### Community 42 - "__main__.py"
+Cohesion: 0.07
+Nodes (35): Run all cycle-gating preflight checks and return a :class:`HealthResult`.…, run_preflight_checks(), _activate_kill(), _deactivate_kill(), main(), Namespace, Holus CLI entrypoint. Usage:: python -m holus run marketing --once python -m…, Run the idea-injection pipeline: Opus plans formats, Sonnet generates each. (+27 more)
 
-### Community 43 - "evaluations/page.tsx"
-Cohesion: 0.15
-Nodes (17): AgentsPage(), EvaluationsPage(), verdictStyles, ErrorBanner(), Props, getLast30Days(), Props, QualityHeatmap() (+9 more)
+### Community 43 - "types.ts"
+Cohesion: 0.07
+Nodes (38): AgentsPage(), revalidate, EvaluationsPage(), revalidate, verdictStyles, AgentCard(), Props, statusColors (+30 more)
 
 ### Community 44 - "idea_runner.py"
 Cohesion: 0.13
@@ -1096,25 +1094,25 @@ Nodes (30): generate_piece(), _load_few_shot_context(), Any, Content generation 
 Cohesion: 0.23
 Nodes (23): _apply_deterministic_strategy_bridge(), _apply_style_controls(), _claim_chart_spec(), _decision_surface_spec(), _hook_title(), _load_visual_variety_config(), _operating_map_spec(), _pick_visual_type() (+15 more)
 
-### Community 46 - "ScheduleRequest"
-Cohesion: 0.09
-Nodes (16): Request to schedule content through Holus Social API., ScheduleRequest, AC-023: ScheduleRequest can be created with platform='linkedin' and…, AC-023: schedule_post sends platform='linkedin' and approval_required=True in…, schedule_post accepts approval_required parameter (SPEC-031)., test_schedule_post -- mock httpx, verify POST /api/v1/schedule., Schedule is contained before any POST is made., Schedule is contained before platform char-limit validation can post. (+8 more)
+### Community 46 - "charts.py"
+Cohesion: 0.08
+Nodes (31): Any, architecture_svg(), bar_chart_svg(), _blocks(), _circles(), _escape_xml(), _flowchart_edge_elements(), _flowchart_layout() (+23 more)
 
 ### Community 47 - "api.ts"
-Cohesion: 0.06
-Nodes (64): KnowledgePage(), AgentCard(), Props, statusColors, typeIcons, FreshnessIndicator(), Props, styles (+56 more)
+Cohesion: 0.09
+Nodes (40): KnowledgePage(), revalidate, apiFetch(), chooseVisual(), DISCONNECTED_HEALTH, fetchCosts(), fetchKnowledge(), fetchLessons() (+32 more)
 
-### Community 48 - "Path"
-Cohesion: 0.10
-Nodes (28): _load_trajectory(), _make_health_result(), Any, asyncio, Path, Tests for Spec 027 Cycle 3 — resilient loop wired into MarketingAgent. Tests…, Verify that transition events for all major states are written., Blocking preflight failure: cycle aborts, trajectory entry written as 'failed'. (+20 more)
+### Community 48 - "WatchdogResult"
+Cohesion: 0.09
+Nodes (32): BaseModel, Result of a watchdog check. Attributes: alert: True if the silence threshold…, WatchdogResult, _load_trajectory(), _make_health_result(), Any, asyncio, Path (+24 more)
 
 ### Community 49 - "radar.py"
-Cohesion: 0.08
-Nodes (53): _main(), Run one Research Radar cycle from the command line., approve_research_candidate(), _candidates_dir(), _digest_path(), get_research_digest(), list_research_candidates(), Any (+45 more)
+Cohesion: 0.12
+Nodes (33): _main(), Run one Research Radar cycle from the command line., Research Radar package., BaseModel, RadarRunReport, RadarSourceResult, _append_jsonl(), _dedupe_new_items() (+25 more)
 
-### Community 50 - "test_visual_judge.py"
-Cohesion: 0.46
-Nodes (7): _png_bytes(), Path, Tests for deterministic visual judge contracts., test_mutate_visual_plan_for_retry_strengthens_contract(), test_visual_judge_fails_unreadable_image(), test_visual_judge_passes_readable_image_with_route_and_plan(), test_visual_judge_retries_when_plan_context_is_missing()
+### Community 50 - "test_social_media.py"
+Cohesion: 0.06
+Nodes (23): mock_httpx_client(), fixture, client(), Tests for the social-media-automatization API client., Test status checking., Status check returns updated PublishResult., Health endpoint returns platform status., Create a test client. (+15 more)
 
 ### Community 51 - "asyncio"
 Cohesion: 0.07
@@ -1122,51 +1120,51 @@ Nodes (27): PublishRequest, Request to publish content via Holus Social API., as
 
 ### Community 52 - "TemplateEngine"
 Cohesion: 0.07
-Nodes (24): BaselineCapture, main(), Path, Load a CSS file from the styles directory, returning empty string if missing., List all available template names (without .html.j2 extension)., List all available style names (without .css extension)., Jinja2 template loader with brand CSS injection. Usage:: engine =…, Render a template with brand CSS injection. Args: template_name: Template path… (+16 more)
+Nodes (27): BaselineCapture, main(), Convenience function: render a CarouselSpec to a single PDF with all slides.…, render_carousel_visual(), Path, Load a CSS file from the styles directory, returning empty string if missing., List all available template names (without .html.j2 extension)., List all available style names (without .css extension). (+19 more)
 
-### Community 53 - "RawResearchItem"
-Cohesion: 0.08
-Nodes (24): AgentBackedResearchScorer, default_agent_scorer(), _message_text(), Any, AsyncScoreCallable, Path, ScoreCallable, Research curator scoring wrapper. (+16 more)
+### Community 53 - "ResearchScore"
+Cohesion: 0.10
+Nodes (18): AgentBackedResearchScorer, default_agent_scorer(), _message_text(), Any, AsyncScoreCallable, Path, ScoreCallable, Research curator scoring wrapper. (+10 more)
 
 ### Community 54 - "DemoGenerationAdapter"
 Cohesion: 0.10
 Nodes (28): CreateGenerationRequest, CreateGenerationResponse, GenerationJobStatus, PreviewReference, DemoGenerationAdapter, _placeholder_preview(), In-process demo adapter that satisfies the public generation contract. Never…, Return the remaining bounded stages, advancing in-memory state. (+20 more)
 
-### Community 55 - "_render_visual"
-Cohesion: 0.13
-Nodes (18): Render a visual spec to PNG using PlaywrightEngine. Returns True on success., Return author variables without forcing a social handle., _render_visual(), _visual_author_context(), Any, Parse a dumped brief payload and return render variables., Return flattened template variables accepted by RenderSpec., render_variables_from_payload() (+10 more)
+### Community 55 - "review.py"
+Cohesion: 0.10
+Nodes (25): Panel, approve_content(), display_pending(), main(), Platform, _queued_to_generated(), CLI for reviewing and approving social media content., Display all pending content pieces in a formatted table. (+17 more)
 
 ### Community 56 - "PromptEvolution"
 Cohesion: 0.08
 Nodes (19): EvolutionReport, PromptEvolution, PromptVariant, Any, Genetic prompt evolution — population-based proactive prompt optimization.…, Load population metadata and prompt files., Persist population metadata., Initialize with canonical prompt as the first variant. Called once when… (+11 more)
 
 ### Community 57 - "test_learning_loop.py"
-Cohesion: 0.11
-Nodes (39): _make_entry(), Path, TrajectoryEntry, Tests for holus.self_improvement.learning_loop., Learning loop skips when trajectory is empty., Entries older than lookback_days are excluded., Entries are grouped by product x content_type x platform., Identifies the most active content type. (+31 more)
+Cohesion: 0.10
+Nodes (43): _make_entry(), Path, TrajectoryEntry, Tests for holus.self_improvement.learning_loop., Learning loop skips when trajectory is empty., Entries older than lookback_days are excluded., Entries are grouped by product x content_type x platform., Identifies the most active content type. (+35 more)
 
-### Community 58 - "test_marketing_agent_visual.py"
-Cohesion: 0.11
-Nodes (25): _make_piece_data(), marketing_agent(), asyncio, fixture, queued_content_document(), queued_content_image(), queued_content_text_only(), Tests for Phase 5: Visual Pipeline Integration in the marketing agent. Covers:… (+17 more)
+### Community 58 - "QueuedContent"
+Cohesion: 0.10
+Nodes (28): BaseModel, QueuedContent, A piece of content waiting for approval., _make_piece_data(), marketing_agent(), asyncio, fixture, queued_content_document() (+20 more)
 
 ### Community 59 - "agents.py"
-Cohesion: 0.08
-Nodes (40): AgentInfo, EventSourceResponse, AgentDetailResponse, AgentInfo, AgentMetrics, Extended agent info with dimension averages for the detail page., TrajectoryEntry, TrajectoryPage (+32 more)
+Cohesion: 0.18
+Nodes (21): AgentInfo, AgentInfo, _aggregate_dimension_scores(), _as_string_list(), _build_agent_info(), get_agent(), get_agent_metrics(), list_agents() (+13 more)
 
 ### Community 60 - "AI Engineering Roadmap 2026"
 Cohesion: 0.09
 Nodes (38): Function Calling Lesson, Generative AI Curriculum, Microsoft Generative AI Lessons, Microsoft Generative AI Lessons Post, Responsible AI Lesson, UX For AI Lesson, Wrapper Developer Problem, Andrew Ng AI Career Advice 2026 (+30 more)
 
-### Community 61 - "routes/health.py"
-Cohesion: 0.15
-Nodes (18): HealthStatus, KPIMetrics, HealthStatus, KPIMetrics, _configured_lineage_dir(), _count_content_queue(), _error_rate_last_hour(), health() (+10 more)
+### Community 61 - "app.py"
+Cohesion: 0.09
+Nodes (25): FastAPI, HealthStatus, KPIMetrics, lifespan(), Observatory API — FastAPI application factory., Log resolved data source paths on startup., _configured_lineage_dir(), _count_content_queue() (+17 more)
 
 ### Community 62 - "Holus Agent Registry"
-Cohesion: 0.09
-Nodes (27): Quality And Taste Gate, Targeted Rerun, Holus Thought Evolution Memory, Holus Agent Registry, Manager Agents, Specialist Agents, Conversion Potential, Engagement Judge (+19 more)
+Cohesion: 0.06
+Nodes (40): Quality And Taste Gate, Targeted Rerun, Holus Thought Evolution Memory, Holus Agent Registry, Manager Agents, Specialist Agents, Conversion Potential, Engagement Judge (+32 more)
 
 ### Community 63 - "Holus Brand Identity"
-Cohesion: 0.16
-Nodes (18): Voice Writer, AI Transition Consulting Offer, Bilingual Market, Brand Anti-Patterns, Brand Positioning, Holus Brand Identity, Juan Identity, Juan Voice Profile (+10 more)
+Cohesion: 0.15
+Nodes (19): Voice Writer, AI Transition Consulting Offer, Bilingual Market, Brand Anti-Patterns, Brand Positioning, Holus Brand Identity, Juan Identity, Juan Voice Profile (+11 more)
 
 ### Community 64 - "test_marketing_agent.py"
 Cohesion: 0.08
@@ -1176,33 +1174,33 @@ Nodes (25): Tests for holus.agents.marketing.agent. Tests cover all four stages 
 Cohesion: 0.11
 Nodes (30): _call_llm(), CardVariant, EnrichedContext, IdeaMetadata, _parse_json_response(), _parse_voice_sections(), Any, LinkedIn Voice Pipeline — SPEC-035. Orchestrates the full flow: raw idea →… (+22 more)
 
-### Community 66 - "RenderResult"
-Cohesion: 0.14
-Nodes (10): Render one or more HTML pages to a single PDF. Args: html_pages: List of HTML…, Render from a RenderSpec, using the template engine. Args: spec: Complete…, Render all slides of a carousel spec. Args: spec: Carousel specification with…, Render all slides of a carousel as a single multi-page PDF. Each slide becomes…, Merge multiple single-page PDFs into one multi-page PDF. Uses pypdf if…, Render HTML to PNG bytes. Args: html: Complete HTML string to render. viewport:…, Outcome of a render operation., RenderResult (+2 more)
+### Community 66 - "test_mcp_tool_dispatch_placeholder"
+Cohesion: 0.67
+Nodes (3): skip, Placeholder for MCP tool dispatch tests., test_mcp_tool_dispatch_placeholder()
 
 ### Community 67 - "BrandVisualIdentityLoader"
-Cohesion: 0.11
-Nodes (12): BrandVisualIdentityLoader, Path, Load and cache brand visual identity from a YAML config file. Usage:: loader =…, Return the resolved config file path., Load brand identity from YAML, returning cached version if available., Force reload from disk, updating the cache., Load identity with theme-specific color overrides applied., Convenience: load brand and generate CSS custom properties. (+4 more)
+Cohesion: 0.10
+Nodes (13): BrandVisualIdentityLoader, Path, Brand visual identity loader. Loads config/brand-visual.yaml and converts it to…, Load and cache brand visual identity from a YAML config file. Usage:: loader =…, Return the resolved config file path., Load brand identity from YAML, returning cached version if available., Force reload from disk, updating the cache., Load identity with theme-specific color overrides applied. (+5 more)
 
 ### Community 68 - "Top engagement posts"
 Cohesion: 0.09
 Nodes (36): General / Uncategorized: 19 posts (47.5%), Industry Commentary: 6 posts (15.0%), Sponsored / Partnership: 1 posts (2.5%), System Design / Architecture: 5 posts (12.5%), Technical Tutorial: 6 posts (15.0%), Thought Leadership: 2 posts (5.0%), Content type distribution, Top engagement posts (+28 more)
 
-### Community 69 - "HolusSocialAPIClient"
-Cohesion: 0.11
-Nodes (15): HolusSocialAPIClient, Any, BaseException, TracebackType, Async client for the Holus Social API., Check Holus Social API health., Fetch publishing analytics for recent posts., Fetch the latest engagement snapshot for one published post. (+7 more)
+### Community 69 - "holus_social_api/client.py"
+Cohesion: 0.10
+Nodes (20): NoReturn, Any, Client for the Holus Social API. Holus Social API is the publishing and…, Result from the Holus Social API schedule endpoint., Check Holus Social API health., Fetch publishing analytics for recent posts., Fetch the latest engagement snapshot for one published post., Fetch top performing published posts. (+12 more)
 
-### Community 70 - "._make_engine"
-Cohesion: 0.17
-Nodes (6): Test the summary_slide.html.j2 template renders correctly., Renders without error even if takeaways is empty., Renders without error if takeaways is not provided., Test that carousel templates load both slide.css and carousel.css., TestCarouselCssLoading, TestSummarySlideTemplate
+### Community 70 - "PlaywrightEngine"
+Cohesion: 0.12
+Nodes (13): PlaywrightEngine, BaseException, TracebackType, Render all slides of a carousel as a single multi-page PDF. Each slide becomes…, Playwright-based renderer with browser reuse and timeout protection. Usage::…, Merge multiple single-page PDFs into one multi-page PDF. Uses pypdf if…, asyncio, Test rendering from RenderSpec. (+5 more)
 
 ### Community 71 - "get_platform_config"
 Cohesion: 0.10
 Nodes (22): get_effective_risk_tier(), get_judge_rubric(), get_languages(), get_platform_config(), get_reward_weights(), list_platforms(), load_content_config(), PlatformConfig (+14 more)
 
 ### Community 72 - "Brand Designer"
-Cohesion: 0.06
-Nodes (38): AI Image Director, AI Image Hard Gates, Allowed Image Classes, Deterministic Artifact Handoff, Provider-Ready Image Direction, Before/After Designer, Before/After Transformation Story, Pilaster generate Calls (+30 more)
+Cohesion: 0.07
+Nodes (33): AI Image Director, AI Image Hard Gates, Allowed Image Classes, Deterministic Artifact Handoff, Provider-Ready Image Direction, Before/After Designer, Before/After Transformation Story, Pilaster generate Calls (+25 more)
 
 ### Community 73 - "Top hashtags"
 Cohesion: 0.06
@@ -1217,20 +1215,20 @@ Cohesion: 0.07
 Nodes (28): Bandit, Any, Path, ε-greedy multi-armed bandit for visual treatment diversity. State persisted in…, Record outcome for an arm. won=True if engagement > median., Return win rate stats for all arms., ε-greedy multi-armed bandit for visual treatment selection., Select n arms for variant generation. Uses ε-greedy: with probability ε pick… (+20 more)
 
 ### Community 76 - "HealthCheck"
-Cohesion: 0.10
-Nodes (25): HealthCheck, Any, Path, Check trajectory file exists and is writable., Check knowledge base has files., Check content queue directory., Check the optional lineage owner and surface incomplete chains honestly., Check logs directory exists. (+17 more)
+Cohesion: 0.06
+Nodes (41): acquire_run_lock(), HealthCheck, Any, Path, Check trajectory file exists and is writable., Check knowledge base has files., Check content queue directory., Check the optional lineage owner and surface incomplete chains honestly. (+33 more)
 
 ### Community 77 - "get_proxy_url"
 Cohesion: 0.10
 Nodes (19): get_proxy_api_base(), get_proxy_api_key(), get_proxy_headers(), get_proxy_url(), Shared LLM proxy configuration. Single source of truth for the proxy URL and…, Return the full chat-completions URL for the LLM proxy. Reads…, Return HTTP headers for the LLM proxy. Reads ``LLM_PROXY_AUTH_TOKEN`` (default…, Return the ``/v1`` base URL (for SDKs like DSPy that want a base, not a full… (+11 more)
 
-### Community 78 - "_normalize_outline"
-Cohesion: 0.18
-Nodes (6): _normalize_outline(), Normalize idea_runner carousel output to carousel_spec_to_slides() format.…, Test _inject_auto_svg via _normalize_outline., Test _normalize_outline design block merging., TestAutoSvgInjection, TestNormalizeOutlineDesign
+### Community 78 - "orchestrator.py"
+Cohesion: 0.20
+Nodes (16): analytics_cycle(), content_cycle(), _detect_failure_streaks(), improvement_cycle(), _load_recent_trajectory(), main(), Any, Orchestrator - ties all self-improvement mechanisms into 3 cron cycles. Three… (+8 more)
 
 ### Community 79 - "results/page.tsx"
-Cohesion: 0.10
-Nodes (25): fmt(), ResultsPage(), GrowthChart(), Props, accentMap, borderMap, KPICard(), Props (+17 more)
+Cohesion: 0.09
+Nodes (26): fmt(), ResultsPage(), revalidate, GrowthChart(), Props, accentMap, borderMap, KPICard() (+18 more)
 
 ### Community 80 - "BanditArm"
 Cohesion: 0.18
@@ -1244,17 +1242,17 @@ Nodes (15): Path, Recently-published topic index for content deduplication. Prev
 Cohesion: 0.10
 Nodes (10): AgentRegistry, Return the evaluator IDs for *content_type*. Falls back to ``["written-content-…, In-memory catalog of all Holus agents. Reads ``agentic/agents/AGENTS.yaml``…, parametrize, AGENTS.yaml agent count (update when adding new agents)., A single string evaluated_by must be stored as a list., Routing must handle lower-case input by upper-casing internally., TestEvaluatorRouting (+2 more)
 
-### Community 83 - "orchestrator.py"
-Cohesion: 0.07
-Nodes (48): analytics_cycle(), improvement_cycle(), _load_recent_trajectory(), main(), Any, Orchestrator - ties all self-improvement mechanisms into 3 cron cycles. Three…, Weekly learning + prompt evolution + A/B test evaluation., Load recent trajectory entries for failure streak detection. (+40 more)
+### Community 83 - "diagnostician.py"
+Cohesion: 0.12
+Nodes (31): append_to_next_md(), _check_content_quality_signals(), _check_dimension_failures(), _check_failure_streaks(), _check_feedback_loop(), _check_judge_coverage(), _check_platform_failures(), DiagnosticReport (+23 more)
 
 ### Community 84 - "Holus infrastructure Docker Compose"
 Cohesion: 0.07
 Nodes (31): Claude-first intelligence decision, Federated architecture decision, Holus repository creation, LangGraph framework decision, Research synthesis build process, Self-improvement stack, Grafana dashboard service, Holus infrastructure Docker Compose (+23 more)
 
 ### Community 85 - "connection.ts"
-Cohesion: 0.10
-Nodes (26): loopSteps, HomePage(), story, ConnectionStatus(), Props, ExploreApiLink(), Props, GenerationStudio() (+18 more)
+Cohesion: 0.13
+Nodes (21): loopSteps, HomePage(), story, ConnectionStatus(), Props, platforms, ThoughtComposer(), TrajectoryTimeline() (+13 more)
 
 ### Community 86 - "timedelta"
 Cohesion: 0.18
@@ -1268,25 +1266,25 @@ Nodes (11): HolusClaudeClient, Central Claude API client for all Holus agents., 
 Cohesion: 0.10
 Nodes (28): ContentJobType, _has_data_signal(), _has_founder_story_signal(), _has_framework_signal(), _has_lesson_signal(), _has_metaphor_signal(), _has_product_signal(), _has_workflow_signal() (+20 more)
 
-### Community 89 - "Andrew Ng LinkedIn post - Agentic Document Extraction field extraction"
-Cohesion: 0.16
-Nodes (15): LandingAI, Agentic Document Extraction, document extraction upgrade, Document Pre-trained Transformer, Andrew Ng LinkedIn post - Agentic Document Extraction upgrade, field extraction, forms, Andrew Ng LinkedIn post - Agentic Document Extraction field extraction (+7 more)
+### Community 89 - "test_prompts.py"
+Cohesion: 0.17
+Nodes (11): Behavior-level contracts for current marketing prompt outputs., Product context remains evidence-led when optional config fields are absent., The reason-stage prompt retains its authority and feedback inputs., The generation prompt keeps supplied context and its output-only contract., Repurposing preserves the human-review-ready completion requirement., Research extraction receives source material and asks for actionable insight…, test_content_prompt_renders_brief_and_requires_publishable_text(), test_niche_extraction_prompt_includes_supplied_results_and_structured_fields() (+3 more)
 
 ### Community 90 - "CarouselSpec"
-Cohesion: 0.10
-Nodes (17): CarouselSpec, Specification for a single carousel slide., Specification for a complete carousel (multi-slide render)., SlideSpec, asyncio, fixture, Test render_carousel_pdf method on PlaywrightEngine., TestRenderCarouselPdf (+9 more)
+Cohesion: 0.06
+Nodes (36): Playwright-based rendering engine for HTML → PNG/PDF. Uses an async context…, CarouselSpec, PollSpec, BaseModel, Pydantic models for the visual rendering pipeline. RenderSpec describes what to…, Specification for a single carousel slide., Specification for a complete carousel (multi-slide render)., Specification for a social media poll graphic. (+28 more)
 
 ### Community 91 - "carousel_spec_to_slides"
 Cohesion: 0.12
 Nodes (9): carousel_spec_to_slides(), Convert carousel-architect agent JSON output to a CarouselSpec. The carousel-…, Test carousel_spec_to_slides converter., Edge case tests for carousel pipeline., Extra keys in carousel_output (like title) don't cause errors., All 11 slide types can be used together., All four slide types can be used together., TestCarouselEdgeCases (+1 more)
 
-### Community 92 - "test_e2e_publish.py"
-Cohesion: 0.10
-Nodes (40): api_client(), _mocked_social_boundary(), asyncio, fixture, parametrize, Path, TestClient, End-to-end publish pipeline tests. Tests the full flow: queue file with judge… (+32 more)
+### Community 92 - "process_queue"
+Cohesion: 0.14
+Nodes (32): process_queue(), Process all pending_review items based on judge scores. Returns list of actions…, asyncio, fixture, Path, End-to-end publish pipeline tests. Tests the full flow: queue file with judge…, Missing judge_score → skipped., Multiple items with different scores route to correct actions. (+24 more)
 
 ### Community 93 - "._make_engine"
-Cohesion: 0.13
-Nodes (9): Path, Test that a custom brand loader injects different CSS., Test template loading, rendering, and brand CSS injection., When styles dir doesn't exist, CSS strings are empty but render succeeds., Test discovery of available CSS styles., Create a TemplateEngine with a custom styles directory., Create a TemplateEngine with optional overrides., TestListAvailableStyles (+1 more)
+Cohesion: 0.12
+Nodes (10): Path, Tests for the Jinja2 template engine., Test that a custom brand loader injects different CSS., Test template loading, rendering, and brand CSS injection., When styles dir doesn't exist, CSS strings are empty but render succeeds., Test discovery of available CSS styles., Create a TemplateEngine with a custom styles directory., Create a TemplateEngine with optional overrides. (+2 more)
 
 ### Community 94 - "Ruben Hassid"
 Cohesion: 0.10
@@ -1297,20 +1295,20 @@ Cohesion: 0.07
 Nodes (29): 1. Content Intent, 2. Proximity Route, 3. Production Plan, 4. Provider Recipe, 5. Visual Judge, Adversary Analysis, Chart, Decision Points (+21 more)
 
 ### Community 96 - "content/page.tsx"
-Cohesion: 0.11
-Nodes (25): agentLabels, agentOrder, agentRuntimeState(), assetLabels, campaignAgents(), ContentPage(), formatLabel(), groupKey() (+17 more)
+Cohesion: 0.10
+Nodes (28): agentLabels, agentOrder, agentRuntimeState(), assetLabels, campaignAgents(), ContentPage(), dynamic, formatLabel() (+20 more)
 
-### Community 97 - "process_queue"
-Cohesion: 0.26
-Nodes (10): process_queue(), Process all pending_review items based on judge scores. Returns list of actions…, _make_item(), asyncio, Path, High score but verdict=FAIL (brand safety) → needs_review, not publish., PARTIAL items send notifications even in dry-run (they're just notifications)., TestDryRunMode (+2 more)
+### Community 97 - "Path"
+Cohesion: 0.11
+Nodes (20): _make_item(), Any, asyncio, fixture, MonkeyPatch, Path, queue_dir(), Tests for auto_publish module — verdict handling, dry-run, publish, reject,… (+12 more)
 
 ### Community 98 - "create_app"
 Cohesion: 0.17
 Nodes (25): create_app(), Create and configure the FastAPI application., Tests for GET /api/v1/knowledge routes., Create temp directory structure and monkeypatch knowledge paths., lessons.json can be a dict with a 'lessons' key., _setup(), test_get_lessons_missing_file(), test_get_lessons_with_dict_format() (+17 more)
 
-### Community 99 - "_load_pending_with_scores"
-Cohesion: 0.25
-Nodes (6): _load_pending_with_scores(), Load all pending_review items that have judge scores., Any, MonkeyPatch, TestLoadPending, _write_json_item()
+### Community 99 - "ScheduleRequest"
+Cohesion: 0.08
+Nodes (17): Request to schedule content through Holus Social API., ScheduleRequest, AC-023: ScheduleRequest can be created with platform='linkedin' and…, AC-023: schedule_post sends platform='linkedin' and approval_required=True in…, schedule_post accepts approval_required parameter (SPEC-031)., ScheduleRequest and ScheduleResult models are well-formed., test_schedule_post -- mock httpx, verify POST /api/v1/schedule., Schedule is contained before any POST is made. (+9 more)
 
 ### Community 100 - "generate_svg"
 Cohesion: 0.13
@@ -1325,8 +1323,8 @@ Cohesion: 0.18
 Nodes (15): Cursor editor, Official FastAPI extension, Reposted FastAPI post about official Cursor extension, Verified extension, Google Antigravity, Official FastAPI installation, Reposted FastAPI post about Google Antigravity editor support, FastAPI developer tooling (+7 more)
 
 ### Community 103 - "Ethan Mollick"
-Cohesion: 0.12
-Nodes (24): Geospatial Animation, Lighthouse Data Visualization, LinkedIn Screenshot: Northern Seas lighthouse visualization, Northern Seas, A visualization maps Northern Seas lighthouses by color, flash pattern, brightness scale, and visibility distance., ChatGPT for Excel, Claude for Excel, ChatGPT for Excel and Claude for Excel are tested on a difficult macroeconomic workbook with 1,000 years of English history across over 100 tabs. (+16 more)
+Cohesion: 0.10
+Nodes (29): AI Adoption Lag, AI Development, Even if AI development stopped immediately, existing AI would still transform white-collar work over the next 5-10 years., LinkedIn Screenshot: AI development freeze impact claim, White-Collar Work Transformation, Geospatial Animation, Lighthouse Data Visualization, LinkedIn Screenshot: Northern Seas lighthouse visualization (+21 more)
 
 ### Community 104 - "Mati Staniszewski"
 Cohesion: 0.09
@@ -1337,20 +1335,20 @@ Cohesion: 0.07
 Nodes (28): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+20 more)
 
 ### Community 106 - "collect_analytics"
-Cohesion: 0.11
-Nodes (15): collect_analytics(), compute_blended_reward(), compute_engagement_signal(), _count_paired_observations(), _load_published_pieces(), Any, Analytics collector — fetches post-publish engagement data into trajectory.…, Count trajectory entries that have both judge_score and engagement data. (+7 more)
+Cohesion: 0.15
+Nodes (12): collect_analytics(), compute_engagement_signal(), _count_paired_observations(), _load_published_pieces(), Any, Analytics collector — fetches post-publish engagement data into trajectory.…, Count trajectory entries that have both judge_score and engagement data., Fetch engagement data for published content and update trajectory. Returns list… (+4 more)
 
-### Community 107 - "holus_social_api/client.py"
-Cohesion: 0.09
-Nodes (23): NoReturn, PublishResult, PublishTarget, BaseModel, Client for the Holus Social API. Holus Social API is the publishing and…, Result from the Holus Social API schedule endpoint., Per-platform publish status returned by Holus Social API., Result from the Holus Social API publish endpoint. (+15 more)
+### Community 107 - "HolusSocialAPIClient"
+Cohesion: 0.08
+Nodes (24): BaseException, HolusSocialAPIClient, Async client for the Holus Social API., Close the HTTP client., mock_http(), _ok_response(), asyncio, fixture (+16 more)
 
 ### Community 108 - "Autonomous Operations Runbook"
 Cohesion: 0.08
 Nodes (27): Activation Gates, Analytics Cycle, Autonomous Operations Runbook, Cold Start Protocol, Content Cycle, Daily Monitoring, Emergency Stop, Improvement Cycle (+19 more)
 
 ### Community 109 - "Anthropic"
-Cohesion: 0.15
-Nodes (23): OpenAI, AI Policy Conflict, Anthropic, Anthropic, creators of Claude, are officially in conflict with the United States government., Claude, LinkedIn Screenshot: Anthropic US government conflict claim, United States Government, AI model APIs (+15 more)
+Cohesion: 0.12
+Nodes (23): Greg Brockman, OpenAI Dev Day, Allie K. Miller LinkedIn post inviting questions for Greg Brockman interview, private AI leader interview, OpenAI new releases, Allie K. Miller LinkedIn post summarizing OpenAI release cadence, rapid AI product launches, video demo format (+15 more)
 
 ### Community 110 - "Claim that Sonnet 4.6 is a light and fast Claude model beating Gemini 3 Pro and sometimes GPT-5.2 on benchmarks"
 Cohesion: 0.13
@@ -1361,12 +1359,12 @@ Cohesion: 0.10
 Nodes (28): AI voice matching, AI voice matching starts with a taste interview and a markdown file of specific preferences and rejections, Markdown context file, Portable personal context, Ruben Hassid LinkedIn post screenshot: AI voice matching starts with a taste interview and a markdown file of specific preferences and rejections, Rejected phrasing, Taste interview, LinkedIn post screenshot with handwritten notebook-style eight-step guide for duplicating your brain into AI (+20 more)
 
 ### Community 112 - ".new"
-Cohesion: 0.19
-Nodes (7): Create a new CycleContext with a unique cycle_id., Write the final cycle summary to trajectory.jsonl. Called at DONE or FAILED.…, write_trajectory_entry(), AC-015: write_trajectory_entry writes JSON with phase, content_created,…, Path, TestCycleContextTransition, TestWriteTrajectoryEntry
+Cohesion: 0.07
+Nodes (23): _append_jsonl(), Path, Create a new CycleContext with a unique cycle_id., Write the final cycle summary to trajectory.jsonl. Called at DONE or FAILED.…, Append a JSON object as a single line to *path*. Creates intermediate…, write_trajectory_entry(), AC-015: write_trajectory_entry writes JSON with phase, content_created,…, Path (+15 more)
 
 ### Community 113 - "VisualDispatchRequest"
-Cohesion: 0.16
-Nodes (22): ContentSet, _dispatch_carousel_pdf(), Generated queue records for one thought., Render a carousel PDF through the visual dispatcher from sync pipeline code., _judge_from_result(), Provider-neutral visual generation request. For deterministic assets, pass…, Route visual requests to deterministic or AI-generation providers., VisualDispatcher (+14 more)
+Cohesion: 0.07
+Nodes (39): ContentSet, _dispatch_carousel_pdf(), Generated queue records for one thought., Render a carousel PDF through the visual dispatcher from sync pipeline code., AgyCliImageProvider, _attempt_output_path(), _judge_from_result(), Any (+31 more)
 
 ### Community 114 - "Cassie Kozyrkov"
 Cohesion: 0.07
@@ -1384,69 +1382,69 @@ Nodes (27): FastAPI return type response-model feature, Feature Demo, JSON respo
 Cohesion: 0.08
 Nodes (25): 10. Canvas & Platform Specs, 11. QR Codes & Combinatorial Space, 1.1 Color Harmony Algorithms, 1.2 Material Design 3 Tonal Palette, 1.3 CSS Gradients, 1.4 Blend Modes, 1.5 Duotone Effect, 1. Color System (+17 more)
 
-### Community 118 - "HolusMem0Client"
-Cohesion: 0.12
-Nodes (16): Lazy-loaded Mem0 memory client., HolusMem0Client, MemoryLevel, Any, StrEnum, Mem0 integration for hierarchical agent memory. Three-tier memory hierarchy: L1…, Store a memory fact. Args: content: The memory text to store. level: Memory…, Semantic search over stored memories. Args: query: Natural language search… (+8 more)
+### Community 118 - "._get_memory"
+Cohesion: 0.11
+Nodes (13): MemoryLevel, Any, StrEnum, Mem0 integration for hierarchical agent memory. Three-tier memory hierarchy: L1…, Store a memory fact. Args: content: The memory text to store. level: Memory…, Semantic search over stored memories. Args: query: Natural language search…, Retrieve all memories for this agent. Used by weekly review., Update an existing memory (e.g., adding campaign performance data). (+5 more)
 
 ### Community 119 - "publish_approved.py"
-Cohesion: 0.11
-Nodes (18): dry_run(), main(), Record publish intents for approved content; external delivery is contained.…, Show what would be published without actually posting., _make_content(), Tests for publish_approved module — dry-run and publishing logic., Dry run truncates long content in preview — not all chars shown., Test CLI argument parsing. (+10 more)
+Cohesion: 0.10
+Nodes (20): datetime, dry_run(), main(), Publish all approved content via Holus Social API. Supports --dry-run to…, Show what would be published without actually posting., _make_content(), QueuedContent, Tests for publish_approved module — dry-run and publishing logic. (+12 more)
 
-### Community 120 - "_append_jsonl"
-Cohesion: 0.12
-Nodes (15): _append_jsonl(), Path, Append a JSON object as a single line to *path*. Creates intermediate…, TestAppendJsonl, CaptureFixture, Path, Tests for _append_jsonl fallback behavior on write failure., When both writes fail, output to stderr is valid JSON. (+7 more)
+### Community 120 - "_normalize_outline"
+Cohesion: 0.13
+Nodes (14): build_carousel_pdf(), _inject_auto_svg(), _normalize_outline(), Any, Path, Carousel PDF builder — converts carousel outline JSON to a rendered PDF. Takes…, Render a carousel outline to a PDF file. Args: outline: Dict from…, Normalize idea_runner carousel output to carousel_spec_to_slides() format.… (+6 more)
 
-### Community 121 - "holus/core/__init__.py"
-Cohesion: 0.14
-Nodes (20): Holus core infrastructure: configuration, event bus, kill switch, process…, acquire_run_lock(), Path, File-based run lock to prevent overlapping agent runs. Uses OS-level ``flock``…, Prevent overlapping runs of the same agent. Uses OS-level flock which auto-…, Path, Queue, Tests for holus.core.run_lock. (+12 more)
+### Community 121 - "acquire_run_lock"
+Cohesion: 0.16
+Nodes (19): acquire_run_lock(), Path, File-based run lock to prevent overlapping agent runs. Uses OS-level ``flock``…, Prevent overlapping runs of the same agent. Uses OS-level flock which auto-…, Path, Queue, Tests for holus.core.run_lock., Lock file is created and contains the PID. (+11 more)
 
 ### Community 122 - "KillSwitch"
 Cohesion: 0.08
 Nodes (17): KillSwitch, Activate a kill switch. Args: scope: ``"global"``, a domain name…, Deactivate a kill switch., Return ``True`` if this agent should halt. Checks, in order: 1. Global kill…, Return the ``KillSwitchState`` for *scope*, or ``None``., Return all currently active kill switches. Used by dashboards., Redis-backed kill switch with per-agent, per-domain, and global scopes., AC-012: KillSwitch.is_active returns True when global key is set. (+9 more)
 
 ### Community 123 - "LineageRecorder"
-Cohesion: 0.07
-Nodes (42): Holus-owned, versioned provenance artifacts for read-only consumers., ArtifactType, LineageEdge, LineageNode, Any, BaseModel, datetime, field_validator (+34 more)
+Cohesion: 0.18
+Nodes (16): LineageNode, Return a deterministic SHA-256 hash for a JSON-compatible value., A privacy-safe description of one durable or logical pipeline artifact., stable_hash(), LineageRecorder, Any, datetime, Path (+8 more)
 
 ### Community 124 - "test_content_generator.py"
 Cohesion: 0.13
 Nodes (26): _base_decision(), Any, patch, Tests for content_generator.py — the core generation module. Covers: -…, Text post: LLM returns valid JSON, fields are extracted correctly., Thread format: user message includes thread-specific format instructions., Carousel: LLM returns slide-based JSON, parsed correctly., Video script: format instructions include spoken word sections. (+18 more)
 
 ### Community 125 - "_make_agent"
-Cohesion: 0.18
-Nodes (14): _make_agent(), Any, fixture, MonkeyPatch, Path, Write trajectory entries to JSONL file., Create a MarketingAgent with test config., Tests for _format_generation_feedback() platform filtering. (+6 more)
+Cohesion: 0.10
+Nodes (20): _make_agent(), Any, fixture, MonkeyPatch, Path, Tests for judge feedback injection into generation prompts. Covers: -…, Write trajectory entries to JSONL file., Create a MarketingAgent with test config. (+12 more)
 
 ### Community 126 - "image+text: 22 posts (55.0%)"
 Cohesion: 0.14
 Nodes (26): Industry Commentary: 5 posts (12.5%), Post 2: OpenAI, calm down. I can only type so fast. Let’s cover the new releases and why..., System Design / Architecture: 1 posts (2.5%), image+text: 22 posts (55.0%), Post 3: 🚀 LangChain just released Deep Agents and it might be the simplest way to build..., Avg post length: 144 words, General / Uncategorized: 14 posts (35.0%), Sponsored / Partnership: 12 posts (30.0%) (+18 more)
 
-### Community 127 - "#LangChain"
-Cohesion: 0.14
-Nodes (21): #LangChain, Michael Walker, Challenge Accepted, Deployed Engineering, Margaret MJ Jastrebski, Margaret Jastrebski Challenge Post, Agent Conference, Hai N. (+13 more)
+### Community 127 - "LangChain Interrupt 2026"
+Cohesion: 0.19
+Nodes (15): Agent Conference, Hai N., LangChain Interrupt 2026, LangChain Interrupt 2026 Attendance Post, The Midway San Francisco, LangChain PyPI Downloads, OpenAI SDK Comparison, OpenAI SDK (+7 more)
 
-### Community 128 - "Harrison Chase"
-Cohesion: 0.12
-Nodes (20): LangChain Orange Trusted Agents Partnership, Orange Business, Steve Jarrett, Trusted AI Agents In Europe, Aliette Mousnier-Lompre, Orange Business Trusted Agents Launch, Technology Trust Message, Codebase And Requirements To Living Artifact (+12 more)
+### Community 128 - "RenderResult"
+Cohesion: 0.13
+Nodes (11): Render one or more HTML pages to a single PDF. Args: html_pages: List of HTML…, Render from a RenderSpec, using the template engine. Args: spec: Complete…, Render all slides of a carousel spec. Args: spec: Carousel specification with…, Combine multiple HTML pages with CSS page breaks for PDF rendering., Render HTML to PNG bytes. Args: html: Complete HTML string to render. viewport:…, Outcome of a render operation., RenderResult, Test the static HTML page combiner. (+3 more)
 
 ### Community 129 - "HolusConfig"
-Cohesion: 0.06
-Nodes (28): BaseSettings, AgentConfig, HolusConfig, Any, field_validator, model_validator, Path, Holus configuration management. Layered configuration strategy: 1.… (+20 more)
+Cohesion: 0.07
+Nodes (23): BaseSettings, AgentConfig, HolusConfig, model_validator, Holus configuration management. Layered configuration strategy: 1.…, Return the ``AgentConfig`` for *name*, falling back to defaults., Map a semantic tier to a concrete model identifier., Configuration for a single Holus agent. (+15 more)
 
-### Community 130 - "core/health.py"
+### Community 130 - "_render_visual"
 Cohesion: 0.13
-Nodes (17): acquire_run_lock(), Health check system for Holus. Verifies core services and agent status.…, Context manager for the marketing cycle run lock. Acquires an exclusive file…, Path, Queue, Tests for holus.core.health.acquire_run_lock context manager., Lock is acquired and released with no exception., Parent directory is created if it does not exist. (+9 more)
+Nodes (18): Render a visual spec to PNG using PlaywrightEngine. Returns True on success., Return author variables without forcing a social handle., _render_visual(), _visual_author_context(), Any, Parse a dumped brief payload and return render variables., Return flattened template variables accepted by RenderSpec., render_variables_from_payload() (+10 more)
 
-### Community 131 - "donut_svg"
-Cohesion: 0.18
-Nodes (7): bar_chart_svg(), donut_svg(), Generate a donut/ring chart showing a percentage., Generate a horizontal bar chart SVG from label→value pairs. Bars are scaled…, Tests for SVG chart generators., TestBarChart, TestDonut
+### Community 131 - "decorative_svg"
+Cohesion: 0.25
+Nodes (5): decorative_svg(), list_patterns(), Get a decorative SVG by pattern name. Available: circles, grid, waves, blocks.…, List available decorative pattern names., TestDecorative
 
 ### Community 132 - "resolve_gradient"
 Cohesion: 0.10
 Nodes (15): linear_gradient(), mesh_gradient(), radial_gradient(), CSS gradient generation and presets for slide backgrounds., Generate a CSS radial-gradient string., Generate a mesh-style gradient from layered radials., Resolve a preset name to CSS, or return raw CSS if not a preset., Generate a CSS linear-gradient string. (+7 more)
 
 ### Community 133 - "Self-Improvement Mechanisms Technical Reference"
-Cohesion: 0.13
-Nodes (22): Activation Gates, Cold Start Protocol, EvoPrompt Guo 2024, Gap Detection, Genetic Prompt Evolution PromptBreeder, PromptBreeder Fernando 2024, ReflectionMemoryManager, Reflexion Shinn 2023 (+14 more)
+Cohesion: 0.06
+Nodes (41): No Analytics Data Yet, Performance Patterns, Holus Architecture, Performance Snapshots, Phase 1 One Working Loop, Phase 2 Automate, Phase 3 Optimize, Structured Prompt Recipes (+33 more)
 
 ### Community 134 - "DispatchOutbox"
 Cohesion: 0.15
@@ -1456,25 +1454,21 @@ Nodes (17): DispatchOperation, _atomic_json_replace(), DispatchIntent, DispatchO
 Cohesion: 0.12
 Nodes (25): Community Media, Talk Python podcast, FastAPI Cloud podcast conversation, team collaboration content, conference speaking, Event Announcement, FastAPI creator identity, PyAI Conf (+17 more)
 
-### Community 136 - "QueuedContent"
-Cohesion: 0.08
-Nodes (36): expire_stale(), _find_piece_file(), _iter_queue_files(), list_approved(), list_pending(), _load_queue_file(), mark_published(), Any (+28 more)
-
-### Community 137 - ".publish"
-Cohesion: 0.19
-Nodes (8): _RETRY_ON_HTTP_ERROR, normalize_platform(), model_validator, Support legacy platform= while preferring platforms=[...]., Check text fits platform character limits., Contained write path: raises ExternalDeliveryContainedError, no delivery., Contained write path: raises ExternalDeliveryContainedError, no delivery., Normalize Holus platform labels to the Holus Social API labels.
+### Community 136 - "content_queue.py"
+Cohesion: 0.10
+Nodes (38): approve(), enqueue(), expire_stale(), _find_piece_file(), humanize(), _iter_queue_files(), _levenshtein_ratio(), list_approved() (+30 more)
 
 ### Community 138 - "test_mcp_server.py"
 Cohesion: 0.13
-Nodes (25): _make_content(), asyncio, fixture, MonkeyPatch, Path, queue_dir(), Unit tests for MCP tool functions exposed in holus.mcp.server., holus_approve humanizes when needed, approves the piece, and returns approved. (+17 more)
+Nodes (26): _make_content(), asyncio, fixture, MonkeyPatch, Path, QueuedContent, queue_dir(), Unit tests for MCP tool functions exposed in holus.mcp.server. (+18 more)
 
 ### Community 139 - "detect_gaps"
 Cohesion: 0.13
 Nodes (12): classify_failure(), detect_gaps(), Any, Path, Gap detection - identify missing capabilities and knowledge from failure…, Detect capability and data gaps from trajectory patterns. Aggregates failures…, Write a gap request file to the appropriate directory. capability_gap → .self-…, Classify a failure into one of 4 categories based on judge feedback. Returns:… (+4 more)
 
-### Community 140 - "TestPublishHTTPContract"
-Cohesion: 0.11
-Nodes (17): mock_http(), _ok_response(), asyncio, fixture, Contract tests for HolusSocialAPIClient. Mocks httpx only — no live Social API…, Contract: one AsyncClient at init; publish performs no POST., Schedule endpoint is contained before outbound HTTP., Schedule preserves model defaults but does not POST while contained. (+9 more)
+### Community 140 - "CandidateStore"
+Cohesion: 0.25
+Nodes (7): PipelineFactory, CandidateStore, Any, Path, Keep research persistence successful if optional provenance storage fails., YAML-backed candidate store., ResearchCandidate
 
 ### Community 141 - "Agent failure modes"
 Cohesion: 0.11
@@ -1484,13 +1478,13 @@ Nodes (24): Enterprise AI inference inflection, NVIDIA GTC OpenClaw claim, OpenC
 Cohesion: 0.08
 Nodes (23): 1. `content-job-classifier`, 2. `format-router`, 3. `visual-necessity-gate`, 4. `deterministic-artifact-planner`, 5. `ai-image-director`, 6. `semantic-visual-judge`, AI Image Path, Claude Pattern (+15 more)
 
-### Community 143 - ".run"
-Cohesion: 0.10
-Nodes (20): Insight, LearningReport, Any, datetime, TrajectoryEntry, Execute the weekly learning cycle. Returns a ``LearningReport`` describing what…, Group entries by product x content_type x platform., Extract statistical insights from aggregated patterns. This is local (zero-… (+12 more)
+### Community 143 - "TrajectoryLogger"
+Cohesion: 0.04
+Nodes (76): _get_judge_score(), _get_judge_verdict(), _load_pending_with_scores(), process_human_rejection(), _publish_piece(), Any, Automated content publishing gate based on judge scores. Reads pending_review…, Fail closed; external publishing belongs to the reviewed content API. (+68 more)
 
-### Community 144 - "test_orchestrator.py"
-Cohesion: 0.13
-Nodes (25): content_cycle(), Generate content and leave every generated item for human review. If no idea…, FakeDiagnosticReport, FakeEvolutionReport, FakeLearningReport, asyncio, Tests for the orchestrator — 3 autonomous cron cycles., Scheduled content cycle keeps generated work local for review. (+17 more)
+### Community 144 - "patch"
+Cohesion: 0.10
+Nodes (28): patch, RuntimeError, TestTriggerReflexion, FakeDiagnosticReport, FakeEvolutionReport, FakeLearningReport, asyncio, Tests for the orchestrator — 3 autonomous cron cycles. (+20 more)
 
 ### Community 145 - "telegram_gate.py"
 Cohesion: 0.18
@@ -1501,16 +1495,16 @@ Cohesion: 0.15
 Nodes (14): _list_queue_files(), _print_summary(), Path, Return sorted YAML and JSON files in the content queue., Print a summary of newly generated content., CaptureFixture, MonkeyPatch, Path (+6 more)
 
 ### Community 147 - "Viral Framework Library"
-Cohesion: 0.11
-Nodes (23): Hook Architect, Hook Candidate Scoring, Viral Hook Framework Selection, Before/After Framework, Behind-the-Scenes Framework, Breakdown Framework, Content Framework Library, Contrarian Framework (+15 more)
+Cohesion: 0.07
+Nodes (36): Hook Architect, Hook Candidate Scoring, Viral Hook Framework Selection, Builder Voice Body Rules, Narrative Arc Selection, Storyteller, Business Decision Translation, Credibility Anchor (+28 more)
 
-### Community 148 - "Holus Worker Registry"
-Cohesion: 0.13
-Nodes (15): Agent Session Guide, Current Priorities, Human Confirmation Requirements, Latest Reports, Project Context, Self-Improvement Cycle, Startup Checklist, System Health Checks (+7 more)
+### Community 148 - "Evaluations Playbook"
+Cohesion: 0.11
+Nodes (22): Brand Safety Judge, Domain-Expert Judges, Evaluation Architecture, Evaluations Playbook, Quality Gate Tiers, Quality Scorer, Coding Agent, Content Agent (+14 more)
 
 ### Community 149 - "Deployment Playbook"
 Cohesion: 0.11
-Nodes (23): Backup Strategy, Deployment Playbook, Langfuse Service, launchd Scheduling, Mac Mini Deployment, OrbStack Docker Infrastructure, PostgreSQL + pgvector, Redis Kill Switch (+15 more)
+Nodes (24): Backup Strategy, Deployment Playbook, Langfuse Service, launchd Scheduling, Mac Mini Deployment, OrbStack Docker Infrastructure, PostgreSQL + pgvector, Redis Kill Switch (+16 more)
 
 ### Community 150 - "image+text: 9 posts (90.0%)"
 Cohesion: 0.17
@@ -1521,20 +1515,20 @@ Cohesion: 0.18
 Nodes (22): Career Advice: 1 posts (2.5%), Avg post length: 94 words, General / Uncategorized: 23 posts (57.5%), Technical Tutorial: 3 posts (7.5%), Tool Review / Comparison: 7 posts (17.5%), Content type distribution, Format distribution, image+text: 20 posts (50.0%) (+14 more)
 
 ### Community 152 - "test_api.py"
-Cohesion: 0.47
-Nodes (3): asyncio, test_approve_candidate_invokes_pipeline_and_no_auto_publish(), test_waiting_approval_lock_does_not_block_event_loop()
+Cohesion: 0.32
+Nodes (5): mock_candidate_store(), asyncio, fixture, test_approve_candidate_invokes_pipeline_and_no_auto_publish(), test_waiting_approval_lock_does_not_block_event_loop()
 
 ### Community 153 - ".call"
-Cohesion: 0.15
-Nodes (11): Message, MessageBatch, Any, Return tool definitions with ``cache_control`` on the last tool., Make a Claude API call with prompt caching and model routing. Args:…, Streaming version for real-time output., Submit batch requests for 50% discount. 24-hour SLA. Each item in *requests*…, Poll a batch for completion status. (+3 more)
+Cohesion: 0.12
+Nodes (13): Message, MessageBatch, Any, Return tool definitions with ``cache_control`` on the last tool., Make a Claude API call with prompt caching and model routing. Args:…, Streaming version for real-time output., Submit batch requests for 50% discount. 24-hour SLA. Each item in *requests*…, Poll a batch for completion status. (+5 more)
 
 ### Community 154 - "CarouselPreview.tsx"
-Cohesion: 0.17
+Cohesion: 0.16
 Nodes (21): asRecord(), asString(), CarouselPreview(), CarouselPreviewProps, exportLabel(), labelFallback(), shortText(), slideBackground() (+13 more)
 
-### Community 155 - "Specs Index"
-Cohesion: 0.10
-Nodes (26): Agent Registry Endpoint, Content Pipeline Endpoint, Evaluation Endpoint, FastAPI Observatory App, On-demand JSONL reads avoid write synchronization complexity until trajectory scale reaches roughly 100K entries, Knowledge Endpoint, Observatory API, Pydantic Response Models (+18 more)
+### Community 155 - "Observatory API"
+Cohesion: 0.11
+Nodes (23): Agent Registry Endpoint, Content Pipeline Endpoint, Evaluation Endpoint, FastAPI Observatory App, On-demand JSONL reads avoid write synchronization complexity until trajectory scale reaches roughly 100K entries, Knowledge Endpoint, Observatory API, Pydantic Response Models (+15 more)
 
 ### Community 156 - "_patch_queue_dir"
 Cohesion: 0.19
@@ -1549,16 +1543,16 @@ Cohesion: 0.14
 Nodes (6): TestClient, Legacy 'review' status gets normalized to 'pending_review'., TestConfigEndpoint, TestContentDetailEndpoint, TestCORSHeaders, TestMetricsEndpoint
 
 ### Community 159 - "Judge Agent"
-Cohesion: 0.06
-Nodes (36): Bilingual Localizer, Concept-First Spanish Localization, Technical Terms Kept In English, Tu Register, Carousel Conversion, Format Converter, Structural Transformation, Twitter Thread Conversion (+28 more)
+Cohesion: 0.10
+Nodes (22): Audience Analyst, Negative Signals, Persona Validation, Pillar Format Matrix, Competitive Intel, Competitor Accounts, Content Gap Analysis, Differentiation Intelligence (+14 more)
 
-### Community 160 - "Andrew Ng LinkedIn post announcing beginner AI app building course"
-Cohesion: 0.20
-Nodes (10): beginner AI app building, low-code AI learning, natural language app creation, Andrew Ng LinkedIn post announcing beginner AI app building course, Building Coding Agents, AI coding in Jupyter notebooks, Brian Granger, Jupyter notebooks (+2 more)
+### Community 160 - "Andrew Ng LinkedIn post announcing Document AI course"
+Cohesion: 0.07
+Nodes (27): A2A Agent2Agent Protocol, agentic doc extraction, Andrea Kropp, David Park, Document AI: From OCR to Agentic Doc Extraction, OCR, Andrew Ng LinkedIn post announcing Document AI course, beginner AI app building (+19 more)
 
-### Community 161 - "GPT-5.4 Pro, Opus, and Gemini DeepThink are compared on agentic research and PowerPoint creation about advanced dinosaur civilization evidence."
-Cohesion: 0.17
-Nodes (20): Creative Writing Benchmark, LinkedIn Screenshot: Murder mystery benchmark, A proposed AI benchmark asks models to write a satisfying ten-paragraph murder mystery whose clues are visible early enough to solve it., Murder Mystery Reasoning, Narrative Coherence, Agentic Data Work, Gemini DeepThink, GPT-5.4 Pro, Opus, and Gemini DeepThink are compared on agentic research and PowerPoint creation about advanced dinosaur civilization evidence. (+12 more)
+### Community 161 - "Claude can perform competitive intelligence by comparing job listings with SEC filings"
+Cohesion: 0.15
+Nodes (22): Agentic Data Work, Gemini DeepThink, GPT-5.4 Pro, Opus, and Gemini DeepThink are compared on agentic research and PowerPoint creation about advanced dinosaur civilization evidence., PowerPoint Evidence Synthesis, GDPval Benchmark, The GDPval benchmark chart says GPT-5.4 ties or beats human experts at professional tasks 82% of the time., GPT-5.4, Human Expert Comparison (+14 more)
 
 ### Community 162 - "ElevenAgents"
 Cohesion: 0.13
@@ -1573,24 +1567,24 @@ Cohesion: 0.18
 Nodes (15): PromptLoader Three-Layer Resolution, Authentication and Authorization, Compliance, Content Safety, Guardrails Architecture, Security Research, Never Scope Boundaries, Domain-Expert Evaluators (+7 more)
 
 ### Community 165 - "ContentKanban.tsx"
-Cohesion: 0.18
-Nodes (19): CONTENT_TYPE_NAMES, ContentKanban(), formatContentType(), groupContentSets(), groupStatusSummary(), itemTime(), outputKey(), outputKindCounts() (+11 more)
+Cohesion: 0.16
+Nodes (21): CONTENT_TYPE_NAMES, ContentKanban(), formatContentType(), groupContentSets(), groupStatusSummary(), itemTime(), outputKey(), outputKindCounts() (+13 more)
 
 ### Community 166 - "alerts.py"
 Cohesion: 0.18
 Nodes (21): Alert, AlertsResponse, _check_consecutive_failures(), _check_score_regression(), _check_stalls(), _compute_trends(), get_alerts(), _load_entries() (+13 more)
 
 ### Community 167 - "BaseAgent"
-Cohesion: 0.09
-Nodes (18): BaseAgent, Any, StateGraph, Post-execution self-evaluation via JudgeAgent + trajectory logging. Calls…, Extract the evaluable output from final state. Override in subclasses., Log an entry to trajectory.jsonl., Return the current prompt variant ID for observability., Return tool definitions. Override in subclasses. (+10 more)
+Cohesion: 0.06
+Nodes (26): BaseAgent, Any, StateGraph, Post-execution self-evaluation via JudgeAgent + trajectory logging. Calls…, Extract the evaluable output from final state. Override in subclasses., Log an entry to trajectory.jsonl., Return the current prompt variant ID for observability., Return tool definitions. Override in subclasses. (+18 more)
 
-### Community 168 - "__main__.py"
-Cohesion: 0.14
-Nodes (19): _activate_kill(), _deactivate_kill(), main(), Namespace, Holus CLI entrypoint. Usage:: python -m holus run marketing --once python -m…, Run the idea-injection pipeline: Opus plans formats, Sonnet generates each., Run an agent with run-lock protection., Import and run the specified agent. (+11 more)
+### Community 168 - "._make_engine"
+Cohesion: 0.17
+Nodes (6): Test the summary_slide.html.j2 template renders correctly., Renders without error even if takeaways is empty., Renders without error if takeaways is not provided., Test that carousel templates load both slide.css and carousel.css., TestCarouselCssLoading, TestSummarySlideTemplate
 
 ### Community 169 - "LinkedIn Content Playbook"
-Cohesion: 0.12
-Nodes (21): Carousel PDF Pipeline, Content Artifact Spec, LinkedIn Content Playbook, No Standalone Text Posts, Slide Design Spec, Text + Carousel Post Type, Text + Image Post Type, Text + Video Post Type (+13 more)
+Cohesion: 0.13
+Nodes (20): Carousel PDF Pipeline, Content Artifact Spec, LinkedIn Content Playbook, No Standalone Text Posts, Slide Design Spec, Text + Carousel Post Type, Text + Image Post Type, Text + Video Post Type (+12 more)
 
 ### Community 170 - "Claude in Excel can build and audit financial models that normally require expensive manual services"
 Cohesion: 0.14
@@ -1600,9 +1594,9 @@ Nodes (21): cloud marketplace distribution, Microsoft Marketplace, Alex Wang Lin
 Cohesion: 0.10
 Nodes (39): Avg post length: 246 words, General / Uncategorized: 5 posts (12.5%), Industry Commentary: 2 posts (5.0%), System Design / Architecture: 8 posts (20.0%), Technical Tutorial: 22 posts (55.0%), Content type distribution, Format distribution, video: 40 posts (100.0%) (+31 more)
 
-### Community 172 - "Andrew Ng LinkedIn post - Agentic Knowledge Graph Construction"
-Cohesion: 0.13
-Nodes (23): Agentic Knowledge Graph Construction, knowledge graph, Andrew Ng LinkedIn post - Agentic Knowledge Graph Construction, Neo4j, reference material extraction, team of agents, Andrew Ng LinkedIn post - RAG Coursera course, Retrieval Augmented Generation (+15 more)
+### Community 172 - "LLM Engineer Roadmap"
+Cohesion: 0.17
+Nodes (21): Retrieval Augmented Generation, #Agents, Clawdbot Shodan Exposure, Clawdbot Shodan Exposure Post, Exposed Agent Infrastructure, Remote Code Execution Risk, Shodan Search, GGUF Runtime (+13 more)
 
 ### Community 173 - "General / Uncategorized: 38 posts (95.0%)"
 Cohesion: 0.16
@@ -1617,8 +1611,8 @@ Cohesion: 0.29
 Nodes (20): _approval_checklist_diagnostics(), _approval_checklist_status_counts(), _approval_checklist_statuses(), _case_map(), _case_source_kwargs(), _channel_fit_diagnostics(), _channel_plan_diagnostics(), _clean_text() (+12 more)
 
 ### Community 176 - "Autonomous Build System"
-Cohesion: 0.12
-Nodes (21): Autonomous Build System, Build Session Logging, Builder Agent, Launchd Build Scheduler, NEXT Priority Queue, Run Lock, Trajectory JSONL Build Log, Trajectory Logging (+13 more)
+Cohesion: 0.14
+Nodes (19): Autonomous Build System, Build Session Logging, Builder Agent, Launchd Build Scheduler, NEXT Priority Queue, Run Lock, Trajectory JSONL Build Log, CLI Entrypoint (+11 more)
 
 ### Community 177 - "insight_to_spec"
 Cohesion: 0.11
@@ -1664,9 +1658,9 @@ Nodes (19): put, ConfigResponse, ConfigUpdate, get_content_config(), get_platfor
 Cohesion: 0.13
 Nodes (18): Social Media FastAPI App, Social Media MCP Server, Content Pipeline, Feedback Agent, GeneratedContent Model, Late API Client, QualityScore Model, Text Content Generator (+10 more)
 
-### Community 188 - "decorative_svg"
-Cohesion: 0.25
-Nodes (5): decorative_svg(), list_patterns(), Get a decorative SVG by pattern name. Available: circles, grid, waves, blocks.…, List available decorative pattern names., TestDecorative
+### Community 188 - "Format Converter"
+Cohesion: 0.11
+Nodes (19): Bilingual Localizer, Concept-First Spanish Localization, Technical Terms Kept In English, Tu Register, Carousel Conversion, Format Converter, Structural Transformation, Twitter Thread Conversion (+11 more)
 
 ### Community 189 - "TestSyllableCounter"
 Cohesion: 0.36
@@ -1681,28 +1675,28 @@ Cohesion: 0.17
 Nodes (9): handle_tool_loop(), Execute a multi-turn tool-use loop until Claude produces a final text response.…, _make_prompt(), Any, Unit tests for HolusClaudeClient — prompt caching, model routing, cost…, Tests for the multi-turn tool-use loop., Tests for CachedPrompt build methods., TestCachedPrompt (+1 more)
 
 ### Community 192 - "TestStructuralChecks"
-Cohesion: 0.10
-Nodes (11): _check_consecutive_same_length(), _check_opening_word_diversity(), _check_sentence_length_variance(), _check_single_sentence_paragraphs(), Flag text where all sentences are suspiciously similar in length. Low variance…, Check that LinkedIn posts have enough short, punchy paragraphs. Top LinkedIn…, Flag when most paragraphs start with the same small set of words. If the 4…, Flag 3+ consecutive sentences with nearly identical word counts. When… (+3 more)
+Cohesion: 0.11
+Nodes (10): _check_consecutive_same_length(), _check_opening_word_diversity(), _check_sentence_length_variance(), _check_single_sentence_paragraphs(), Flag text where all sentences are suspiciously similar in length. Low variance…, Check that LinkedIn posts have enough short, punchy paragraphs. Top LinkedIn…, Flag when most paragraphs start with the same small set of words. If the 4…, Flag 3+ consecutive sentences with nearly identical word counts. When… (+2 more)
 
 ### Community 193 - "generate_poll_svg"
 Cohesion: 0.17
 Nodes (18): generate_poll_svg(), Pure-Python SVG poll generation for the visual pipeline., Generate an SVG poll graphic (800x500 viewBox)., _validate_color(), _wrap_text(), test_empty_color_uses_default(), test_empty_option_raises(), test_empty_question_raises() (+10 more)
 
-### Community 194 - "test_radar.py"
-Cohesion: 0.27
-Nodes (20): _always_failing_scorer(), _candidate_score(), FailingAdapter, _item(), OneTimeFailingScorer, Any, asyncio, Path (+12 more)
+### Community 194 - "RawResearchItem"
+Cohesion: 0.19
+Nodes (22): Scores research items, with an injectable scorer for tests or LLM wiring., ResearchCurator, RawResearchItem, _always_failing_scorer(), _candidate_score(), FailingAdapter, _item(), OneTimeFailingScorer (+14 more)
 
-### Community 195 - "Advanced AI-using organizations increasingly face compute as the binding constraint, matching AI lab warnings."
-Cohesion: 0.29
-Nodes (10): AI Adoption Lag, AI Development, Even if AI development stopped immediately, existing AI would still transform white-collar work over the next 5-10 years., LinkedIn Screenshot: AI development freeze impact claim, White-Collar Work Transformation, Advanced AI Organizations, AI Lab Warnings, Advanced AI-using organizations increasingly face compute as the binding constraint, matching AI lab warnings. (+2 more)
+### Community 195 - "routes/knowledge.py"
+Cohesion: 0.17
+Nodes (16): KnowledgeFile, LessonsResponse, KnowledgeFile, KnowledgeResponse, get_knowledge_file(), get_memory(), get_recent_lessons(), list_knowledge() (+8 more)
 
 ### Community 196 - "Thought Update Backlog"
-Cohesion: 0.13
-Nodes (19): LinkedIn Carousel Document Post, Carousel Framework, Agent Harness Registry, Fast Polish Lane, Prompt Change Rules, Anti-Sameness Rules, Creative Diversity Ledger, Novelty Axes (+11 more)
+Cohesion: 0.17
+Nodes (16): Agent Harness Registry, Fast Polish Lane, Prompt Change Rules, Anti-Sameness Rules, Creative Diversity Ledger, Novelty Axes, Thought Evolution Memory, Thought Run Rule (+8 more)
 
 ### Community 197 - "social-media-automatization Repository"
-Cohesion: 0.14
-Nodes (18): Bilingual Publishing, Content Configuration, Languages Config, Platform Risk Routing, Translation Settings, arq over Celery Decision, Genpeli arq Queue, Social Media Cloudflare R2 Media Storage (+10 more)
+Cohesion: 0.17
+Nodes (16): Bilingual Publishing, Content Configuration, Languages Config, Platform Risk Routing, Translation Settings, Social Media Cloudflare R2 Media Storage, Content Intelligence Layer, Fernet Token Encryption (+8 more)
 
 ### Community 198 - "Alex Wang: Weaknesses & Gaps"
 Cohesion: 0.11
@@ -1726,39 +1720,39 @@ Nodes (16): GPT-4o, GPT-4o multimodality announcement, multimodality, GPT-4o Vid
 
 ### Community 203 - "ingest"
 Cohesion: 0.15
-Nodes (18): File, Form, _extract_from_audio(), _extract_from_url(), _extract_from_video(), ingest(), IngestResponse, BaseModel (+10 more)
+Nodes (16): File, Form, _extract_from_audio(), _extract_from_url(), _extract_from_video(), ingest(), IngestResponse, BaseModel (+8 more)
 
 ### Community 204 - "engagement/page.tsx"
 Cohesion: 0.15
 Nodes (16): EngagementPage(), fmt(), Platform, PLATFORMS, fmt(), FollowersPage(), Platform, PLATFORMS (+8 more)
 
 ### Community 205 - "health/page.tsx"
-Cohesion: 0.21
-Nodes (10): HealthPage(), KillSwitchBanner(), Props, Props, statusStyles, SystemHealthGrid(), fetchHealth(), normalizeHealth() (+2 more)
+Cohesion: 0.15
+Nodes (14): dynamic, HealthPage(), revalidate, ErrorBanner(), Props, KillSwitchBanner(), Props, Props (+6 more)
 
-### Community 206 - "Marketing Agent"
-Cohesion: 0.12
-Nodes (27): Act Stage, ContentDecision Model, Evaluate Stage, Marketing Agent, Marketing Agent ReAct Loop, MarketingState Model, Niche Research Step, Observe Stage (+19 more)
+### Community 206 - "LinkedIn Content Pipeline Stage 1"
+Cohesion: 0.15
+Nodes (19): Niche Research Step, Authority Engine Agent Update, Authority Prompts, Brand Config Loader, BrandIdentity Model, Content Repurposing, Repurpose Module, LinkedIn Act Changes (+11 more)
 
-### Community 207 - "Creative Tool Registry"
-Cohesion: 0.17
-Nodes (16): Animated Infographic GIFs, Animation Types, GIF Export, Infographic Pipeline, InfographicRenderer Interface, Pillow is selected for deterministic frame rendering instead of HTML/CSS plus browser automation, Pillow Renderer, Specialist Pipeline (+8 more)
+### Community 207 - "Specs Index"
+Cohesion: 0.15
+Nodes (19): Animated Infographic GIFs, Animation Types, GIF Export, Infographic Pipeline, InfographicRenderer Interface, Pillow is selected for deterministic frame rendering instead of HTML/CSS plus browser automation, Pillow Renderer, Specialist Pipeline (+11 more)
 
 ### Community 208 - "FewShotMaterializer"
 Cohesion: 0.13
 Nodes (12): _analyze_why_it_works(), FewShotMaterializer, Any, Path, Few-shot example materializer. Extracts top-performing posts from the corpus…, Materialize top-N examples for each content type. Creates ``data/few-shot-…, Load pre-materialized examples for a content type. Falls back to the ``all``…, Close the underlying corpus if we own it. (+4 more)
 
-### Community 209 - "Evaluations Playbook"
-Cohesion: 0.31
-Nodes (9): Brand Safety Judge, Domain-Expert Judges, Evaluation Architecture, Evaluation Trajectory JSONL, Evaluations Playbook, Quality Gate Tiers, Quality Scorer, Evaluator Routing (+1 more)
+### Community 209 - "lineage/models.py"
+Cohesion: 0.12
+Nodes (16): Holus-owned, versioned provenance artifacts for read-only consumers., ArtifactType, datetime, StrEnum, Versioned, safe, read-only provenance contract for Holus artifacts., Return an aware UTC timestamp, isolated for deterministic tests., Artifact classes emitted by currently implemented Holus stages., utc_now() (+8 more)
 
 ### Community 210 - "General / Uncategorized: 39 posts (97.5%)"
 Cohesion: 0.19
 Nodes (21): Tool Review / Comparison: 1 posts (2.5%), Posts collected: 40, Avg post length: 41 words, General / Uncategorized: 39 posts (97.5%), Content type distribution, article/link: 1 posts (2.5%), Format distribution, image+text: 15 posts (37.5%) (+13 more)
 
-### Community 211 - "Knowledge and Learning System"
-Cohesion: 0.29
-Nodes (8): No Analytics Data Yet, Performance Patterns, Knowledge and Learning System, Knowledge Base, Knowledge Gap Detection, Knowledge Requests, MEMORY.md Updates, Weekly Learning Loop
+### Community 211 - "Andrew Ng LinkedIn post - Agentic Document Extraction field extraction"
+Cohesion: 0.16
+Nodes (15): LandingAI, Agentic Document Extraction, document extraction upgrade, Document Pre-trained Transformer, Andrew Ng LinkedIn post - Agentic Document Extraction upgrade, field extraction, forms, Andrew Ng LinkedIn post - Agentic Document Extraction field extraction (+7 more)
 
 ### Community 212 - "Revolut Customer Support Agents Selection"
 Cohesion: 0.13
@@ -1788,17 +1782,17 @@ Nodes (16): choose_creative_strategy(), CreativeStrategy, editorial_card_copy(),
 Cohesion: 0.11
 Nodes (18): Ethan Mollick, Current role: Associate Professor at Wharton (UPenn). Co-Director of Generative AI Labs. Author of "Co-Intelligence" (NYT bestseller)., LinkedIn handle emollick, Ethan Mollick niche: Practical AI adoption, research-backed AI guidance, Ethan Mollick relevance to Juan, Ethan Mollick: What He Does Right, Academic tone works for adoption audience -> Business leaders trust professors. Juan's business background helps here, Book = permanent authority -> Long-term play: "The Voice AI Adoption Guide" (+10 more)
 
-### Community 219 - "test_social_media.py"
-Cohesion: 0.06
-Nodes (23): mock_httpx_client(), fixture, client(), Tests for the social-media-automatization API client., Test status checking., Status check returns updated PublishResult., Health endpoint returns platform status., Test Pydantic models. (+15 more)
+### Community 219 - "PublishResult"
+Cohesion: 0.13
+Nodes (12): BaseModel, PublishResult, PublishTarget, Per-platform publish status returned by Holus Social API., Result from the Holus Social API publish endpoint., Check a publish operation status., Test Pydantic models., succeeded property works correctly. (+4 more)
 
-### Community 220 - "Observability Playbook"
-Cohesion: 0.43
-Nodes (7): Langfuse Dataset Manager, LLM Tracing, Observability Playbook, Per-Agent Metrics, Structured Logging, Three-Layer Observability Stack, Trajectory JSONL Layer
+### Community 220 - "get_trajectory"
+Cohesion: 0.17
+Nodes (13): EventSourceResponse, get_trajectory(), _parse_entry(), Any, date, get, TrajectoryEntry, Async generator that tails trajectory.jsonl and yields new lines. (+5 more)
 
 ### Community 221 - "JudgeAgent"
-Cohesion: 0.15
-Nodes (10): Holus self-improvement subsystem: judge, learning loop, diagnostics., JudgeAgent, JudgeVerdict, StrEnum, Judge Agent: independent quality evaluation of agent outputs. The Judge is the…, Independent quality evaluator for Holus agent outputs. Uses Haiku for cost…, Tests for JudgeAgent retry logic and response parsing., _registered_proxy_models() (+2 more)
+Cohesion: 0.20
+Nodes (6): JudgeAgent, Independent quality evaluator for Holus agent outputs. Uses Haiku for cost…, Tests for JudgeAgent retry logic and response parsing., _registered_proxy_models(), TestCallLlm, TestRetryLogic
 
 ### Community 222 - "conftest.py"
 Cohesion: 0.16
@@ -1813,16 +1807,16 @@ Cohesion: 0.14
 Nodes (15): client(), fixture, Tests for the Observatory API (Spec 028). Covers: - GET /api/v1/agents returns…, Write sample content YAML files to tmp_path., Write a minimal eval_history.jsonl to tmp_path., Create a knowledge/current directory with sample files., Create a TestClient for the Observatory API., Write a minimal AGENTS.yaml to tmp_path. (+7 more)
 
 ### Community 225 - "Holus AI Marketing Strategist"
-Cohesion: 0.20
-Nodes (14): Explicit Publish Gate, Brand Safety Block Authority, Agent Authority Matrix, Analytics Stay In Silo Constraint, Genpeli MCP Adapter, Holus AI Marketing Strategist, Holus Social API Boundary, Human Review Publishing Gate (+6 more)
+Cohesion: 0.09
+Nodes (31): Edit Safety Query Rule, fleet_graphify.py Wrapper, Graph Update Rule, Graphify Knowledge Graph, Explicit Publish Gate, Graphify Workflow, Brand Safety Block Authority, Brand Safety Judge (+23 more)
 
 ### Community 226 - "AI app prototyping"
 Cohesion: 0.15
 Nodes (17): AI as user superpowers, LinkedIn post: multi-agent AI interface alert, multi-agent AI interface, AI app prototyping, Gemini-built Bosnian language learning app, LinkedIn post: Gemini Bosnian language app, mission control learning UI, Gemini 3 (+9 more)
 
-### Community 227 - "Deep Agents"
-Cohesion: 0.10
-Nodes (26): #DeepAgents, Agent Harness, Deep Agents Open Source Claim, Filesystem Subagents And Context Management, Ilya Daronin, Deep Agents Production Grade Claim, LangChain Agent Harness, Nadia B. (+18 more)
+### Community 227 - "Harrison Chase"
+Cohesion: 0.13
+Nodes (20): #DeepAgents, LangChain Orange Trusted Agents Partnership, Orange Business, Steve Jarrett, Trusted AI Agents In Europe, Aliette Mousnier-Lompre, Orange Business Trusted Agents Launch, Technology Trust Message (+12 more)
 
 ### Community 228 - "Davos Stage Appearance"
 Cohesion: 0.12
@@ -1844,13 +1838,13 @@ Nodes (23): 1. The Core Problem, 2.1 What Programmatic Gates Are and Why They Co
 Cohesion: 0.16
 Nodes (12): _call(), critique(), Any, Constitutional AI revision loop — generate → critique → revise. Before…, Generate → Critique → Revise loop for content quality., Synchronous critique for use in sync contexts (idea_runner)., Synchronous revision for use in sync contexts., Run the revision loop on content. Returns {revised_text, critique, rounds,… (+4 more)
 
-### Community 233 - "HealthResult"
-Cohesion: 0.15
-Nodes (10): HealthResult, Result of a preflight health check. Attributes: blocking_ok: False means the…, run_cycle(), run_cycle(), TestHealthResult, Simplified tests that verify non-blocking behaviour via direct mocking., Pilaster down: blocking_ok stays True; pilaster removed from available_silos., Genpeli down: blocking_ok stays True; genpeli removed from available_silos. (+2 more)
+### Community 233 - ".publish"
+Cohesion: 0.19
+Nodes (8): model_validator, _RETRY_ON_HTTP_ERROR, normalize_platform(), Support legacy platform= while preferring platforms=[...]., Check text fits platform character limits., Publish content through Holus Social API., Schedule content through Holus Social API., Normalize Holus platform labels to the Holus Social API labels.
 
-### Community 234 - "Marketing Strategist Agent"
-Cohesion: 0.14
-Nodes (18): Brand Safety Judge, Builder Philosopher Voice, Forbidden Content Check, Authority Signal, Hook Strength, Voice Fidelity, Written Content Judge, Authority Over Promotion (+10 more)
+### Community 234 - "Written Content Judge"
+Cohesion: 0.18
+Nodes (13): Authority Signal, Hook Strength, Voice Fidelity, Written Content Judge, Content Fidelity, Idea Generator, LinkedIn No Markdown Rule, CTA Strategist (+5 more)
 
 ### Community 235 - "test_linkedin_pipeline_e2e.py"
 Cohesion: 0.28
@@ -1916,13 +1910,9 @@ Nodes (16): Early Career Lessons, Five Tech Truths I Wish I Knew Earlier Video, 
 Cohesion: 0.15
 Nodes (16): Buffer Hootsuite, Competitor Landscape, Copy.ai, Jasper AI, Lately.ai, Predis.ai, aiCarousels, Carousel API Automation (+8 more)
 
-### Community 251 - "process_human_rejection"
-Cohesion: 0.43
-Nodes (3): process_human_rejection(), Process a human rejection — store feedback for learning. Called when a human…, TestProcessHumanRejection
-
-### Community 252 - "_get_judge_verdict"
-Cohesion: 0.47
-Nodes (3): _get_judge_verdict(), Extract judge verdict from queue item., TestGetJudgeVerdict
+### Community 251 - "Agent Session Guide"
+Cohesion: 0.22
+Nodes (9): Agent Session Guide, Current Priorities, Human Confirmation Requirements, Latest Reports, Project Context, Self-Improvement Cycle, Startup Checklist, System Health Checks (+1 more)
 
 ### Community 253 - "Path"
 Cohesion: 0.32
@@ -1944,13 +1934,13 @@ Nodes (15): Authentic Conversation Starters, Comment Trigger Expert, Engagement 
 Cohesion: 0.15
 Nodes (15): Brief Composer, genpeli process_video Contract, Production Brief, Timestamp Markers, Caption Specialist, Caption Emphasis Tiers, Muted Video Viewing, Vertical Format Constraints (+7 more)
 
-### Community 258 - "Authority Engine Vision"
-Cohesion: 0.17
-Nodes (15): Consulting Prospect Conversion Funnel, Consulting Prospects, High-Signal Consulting Engagement, Consulting Lead Metrics, Content Marketing Strategy, Five Content Pillars, Observe-Reason-Act-Evaluate Content Flow, Authority Engine Vision (+7 more)
+### Community 258 - "Knowledge Base Topic Index"
+Cohesion: 0.08
+Nodes (35): Consulting Prospect Conversion Funnel, Consulting Prospects, High-Signal Consulting Engagement, Content Format Taxonomy, Content Mix Strategy, LinkedIn Post Template, Framework Selection Logic, Consulting Lead Metrics (+27 more)
 
-### Community 259 - "Model Registry"
-Cohesion: 0.17
-Nodes (16): Cost Tracking, Coordinator Config, Available Models, Model Pricing, Model Registry, Model Tiers, Operational Model Tier, Proxy Configuration (+8 more)
+### Community 259 - "Portkey Agent Reliability Post"
+Cohesion: 0.18
+Nodes (15): Cost Tracking, agent observability, Coding Agents, Coding Agents Reshape Engineering Product Design Blog, Engineering Workflow Change, Product And Design Workflow Change, Agent Production Uncertainty Claim, Production Behavior Uncertainty (+7 more)
 
 ### Community 260 - "Chatbase Shopify Integration"
 Cohesion: 0.16
@@ -1972,9 +1962,9 @@ Nodes (20): Andrej Karpathy, Andrej Karpathy audience and reach, Current role: F
 Cohesion: 0.20
 Nodes (5): Convert research data card agent output to a RenderSpec. Args: agent_output:…, research_card_to_spec(), Test research_card_to_spec converter., Chart SVG is generated when chart_type + data_points are present., TestResearchCardToSpec
 
-### Community 265 - "Andrew Ng LinkedIn post - Governing AI Agents"
-Cohesion: 0.13
-Nodes (15): AI agent governance, Governing AI Agents short course, Andrew Ng LinkedIn post - Governing AI Agents, Personal information exposure, Sensitive data access risk, Sensitive records modification, Databricks, DSPy (+7 more)
+### Community 265 - "DeepLearning.AI"
+Cohesion: 0.04
+Nodes (59): Google and IBM collaboration, Andrew Ng LinkedIn post announcing A2A Agent2Agent Protocol course, DeepLearning.AI, AI agent governance, Governing AI Agents short course, Andrew Ng LinkedIn post - Governing AI Agents, Personal information exposure, Sensitive data access risk (+51 more)
 
 ### Community 266 - "Armand Ruiz"
 Cohesion: 0.10
@@ -2024,17 +2014,17 @@ Nodes (15): Architecture: Hybrid Deterministic-Neural, Content Pipeline: Authent
 Cohesion: 0.17
 Nodes (15): Accessibility Criteria, Agents Page Criteria, Content Pipeline Criteria, Dashboard Criteria, Engagement Tracker Criteria, Evaluations Criteria, Follower Tracker Criteria, Given When Then Format (+7 more)
 
-### Community 278 - "WatchdogResult"
-Cohesion: 0.17
-Nodes (12): _load_summaries(), _parse_cycle_timestamp(), Any, BaseModel, datetime, Path, Dead man's switch for the Holus agent loop. The watchdog reads…, Read trajectory.jsonl and return only summary entries (those with 'phase' key). (+4 more)
+### Community 278 - "watchdog.py"
+Cohesion: 0.28
+Nodes (8): _load_summaries(), _parse_cycle_timestamp(), Any, datetime, Path, Dead man's switch for the Holus agent loop. The watchdog reads…, Read trajectory.jsonl and return only summary entries (those with 'phase' key)., Extract a UTC datetime from a trajectory summary entry. Tries ``cycle_id``…
 
 ### Community 279 - "SeenStore"
-Cohesion: 0.21
-Nodes (8): Path, Append-only seen ledger for Research Radar., Tracks fetched research items by stable item id and canonical URL., SeenStore, canonical_url(), _identity_query(), Normalize transport and tracking noise without dropping source identity., test_canonical_url_preserves_identity_query_and_removes_tracking_noise()
+Cohesion: 0.39
+Nodes (3): Path, Tracks fetched research items by stable item id and canonical URL., SeenStore
 
-### Community 280 - "TestPlatformEnrichment"
-Cohesion: 0.19
-Nodes (7): _derive_hashtags(), _enrich_for_platform(), Derive relevant hashtags from content text. Uses simple keyword extraction — no…, Append platform-required fields missing from the specialist pipeline.…, Test platform-aware post-processing for specialist pipeline outputs., TestDeriveHashtags, TestPlatformEnrichment
+### Community 280 - "Claim that an email explains OpenAI request dynamics to Microsoft leaders and the context behind an executive dispute"
+Cohesion: 0.46
+Nodes (8): Applied AI adoption success, Claim that an email explains OpenAI request dynamics to Microsoft leaders and the context behind an executive dispute, Kevin Scott, Microsoft CTO email, OpenAI compute and GPU capacity, LinkedIn screenshot: Microsoft CTO email about OpenAI, Sam Altman, Satya Nadella
 
 ### Community 281 - "test_health_routes.py"
 Cohesion: 0.19
@@ -2049,8 +2039,8 @@ Cohesion: 0.09
 Nodes (23): Author of two O'Reilly bestsellers, Founder of AI infra startup, NVIDIA, Snorkel AI, Netflix - production ML roles, Stanford CS instructor (Machine Learning Systems Design course), Chip Huyen, Chip Huyen career path, Current role: Founder (AI infrastructure startup). Formerly Stanford CS instructor, NVIDIA, Snorkel AI, Netflix., LinkedIn handle chiphuyen (+15 more)
 
 ### Community 284 - "Harrison Chase"
-Cohesion: 0.17
-Nodes (12): Harrison Chase, Current role: CEO & Co-founder, LangChain/LangGraph/LangSmith - most widely used agent orchestration framework., LinkedIn handle harrison-chase-961287118, Harrison Chase relevance to Juan, Harrison Chase: What He Does Right, Define the patterns -> Name Holus's orchestration patterns (silo isolation, Redis event bus, health preflight), Engage with LangChain content -> Comment, write responses, build visibility in agent infra community, Framework creators own the conversation -> Juan should write about agent patterns, not just use them (+4 more)
+Cohesion: 0.14
+Nodes (14): Harrison Chase, Current role: CEO & Co-founder, LangChain/LangGraph/LangSmith - most widely used agent orchestration framework., LinkedIn handle harrison-chase-961287118, Harrison Chase niche: Agent orchestration, LangGraph, agent observability, Harrison Chase relevance to Juan, Harrison Chase: What He Does Right, Define the patterns -> Name Holus's orchestration patterns (silo isolation, Redis event bus, health preflight), Engage with LangChain content -> Comment, write responses, build visibility in agent infra community (+6 more)
 
 ### Community 285 - "DeepAgents 0.4 BYO Sandbox Post"
 Cohesion: 0.13
@@ -2069,8 +2059,8 @@ Cohesion: 0.14
 Nodes (13): author, dependencies, playwright, description, keywords, license, main, name (+5 more)
 
 ### Community 289 - "Taste Recheck 002"
-Cohesion: 0.15
-Nodes (14): Interviewer Portfolio Viewer, Design Token Inconsistency, Distinctive Visual Signature, Taste Verdict 001, Tremor and Recharts Gap, Amber Brand Identity, Micro-Interactions, OG Image Placeholder (+6 more)
+Cohesion: 0.20
+Nodes (11): Interviewer Portfolio Viewer, Design Token Inconsistency, Distinctive Visual Signature, Taste Verdict 001, Tremor and Recharts Gap, Amber Brand Identity, Micro-Interactions, OG Image Placeholder (+3 more)
 
 ### Community 290 - "Design System Holus Observatory"
 Cohesion: 0.18
@@ -2089,8 +2079,8 @@ Cohesion: 0.16
 Nodes (14): Grafana Prometheus Datasource, Batch Processor, Debug Exporter, Holus Telemetry Namespace, Metrics Pipeline, OTEL Collector, OTLP Receiver, Prometheus Exporter (+6 more)
 
 ### Community 294 - "genpeli Repository"
-Cohesion: 0.17
-Nodes (12): Cloudflare R2 Delivery, Genpeli FastAPI API, genpeli Repository, Holus Genpeli Integration, Holus Portfolio Marketing Stack, Human-in-the-Loop Media Review, Human Review Gate, Genpeli Review Workflow (+4 more)
+Cohesion: 0.14
+Nodes (14): arq over Celery Decision, Genpeli arq Queue, Cloudflare R2 Delivery, Genpeli FastAPI API, genpeli Repository, Holus Genpeli Integration, Holus Portfolio Marketing Stack, Human-in-the-Loop Media Review (+6 more)
 
 ### Community 295 - "corpus.py"
 Cohesion: 0.18
@@ -2105,16 +2095,16 @@ Cohesion: 0.18
 Nodes (6): GET /api/v1/content/{piece_id}/image., Serves the rendered PNG for a content piece., Serves the B-variant image., Returns 404 when piece does not exist., Returns 404 when piece exists but has no rendered image., TestContentImage
 
 ### Community 298 - "StrategyBandit"
-Cohesion: 0.20
-Nodes (8): Any, Thompson Sampling multi-armed bandit for content strategy. Manages arms,…, Persist arm state to JSON file., Register a new arm or return existing one., Update an arm with an observed reward., Return summary statistics for all arms., Seed arm statistics from existing trajectory data. Returns number of entries…, StrategyBandit
+Cohesion: 0.09
+Nodes (12): Any, Path, Thompson Sampling multi-armed bandit for content strategy. Manages arms,…, Load arm state from JSON file., Persist arm state to JSON file., Register a new arm or return existing one., Update an arm with an observed reward., List all arms, optionally filtered by platform. (+4 more)
 
 ### Community 299 - "_run_verify"
 Cohesion: 0.43
 Nodes (13): CompletedProcess, Path, _run_verify(), test_verify_accepts_recognized_warning_result(), test_verify_fails_with_override_guidance_when_home_is_unset(), test_verify_fails_with_override_guidance_when_verifier_is_missing(), test_verify_prefers_explicit_repo_verify_path(), test_verify_preserves_non_warning_failure_with_warning_text() (+5 more)
 
-### Community 300 - "Format Router"
-Cohesion: 0.19
-Nodes (13): Visual Content Job Fit, Forbidden Visual Formats, Semantic Visual Judge, Content Job, Content Job Classifier, Missing Evidence Flag, Reader Outcome, AI Generated Image Format (+5 more)
+### Community 300 - "Marketing Agent"
+Cohesion: 0.43
+Nodes (8): Act Stage, ContentDecision Model, Evaluate Stage, Marketing Agent, Marketing Agent ReAct Loop, MarketingState Model, Observe Stage, Reason Stage
 
 ### Community 301 - "Variable Weight Ledger"
 Cohesion: 0.17
@@ -2129,16 +2119,16 @@ Cohesion: 0.18
 Nodes (13): Avg post length: 231 words, System Design / Architecture: 1 posts (100.0%), Content type distribution, Format distribution, video: 1 posts (100.0%), Posts collected: 1, LinkedIn Scrape Report: @andrej-karpathy-9a650716, Top engagement posts (+5 more)
 
 ### Community 304 - "Alex Imas now sees macroeconomic productivity data suddenly showing signs of AI productivity gains after prior micro-study evidence."
-Cohesion: 0.27
-Nodes (12): AI Workflows, Capability Amplification, LinkedIn Screenshot: Organizational AI productivity question, The more important AI productivity question is how AI improves an organization ability to do more and do it better., Organizational Productivity, Alex Imas now sees macroeconomic productivity data suddenly showing signs of AI productivity gains after prior micro-study evidence., AI Productivity Gains, Alex Imas (+4 more)
+Cohesion: 0.24
+Nodes (13): AI Workflows, Capability Amplification, LinkedIn Screenshot: Organizational AI productivity question, The more important AI productivity question is how AI improves an organization ability to do more and do it better., Organizational Productivity, Alex Imas now sees macroeconomic productivity data suddenly showing signs of AI productivity gains after prior micro-study evidence., AI Productivity Gains, Alex Imas (+5 more)
 
 ### Community 305 - "Agent Builder Queuing Messages Post"
 Cohesion: 0.19
 Nodes (13): Applied AI Engineers, Brace Sproul, LLMs In Production, SF And NYC Jobs, Agent Builder, Agent Builder Queuing Messages Post, Queued Messages, Task Context Recovery (+5 more)
 
-### Community 306 - "test_cycle_state.py"
-Cohesion: 0.29
-Nodes (3): Tests for holus.core.cycle_state — CycleState machine + trajectory contract., TestCycleContextFactory, TestCycleContextFinish
+### Community 306 - "Deep Agents"
+Cohesion: 0.21
+Nodes (14): Agent Harness, Deep Agents, Deep Agents Meetup, Jake Broekhuizen, San Francisco Deep Agents Meetup Post, San Francisco AI Community, Agent Harness Engineering, Vivek Trivedy (+6 more)
 
 ### Community 307 - "Greek Prime Minister AI Impact Meeting"
 Cohesion: 0.15
@@ -2169,8 +2159,8 @@ Cohesion: 0.19
 Nodes (13): Diversity background amplifies authenticity, LinkedIn reference people content intelligence, Priority Colombian network, Colombian production ML builder parallel, Santiago Valdarrama, Santiago Valdarrama scrape report, Santiago video agent content, Open source builder credibility (+5 more)
 
 ### Community 314 - "Santiago Valdarrama"
-Cohesion: 0.24
-Nodes (12): Santiago Valdarrama, OpenClaw formerly MoltBot, Santiago Valdarrama post about fastest OpenClaw installation, Step by step installation video, AI beyond coding, AI life management, Nori AI family assistant, Santiago Valdarrama post about managing life with AI (+4 more)
+Cohesion: 0.17
+Nodes (17): Avocket Landing Page Templates, Human Plus AI Web Design, Static Website Templates Post, Screenshot of Static Website Templates Post, Static Website Templates, Santiago Valdarrama, OpenClaw formerly MoltBot, Santiago Valdarrama post about fastest OpenClaw installation (+9 more)
 
 ### Community 315 - "analyze-posts.js"
 Cohesion: 0.27
@@ -2228,9 +2218,9 @@ Nodes (12): AI workflow setup, context automation, custom AI commands, Allie K M
 Cohesion: 0.21
 Nodes (12): end-of-year reflection prompts, LinkedIn post: end-of-year ChatGPT prompts, ChatGPT prompts, Claude Cowork prompts, Claude Excel prompts, Claude prompts, Grok prompts, Image and video prompts (+4 more)
 
-### Community 329 - "DeepLearning.AI"
-Cohesion: 0.05
-Nodes (43): Chris Achard, Google partnership, Build and Train an LLM with JAX, Andrew Ng LinkedIn post announcing Build and Train an LLM with JAX, A2A Agent2Agent Protocol, Google and IBM collaboration, Andrew Ng LinkedIn post announcing A2A Agent2Agent Protocol course, DeepLearning.AI (+35 more)
+### Community 329 - "Andrew Ng LinkedIn post announcing fine-tuning and reinforcement learning for LLMs course"
+Cohesion: 0.17
+Nodes (12): Chris Achard, Google partnership, Build and Train an LLM with JAX, Andrew Ng LinkedIn post announcing Build and Train an LLM with JAX, AMD, Fine-tuning and Reinforcement Learning for LLMs, Andrew Ng LinkedIn post announcing fine-tuning and reinforcement learning for LLMs course, post-training (+4 more)
 
 ### Community 330 - "Personal Image Model Training"
 Cohesion: 0.18
@@ -2284,9 +2274,9 @@ Nodes (12): FastAPI StreamingResponse, LLM calls, Pierre-Alexandre Broux, Repost
 Cohesion: 0.17
 Nodes (12): capability-requests/ Directory, Failure Classification, Gap Detection System, knowledge/requests/ Directory, Pattern Analysis, Purpose, Cross-Skill Signals, DSPy Adapter (+4 more)
 
-### Community 343 - "Observatory Dashboard"
-Cohesion: 0.17
-Nodes (12): Observatory Dashboard, About Desktop Screenshot, About Hero Copy, About Light Dashboard Layout, About Sidebar Navigation, Agent Loop Explanation, Agent Overview Grid, Dashboard Desktop Screenshot (+4 more)
+### Community 343 - "Observability Playbook"
+Cohesion: 0.18
+Nodes (13): Evaluation Trajectory JSONL, Langfuse Dataset Manager, Observability Playbook, Per-Agent Metrics, Structured Logging, Three-Layer Observability Stack, Trajectory JSONL Layer, Observatory Dashboard (+5 more)
 
 ### Community 344 - "TestSiloConnectivity"
 Cohesion: 0.20
@@ -2304,9 +2294,9 @@ Nodes (11): build_all_images_jsonl(), build_by_visual_type(), build_top_1000(), 
 Cohesion: 0.20
 Nodes (6): Test content validation logic., Content within limits passes., Content exceeding Twitter 280 limit is caught., Multiple platforms can violate limits., Platform names are case-insensitive., TestContentValidation
 
-### Community 348 - "TestGetPostAnalytics"
-Cohesion: 0.33
-Nodes (4): Test get_post_analytics method., Post analytics returns engagement data., Post analytics raises on 404., TestGetPostAnalytics
+### Community 348 - "LineageEdge"
+Cohesion: 0.25
+Nodes (6): LineageEdge, Any, BaseModel, field_validator, A directed relationship between two lineage nodes., _redact_metadata()
 
 ### Community 349 - "test_agents_routes.py"
 Cohesion: 0.32
@@ -2321,16 +2311,16 @@ Cohesion: 0.29
 Nodes (10): Path, test_compare_empty_current_report_fails(), test_compare_marks_new_failing_case_as_regression(), test_cycle_61_compare_detects_artifact_level_status_regression(), test_cycle_61_compare_falls_back_to_status_counts_for_legacy_diagnostics(), test_cycle_61_compare_skips_status_checks_for_mixed_version_snapshots(), test_simulate_content_intake_cases_compare_snapshots_fails_on_regression(), test_simulate_content_intake_cases_human_report() (+2 more)
 
 ### Community 352 - "Holus System Memory"
-Cohesion: 0.22
-Nodes (9): Secondary Product Audiences, Authority Engine Pivot, Holus System Memory, Isolated Trading Systems Boundary, Products as Proof Points, Social Media API Analytics Boundary, Specialist Dispatcher Pipeline, Thompson Sampling Strategy Bandit (+1 more)
+Cohesion: 0.12
+Nodes (17): Brand Consistency Gate, Secondary Product Audiences, Authority Engine Pivot, Content Quality Scoring, Holus System Memory, Isolated Trading Systems Boundary, Products as Proof Points, Social Media API Analytics Boundary (+9 more)
 
 ### Community 353 - "Allie K. Miller"
 Cohesion: 0.08
 Nodes (26): Allie K. Miller, Allie K. Miller audience and reach, Allie K. Miller career path, Current role: Independent AI advisor (Fortune 500 + startups). Former Global Head of ML Business Development for Startups & VC at AWS., LinkedIn handle alliekmiller, Allie K. Miller relevance to Juan, Allie K. Miller: What She Does Right, Allie K. Miller: What She Doesn't Do (+18 more)
 
-### Community 354 - "Andrew Ng LinkedIn post - Building and Evaluating Data Agents"
-Cohesion: 0.18
-Nodes (11): Building and Evaluating Data Agents, confident wrong answers, data agents, failure diagnosis, Andrew Ng LinkedIn post - Building and Evaluating Data Agents, silent failure, job-ready data analyst, Data Analytics Professional Certificate (+3 more)
+### Community 354 - "compute_blended_reward"
+Cohesion: 0.39
+Nodes (3): compute_blended_reward(), Compute blended reward with dynamic weighting. - Before 100 paired…, TestBlendedReward
 
 ### Community 355 - "TinyFish Accelerator Founders Post"
 Cohesion: 0.27
@@ -2344,9 +2334,9 @@ Nodes (9): LinkedIn followers: ~300K, Newsletter readers: 20K, Podcast: "The Dat
 Cohesion: 0.20
 Nodes (11): Coding Demo, GPT-OSS Watsonx Demo Post, IBM watsonx, OpenAI GPT-OSS, Enterprise AI Policy, SQL Skill Levels, AI Guardrails, IBM (+3 more)
 
-### Community 358 - "Andrew Ng LinkedIn post - Build AI Apps with MCP Servers"
-Cohesion: 0.11
-Nodes (19): Ben Kus, Box, Box Files, Build AI Apps with MCP Servers, Andrew Ng LinkedIn post - Build AI Apps with MCP Servers, MCP servers, agent collaboration, Agent Communication Protocol (+11 more)
+### Community 358 - "Andrew Ng LinkedIn post - Building Live Voice Agents with Google's ADK"
+Cohesion: 0.07
+Nodes (27): Building Live Voice Agents, Google's Agent Development Kit, Andrew Ng LinkedIn post - Building Live Voice Agents with Google's ADK, podcast scripting, recent AI news gathering, tool-using AI assistant, voice-activated AI assistant, Ben Kus (+19 more)
 
 ### Community 359 - "A deleted repost still emphasizes that practical alignment for agents is poorly understood because agents inherit context from peers, hostile prompts, environments, long runs, and open weights."
 Cohesion: 0.27
@@ -2372,9 +2362,9 @@ Nodes (11): Lemon Voice To Action Agent, Mac App Control, Lemon Voice To Action 
 Cohesion: 0.25
 Nodes (11): AI inference, Nebius, Next generation SaaS, Nebius slide about AI inference and SaaS, AI consulting work, Open source models at scale, Santiago Valdarrama post about open source models at scale, $500k to $1M ARR roadmap (+3 more)
 
-### Community 365 - "LangChain Federal GTM Hiring Announcement Post"
-Cohesion: 0.50
-Nodes (5): Paul N., Federal Agents Campaign, Founding GTM Lead U.S. Federal Government, Mission Success Agentic AI, LangChain Federal GTM Hiring Announcement Post
+### Community 365 - "results.py"
+Cohesion: 0.31
+Nodes (8): GrowthResponse, get_results(), _load_growth(), Any, get, Results / Growth routes — GET /api/v1/results., Read the growth snapshot from data/results/growth.json., Return growth metrics, platform stats, top posts, and trends.
 
 ### Community 366 - "Business Insider Side Hustle Repost"
 Cohesion: 0.18
@@ -2393,8 +2383,8 @@ Cohesion: 0.18
 Nodes (10): Adversary Notes, Confirmation bias check, Discarded Claims, Key Findings Summary, Options Compared, Recommendation, Research: Automated Prompt Optimization for Multi-Agent Systems, Sources (+2 more)
 
 ### Community 370 - "Current Surfaces"
-Cohesion: 0.18
-Nodes (11): Current Surfaces, Agent Grid Cards, Agent Status Badges, Agents Desktop Screenshot, Agents Light Dashboard Layout, Agents Sidebar Navigation, Content Desktop Screenshot, Content Light Dashboard Layout (+3 more)
+Cohesion: 0.12
+Nodes (16): Current Surfaces, Agent Grid Cards, Agent Status Badges, Agents Desktop Screenshot, Agents Light Dashboard Layout, Agents Sidebar Navigation, Evaluations Desktop Screenshot, Evaluations Light Dashboard Layout (+8 more)
 
 ### Community 371 - "pilaster"
 Cohesion: 0.18
@@ -2409,32 +2399,32 @@ Cohesion: 0.27
 Nodes (11): AI Suggestions, Pilaster Cloudflare R2 Storage, Memory Layer for ComfyUI, Pilaster Next.js App Router, pilaster Repository, Replicate Execution, Row Level Security, Stripe Credit Billing (+3 more)
 
 ### Community 374 - "[id]/page.tsx"
-Cohesion: 0.24
-Nodes (7): AgentDetailPage(), Props, verdictStyles, AgentSparkline(), Props, fetchAgent(), EvalVerdict
+Cohesion: 0.22
+Nodes (8): AgentDetailPage(), Props, revalidate, verdictStyles, AgentSparkline(), Props, fetchAgent(), EvalVerdict
 
 ### Community 375 - "Sidebar.tsx"
 Cohesion: 0.22
 Nodes (7): jetbrainsMono, metadata, plusJakarta, HolusLogo(), Props, nav, Sidebar()
 
-### Community 376 - ".test_content_queue_accepts_linkedin_content"
-Cohesion: 0.40
-Nodes (3): Path, Content queue can store LinkedIn posts for human review., Trajectory entries have the expected structure.
+### Community 376 - "donut_svg"
+Cohesion: 0.43
+Nodes (3): donut_svg(), Generate a donut/ring chart showing a percentage., TestDonut
 
 ### Community 377 - "resolve_api_key"
 Cohesion: 0.25
 Nodes (5): Resolve Holus Social API base URL with legacy fallback., Resolve Holus Social API key with legacy fallback., resolve_api_key(), resolve_base_url(), TestHolusSocialAPIHelpers
 
-### Community 378 - "Maduro Exfiltration Reaction"
-Cohesion: 0.50
-Nodes (4): Maduro, Maduro Exfiltration Reaction, US Exfiltration Claim, Venezuelan Regime Figures
+### Community 378 - "sparkline_svg"
+Cohesion: 0.43
+Nodes (3): Generate a sparkline SVG from a list of numeric values. Returns a minimal SVG…, sparkline_svg(), TestSparkline
 
-### Community 379 - "Juan Voice Profile"
-Cohesion: 0.22
-Nodes (10): Business Decision Translation, Credibility Anchor, Technical Translator, Hard-Fail Anti-Pattern Scan, Voice Guardian, Bilingual Guidelines, Juan Voice Profile, Rhetorical Devices (+2 more)
-
-### Community 380 - "Niche Research Queries"
+### Community 379 - "Dashboard Desktop Screenshot"
 Cohesion: 0.33
-Nodes (6): Competitor Content Queries, Industry News Queries, Niche Research Queries, Query Composition Guide, Trending Topics Queries, Viral Patterns Queries
+Nodes (6): Agent Overview Grid, Dashboard Desktop Screenshot, Dashboard Light Dashboard Layout, Dashboard Sidebar Navigation, KPI Cards, System Healthy Banner
+
+### Community 380 - "Knowledge and Learning System"
+Cohesion: 0.33
+Nodes (6): Knowledge and Learning System, Knowledge Base, Knowledge Gap Detection, Knowledge Requests, Trajectory Logging, Trajectory Contract
 
 ### Community 381 - "Research Configuration"
 Cohesion: 0.22
@@ -2469,12 +2459,12 @@ Cohesion: 0.27
 Nodes (10): gpt-oss-120b, gpt-oss-20b, GPT-OSS Models Post, Open Source Language Models, GPT-OSS Models Video Post, IBM Granite LLMs, Kate Soule, Small AI Models (+2 more)
 
 ### Community 389 - "LinkedIn screenshot introducing BeeAI as an IBM open source AI agent platform"
-Cohesion: 0.29
-Nodes (10): AI Agent Platform, BeeAI, IBM Open Source, LinkedIn screenshot introducing BeeAI as an IBM open source AI agent platform, BeeAI is presented as making work with AI agents simpler, more flexible, and more powerful, AI Agent Integration, LinkedIn screenshot tutorial on creating an MCP server and integrating it with an AI agent, MCP Server (+2 more)
+Cohesion: 0.60
+Nodes (5): AI Agent Platform, BeeAI, IBM Open Source, LinkedIn screenshot introducing BeeAI as an IBM open source AI agent platform, BeeAI is presented as making work with AI agents simpler, more flexible, and more powerful
 
 ### Community 390 - "LinkedIn screenshot announcing IBM Research CUGA computer-using generalist agent"
-Cohesion: 0.29
-Nodes (10): CUGA computer-using generalist agent, CUGA is described as a project capable of achieving a wide range of tasks across interfaces, IBM Research, LinkedIn screenshot announcing IBM Research CUGA computer-using generalist agent, UI Automation Across Interfaces, DeepSeek R1, LinkedIn screenshot of a competitive research multi-agent workflow with DeepSeek R1 running locally, Local Reasoning Model (+2 more)
+Cohesion: 0.60
+Nodes (5): CUGA computer-using generalist agent, CUGA is described as a project capable of achieving a wide range of tasks across interfaces, IBM Research, LinkedIn screenshot announcing IBM Research CUGA computer-using generalist agent, UI Automation Across Interfaces
 
 ### Community 391 - "Midjourney compared with DALL-E 2 and Stable Diffusion"
 Cohesion: 0.18
@@ -2488,9 +2478,9 @@ Nodes (10): AI Leaders Versus AI Tourists, Clarity Before Compute, LinkedIn scre
 Cohesion: 0.24
 Nodes (10): Direct-address and how-to hooks, Format performance ranking, LinkedIn content analysis raw findings, Long substantive posts win, Nina image-text architecture performance, Nina Duran scrape report, PDF carousels get highest engagement, Ruben cheat-sheet performance (+2 more)
 
-### Community 394 - "app.py"
-Cohesion: 0.11
-Nodes (27): FastAPI, lifespan(), Observatory API — FastAPI application factory., Log resolved data source paths on startup., GrowthResponse, bandit_arms(), drift_check(), gaps() (+19 more)
+### Community 394 - "_read_trajectory"
+Cohesion: 0.23
+Nodes (14): bandit_arms(), drift_check(), gaps(), improvement_summary(), Any, get, Thompson Sampling arm performance., Open capability and knowledge gaps. (+6 more)
 
 ### Community 395 - "Claim that the author returned to Google Ads for a small personal campaign after years away"
 Cohesion: 0.33
@@ -2504,13 +2494,13 @@ Nodes (10): ElevenLabs Official Partner, Audi Revolut F1 Team Grid Partnership, 
 Cohesion: 0.27
 Nodes (10): LEANN, Local RAG, Local RAG storage limits are obsolete with LEANN compression, Ollama support, On-device retrieval, Nina Fernanda Duran LinkedIn post screenshot: Local RAG storage limits are obsolete with LEANN compression, Private local AI, Pruned high-degree graph (+2 more)
 
-### Community 398 - "lineage.py"
-Cohesion: 0.25
-Nodes (13): _configured_lineage_dir(), export_lineage(), get_lineage_node(), lineage_manifest(), Any, get, Path, Read-only Holus lineage export and diagnostics endpoints. (+5 more)
+### Community 398 - "_configured_lineage_dir"
+Cohesion: 0.26
+Nodes (12): _configured_lineage_dir(), export_lineage(), get_lineage_node(), lineage_manifest(), Any, get, Path, Return the versioned, privacy-safe manifest only when its ledger validates. (+4 more)
 
-### Community 399 - "Claude can perform competitive intelligence by comparing job listings with SEC filings"
-Cohesion: 0.13
-Nodes (19): Competitive intelligence, Context retrieval, Job listing analysis, Claude can perform competitive intelligence by comparing job listings with SEC filings, Ruben Hassid LinkedIn post screenshot: Claude can perform competitive intelligence by comparing job listings with SEC filings, Product launch prediction, SEC filings, Strategic briefing (+11 more)
+### Community 399 - "Claude can produce better presentations when the workflow separates task definition, context files, references, research, outline, Gamma generation, theme, and alignment"
+Cohesion: 0.27
+Nodes (10): Claude slide workflow, Context files, Gamma presentation generation, Claude can produce better presentations when the workflow separates task definition, context files, references, research, outline, Gamma generation, theme, and alignment, Ruben Hassid LinkedIn post screenshot: Claude can produce better presentations when the workflow separates task definition, context files, references, research, outline, Gamma generation, theme, and alignment, Reference deck, Slide outline, Theme alignment (+2 more)
 
 ### Community 400 - "LinkedIn audience growth can be systematized with profile optimization, ICP discovery, viral formats, comment tactics, and AI-assisted assets"
 Cohesion: 0.27
@@ -2528,13 +2518,13 @@ Nodes (10): AI For Analysts Training, Creator Metrics, Data Analyst Job Impact, 
 Cohesion: 0.24
 Nodes (9): _arm_to_style(), generate_cards(), Any, Path, LinkedIn post card generator — SPEC-035. Renders styled text cards as PNG…, Generate PNG cards for each arm. Args: hook: The post hook text body: The post…, Map arm id to CSS style config., Generate HTML for a card. (+1 more)
 
-### Community 404 - "define_tool"
-Cohesion: 0.40
-Nodes (4): define_tool(), Build a tool definition in Anthropic's schema format. Example:: search_tool =…, Tests for the define_tool helper., TestDefineTool
+### Community 404 - "claude_api/client.py"
+Cohesion: 0.24
+Nodes (6): define_tool(), Central Claude API client for all Holus agents. Handles: - Prompt caching…, Build a tool definition in Anthropic's schema format. Example:: search_tool =…, Claude API integration with prompt caching, model routing, and batch support., Tests for the define_tool helper., TestDefineTool
 
-### Community 405 - "Constitutional AI Evaluation"
-Cohesion: 0.13
-Nodes (15): Edit Safety Query Rule, fleet_graphify.py Wrapper, Graph Update Rule, Graphify Knowledge Graph, Graphify Workflow, Agent Registry Single Source Of Truth, Holus Agent Instructions, Constitutional AI Bai 2022 (+7 more)
+### Community 405 - "memory/knowledge.py"
+Cohesion: 0.33
+Nodes (4): KnowledgeFile, Knowledge base loader: validate and load knowledge files for agent context.…, A parsed and validated knowledge file., Whether the file passed all validation checks.
 
 ### Community 406 - "Taste Audit Holus Observatory Frontend"
 Cohesion: 0.22
@@ -2576,9 +2566,9 @@ Nodes (9): AI Innovation Laws, AI Innovation Laws Screenshot, AI will not rescue
 Cohesion: 0.31
 Nodes (9): AI Responsibility Is Yours, Leader Ownership Of AI Work, LinkedIn screenshot: AI is not someone else job, Executive AI Accountability, GenAI ROI, LinkedIn screenshot: GenAI ROI question, 95 Percent GenAI Initiative Failure Rate, GenAI Failure As Leadership Problem (+1 more)
 
-### Community 416 - "Personal Responsibility Growth Quote"
-Cohesion: 0.50
-Nodes (4): Future Orientation, Growth Decision, Healing Responsibility, Personal Responsibility Growth Quote
+### Community 416 - "check_products_yaml"
+Cohesion: 0.47
+Nodes (3): check_products_yaml(), Check that config/products.yaml exists and parses., TestCheckProductsYaml
 
 ### Community 417 - "CianaParrot Community Spotlight Post"
 Cohesion: 0.28
@@ -2624,14 +2614,6 @@ Nodes (17): DSPy Khattab 2023, DSPy Optimization, trajectory.jsonl Learning Log,
 Cohesion: 0.36
 Nodes (9): Black Forest Labs, FLUX Cost Estimation, FLUX.1 dev, FLUX.1.1 pro, FLUX.1 schnell, Replicate FLUX API, Replicate Platform, FLUX Safety Limitations (+1 more)
 
-### Community 428 - "auto_publish.py"
-Cohesion: 0.14
-Nodes (12): _get_judge_score(), _publish_piece(), Any, Automated content publishing gate based on judge scores. Reads pending_review…, Fail closed; external publishing belongs to the reviewed content API., Send Telegram notification for PARTIAL items needing review., Extract judge score from queue item (may be in different locations)., Update a queue item file with new fields. (+4 more)
-
-### Community 429 - "_detect_failure_streaks"
-Cohesion: 0.33
-Nodes (4): _detect_failure_streaks(), Detect consecutive failure streaks per agent. Returns {agent_id: max_streak}., Unit tests for _detect_failure_streaks., TestDetectFailureStreaks
-
 ### Community 430 - "Verification Results Holus"
 Cohesion: 0.25
 Nodes (9): Heatmap Not Responsive, Responsive Design Findings, Existing Acceptance Test Coverage, Failure Classification Summary, Playwright Frontend Tests Needed, Spec 010 Missing Acceptance Tests, Spec 029 375px Responsive Failure, Spec 029 No Automated Tests (+1 more)
@@ -2640,25 +2622,25 @@ Nodes (9): Heatmap Not Responsive, Responsive Design Findings, Existing Acceptan
 Cohesion: 0.22
 Nodes (9): Golden Content Intake Cases, Intent online_article, Intent product_context, Intent raw_thought, Intent research_note, Pasted URL Article, Product Context Pilaster, Raw Thought Builder Note (+1 more)
 
-### Community 432 - "Storyteller"
-Cohesion: 0.25
-Nodes (8): CTA Strategist, Forbidden Engagement Bait Closers, Pillar-Matched Closer Patterns, Builder Voice Body Rules, Narrative Arc Selection, Storyteller, DM Strategy, Engagement Tactics
+### Community 432 - "LinkedIn screenshot tutorial on creating an MCP server and integrating it with an AI agent"
+Cohesion: 0.60
+Nodes (5): AI Agent Integration, LinkedIn screenshot tutorial on creating an MCP server and integrating it with an AI agent, MCP Server, ReAct Agents, MCP servers are framed as making tools easier to integrate into ReAct agents
 
-### Community 433 - "Holus Task Priority Queue"
-Cohesion: 0.25
-Nodes (8): Brand Consistency Gate, Content Quality Scoring, Holus Task Priority Queue, PROXY_URL Consolidation, Spec Status Matrix, Sprint 9 Quality Engine, System Diagnostician, Threads and Twitter Truncation Issue
+### Community 433 - "LinkedIn screenshot of a competitive research multi-agent workflow with DeepSeek R1 running locally"
+Cohesion: 0.60
+Nodes (5): DeepSeek R1, LinkedIn screenshot of a competitive research multi-agent workflow with DeepSeek R1 running locally, Local Reasoning Model, Multi-Agent Workflow, Competitive Research Automation
 
 ### Community 434 - "holus-canvas-registry.canvas.tsx"
-Cohesion: 0.36
+Cohesion: 0.32
 Nodes (7): CanvasEntry, ENTRIES, HolusCanvasRegistry(), Status, statusTone(), Tier, tierTone()
 
 ### Community 435 - "Blocking compliance gate"
 Cohesion: 0.25
 Nodes (8): Circuit breakers, Blocking compliance gate, Opus draft phase, Engagement prediction and publish phase, Humanization evaluator-optimizer loop, PoLL review consensus gate, Parallel research phase, Trigger phase
 
-### Community 436 - "Andrew Ng LinkedIn post - Building Live Voice Agents with Google's ADK"
-Cohesion: 0.15
-Nodes (13): Building Live Voice Agents, Google's Agent Development Kit, Andrew Ng LinkedIn post - Building Live Voice Agents with Google's ADK, podcast scripting, recent AI news gathering, tool-using AI assistant, voice-activated AI assistant, Building AI Voice Agents for Production (+5 more)
+### Community 436 - "LangChain Federal GTM Hiring Announcement Post"
+Cohesion: 0.50
+Nodes (5): Paul N., Federal Agents Campaign, Founding GTM Lead U.S. Federal Government, Mission Success Agentic AI, LangChain Federal GTM Hiring Announcement Post
 
 ### Community 437 - "Apps Killed By AI Agents"
 Cohesion: 0.32
@@ -2692,9 +2674,9 @@ Nodes (8): business AI customer interaction, Chatbase Agent Page, Alex Wang Link
 Cohesion: 0.43
 Nodes (8): AI training ROI, LinkedIn post: AI ROI teams are not using, Madison Square Park AI training, teaching AI to strangers, free AI training, LinkedIn post: free AI training in Madison Square Park, Madison Square Park, public AI education
 
-### Community 445 - "TestStrategyBandit"
-Cohesion: 0.15
-Nodes (4): bandit(), fixture, Tests for Thompson Sampling strategy bandit., TestStrategyBandit
+### Community 445 - "Content Desktop Screenshot"
+Cohesion: 0.40
+Nodes (5): Content Desktop Screenshot, Content Light Dashboard Layout, Content Pipeline Kanban, Content Sidebar Navigation, Draft Review Published Columns
 
 ### Community 446 - "AI Evals"
 Cohesion: 0.25
@@ -2748,9 +2730,9 @@ Nodes (8): Content Topic Selection, LinkedIn Screenshot: Tech topic overload for
 Cohesion: 0.25
 Nodes (8): Fine Tuning, Hands-On Large Language Models, Multimodal LLMs, Hands-On Large Language Models Post, Production AI Tutorials, Production LLM work requires a broader curriculum than simple introductory examples, Screenshot of Hands-On Large Language Models Post, Semantic Search
 
-### Community 459 - "._canonical_path"
-Cohesion: 0.18
-Nodes (6): Any, Path, Return all variant .md files under ``config/prompts/{agent_id}/``. Returns:…, Lazy-load AGENTS.yaml (cached for the lifetime of the loader)., Return the Layer-2 .md path from AGENTS.yaml, or None if unknown., Resolve a prompt through the three-layer hierarchy. Layer 1 - optimizer variant…
+### Community 459 - ".test_content_queue_accepts_linkedin_content"
+Cohesion: 0.40
+Nodes (3): Path, Content queue can store LinkedIn posts for human review., Trajectory entries have the expected structure.
 
 ### Community 460 - "Ona AI Maintenance Automation Post"
 Cohesion: 0.43
@@ -2776,13 +2758,13 @@ Nodes (8): scripts, build, dev, e2e, lint, start, test, test:watch
 Cohesion: 0.14
 Nodes (9): List all agents with their status from AGENTS.yaml., AgentInfo, Central catalog of all Holus agents. Reads agentic/agents/AGENTS.yaml., Return agents, optionally filtered. Args: type: Filter by agent type…, Return the :class:`AgentInfo` for *agent_id*. Raises: KeyError: If the agent is…, Return all agents with ``status == "active"``., Return all agents with ``type == "evaluator"``., Read the .md prompt file for *agent_id*. Resolves through PromptLoader layers:… (+1 more)
 
-### Community 466 - "agents/base.py"
-Cohesion: 0.09
-Nodes (14): Redis, Abstract base class for all Holus agents. Every domain agent (marketing,…, Lazy-loaded Langfuse client., Holus agents: domain-specific AI workers., Redis-backed event bus for inter-agent communication. Architecture: - Redis…, KillSwitchScope, StrEnum, Kill switch system for emergency agent shutdown. Three scopes: 1. **Per-agent**… (+6 more)
+### Community 466 - "Complexity refactor: flowchart rendering"
+Cohesion: 0.50
+Nodes (3): Complexity refactor: flowchart rendering, Result, Selection evidence
 
-### Community 467 - "Design And ML Dinner Post"
-Cohesion: 0.67
-Nodes (4): Design And ML Intersection, Jason Yuan, Design And ML Dinner Post, Small Expert Dinner
+### Community 467 - "Maduro Exfiltration Reaction"
+Cohesion: 0.50
+Nodes (4): Maduro, Maduro Exfiltration Reaction, US Exfiltration Claim, Venezuelan Regime Figures
 
 ### Community 468 - "UX Review Holus Observatory Frontend"
 Cohesion: 0.25
@@ -2796,13 +2778,17 @@ Nodes (5): POST /api/v1/content/from-thought., Instagram image and LinkedIn caro
 Cohesion: 0.25
 Nodes (5): PATCH /api/v1/content/{piece_id}/visual-choice., Choosing variant A sets visual_chosen='a'., Choosing variant B swaps rendered_image_path to B's path., Returns 404 for a non-existent piece., TestVisualChoice
 
-### Community 472 - "Knowledge Base Topic Index"
-Cohesion: 0.24
-Nodes (11): Content Format Taxonomy, Content Mix Strategy, LinkedIn Post Template, Framework Selection Logic, LinkedIn-First Repurposing Rule, Cross-Repo Change Log, Social Media Analytics MCP Tools, Platform Playbook (+3 more)
+### Community 471 - "ChatGPT for Excel and Claude for Excel are tested on a difficult macroeconomic workbook with 1,000 years of English history across over 100 tabs."
+Cohesion: 0.27
+Nodes (11): ChatGPT for Excel, Claude for Excel, ChatGPT for Excel and Claude for Excel are tested on a difficult macroeconomic workbook with 1,000 years of English history across over 100 tabs., LinkedIn Screenshot: Excel assistants historical data test, Macroeconomic Data Analysis, AI Quality Thresholds, Excel Gene List Errors, Human Baseline Error (+3 more)
 
-### Community 473 - "Holus Architecture"
-Cohesion: 0.38
-Nodes (7): Holus Architecture, Performance Snapshots, Phase 1 One Working Loop, Phase 2 Automate, Phase 3 Optimize, Structured Prompt Recipes, Three Layer Prompt Resolution
+### Community 472 - "Personal Responsibility Growth Quote"
+Cohesion: 0.50
+Nodes (4): Future Orientation, Growth Decision, Healing Responsibility, Personal Responsibility Growth Quote
+
+### Community 473 - "Design And ML Dinner Post"
+Cohesion: 0.67
+Nodes (4): Design And ML Intersection, Jason Yuan, Design And ML Dinner Post, Small Expert Dinner
 
 ### Community 474 - "Carousel hook slide visual baseline"
 Cohesion: 0.29
@@ -2820,9 +2806,13 @@ Nodes (7): AI Weather Forecasting Accessibility, NVIDIA Earth-2 Open Weather Mod
 Cohesion: 0.29
 Nodes (7): Lawyers Using AI Workflow Exploration, Legal AI Workflow Interface, Legal Magic Workflow Automation UI, Plain-Language Legal Workflow Prompt, AI Test Automation Workflow, Jira Story Screenshots To Test Automation Tool, Test Automation Takes Years Caption
 
-### Community 478 - "JudgeEvaluation"
-Cohesion: 0.18
-Nodes (8): JudgeEvaluation, Any, Path, Evaluate an agent's output, retrying on transient failures. Args: task: The…, Make the LLM call for judge evaluation. Raises on network/HTTP errors., Evaluate multiple outputs. Each item in *items* must have ``task``,…, Evaluate with domain-specific routing based on content_type. Uses…, Structured output from the Judge Agent.
+### Community 478 - "judge.py"
+Cohesion: 0.15
+Nodes (9): JudgeEvaluation, Any, Path, Judge Agent: independent quality evaluation of agent outputs. The Judge is the…, Evaluate an agent's output, retrying on transient failures. Args: task: The…, Make the LLM call for judge evaluation. Raises on network/HTTP errors., Evaluate multiple outputs. Each item in *items* must have ``task``,…, Evaluate with domain-specific routing based on content_type. Uses… (+1 more)
+
+### Community 479 - "test_store.py"
+Cohesion: 0.32
+Nodes (12): Return a stable relationship ID so repeated emissions are idempotent., stable_edge_id(), _node(), datetime, fixture, Path, Contract tests for the Holus-owned lineage JSONL boundary., test_contract_stable_ids_hashes_and_redacts_metadata() (+4 more)
 
 ### Community 480 - "My Computer Capability"
 Cohesion: 0.29
@@ -2844,9 +2834,9 @@ Nodes (7): Critical AI Questioning, Fluent AI Output Can Reduce Scrutiny, Linked
 Cohesion: 0.48
 Nodes (7): Chart shows 2019-2023 OnlyFans revenue rising while condom sales index falls, Claim that condom sales are falling while new digital platform income such as OnlyFans is rising, Condom sales volume, OnlyFans revenue, LinkedIn screenshot: synthetic versus real intimacy chart, Real intimacy, Synthetic intimacy
 
-### Community 485 - "Agents Write And Execute Code Claim"
-Cohesion: 0.33
-Nodes (7): Agent Analysis Runtime, Agents Write And Execute Code Claim, Code Execution For Agents, Agent Code Execution, LangSmith Sandboxes, LangSmith Sandboxes Launch, Video Product Demo
+### Community 485 - "#LangChain"
+Cohesion: 0.18
+Nodes (13): #LangChain, Agent Analysis Runtime, Agents Write And Execute Code Claim, Code Execution For Agents, Agent Code Execution, LangSmith Sandboxes, LangSmith Sandboxes Launch, Video Product Demo (+5 more)
 
 ### Community 486 - "LinkedIn creator research blueprint"
 Cohesion: 0.29
@@ -2855,6 +2845,10 @@ Nodes (7): Action items framework, Content taxonomy, LinkedIn creator research b
 ### Community 487 - "MasterClass Partnership Announcement"
 Cohesion: 0.29
 Nodes (7): ElevenLabs Partnership, Interactive Learning Experiences, MasterClass, MasterClass Partnership Announcement, Celebrity education partnership applies voice technology to interactive learning and media, Real-Time Interactive Icons, Screenshot of MasterClass Partnership Announcement
+
+### Community 488 - "evaluations.py"
+Cohesion: 0.24
+Nodes (12): JSONResponse, EvaluationResult, EvaluationsResponse, EvaluationSummary, get_evaluation_summary(), list_evaluations(), _load_evaluations(), get (+4 more)
 
 ### Community 490 - "test_registry.py"
 Cohesion: 0.25
@@ -2865,8 +2859,8 @@ Cohesion: 0.27
 Nodes (10): Agent memory and context, AgentOps observability, AI agent components, End-user agent applications, Knowledge graph context, AI agent builders should assemble open-source components across memory, tools, vector databases, AgentOps, and applications, MCP tool integration, Nina Fernanda Duran LinkedIn post screenshot: AI agent builders should assemble open-source components across memory, tools, vector databases, AgentOps, and applications (+2 more)
 
 ### Community 492 - "._parse_response"
-Cohesion: 0.39
-Nodes (3): Parse LLM response into JudgeEvaluation. Raises JSONDecodeError on bad JSON., TestParseResponse, _valid_judge_response()
+Cohesion: 0.31
+Nodes (5): JudgeVerdict, StrEnum, Parse LLM response into JudgeEvaluation. Raises JSONDecodeError on bad JSON., TestParseResponse, _valid_judge_response()
 
 ### Community 493 - "Microsoft Foundry Model Agnostic Platform Post"
 Cohesion: 0.48
@@ -2893,8 +2887,8 @@ Cohesion: 0.29
 Nodes (7): 5.1 Path Commands, 5.2 SVG Gradients & Patterns, 5.3 SVG Filter Primitives (Complete), 5.4 Generative Textures (feTurbulence Recipes), 5.5 SVG Text, 5.6 Decorative Elements, 5. SVG Capabilities
 
 ### Community 500 - "Holus Observatory Target"
-Cohesion: 0.43
-Nodes (7): Anti-Persona, Glanceability of System Health, Holus Observatory Target, Operational Tone of Voice, Read-Only Observatory, Solo Founder Operator Juan, Hero KPI Treatment
+Cohesion: 0.27
+Nodes (10): Anti-Persona, Glanceability of System Health, Holus Observatory Target, Operational Tone of Voice, Read-Only Observatory, Solo Founder Operator Juan, Capability Statement Copy, Hero KPI Treatment (+2 more)
 
 ### Community 501 - "Holus Alerting Rules"
 Cohesion: 0.29
@@ -2912,9 +2906,9 @@ Nodes (7): Acceptance Criteria, API Contract, Goals and Non Goals, Implementatio
 Cohesion: 0.43
 Nodes (7): Claude API Client with Prompt Caching, Configuration Management, Core Infrastructure, Kill Switch System, Langfuse Observability, Redis Event Bus, Shared Pydantic Models
 
-### Community 505 - "test_auto_publish.py"
-Cohesion: 0.11
-Nodes (12): Generate and store a reflection for rejected content. Uses judge feedback to…, _trigger_reflexion(), fixture, queue_dir(), Tests for auto_publish module — verdict handling, dry-run, publish, reject,…, Create a temp content-queue directory and patch QUEUE_DIR., Score exactly at PASS_THRESHOLD should publish., Score exactly at PARTIAL_THRESHOLD should be PARTIAL. (+4 more)
+### Community 505 - "TestThresholds"
+Cohesion: 0.29
+Nodes (3): Score exactly at PASS_THRESHOLD should publish., Score exactly at PARTIAL_THRESHOLD should be PARTIAL., TestThresholds
 
 ### Community 506 - "TestListContent"
 Cohesion: 0.29
@@ -3057,16 +3051,16 @@ Cohesion: 0.33
 Nodes (5): Agent Evaluation Accuracy, API Cost Projections, Benchmarks Research, Content Generation Latency, Rendering Performance
 
 ### Community 543 - "Event-Driven Agentic Document Workflows"
-Cohesion: 0.15
-Nodes (13): Long-Term Agentic Memory, Long-Term Agentic Memory Course Post, Asynchronous Agent Work, Event-Driven Agentic Document Workflows, Event-Driven Agentic Document Workflows Course Post, LLM Calls And Tool Use, Harrison Chase niche: Agent orchestration, LangGraph, agent observability, LangGraph (+5 more)
+Cohesion: 0.18
+Nodes (11): Long-Term Agentic Memory, Long-Term Agentic Memory Course Post, Asynchronous Agent Work, Event-Driven Agentic Document Workflows, Event-Driven Agentic Document Workflows Course Post, LLM Calls And Tool Use, LangGraph, LangChain Docs Changelog (+3 more)
 
 ### Community 545 - "Synthesis: What To Build Now"
 Cohesion: 0.33
 Nodes (6): NOT Building Now, Priority 1: DSPy Adapter (~150 lines), Priority 2: SPRT Rollback (~50 lines), Priority 3: Holdout Eval Signals (~30 lines), Priority 4: /verify Calibration Mode (~80 lines), Synthesis: What To Build Now
 
-### Community 546 - "AI prompts can make skill acquisition easier through 80/20 planning, one-pagers, skill ladders, and teach-back loops"
-Cohesion: 0.27
-Nodes (10): 80/20 learning plan, AI learning prompts, Beginner mistakes, AI prompts can make skill acquisition easier through 80/20 planning, one-pagers, skill ladders, and teach-back loops, One-pager prompt, Ruben Hassid LinkedIn post screenshot: AI prompts can make skill acquisition easier through 80/20 planning, one-pagers, skill ladders, and teach-back loops, Practice scenarios, Skill ladder (+2 more)
+### Community 546 - "Stanford CS229 lecture notes make rigorous machine learning education freely accessible"
+Cohesion: 0.11
+Nodes (23): GRPO, Andrew Ng LinkedIn post - Reinforcement Fine-Tuning LLMs with GRPO, LLM improvement, Reinforcement Fine-Tuning LLMs with GRPO, reinforcement learning, Machine learning fundamentals, Stanford CS229 lecture notes make rigorous machine learning education freely accessible, Open-access AI education (+15 more)
 
 ### Community 547 - "Engagement Desktop Screenshot"
 Cohesion: 0.33
@@ -3140,10 +3134,6 @@ Nodes (9): Content Queue Human Approval Gate, Content Humanization Gate, Disable
 Cohesion: 0.29
 Nodes (7): LLMFit, Local Model Hardware Optimization, LLMFit Hardware Sweet Spot Post, RAM GPU Sweet Spot, Hardware sizing helps match local LLM workloads to available RAM and GPU constraints, Screenshot of LLMFit Hardware Sweet Spot Post, Nina Fernanda Duran
 
-### Community 567 - "Allie K. Miller LinkedIn post summarizing OpenAI release cadence"
-Cohesion: 0.25
-Nodes (8): Greg Brockman, OpenAI Dev Day, Allie K. Miller LinkedIn post inviting questions for Greg Brockman interview, private AI leader interview, OpenAI new releases, Allie K. Miller LinkedIn post summarizing OpenAI release cadence, rapid AI product launches, video demo format
-
 ### Community 568 - "Allie K. Miller LinkedIn post on Google Career Dreamer"
 Cohesion: 0.40
 Nodes (5): AI career mapping, Career Dreamer, career potential planning, Google, Allie K. Miller LinkedIn post on Google Career Dreamer
@@ -3184,10 +3174,6 @@ Nodes (7): Input Order Sensitivity, LLM Accuracy, Non-Reasoning LLMs, Prompt Rep
 Cohesion: 0.29
 Nodes (7): 2.1 Variable Fonts, 2.2 OpenType Features, 2.3 Text Effects, 2.4 Font Pairing, 2.5 Spacing as Design, 2.6 Writing Modes, 2. Typography
 
-### Community 578 - "test_preflight.py"
-Cohesion: 0.33
-Nodes (4): check_memory_file(), Check that MEMORY.md exists., Tests for the preflight check module., TestCheckMemoryFile
-
 ### Community 579 - "Using AI to learn can make people retain less knowledge even while they believe they are learning more, and tutoring design matters."
 Cohesion: 0.60
 Nodes (5): AI Tutoring, Using AI to learn can make people retain less knowledge even while they believe they are learning more, and tutoring design matters., Educational Design, Learning Retention, LinkedIn Screenshot: AI tutoring retention warning
@@ -3224,10 +3210,6 @@ Nodes (5): AI Engineer Transition, Coder AI Skill Wall, Model Training Literacy,
 Cohesion: 0.70
 Nodes (5): Long Form Speech Stability, Multi Speaker Generation, Real Time Text To Speech, VibeVoice Open Source Voice AI, VibeVoice Voice AI Post
 
-### Community 588 - "Static Website Templates Post"
-Cohesion: 0.60
-Nodes (5): Avocket Landing Page Templates, Human Plus AI Web Design, Static Website Templates Post, Screenshot of Static Website Templates Post, Static Website Templates
-
 ### Community 589 - "SambaNova Agentic AI Chip Post"
 Cohesion: 0.60
 Nodes (5): Agentic App Inference Cost, Intel Collaboration, SambaNova Agentic AI Chip Post, SambaNova Agentic AI Chip, Screenshot of SambaNova Agentic AI Chip Post
@@ -3248,21 +3230,9 @@ Nodes (5): Documentation Update, error display behavior, local variable privacy,
 Cohesion: 0.40
 Nodes (5): Community Milestone, FastAPI full-stack template GitHub milestone, full-stack template, GitHub stars milestone, zero issue backlog
 
-### Community 594 - "Evaluations Desktop Screenshot"
-Cohesion: 0.40
-Nodes (5): Evaluations Desktop Screenshot, Evaluations Light Dashboard Layout, Evaluations Sidebar Navigation, Pass Review Fail Summary, Quality Heatmap
-
 ### Community 595 - "Followers Desktop Screenshot"
 Cohesion: 0.40
 Nodes (5): Daily Net Change Bars, Follower Growth Chart, Followers Desktop Screenshot, Followers Light Dashboard Layout, Followers Sidebar Navigation
-
-### Community 596 - "RenderSpec"
-Cohesion: 0.06
-Nodes (27): Brand visual identity loader. Loads config/brand-visual.yaml and converts it to…, build_carousel_pdf(), _inject_auto_svg(), Any, Path, Carousel PDF builder — converts carousel outline JSON to a rendered PDF. Takes…, Render a carousel outline to a PDF file. Args: outline: Dict from…, Auto-generate SVG charts for slides that benefit from them. The LLM generates… (+19 more)
-
-### Community 597 - "Knowledge Desktop Screenshot"
-Cohesion: 0.40
-Nodes (5): Knowledge Desktop Screenshot, Knowledge File Freshness Table, Knowledge Light Dashboard Layout, Knowledge Sidebar Navigation, Semantic Memory Metrics
 
 ### Community 598 - "Results Desktop Screenshot"
 Cohesion: 0.40
@@ -3372,10 +3342,6 @@ Nodes (4): Longest Roland Garros Final, Prince Of Clay, Roland Garros Final Post
 Cohesion: 0.67
 Nodes (4): Langflow Integration, LinkedIn screenshot announcing Langflow integration in watsonx, Visual AI Workflow Builder, watsonx
 
-### Community 626 - "Armand Ruiz"
-Cohesion: 0.67
-Nodes (4): AI App Builder, LinkedIn screenshot amplifying Lovable 2.0 and vibe coding, Lovable 2.0, Armand Ruiz
-
 ### Community 627 - "LinkedIn screenshot describing a live AI demo for custom interaction cloud"
 Cohesion: 0.67
 Nodes (4): AI Interactive Experience, Custom Interaction Cloud, LinkedIn screenshot describing a live AI demo for custom interaction cloud, Live AI Demo
@@ -3384,9 +3350,9 @@ Nodes (4): AI Interactive Experience, Custom Interaction Cloud, LinkedIn screens
 Cohesion: 0.67
 Nodes (4): LinkedIn screenshot about the Netflix Carlos Alcaraz documentary My Way, Netflix Carlos Alcaraz Documentary, Sports Storytelling, Tennis Fandom
 
-### Community 629 - "LinkedIn screenshot announcing an AI Factory Game distinct from a data center game"
-Cohesion: 0.67
-Nodes (4): AI Factory Game, Data Center Game, LinkedIn screenshot announcing an AI Factory Game distinct from a data center game, NVIDIA AI Factory Theme
+### Community 629 - "Armand Ruiz"
+Cohesion: 0.50
+Nodes (5): AI Factory Game, Data Center Game, LinkedIn screenshot announcing an AI Factory Game distinct from a data center game, NVIDIA AI Factory Theme, Armand Ruiz
 
 ### Community 630 - "LinkedIn screenshot captioned welcome to the future with a stage presentation video"
 Cohesion: 0.67
@@ -3427,10 +3393,6 @@ Nodes (4): AI Enneagram Quiz, Finished Dish Versus Dishes On Demand, Generative 
 ### Community 639 - "The AI Forecast Episode"
 Cohesion: 0.83
 Nodes (4): The AI Forecast Episode, Optimist And Pragmatist Views On AI, LinkedIn screenshot: optimist and pragmatist on The AI Forecast, Real Implications Of AI
-
-### Community 640 - "Kimi K2.5 Local Running Guide"
-Cohesion: 0.60
-Nodes (6): GGUF Runtime, Kimi K2.5 Local Running Guide, Kimi K2.5 Local Model Post, Model Benchmarks, Trillion Parameter Local LLM, Unsloth Dynamic Quantization
 
 ### Community 641 - "Jensen Huang Served Hot Green Tea"
 Cohesion: 0.83
@@ -3517,8 +3479,8 @@ Cohesion: 0.33
 Nodes (3): Path, Re-read AGENTS.yaml from disk. Useful for tests and long-running processes., Parse AGENTS.yaml and populate the internal dict. Raises: FileNotFoundError: If…
 
 ### Community 662 - "strategy_bandit.py"
-Cohesion: 0.25
-Nodes (5): Thompson Sampling strategy engine for content decisions. Multi-armed bandit…, Result of a Thompson Sampling suggestion., Suggest which content to create next via Thompson Sampling. Optionally filter…, Sample from the posterior distribution (Normal-Inverse-Gamma). Returns a…, SuggestionResult
+Cohesion: 0.17
+Nodes (8): Thompson Sampling strategy engine for content decisions. Multi-armed bandit…, Result of a Thompson Sampling suggestion., Suggest which content to create next via Thompson Sampling. Optionally filter…, Sample from the posterior distribution (Normal-Inverse-Gamma). Returns a…, SuggestionResult, bandit(), fixture, Tests for Thompson Sampling strategy bandit.
 
 ### Community 667 - "Canvas layer registry"
 Cohesion: 0.67
@@ -3560,14 +3522,6 @@ Nodes (3): AI multitasking, LinkedIn post: AI multitasking insanity, parallel AI
 Cohesion: 0.67
 Nodes (3): LinkedIn post: offline AI on a laptop, local AI without internet, offline AI on a laptop
 
-### Community 677 - "_read_key_from_dotenv"
-Cohesion: 0.47
-Nodes (3): Read ANTHROPIC_API_KEY from .env file (fallback when not in os.environ)., _read_key_from_dotenv(), TestReadKeyFromDotenv
-
-### Community 679 - "check_knowledge_files"
-Cohesion: 0.47
-Nodes (3): check_knowledge_files(), Check that required knowledge files exist., TestCheckKnowledgeFiles
-
 ### Community 681 - "AI Reliability Paradox"
 Cohesion: 1.00
 Nodes (3): AI Reliability Paradox, Better Performance Can Hide Breakage, LinkedIn screenshot: AI reliability paradox
@@ -3604,6 +3558,10 @@ Nodes (3): ChatGPT Study Mode, Personalized Learning, LinkedIn screenshot: ChatG
 Cohesion: 1.00
 Nodes (3): AI Definition Depends On Speaker, Leaders AI Language, LinkedIn screenshot: what leaders mean by AI
 
+### Community 712 - "Skilgen Open Source Announcement"
+Cohesion: 0.40
+Nodes (5): Codebase And Requirements To Living Artifact, GitHub Repository, Ravi Chandu Ummadisetti, Skilgen, Skilgen Open Source Announcement
+
 ### Community 714 - "DeepResearch Bench Top Spot"
 Cohesion: 0.40
 Nodes (5): Adel Elhallak, Applied Research Team, Benchmark Leaderboard, DeepResearch Bench, DeepResearch Bench Top Spot
@@ -3611,10 +3569,6 @@ Nodes (5): Adel Elhallak, Applied Research Team, Benchmark Leaderboard, DeepRese
 ### Community 734 - "check_data_dirs"
 Cohesion: 0.50
 Nodes (3): check_data_dirs(), Check that data directories exist (create if missing)., TestCheckDataDirs
-
-### Community 747 - "queue_dir"
-Cohesion: 0.67
-Nodes (3): fixture, queue_dir(), Redirect the content queue to a temp directory.
 
 ### Community 748 - "Health Desktop Screenshot"
 Cohesion: 0.40
@@ -3625,16 +3579,16 @@ Cohesion: 0.67
 Nodes (3): generate_mock_entry(), main(), Generate a realistic trajectory entry.
 
 ### Community 767 - "CheckResult"
-Cohesion: 0.31
-Nodes (6): CheckResult, print_results(), Print preflight results. Returns True if all passed., Single preflight check result., CaptureFixture, TestRunPreflight
+Cohesion: 0.20
+Nodes (9): check_memory_file(), CheckResult, print_results(), Check that MEMORY.md exists., Print preflight results. Returns True if all passed., Single preflight check result., CaptureFixture, TestCheckMemoryFile (+1 more)
 
 ### Community 768 - "check_api_key"
 Cohesion: 0.44
 Nodes (4): check_api_key(), Check that ANTHROPIC_API_KEY is set (env var or .env file). Accepts either a…, MonkeyPatch, TestCheckApiKey
 
 ### Community 769 - "Path"
-Cohesion: 0.25
-Nodes (7): check_brand_yaml(), check_products_yaml(), Check that config/brand.yaml exists and parses., Check that config/products.yaml exists and parses., Path, TestCheckBrandYaml, TestCheckProductsYaml
+Cohesion: 0.17
+Nodes (9): check_brand_yaml(), check_knowledge_files(), Check that config/brand.yaml exists and parses., Check that required knowledge files exist., Path, Tests for the preflight check module., TestCheckBrandYaml, TestCheckKnowledgeFiles (+1 more)
 
 ## Ambiguous Edges - Review These
 - `Predis.ai` → `Carousel API Automation`  [AMBIGUOUS]
@@ -3643,9 +3597,9 @@ Nodes (7): check_brand_yaml(), check_products_yaml(), Check that config/brand.ya
   knowledge/current/carousel-creation.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **2073 isolated node(s):** `uv`, `API_BASE_URL`, `POSTING_API_KEY`, `pnpm`, `mcp-server.ts` (+2068 more)
+- **2086 isolated node(s):** `Selection evidence`, `Result`, `uv`, `API_BASE_URL`, `POSTING_API_KEY` (+2081 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **82 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **91 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -3654,12 +3608,12 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `PostNitro` and `Carousel API Automation`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `MarketingAgent` connect `MarketingAgent` to `score_content`, `repurpose_content`, `ContentType`, `QueuedContent`, `ContentDecision`, `preflight.py`, `PromptLoader`, `Path`, `TrajectoryLogger`, `marketing_agent`, `BaseAgent`, `__main__.py`, `Path`, `test_marketing_agent_visual.py`, `JudgeAgent`, `HealthResult`, `TestSonnetContentPromptFeedback`, `LineageRecorder`, `_make_agent`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
-- **Why does `PromptLoader` connect `PromptLoader` to `score_content`, `voice_pipeline.py`, `BaseAgent`, `MarketingAgent`, `._canonical_path`, `idea_runner.py`, `AgentInfo`, `agents/base.py`, `AgentRegistry`, `RawResearchItem`, `SpecialistDispatcher`?**
-  _High betweenness centrality (0.033) - this node is a cross-community bridge._
-- **Why does `LineageRecorder` connect `LineageRecorder` to `score_content`, `thought_pipeline.py`, `LineageStore`, `CandidateStore`, `MarketingAgent`, `idea_runner.py`, `content.py`, `VisualDispatchRequest`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+- **Why does `MarketingAgent` connect `MarketingAgent` to `score_content`, `repurpose.py`, `ContentDecision`, `content_queue.py`, `ContentType`, `preflight.py`, `TrajectoryLogger`, `_make_agent`, `PromptLoader`, `Path`, `HealthResult`, `marketing_agent`, `BaseAgent`, `research.py`, `__main__.py`, `WatchdogResult`, `JudgeAgent`, `LineageRecorder`, `_make_agent`?**
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **Why does `PromptLoader` connect `PromptLoader` to `voice_pipeline.py`, `RawResearchItem`, `EventType`, `BaseAgent`, `MarketingAgent`, `idea_runner.py`, `AgentInfo`, `AgentRegistry`, `ResearchScore`, `SpecialistDispatcher`?**
+  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+- **Why does `TrajectoryLogger` connect `TrajectoryLogger` to `HealthResult`, `EventType`, `BaseAgent`, `holus/memory/__init__.py`, `MarketingAgent`, `collect_analytics`, `idea_runner.py`, `test_learning_loop.py`?**
+  _High betweenness centrality (0.023) - this node is a cross-community bridge._
 - **Are the 68 inferred relationships involving `ContentDecision` (e.g. with `MarketingAgent` and `MarketingState`) actually correct?**
   _`ContentDecision` has 68 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 46 inferred relationships involving `MarketingAgent` (e.g. with `BaseAgent` and `BrandIdentity`) actually correct?**

@@ -49,6 +49,20 @@ class ResearchRadarConfig:
     rss_per_feed_limit: int
 
 
+@dataclass(frozen=True)
+class _SourceFetchResult:
+    items_by_source: dict[str, list[RawResearchItem]]
+    errors: dict[str, str]
+
+
+@dataclass(frozen=True)
+class _ScoringResult:
+    digest_entries: list[tuple[RawResearchItem, ResearchScore]]
+    candidates_created: int
+    scored: int
+    failures: list[dict[str, Any]]
+
+
 def load_config(repo_root: Path) -> ResearchRadarConfig:
     config_path = repo_root / "config" / "research.yaml"
     loaded = yaml.safe_load(config_path.read_text(encoding="utf-8")) if config_path.exists() else {}
@@ -124,40 +138,97 @@ async def _run_radar_unlocked(
     if scorer is None and resolved_scorer is not None:
         curator.scorer_mode = "agent-backed"
 
-    async def fetch_adapter(
-        adapter: SourceAdapter,
-    ) -> tuple[str, list[RawResearchItem], str | None]:
-        try:
-            return adapter.source, await adapter.fetch(config.window_days), None
-        except Exception as exc:
-            return adapter.source, [], str(exc)
-
-    fetch_results = await asyncio.gather(*(fetch_adapter(adapter) for adapter in adapters))
-    fetched_by_source: dict[str, list[RawResearchItem]] = {}
-    source_errors: dict[str, str] = {}
-    for source, items, error in fetch_results:
-        fetched_by_source[source] = items
-        if error:
-            source_errors[source] = error
-
+    fetched = await _fetch_sources(adapters, config.window_days)
     new_items_by_source: dict[str, int] = {adapter.source: 0 for adapter in adapters}
     new_items, dedupe_collisions = _dedupe_new_items(
-        fetched_by_source,
+        fetched.items_by_source,
         seen_store,
         new_items_by_source,
     )
     if dedupe_collisions:
         _append_jsonl(config.research_dir / "dedupe-collisions.jsonl", dedupe_collisions)
+
+    scored = await _score_items(
+        curator,
+        new_items,
+        config,
+        run_id,
+        candidate_store,
+    )
+    digest_path = _write_or_preserve_digest(
+        config.research_dir,
+        digest_date,
+        run_id,
+        scored.digest_entries,
+    )
+    if scored.failures:
+        _append_jsonl(config.research_dir / "scoring-failures.jsonl", scored.failures)
+    for item in new_items:
+        seen_store.mark_seen(item)
+
+    return RadarRunReport(
+        run_id=run_id,
+        started_at=started_at,
+        finished_at=datetime.now(UTC),
+        sources=_source_results(adapters, fetched, new_items_by_source),
+        scored=scored.scored,
+        digest_path=str(digest_path) if digest_path else None,
+        candidates_created=scored.candidates_created,
+        scoring_failures=len(scored.failures),
+        degraded=bool(fetched.errors or scored.failures or curator.fallback_count),
+        failure_reasons=[
+            *(f"{source}: {error}" for source, error in sorted(fetched.errors.items())),
+            *(f"scoring:{failure['item_id']}: {failure['error']}" for failure in scored.failures),
+            *(f"heuristic-fallback:{reason}" for reason in curator.fallback_reasons),
+        ],
+        dedupe_collisions=len(dedupe_collisions),
+        scorer_mode=curator.scorer_mode,
+        heuristic_fallbacks=curator.fallback_count,
+    )
+
+
+async def _fetch_adapter(
+    adapter: SourceAdapter,
+    window_days: int,
+) -> tuple[str, list[RawResearchItem], str | None]:
+    try:
+        return adapter.source, await adapter.fetch(window_days), None
+    except Exception as exc:
+        return adapter.source, [], str(exc)
+
+
+async def _fetch_sources(
+    adapters: Sequence[SourceAdapter],
+    window_days: int,
+) -> _SourceFetchResult:
+    fetch_results = await asyncio.gather(
+        *(_fetch_adapter(adapter, window_days) for adapter in adapters)
+    )
+    items_by_source: dict[str, list[RawResearchItem]] = {}
+    errors: dict[str, str] = {}
+    for source, items, error in fetch_results:
+        items_by_source[source] = items
+        if error:
+            errors[source] = error
+    return _SourceFetchResult(items_by_source=items_by_source, errors=errors)
+
+
+async def _score_items(
+    curator: ResearchCurator,
+    items: Sequence[RawResearchItem],
+    config: ResearchRadarConfig,
+    run_id: str,
+    candidate_store: CandidateStore,
+) -> _ScoringResult:
     digest_entries: list[tuple[RawResearchItem, ResearchScore]] = []
     candidates_created = 0
     scored = 0
-    scoring_failures: list[dict[str, Any]] = []
-
-    for item in new_items:
+    failures: list[dict[str, Any]] = []
+    for item in items:
         try:
             score = await _score_with_retries(curator, item, attempts=2)
         except Exception as exc:
-            scoring_failures.append(
+            failures.append(
                 {
                     "run_id": run_id,
                     "item_id": item.item_id,
@@ -179,46 +250,29 @@ async def _run_radar_unlocked(
         ):
             candidate_store.create(item, score)
             candidates_created += 1
-
-    digest_path = _write_or_preserve_digest(
-        config.research_dir,
-        digest_date,
-        run_id,
-        digest_entries,
+    return _ScoringResult(
+        digest_entries=digest_entries,
+        candidates_created=candidates_created,
+        scored=scored,
+        failures=failures,
     )
-    if scoring_failures:
-        _append_jsonl(config.research_dir / "scoring-failures.jsonl", scoring_failures)
-    for item in new_items:
-        seen_store.mark_seen(item)
-    source_results = [
+
+
+def _source_results(
+    adapters: Sequence[SourceAdapter],
+    fetched: _SourceFetchResult,
+    new_items_by_source: dict[str, int],
+) -> list[RadarSourceResult]:
+    return [
         RadarSourceResult(
             source=adapter.source,
-            status="failed" if adapter.source in source_errors else "ok",
-            fetched=len(fetched_by_source.get(adapter.source, [])),
+            status="failed" if adapter.source in fetched.errors else "ok",
+            fetched=len(fetched.items_by_source.get(adapter.source, [])),
             new_items=new_items_by_source.get(adapter.source, 0),
-            error=source_errors.get(adapter.source),
+            error=fetched.errors.get(adapter.source),
         )
         for adapter in adapters
     ]
-    return RadarRunReport(
-        run_id=run_id,
-        started_at=started_at,
-        finished_at=datetime.now(UTC),
-        sources=source_results,
-        scored=scored,
-        digest_path=str(digest_path) if digest_path else None,
-        candidates_created=candidates_created,
-        scoring_failures=len(scoring_failures),
-        degraded=bool(source_errors or scoring_failures or curator.fallback_count),
-        failure_reasons=[
-            *(f"{source}: {error}" for source, error in sorted(source_errors.items())),
-            *(f"scoring:{failure['item_id']}: {failure['error']}" for failure in scoring_failures),
-            *(f"heuristic-fallback:{reason}" for reason in curator.fallback_reasons),
-        ],
-        dedupe_collisions=len(dedupe_collisions),
-        scorer_mode=curator.scorer_mode,
-        heuristic_fallbacks=curator.fallback_count,
-    )
 
 
 @asynccontextmanager

@@ -15,3 +15,16 @@
 - Focused chart coverage increased from 17 to 22 passing tests, including XML escaping, layout-specific edge behavior, grid connector suppression, and invalid-edge handling.
 
 The metric is a deterministic AST approximation: base complexity 1 plus `if`, loop, exception, context-manager, comprehension, boolean-operator, and conditional-expression branches.
+
+## Iteration 1: research radar orchestration
+
+### Selection evidence
+
+- **Selected scope:** `src/holus/research/radar.py:_run_radar_unlocked`; the module was 373 lines and the function had complexity **27**, tied for the highest eligible non-generation orchestration target after excluding the 399-line cycle-gating health function (complexity 30) and content-generation orchestration.
+- **Why this target:** the function mixed source-fetch error normalization, dedupe bookkeeping, per-item scoring/retry failure records, candidate creation, and source-report projection; callers include the research API and CLI, with 10 focused radar tests covering the observable workflow.
+- **Alternatives challenged:** `src/holus/lineage/store.py:validate` was also complexity 27 but smaller at 297 lines and is a durable provenance validation boundary; the previously refactored chart target is already at complexity 2. The selected radar path offered the clearest repeated orchestration seams without touching publishing, scheduling, deployment, state-root, or content-generation-cycle code.
+
+### Result
+
+- Extracted source fetching, item scoring, and source-result projection helpers; `_run_radar_unlocked` complexity fell from **27 to 16** while preserving its public API and report/output behavior.
+- `radar.py` grew from 373 to 427 lines because the refactor keeps explicit, typed helper boundaries rather than compressing logic; focused radar tests pass (**10 passed**).

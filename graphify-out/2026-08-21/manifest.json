@@ -1345,8 +1345,8 @@
     "semantic_hash": ""
   },
   "src/holus/visual/charts.py": {
-    "mtime": 1787330318.205086,
-    "ast_hash": "80246bd54b6dbb6b5f9cb02ac02fd0da",
+    "mtime": 1787340540.6210847,
+    "ast_hash": "3cb111c62a4a1d77829599cd0f01adc3",
     "semantic_hash": ""
   },
   "src/holus/visual/content_job.py": {
@@ -1985,8 +1985,8 @@
     "semantic_hash": ""
   },
   "tests/unit/visual/test_charts.py": {
-    "mtime": 1787330318.274991,
-    "ast_hash": "7a8bc801a6caef3c9531201d75b16737",
+    "mtime": 1787340510.5719554,
+    "ast_hash": "065988bfe0ea05088de414bb2e459032",
     "semantic_hash": ""
   },
   "tests/unit/visual/test_content_job.py": {
@@ -6697,6 +6697,11 @@
   "observatory/frontend/public/window.svg": {
     "mtime": 1787330318.17112,
     "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": ""
+  },
+  "docs/complexity-refactor-luna-r3.md": {
+    "mtime": 1787340589.413167,
+    "ast_hash": "88bbeb6108ce5d6a4f60ab73fce3650c",
     "semantic_hash": ""
   }
 }
