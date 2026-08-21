@@ -16,6 +16,20 @@
 
 The metric is a deterministic AST approximation: base complexity 1 plus `if`, loop, exception, context-manager, comprehension, boolean-operator, and conditional-expression branches.
 
+## Iteration 2: lineage validation
+
+### Selection evidence
+
+- **Selected scope:** `src/holus/lineage/store.py:LineageStore.validate`; the module is 297 lines and the function was 85 lines with complexity **25** under the deterministic AST approximation. It mixed hash-chain verification, Pydantic entity decoding, graph integrity checks, aggregate counts, and conservative completeness inference, with repeated traversals of events, nodes, and edges.
+- **Why this target:** it is a focused, Holus-owned read-only provenance boundary with direct CLI, API, and health callers and dedicated contract tests in `tests/unit/lineage/test_store.py`; it does not implement publishing/scheduling delivery or content generation.
+- **Alternatives challenged:** `core/health.py:run_preflight_checks` scored 38 but is part of the excluded health/cycle-gating path; `visual_pipeline.py:_render_visual` scored 26 and `idea_runner.py:save_piece` scored 20 but are content-generation-cycle orchestration; `api/routes/health.py:metrics` also scored 25 but is a broader operational endpoint with less cohesive validation seams. The already-refactored radar and flowchart targets were not reconsidered as active candidates.
+- **Exact scope boundary:** preserve `LineageStore.validate()` and `ValidationReport` behavior while extracting private validation, entity, graph, and summary helpers. Publishing/scheduling delivery, deployment/infra/state-root, and marketing cycle/generation orchestration remain untouched.
+
+### Result
+
+- Extracted six focused helpers; `LineageStore.validate` complexity fell from **25 to 4** while retaining the same report values and adding a tampered-chain regression test. `store.py` grew from 297 to 329 lines as validation concerns became explicit, typed seams.
+- The lineage contract suite plus API and pipeline callers pass (**7 focused tests**); Ruff and strict mypy pass for the changed source and tests.
+
 ## Iteration 1: research radar orchestration
 
 ### Selection evidence

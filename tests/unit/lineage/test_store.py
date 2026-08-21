@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
@@ -98,6 +99,21 @@ def test_manifest_is_deterministic_and_traverses_parent_child(
     report = store.validate()
     assert report.valid is True
     assert report.complete is True
+
+
+def test_validator_rejects_tampered_event_chain(tmp_path: Path, timestamp: datetime) -> None:
+    store = LineageStore(tmp_path)
+    store.record(_node("source:1", ArtifactType.SOURCE_THOUGHT, timestamp))
+    event = json.loads(store.path.read_text(encoding="utf-8"))
+    event["event_hash"] = "tampered"
+    store.path.write_text(json.dumps(event) + "\n", encoding="utf-8")
+
+    report = store.validate()
+
+    assert report.valid is False
+    assert report.complete is False
+    assert report.malformed_lines == []
+    assert report.node_count == 1
 
 
 def test_validator_reports_orphans_broken_and_malformed_old_versions(
