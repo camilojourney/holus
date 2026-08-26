@@ -1,0 +1,22 @@
+{
+  "artifacts": {
+    "baseline.json": "bdda024af50da0893462aac7ca553e74537431dc10a5ec31789cffc5c8db3092",
+    "candidate.json": "e9ce89ffef3ec0f09dfcc23cc0e12452a8fb9cd9de459f76afb825782309eafa",
+    "case-results.json": "b4f2cfcbaffea9b50562d693bc488c0b803804abb11d9f93b076d3f2cdbf6c7b",
+    "case-set.json": "9dbf54ee4f02e6ad8d03558d412f2d96336c0319648b4c30ce10f8ddd8a3321a",
+    "comparison-scorecard.json": "4003875356bc62b48f512fcd0d0f2bdd6ce3cc87bcd95044b237c1b61f4887a1"
+  },
+  "comparison": "canonical-replay-v1",
+  "decision": "baseline_preserved",
+  "generated_at_utc": "2026-08-26T18:00:00Z",
+  "immutable": true,
+  "privacy": "summary_only",
+  "schema": "holus.company_os_evaluation_comparison.evidence_manifest.v1",
+  "source_artifacts": {
+    "baseline_json_sha256": "bdda024af50da0893462aac7ca553e74537431dc10a5ec31789cffc5c8db3092",
+    "candidate_scorecard_json_sha256": "37ae5841a663c606962579e5322deac6bd203ac4d187c397c2bbdaa0c03a25d6",
+    "candidate_trace_json_sha256": "b9d7da8a7f159a41bec69ea55ef7fd0d76c4ae35887642c257d623cd9e11f760",
+    "comparison_scorecard_json_sha256": "4003875356bc62b48f512fcd0d0f2bdd6ce3cc87bcd95044b237c1b61f4887a1"
+  },
+  "versioned": true
+}
