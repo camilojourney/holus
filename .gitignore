@@ -95,6 +95,9 @@ data/examples/
 # ---- Health Check Artifacts ----
 .failed
 
+# ---- Evaluation Artifacts ----
+.eval-artifacts/
+
 # ---- Misc ----
 *.bak
 *.tmp

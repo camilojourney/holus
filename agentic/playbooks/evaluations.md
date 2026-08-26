@@ -113,14 +113,26 @@ Each evaluator has weighted rubric dimensions defined in `agentic/agents/AGENTS.
 
 Company OS domain skill contracts are project-local in `.agents/skills/` and
 are evaluated offline by `tests/unit/agentic/test_company_os_skill_contracts.py`.
-The shared adapter reads `agentic/evals.yaml`; it receives only frozen source
-paths and non-sensitive scorecard summaries. The contract verifies trigger
-cases, the `COMPANY_KILL` halt behavior, explicit approval routing, and that a
-handoff never becomes an external action.
+The repository-owned contract runner reads `agentic/evals.yaml`, validates the
+versioned fixture manifest and pinned SHA-256 hashes against evaluator-owned v1
+constants, denies DNS/socket calls, blocks Python and ctypes child-process
+entry points in `sitecustomize.py`, scrubs secrets, and writes privacy-safe
+normalized artifacts under `.eval-artifacts/company-os-contract/` by default.
+The decisive safety boundary is exact hash validation of frozen suite, helper,
+config, fixture, and holdout inputs plus exact execution through the trusted
+`sys.executable -m pytest` argv. This is not a general hostile-code OS sandbox.
+It never reads runtime JSONL or content queues, and it never calls promotion,
+publish, schedule, or external integration boundaries.
 
 ```bash
+uv run python -m holus.evaluation.company_os_contract
 uv run pytest tests/unit/agentic/test_company_os_skill_contracts.py -q
 ```
+
+Exit semantics are fixed: `0` means `pass`, `1` means required suite `fail`,
+and `2` means `unknown` for missing, malformed, or altered config, fixtures, or
+frozen inputs. Use `--timestamp 2026-08-25T12:00:00Z` for reproducible artifact
+bytes.
 
 ## Running Evaluations
 
