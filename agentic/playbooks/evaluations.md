@@ -134,6 +134,45 @@ and `2` means `unknown` for missing, malformed, or altered config, fixtures, or
 frozen inputs. Use `--timestamp 2026-08-25T12:00:00Z` for reproducible artifact
 bytes.
 
+### Baselines and regression gates
+
+Capture a passing local baseline once. The artifact embeds only the canonical
+normalized trace and scorecard plus hashes for the frozen suite, holdout,
+evaluation manifest, fixture manifest, and evaluator.
+
+```bash
+uv run python -m holus.evaluation.company_os_regression capture-baseline \
+  --name main-2026-08-25 --output-dir .eval-artifacts/company-os-baseline \
+  --timestamp 2026-08-25T12:00:00Z
+```
+
+Compare already-produced canonical artifacts without rerunning suites:
+
+```bash
+uv run python -m holus.evaluation.company_os_regression compare \
+  --baseline .eval-artifacts/company-os-baseline/baseline.json \
+  --candidate-trace /tmp/company-os-candidate/trace.json \
+  --candidate-scorecard /tmp/company-os-candidate/scorecard.json \
+  --candidate-name candidate --output /tmp/company-os-comparison.json \
+  --timestamp 2026-08-25T12:00:00Z
+```
+
+For CI or local verification, the gate evaluates only frozen inputs offline and
+writes artifacts outside the candidate checkout. It never promotes a candidate
+or calls publish, schedule, queue, or external integration boundaries.
+
+```bash
+uv run python -m holus.evaluation.company_os_regression regression-gate \
+  --baseline .eval-artifacts/company-os-baseline/baseline.json \
+  --candidate-name "$GIT_SHA" --output-dir /tmp/company-os-regression-gate \
+  --timestamp 2026-08-25T12:00:00Z
+```
+
+The comparison exit code is `0` for `pass`, `1` for any safety,
+required-score, required-suite, holdout, schema, or privacy-safe-output
+regression, and `2` for missing, malformed, incompatible, or untrusted
+evidence. `unknown` is never a pass.
+
 ## Running Evaluations
 
 ```bash
