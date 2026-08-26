@@ -40,3 +40,14 @@ export:
   event_stream: .self-improvement/hub/skill_runs.jsonl
   trace_dir: .self-improvement/traces/
   summary_only: true
+company_os_contract:
+  schema: holus.company_os_contract_config.v1
+  fixture_manifest: agentic/evaluation-fixtures/company-os/v1/manifest.json
+  fixture_manifest_sha256: bf9656aa5d1568d7a1e7e378a5a1c6a1ff275e63150f3851e98582c85ad20022
+  config_paths:
+    - agentic/manifest.yaml
+    - agentic/permissions.yaml
+    - agentic/tools.yaml
+    - agentic/memory.yaml
+    - uv.lock
+  evals_yaml_sha256: 0660fc9db5ba257f9893610e21b34c44988f5aba2eb909f4b001c87cbc29ec23

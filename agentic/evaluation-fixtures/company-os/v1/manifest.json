@@ -1,0 +1,150 @@
+{
+  "config_files": [
+    {
+      "id": "agentic-manifest_yaml",
+      "path": "agentic/manifest.yaml",
+      "sha256": "4cafec1c0d85bbf6ad34f5e91d14f391edc843ad7d0bf916d5a0a3ee0eace97f"
+    },
+    {
+      "id": "agentic-memory_yaml",
+      "path": "agentic/memory.yaml",
+      "sha256": "9621043a8f97cc083571d40b48c232522df366d5e159fa3c03194d115a61bbf6"
+    },
+    {
+      "id": "agentic-permissions_yaml",
+      "path": "agentic/permissions.yaml",
+      "sha256": "4f123e0522c2b0f6e151f82b41ed66a1f6b323e0692f011349533cf6adb1c1d6"
+    },
+    {
+      "id": "agentic-tools_yaml",
+      "path": "agentic/tools.yaml",
+      "sha256": "0b91129a420deee2b1bcdac3863bf3570a7bf1bdcdf49733a0473b8317f384cf"
+    },
+    {
+      "id": "uv_lock",
+      "path": "uv.lock",
+      "sha256": "4eb7daeb28808e6a8606497b7338d5707f70cbf692143bb16cd78ff1ba903831"
+    }
+  ],
+  "created_at_utc": "2026-08-25T00:00:00Z",
+  "evaluation_manifest_sha256": "0660fc9db5ba257f9893610e21b34c44988f5aba2eb909f4b001c87cbc29ec23",
+  "fixture_set_id": "company-os-v1",
+  "fixtures": [
+    {
+      "id": "company-os-contract-cases",
+      "path": "agentic/evaluation-fixtures/company-os/v1/cases.json",
+      "sha256": "050188fb7d32455a640ac48b5375b896229cfa88ec76a794e8ae303f8d0f9f51"
+    }
+  ],
+  "frozen_inputs": [
+    {
+      "id": "_agents-skills-_shared-company_os_py",
+      "path": ".agents/skills/_shared/company_os.py",
+      "sha256": "edeb081b8c7677d74ec9f4f79fdc17a745e6d2a3e8ed1047a9c247307c12745f"
+    },
+    {
+      "id": "_agents-skills-company-brand-desk-SKILL_md",
+      "path": ".agents/skills/company-brand-desk/SKILL.md",
+      "sha256": "bff08bbad5b9da169716f4ef8597f7441f016190c5786a2acce2878542763413"
+    },
+    {
+      "id": "_agents-skills-company-brand-desk-evals-evals_json",
+      "path": ".agents/skills/company-brand-desk/evals/evals.json",
+      "sha256": "e835c3c0aacf24330bd3f37a3d5a64ce8f45fd1f7eeaa29abe5ce3270dd25b3e"
+    },
+    {
+      "id": "_agents-skills-company-brand-desk-references-output-contract_md",
+      "path": ".agents/skills/company-brand-desk/references/output-contract.md",
+      "sha256": "7d7fe5c51ee01250c5bd0e6debc03f9f2d79461c928d986744d7738985461b89"
+    },
+    {
+      "id": "_agents-skills-company-content-desk-SKILL_md",
+      "path": ".agents/skills/company-content-desk/SKILL.md",
+      "sha256": "5abce03ff29b84dfb3611d9ac1d8f1197498e7780ebb33f5d15e185af4712764"
+    },
+    {
+      "id": "_agents-skills-company-content-desk-evals-evals_json",
+      "path": ".agents/skills/company-content-desk/evals/evals.json",
+      "sha256": "adea13d2799dc50d751edd0537139546c9b0e5e6e9e78eee356f97cb9f2747ef"
+    },
+    {
+      "id": "_agents-skills-company-content-desk-references-output-contract_md",
+      "path": ".agents/skills/company-content-desk/references/output-contract.md",
+      "sha256": "812252811e10ad950979d91043966785810c060ca22ef2427ba54d8fd0c15105"
+    },
+    {
+      "id": "_agents-skills-company-evolve-SKILL_md",
+      "path": ".agents/skills/company-evolve/SKILL.md",
+      "sha256": "3b32084a7cb48c8b028d429186e312454d71978c6e098c2b7a0773230d60cb3c"
+    },
+    {
+      "id": "_agents-skills-company-evolve-evals-evals_json",
+      "path": ".agents/skills/company-evolve/evals/evals.json",
+      "sha256": "8dec78607e69a15d887bf7912da7bac26873bdac9065218c74898c76921f922c"
+    },
+    {
+      "id": "_agents-skills-company-evolve-references-output-contract_md",
+      "path": ".agents/skills/company-evolve/references/output-contract.md",
+      "sha256": "7bd68b8f76c59c61376e44c5e6f7ffef116118416f85f34fb2c7cda59d2bd15c"
+    },
+    {
+      "id": "_agents-skills-company-marketing-desk-SKILL_md",
+      "path": ".agents/skills/company-marketing-desk/SKILL.md",
+      "sha256": "1a2c88490f8240e462d4d28ef0140e74534bdc2a6a3d9020a2090b3c73a02d00"
+    },
+    {
+      "id": "_agents-skills-company-marketing-desk-evals-evals_json",
+      "path": ".agents/skills/company-marketing-desk/evals/evals.json",
+      "sha256": "856abdb08e35edd18aa68220d8f5e33230263d51d05adc704dbff237d0abda36"
+    },
+    {
+      "id": "_agents-skills-company-marketing-desk-references-output-contract_md",
+      "path": ".agents/skills/company-marketing-desk/references/output-contract.md",
+      "sha256": "a9a7076598062c2b55308e5987198248059720e470805105ea8c6810d64627aa"
+    },
+    {
+      "id": "_agents-skills-company-sales-desk-SKILL_md",
+      "path": ".agents/skills/company-sales-desk/SKILL.md",
+      "sha256": "cebd462460b2dbf1e52471bd44173ffb856e159a44f6f8c63eca1c6e7a64cce9"
+    },
+    {
+      "id": "_agents-skills-company-sales-desk-evals-evals_json",
+      "path": ".agents/skills/company-sales-desk/evals/evals.json",
+      "sha256": "d8ba9017ba042f71ef1b4c818583ac49ed5795c22df04d018b5d32346895435c"
+    },
+    {
+      "id": "_agents-skills-company-sales-desk-references-output-contract_md",
+      "path": ".agents/skills/company-sales-desk/references/output-contract.md",
+      "sha256": "7fd90c0c518cc64621806216e95dfebd75cecd3b5d01fe8d2c4985dcfce88acf"
+    },
+    {
+      "id": "_agents-skills-company-supervisor-SKILL_md",
+      "path": ".agents/skills/company-supervisor/SKILL.md",
+      "sha256": "4f9b4177650175916722534c1fa66f4e2aa754fe7169f8a7dfbd1671dad65119"
+    },
+    {
+      "id": "_agents-skills-company-supervisor-evals-evals_json",
+      "path": ".agents/skills/company-supervisor/evals/evals.json",
+      "sha256": "e2ac0b2ddc4b9c39e9d0e216b301467e66c243d767d4bee92cdc350a5d4fe6f0"
+    },
+    {
+      "id": "_agents-skills-company-supervisor-references-output-contract_md",
+      "path": ".agents/skills/company-supervisor/references/output-contract.md",
+      "sha256": "2c47bdb6fd957e1490eec91171e96ac1c9c20cd514f2fb7643fe5ab267a524cf"
+    },
+    {
+      "id": "tests-unit-agentic-test_company_os_skill_contracts_py",
+      "path": "tests/unit/agentic/test_company_os_skill_contracts.py",
+      "sha256": "5c3debb46278727695a14133d5957f586f3ea3ea7597654196c6aae8a038f54a"
+    }
+  ],
+  "holdout": {
+    "id": "company-os-holdout",
+    "min_cases": 1,
+    "path": "agentic/evaluation-fixtures/company-os/v1/holdout/cases.json",
+    "sha256": "b7ff1e7a444bbdfbd8ce4c913ea702b4a39163f06e36900b960fd1b69e219762"
+  },
+  "immutable": true,
+  "schema": "holus.company_os_fixture_manifest.v1",
+  "version": "v1"
+}
