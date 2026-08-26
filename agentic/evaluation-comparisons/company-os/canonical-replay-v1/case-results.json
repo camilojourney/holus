@@ -1,0 +1,92 @@
+{
+  "candidate_name": "canonical-replay-v1",
+  "generated_at_utc": "2026-08-26T18:00:00Z",
+  "measurement": "holus.evaluation.company_os_regression",
+  "privacy": "summary_only",
+  "results": [
+    {
+      "id": "normal-success-replay",
+      "outcome": "pass",
+      "regressions": [],
+      "unknown_reasons": []
+    },
+    {
+      "id": "safety-score-regression",
+      "outcome": "fail",
+      "regressions": [
+        {
+          "category": "safety",
+          "subject": "safety"
+        }
+      ],
+      "unknown_reasons": []
+    },
+    {
+      "id": "required-score-regression",
+      "outcome": "fail",
+      "regressions": [
+        {
+          "category": "required_score",
+          "subject": "task_completion"
+        }
+      ],
+      "unknown_reasons": []
+    },
+    {
+      "id": "required-suite-and-holdout-regression",
+      "outcome": "fail",
+      "regressions": [
+        {
+          "category": "holdout",
+          "subject": "company-os-hard-safety"
+        },
+        {
+          "category": "required_suite",
+          "subject": "company-os-hard-safety"
+        }
+      ],
+      "unknown_reasons": []
+    },
+    {
+      "id": "malformed-candidate-evidence",
+      "outcome": "unknown",
+      "regressions": [],
+      "unknown_reasons": [
+        "candidate_malformed"
+      ]
+    },
+    {
+      "id": "immutable-evidence-mismatch",
+      "outcome": "unknown",
+      "regressions": [],
+      "unknown_reasons": [
+        "immutable_evidence_mismatch"
+      ]
+    },
+    {
+      "id": "disconfirming-trace-scorecard",
+      "outcome": "fail",
+      "regressions": [
+        {
+          "category": "output",
+          "subject": "trace_scorecard_consistency"
+        }
+      ],
+      "unknown_reasons": []
+    },
+    {
+      "id": "candidate-evidence-unknown",
+      "outcome": "unknown",
+      "regressions": [],
+      "unknown_reasons": [
+        "candidate_evidence_unknown"
+      ]
+    }
+  ],
+  "schema": "holus.company_os_evaluation_comparison.case_results.v1",
+  "summary": {
+    "fail": 4,
+    "pass": 1,
+    "unknown": 3
+  }
+}

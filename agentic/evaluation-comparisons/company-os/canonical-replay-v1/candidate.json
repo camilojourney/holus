@@ -1,0 +1,67 @@
+{
+  "canonical_config": {
+    "paths": [
+      "agentic/manifest.yaml",
+      "agentic/memory.yaml",
+      "agentic/permissions.yaml",
+      "agentic/tools.yaml",
+      "uv.lock"
+    ],
+    "sha256": {
+      "agentic/manifest.yaml": "4cafec1c0d85bbf6ad34f5e91d14f391edc843ad7d0bf916d5a0a3ee0eace97f",
+      "agentic/memory.yaml": "9621043a8f97cc083571d40b48c232522df366d5e159fa3c03194d115a61bbf6",
+      "agentic/permissions.yaml": "4f123e0522c2b0f6e151f82b41ed66a1f6b323e0692f011349533cf6adb1c1d6",
+      "agentic/tools.yaml": "0b91129a420deee2b1bcdac3863bf3570a7bf1bdcdf49733a0473b8317f384cf",
+      "uv.lock": "4eb7daeb28808e6a8606497b7338d5707f70cbf692143bb16cd78ff1ba903831"
+    }
+  },
+  "commands": {
+    "capture_baseline": "uv run python -m holus.evaluation.company_os_regression capture-baseline --repo-root . --name canonical-company-os-evaluator-v1-d40d89a --output-dir /tmp/holus-company-os-canonical-replay-v1/baseline --timestamp 2026-08-26T18:00:00Z",
+    "regression_gate": "uv run python -m holus.evaluation.company_os_regression regression-gate --repo-root . --baseline /tmp/holus-company-os-canonical-replay-v1/baseline/baseline.json --candidate-name canonical-replay-v1 --output-dir /tmp/holus-company-os-canonical-replay-v1/candidate --timestamp 2026-08-26T18:00:00Z"
+  },
+  "decision": "baseline_preserved",
+  "evaluator": {
+    "name": "company-os-contract",
+    "path": "src/holus/evaluation/company_os_contract.py",
+    "sha256": "1c752a85b2d451193f07ec3994f4a20b8c3d6694e65ad99569d4fb33d384b3d0"
+  },
+  "evidence": {
+    "evaluation_manifest_sha256": "ff66290287c9cd414ad16c82ccd904bf73a8db903bcc52b3c1aff0a772199434",
+    "evaluator": "company-os-contract",
+    "evaluator_sha256": "1c752a85b2d451193f07ec3994f4a20b8c3d6694e65ad99569d4fb33d384b3d0",
+    "fixture_manifest_sha256": "bf9656aa5d1568d7a1e7e378a5a1c6a1ff275e63150f3851e98582c85ad20022",
+    "holdout_sha256": {
+      "agentic/evaluation-fixtures/company-os/v1/holdout/cases.json": "b7ff1e7a444bbdfbd8ce4c913ea702b4a39163f06e36900b960fd1b69e219762"
+    },
+    "scorecard_schema": "holus.company_os_contract.scorecard.v1",
+    "scorecard_sha256": "37ae5841a663c606962579e5322deac6bd203ac4d187c397c2bbdaa0c03a25d6",
+    "suite_command_sha256": {
+      "company-os-hard-safety": "81a286c19eec105d19db35e00a13be3d582d36478ec4be25bcdc70d34b3ec2da",
+      "company-os-trigger-and-contract": "81a286c19eec105d19db35e00a13be3d582d36478ec4be25bcdc70d34b3ec2da"
+    },
+    "trace_schema": "holus.company_os_contract.trace.v1",
+    "trace_sha256": "b9d7da8a7f159a41bec69ea55ef7fd0d76c4ae35887642c257d623cd9e11f760"
+  },
+  "fixture_set": {
+    "id": "company-os-v1",
+    "manifest_path": "agentic/evaluation-fixtures/company-os/v1/manifest.json",
+    "manifest_sha256": "bf9656aa5d1568d7a1e7e378a5a1c6a1ff275e63150f3851e98582c85ad20022",
+    "version": "v1"
+  },
+  "generated_at_utc": "2026-08-26T18:00:00Z",
+  "name": "canonical-replay-v1",
+  "schema": "holus.company_os_evaluation_comparison.candidate.v1",
+  "scope": {
+    "external_apis": "forbidden",
+    "network": "prohibited",
+    "production_configuration_change": false,
+    "runtime_data_access": "forbidden",
+    "type": "local_offline_no_change"
+  },
+  "source_artifacts": {
+    "scorecard_path": "/tmp/holus-company-os-canonical-replay-v1/candidate/candidate/scorecard.json",
+    "scorecard_sha256": "37ae5841a663c606962579e5322deac6bd203ac4d187c397c2bbdaa0c03a25d6",
+    "trace_path": "/tmp/holus-company-os-canonical-replay-v1/candidate/candidate/trace.json",
+    "trace_sha256": "b9d7da8a7f159a41bec69ea55ef7fd0d76c4ae35887642c257d623cd9e11f760"
+  }
+}
