@@ -14,12 +14,13 @@ Verifies:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from unittest.mock import patch
 
 import pytest
 import yaml
 
-from holus.agents.registry import AgentRegistry
+from holus.agents.registry import AgentInfo, AgentRegistry
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -266,3 +267,136 @@ class TestRegistryReload:
         reg.reload()
         assert len(reg.list_agents()) == 5
         assert reg.get_agent("new-agent").type == "ops"
+
+    def test_late_rubric_failure_preserves_snapshot(self, tmp_agents_yaml: Path) -> None:
+        tmp_agents_yaml.write_text("agents: {alpha: {role: test}}", encoding="utf-8")
+        reg = AgentRegistry(tmp_agents_yaml)
+        alpha = reg.get_agent("alpha")
+        tmp_agents_yaml.write_text(
+            "agents:\n  new: {role: new}\n  broken: {rubric: 123}\n", encoding="utf-8"
+        )
+
+        with pytest.raises(TypeError):
+            reg.reload()
+
+        assert reg.list_agents() == [alpha]
+        assert reg.get_agent("alpha") is alpha
+        with pytest.raises(KeyError, match="new"):
+            reg.get_agent("new")
+
+        tmp_agents_yaml.write_text("agents: {recovered: {status: active}}", encoding="utf-8")
+        reg.reload()
+        assert [a.agent_id for a in reg.get_active_agents()] == ["recovered"]
+        with pytest.raises(KeyError, match="alpha"):
+            reg.get_agent("alpha")
+
+    @pytest.mark.parametrize(
+        "contents, error, diagnostic",
+        [
+            ("agents: [", yaml.YAMLError, None),
+            ("", TypeError, "root must be a mapping"),
+            ("null", TypeError, "root must be a mapping"),
+            ("[]", TypeError, "root must be a mapping"),
+            ("123", TypeError, "root must be a mapping"),
+            ("false", TypeError, "root must be a mapping"),
+            ("catalog", TypeError, "root must be a mapping"),
+            ("agents: null", TypeError, "agents must be a mapping"),
+            ("agents: []", TypeError, "agents must be a mapping"),
+            ("agents: 123", TypeError, "agents must be a mapping"),
+            ("agents: false", TypeError, "agents must be a mapping"),
+            ("agents: catalog", TypeError, "agents must be a mapping"),
+            ("agents: {new: {}, broken: null}", TypeError, "agent 'broken' must be a mapping"),
+            ("agents: {new: {}, broken: []}", TypeError, "agent 'broken' must be a mapping"),
+            ("agents: {new: {}, broken: 123}", TypeError, "agent 'broken' must be a mapping"),
+            ("agents: {new: {}, broken: false}", TypeError, "agent 'broken' must be a mapping"),
+            ("agents: {new: {}, broken: row}", TypeError, "agent 'broken' must be a mapping"),
+            ("agents: {new: {}, broken: {rubric: 123}}", TypeError, "agent 'broken' rubric"),
+        ],
+    )
+    def test_invalid_reload_preserves_all_agents(
+        self,
+        tmp_agents_yaml: Path,
+        contents: str,
+        error: type[Exception],
+        diagnostic: str | None,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        reg = AgentRegistry(tmp_agents_yaml)
+        before = reg.list_agents()
+        tmp_agents_yaml.write_text(contents, encoding="utf-8")
+
+        with caplog.at_level("INFO"), pytest.raises(error, match=diagnostic):
+            reg.reload()
+
+        assert "registry: loaded" not in caplog.text
+        assert reg.list_agents() == before
+        assert all(reg.get_agent(a.agent_id) is a for a in before)
+        assert reg.get_active_agents() == [a for a in before if a.status == "active"]
+        assert reg.get_evaluators() == [a for a in before if a.type == "evaluator"]
+
+    @pytest.mark.parametrize("contents", ["{}", "agents: {}"])
+    def test_valid_empty_reload_replaces_snapshot(
+        self, tmp_agents_yaml: Path, contents: str
+    ) -> None:
+        reg = AgentRegistry(tmp_agents_yaml)
+        tmp_agents_yaml.write_text(contents, encoding="utf-8")
+        reg.reload()
+        assert reg.list_agents() == []
+
+    def test_consumers_see_old_snapshot_until_all_rows_are_built(
+        self, tmp_agents_yaml: Path
+    ) -> None:
+        reg = AgentRegistry(tmp_agents_yaml)
+        before = reg.list_agents()
+        tmp_agents_yaml.write_text("agents: {new: {}, last: {}}", encoding="utf-8")
+        observed: list[str] = []
+
+        def observe_construction(**kwargs: Any) -> AgentInfo:
+            assert reg.list_agents() == before
+            assert all(reg.get_agent(a.agent_id) is a for a in before)
+            observed.append(kwargs["agent_id"])
+            return AgentInfo(**kwargs)
+
+        with patch("holus.agents.registry.AgentInfo", side_effect=observe_construction):
+            reg.reload()
+
+        assert observed == ["new", "last"]
+        assert [a.agent_id for a in reg.list_agents()] == ["new", "last"]
+
+    @pytest.mark.parametrize(
+        "rubric, expected",
+        [
+            (None, []),
+            ([], []),
+            (["a", "b"], ["a", "b"]),
+            ({"a": 1}, ["a"]),
+            ("ab", ["a", "b"]),
+            ({"a"}, ["a"]),
+        ],
+    )
+    @pytest.mark.parametrize("evaluators", [None, "judge", ["judge"]])
+    def test_reload_preserves_supported_normalization(
+        self, tmp_agents_yaml: Path, rubric: Any, expected: list[str], evaluators: Any
+    ) -> None:
+        reg = AgentRegistry(tmp_agents_yaml)
+        tmp_agents_yaml.write_text(
+            yaml.safe_dump(
+                {
+                    "agents": {
+                        "new": {
+                            "rubric": rubric,
+                            "evaluated_by": evaluators,
+                            "evaluates_with": evaluators,
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        reg.reload()
+        info = reg.get_agent("new")
+        assert info.rubric == expected
+        assert info.evaluated_by == ([] if evaluators is None else ["judge"])
+        assert info.evaluates_with == info.evaluated_by
+        assert info.status == "planned"
+        assert reg.get_active_agents() == []
