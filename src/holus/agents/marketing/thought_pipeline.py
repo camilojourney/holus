@@ -24,6 +24,12 @@ from holus.agents.marketing.creative_strategy import (
     choose_creative_strategy,
     editorial_card_copy,
 )
+from holus.agents.registry import AgentInfo, AgentRegistry
+from holus.agents.stage_execution import (
+    StageExecution,
+    StageExecutionRecorder,
+    check_stage_agents,
+)
 from holus.core.storage import atomic_write_text
 from holus.lineage.recorder import LineageRecorder
 
@@ -68,24 +74,6 @@ CHANNEL_AGENT: dict[str, tuple[str, str]] = {
 
 CAROUSEL_CHANNELS = {"linkedin_carousel", "instagram_carousel"}
 IMAGE_CHANNELS = {"linkedin_image", "instagram_image"}
-
-AGENT_TRACE_ROLES: dict[str, str] = {
-    "idea-injector": "parsed raw thought and content intent",
-    "context-builder": "enriched angle and product context",
-    "content-job-classifier": "classified the strategic content job",
-    "format-router": "selected the content format before visual production",
-    "idea-planner": "planned platform outputs",
-    "platform-adapter": "made output platform-native",
-    "voice-guardian": "checked Juan voice and anti-patterns",
-    "brand-designer": "checked visual identity",
-    "visual-necessity-gate": "decided whether a visual was needed",
-    "deterministic-artifact-planner": "planned exact rendered artifacts",
-    "ai-image-director": "constrained allowed AI image direction",
-    "visual-designer": "created Holus visual spec",
-    "carousel-architect": "designed carousel slide sequence",
-    "voice-writer": "wrote authority copy",
-    "storyteller": "shaped narrative arc",
-}
 
 BRAND_HANDLES_BY_LANGUAGE = {
     "en": "@camiloexperience",
@@ -382,7 +370,11 @@ class ThoughtContentPipeline:
         queue_dir: Path | str = "data/content-queue",
         rendered_dir: Path | str | None = None,
         lineage_dir: Path | str | None = None,
+        registry: AgentRegistry | None = None,
+        execution_records: list[StageExecution] | None = None,
     ) -> None:
+        self.registry = registry
+        self.execution_records = execution_records
         self.queue_dir = Path(queue_dir)
         self.rendered_dir = (
             Path(rendered_dir) if rendered_dir else self.queue_dir.parent / "rendered-content"
@@ -437,15 +429,31 @@ class ThoughtContentPipeline:
         ``write_records=False`` returns the complete content set without writing
         queue files.
         """
+        # Validate associations before any generation or persistence. Metadata is
+        # not prompt execution, and never supplies the executor/model identity.
+        agents = check_stage_agents(
+            self.registry if self.registry is not None else AgentRegistry(),
+            {"idea-injector", "voice-guardian", *(CHANNEL_AGENT[c][0] for c in channels)},
+        )
+        group_id = uuid.uuid4().hex
+        stages = StageExecutionRecorder(uuid.uuid4().hex, group_id, self.execution_records)
         effective_source_type = source_type
         effective_source_url = source_url
         if source_type == "url" and not fetch_source_url:
             effective_source_type = "text"
-        source = await self.normalize_source(
-            thought=thought,
-            source_type=effective_source_type,
-            source_url=effective_source_url,
+        # URL retrieval is not a deterministic stage. Keep its existing path
+        # outside this bounded local execution trace (no implied model call).
+        normalization = (
+            stages.stage("normalize_source", self.normalize_source)
+            if (effective_source_type or ("url" if effective_source_url else "text")) == "text"
+            else contextlib.nullcontext()
         )
+        with normalization:
+            source = await self.normalize_source(
+                thought=thought,
+                source_type=effective_source_type,
+                source_url=effective_source_url,
+            )
         if source_type == "url" and not fetch_source_url:
             source = ThoughtSource(
                 source_type="url",
@@ -457,9 +465,19 @@ class ThoughtContentPipeline:
             msg = "Thought is too short"
             raise ValueError(msg)
 
-        group_id = uuid.uuid4().hex
-        records = [self._create_queue_record(source, channel, group_id) for channel in channels]
-        package = self._build_package(source, records, source_intent=source_intent)
+        records = [
+            self._create_queue_record(source, channel, group_id, stages, agents)
+            for channel in channels
+        ]
+        package = stages.run(
+            "build_package",
+            self._build_package,
+            source,
+            records,
+            source_intent=source_intent,
+        )
+        for record in records:
+            record["agent_trace"] = stages.for_piece(record["piece_id"])
         if write_records:
             for record in records:
                 self.write_queue_record(record)
@@ -613,34 +631,36 @@ class ThoughtContentPipeline:
         source: ThoughtSource,
         channel: str,
         group_id: str,
+        stages: StageExecutionRecorder,
+        agents: dict[str, AgentInfo],
     ) -> dict[str, Any]:
         now = datetime.now(UTC)
         platform, content_type = CHANNEL_TARGET[channel]
-        essence = _extract_thought_essence(source.extracted_text)
-        text = _build_platform_text(source.extracted_text, channel, essence)
-        voice_check = _local_voice_check(text, platform)
         piece_id = f"thought-{group_id[:12]}-{channel}"
-        channel_agent, channel_role = CHANNEL_AGENT[channel]
-        trace_agents = [
-            ("idea-injector", AGENT_TRACE_ROLES["idea-injector"]),
-            ("context-builder", AGENT_TRACE_ROLES["context-builder"]),
-            ("idea-planner", AGENT_TRACE_ROLES["idea-planner"]),
-            (channel_agent, channel_role),
-            ("platform-adapter", AGENT_TRACE_ROLES["platform-adapter"]),
-            ("voice-guardian", AGENT_TRACE_ROLES["voice-guardian"]),
-        ]
-        if channel in {*IMAGE_CHANNELS, *CAROUSEL_CHANNELS}:
-            trace_agents.insert(4, ("visual-designer", AGENT_TRACE_ROLES["visual-designer"]))
-            trace_agents.insert(5, ("brand-designer", AGENT_TRACE_ROLES["brand-designer"]))
-
-        seen_agents: set[str] = set()
-        deduped_trace_agents: list[tuple[str, str]] = []
-        for agent_id, role in trace_agents:
-            if agent_id in seen_agents:
-                continue
-            seen_agents.add(agent_id)
-            deduped_trace_agents.append((agent_id, role))
-        trace_agents = deduped_trace_agents
+        essence = stages.run(
+            "extract_essence",
+            _extract_thought_essence,
+            source.extracted_text,
+            piece_id=piece_id,
+            registered_agent=agents["idea-injector"],
+        )
+        text = stages.run(
+            "platform_copy",
+            _build_platform_text,
+            source.extracted_text,
+            channel,
+            essence,
+            piece_id=piece_id,
+            registered_agent=agents[CHANNEL_AGENT[channel][0]],
+        )
+        voice_check = stages.run(
+            "voice_check",
+            _local_voice_check,
+            text,
+            platform,
+            piece_id=piece_id,
+            registered_agent=agents["voice-guardian"],
+        )
 
         record: dict[str, Any] = {
             "piece_id": piece_id,
@@ -673,15 +693,7 @@ class ThoughtContentPipeline:
             },
             "reasoning": "Created from the Holus Thought Studio intake. Human approval is required before publishing.",
             "model_used": "holus/deterministic-thought-pipeline",
-            "agent_trace": [
-                {
-                    "agent_id": agent_id,
-                    "model": "holus/deterministic-thought-pipeline",
-                    "role": role,
-                    "at": now.isoformat(),
-                }
-                for agent_id, role in trace_agents
-            ],
+            "agent_trace": [],
             "quality": {
                 "hook_score": "8",
                 "voice_check": voice_check,
@@ -693,24 +705,61 @@ class ThoughtContentPipeline:
         from holus.visual.production_plan import build_visual_production_plan
         from holus.visual.proximity_router import choose_visual_concept_route
 
-        refined_source = RefinedVisualSource.from_queue_record(record)
-        visual_route = choose_visual_concept_route(refined_source)
-        visual_plan = build_visual_production_plan(refined_source, visual_route)
-        visual_strategy = choose_visual_generation_strategy(refined_source, visual_route)
-        record["content_job_plan"] = visual_strategy.content_job.log_summary()
-        visual_brief = _select_visual_brief(source.extracted_text, channel, group_id)
-        rendered = self._render_visual_asset(
-            essence.visual_prompt,
-            channel,
-            piece_id,
-            visual_brief,
-            raw_thought=source.extracted_text,
-            essence=essence,
-            refined_source=refined_source,
-            visual_route=visual_route,
-            visual_plan=visual_plan,
-            visual_strategy=visual_strategy,
+        refined_source = stages.run(
+            "refine_visual_source",
+            RefinedVisualSource.from_queue_record,
+            record,
+            piece_id=piece_id,
         )
+        visual_route = stages.run(
+            "visual_route",
+            choose_visual_concept_route,
+            refined_source,
+            piece_id=piece_id,
+        )
+        visual_plan = stages.run(
+            "visual_plan",
+            build_visual_production_plan,
+            refined_source,
+            visual_route,
+            piece_id=piece_id,
+        )
+        visual_strategy = stages.run(
+            "visual_strategy",
+            choose_visual_generation_strategy,
+            refined_source,
+            visual_route,
+            piece_id=piece_id,
+        )
+        record["content_job_plan"] = visual_strategy.content_job.log_summary()
+        rendered = None
+        if (
+            channel in IMAGE_CHANNELS | CAROUSEL_CHANNELS
+            and visual_strategy.rendering_path.value != "no_visual"
+        ):
+            visual_brief = stages.run(
+                "visual_brief",
+                _select_visual_brief,
+                source.extracted_text,
+                channel,
+                group_id,
+                piece_id=piece_id,
+            )
+            rendered = stages.run(
+                "render_visual_asset",
+                self._render_visual_asset,
+                essence.visual_prompt,
+                channel,
+                piece_id,
+                visual_brief,
+                piece_id=piece_id,
+                raw_thought=source.extracted_text,
+                essence=essence,
+                refined_source=refined_source,
+                visual_route=visual_route,
+                visual_plan=visual_plan,
+                visual_strategy=visual_strategy,
+            )
         if rendered:
             path_key, asset_path, visual_spec = rendered
             record[path_key] = asset_path
