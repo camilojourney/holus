@@ -7,6 +7,11 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from holus.agents.stage_execution import StageExecution
+
+# Retain the public API name while sharing the queue writer's exact contract.
+AgentTraceStep = StageExecution
+
 
 class AgentInfo(BaseModel):
     id: str
@@ -77,15 +82,6 @@ class TrajectoryPage(BaseModel):
     page: int
     page_size: int
     has_more: bool
-
-
-class AgentTraceStep(BaseModel):
-    agent_id: str
-    model: str | None = None
-    role: str | None = None
-    at: datetime | None = None
-    quality_score: str | None = None
-    verdict: str | None = None
 
 
 class ContentQuality(BaseModel):

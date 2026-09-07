@@ -233,16 +233,21 @@ def _parse_agent_trace(raw: dict[str, Any]) -> list[AgentTraceStep]:
     for step in trace:
         if not isinstance(step, dict):
             continue
-        steps.append(
-            AgentTraceStep(
-                agent_id=step.get("agent_id", "unknown"),
-                model=step.get("model"),
-                role=step.get("role"),
-                at=_parse_dt(step.get("at")),
-                quality_score=str(step.get("quality_score", "")) or None,
-                verdict=step.get("verdict"),
+        if step.get("schema_version") is not None:
+            # The writer and API use the same contract; never whitelist away
+            # execution facts or infer them from historical specialist labels.
+            steps.append(AgentTraceStep.model_validate(step))
+        else:
+            steps.append(
+                AgentTraceStep(
+                    agent_id=step.get("agent_id", "unknown"),
+                    model=step.get("model"),
+                    role=step.get("role"),
+                    at=_parse_dt(step.get("at")),
+                    quality_score=str(step.get("quality_score", "")) or None,
+                    verdict=step.get("verdict"),
+                )
             )
-        )
     return steps
 
 

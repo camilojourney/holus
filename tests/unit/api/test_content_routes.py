@@ -339,15 +339,23 @@ class TestCreateContentFromThought:
         assert linkedin_detail["thought_essence"]["thesis"]
         assert linkedin_detail["image_url"] is None
         assert image_detail["source_type"] == "text"
-        assert [step["agent_id"] for step in image_detail["agent_trace"]] == [
-            "idea-injector",
-            "context-builder",
-            "idea-planner",
-            "visual-designer",
-            "brand-designer",
-            "platform-adapter",
-            "voice-guardian",
+        assert [step["stage_id"] for step in image_detail["agent_trace"]] == [
+            "normalize_source",
+            "extract_essence",
+            "platform_copy",
+            "voice_check",
+            "refine_visual_source",
+            "visual_route",
+            "visual_plan",
+            "visual_strategy",
+            "visual_brief",
+            "render_visual_asset",
+            "build_package",
         ]
+        assert all(
+            step["agent_id"] == step["executor_id"] and step["model"] is None
+            for step in image_detail["agent_trace"]
+        )
 
         with _patch_queue_dir(content_queue_dir):
             image_resp = client.get(
