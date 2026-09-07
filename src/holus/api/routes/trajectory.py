@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -26,7 +27,7 @@ TRAJECTORY_PATH = REPO_ROOT / ".self-improvement" / "memory" / "trajectory.jsonl
 
 
 def _load_trajectory(path: Path | None = None) -> list[dict[str, Any]]:
-    """Load all entries from trajectory.jsonl; skip malformed lines."""
+    """Load object entries from trajectory.jsonl, preserving unknown additive fields."""
     target = path or TRAJECTORY_PATH
     if not target.exists():
         return []
@@ -36,10 +37,25 @@ def _load_trajectory(path: Path | None = None) -> list[dict[str, Any]]:
         if not line:
             continue
         try:
-            entries.append(json.loads(line))
+            entry = json.loads(line)
+            if isinstance(entry, dict):
+                entries.append(entry)
+            else:
+                logger.warning("Non-object JSONL at line %d", lineno)
         except json.JSONDecodeError:
             logger.warning("Malformed JSONL at line %d: %.200s", lineno, line)
     return entries
+
+
+def _finite_float(value: Any) -> float | None:
+    """Coerce legacy numeric strings; unusable observations are missing, not zero."""
+    if isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return number if math.isfinite(number) else None
 
 
 def _parse_entry(raw: dict[str, Any]) -> TrajectoryEntry | None:
@@ -55,7 +71,7 @@ def _parse_entry(raw: dict[str, Any]) -> TrajectoryEntry | None:
         else:
             return None
 
-        return TrajectoryEntry(
+        entry = TrajectoryEntry(
             timestamp=ts,
             agent_id=raw.get("agent_id", "unknown"),
             content_type=raw.get("content_type"),
@@ -66,6 +82,13 @@ def _parse_entry(raw: dict[str, Any]) -> TrajectoryEntry | None:
             tokens_used=raw.get("tokens_used"),
             notes=raw.get("notes"),
         )
+        # Pydantic accepts NaN/infinity as floats, but JSON cannot represent them.
+        if any(
+            value is not None and not math.isfinite(value)
+            for value in (entry.quality_score, entry.cost_usd)
+        ):
+            return None
+        return entry
     except Exception as exc:
         logger.warning("Failed to parse trajectory entry: %s — %s", raw, exc)
         return None

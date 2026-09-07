@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime, timedelta
 
+import pytest
 import yaml
 from fastapi.testclient import TestClient
 
@@ -28,6 +29,7 @@ def _setup(tmp_path, monkeypatch):
     monkeypatch.setattr(health_mod, "AGENTS_YAML", agents_yaml)
     monkeypatch.setattr(health_mod, "GUARDRAILS_YAML", guardrails_yaml)
     monkeypatch.setattr(health_mod, "CONTENT_QUEUE_DIR", content_queue_dir)
+    monkeypatch.setattr(health_mod, "LINEAGE_DIR", tmp_path / "lineage")
 
     return {
         "trajectory": trajectory_jsonl,
@@ -206,3 +208,62 @@ def test_metrics_endpoint_with_data(tmp_path, monkeypatch):
     assert abs(data["total_cost_usd"] - 0.10) < 0.001
     assert data["active_agents_24h"] == 2
     assert data["content_published_7d"] == 1
+
+
+@pytest.mark.parametrize("value", ["invalid", "NaN", "Infinity", None])
+def test_unusable_numbers_are_missing_not_zero(legacy_api, value):
+    client, path = legacy_api
+    path.write_text(
+        json.dumps(
+            {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "agent_id": "alpha",
+                "action": "publish",
+                "outcome": "success",
+                "quality_score": value,
+                "cost_usd": value,
+                "dimension_scores": {"hook": value},
+            }
+        )
+    )
+    response = client.get("/api/v1/metrics")
+    assert response.status_code == 200
+    metrics = response.json()
+    assert metrics["total_cycles"] == 1
+    assert metrics["success_rate"] == 1.0
+    assert metrics["avg_quality_score"] is None
+    assert metrics["total_cost_usd"] is None
+    assert metrics["cost_per_approved_asset"] is None
+    response = client.get("/api/v1/agents/alpha/metrics")
+    assert response.status_code == 200
+    assert response.json()["avg_quality_score"] is None
+    assert response.json()["avg_cost_usd"] is None
+    response = client.get("/api/v1/agents/alpha")
+    assert response.status_code == 200
+    assert response.json()["dimension_averages"] == {}
+
+
+def test_finite_values_do_not_overflow_means(legacy_api):
+    client, path = legacy_api
+    row = {
+        "timestamp": datetime.now(UTC).isoformat(),
+        "agent_id": "alpha",
+        "action": "publish",
+        "quality_score": 1e308,
+        "cost_usd": 1e308,
+        "dimension_scores": {"hook": 1e308},
+    }
+    path.write_text("\n".join([json.dumps(row)] * 2))
+    response = client.get("/api/v1/agents/alpha/metrics")
+    assert response.status_code == 200
+    assert response.json()["avg_quality_score"] == 1e308
+    assert response.json()["avg_cost_usd"] == 1e308
+    response = client.get("/api/v1/agents/alpha")
+    assert response.status_code == 200
+    assert response.json()["dimension_averages"] == {"hook": 1e308}
+    response = client.get("/api/v1/metrics")
+    assert response.status_code == 200
+    assert response.json()["avg_quality_score"] == 1e308
+    # An unrepresentable total is unavailable, never infinity or a clamped amount.
+    assert response.json()["total_cost_usd"] is None
+    assert response.json()["cost_per_approved_asset"] is None

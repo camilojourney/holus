@@ -5,13 +5,14 @@ from __future__ import annotations
 import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from statistics import mean
 from typing import Any
 
 import yaml
 from fastapi import APIRouter, HTTPException
 
 from holus.api.models import AgentDetailResponse, AgentInfo, AgentMetrics
-from holus.api.routes.trajectory import _load_trajectory
+from holus.api.routes.trajectory import _finite_float, _load_trajectory
 
 logger = logging.getLogger(__name__)
 
@@ -139,18 +140,14 @@ def _aggregate_dimension_scores(
     if not agent_entries:
         return {}
 
-    sums: dict[str, float] = {}
-    counts: dict[str, int] = {}
+    scores: dict[str, list[float]] = {}
     for entry in agent_entries:
         for dim, score in entry["dimension_scores"].items():
-            try:
-                val = float(score)
-            except (TypeError, ValueError):
-                continue
-            sums[dim] = sums.get(dim, 0.0) + val
-            counts[dim] = counts.get(dim, 0) + 1
+            val = _finite_float(score)
+            if val is not None:
+                scores.setdefault(dim, []).append(val)
 
-    return {dim: round(sums[dim] / counts[dim], 2) for dim in sorted(sums)}
+    return {dim: round(mean(scores[dim]), 2) for dim in sorted(scores)}
 
 
 @router.get("/{agent_id}", response_model=AgentDetailResponse)
@@ -202,12 +199,12 @@ async def get_agent_metrics(agent_id: str) -> AgentMetrics:
     success_rate = (successes / total_runs) if total_runs > 0 else 0.0
 
     quality_scores = [
-        e["quality_score"] for e in agent_entries if e.get("quality_score") is not None
+        score for e in agent_entries if (score := _finite_float(e.get("quality_score"))) is not None
     ]
-    avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else None
+    avg_quality = mean(quality_scores) if quality_scores else None
 
-    costs = [e["cost_usd"] for e in agent_entries if e.get("cost_usd") is not None]
-    avg_cost = sum(costs) / len(costs) if costs else None
+    costs = [cost for e in agent_entries if (cost := _finite_float(e.get("cost_usd"))) is not None]
+    avg_cost = mean(costs) if costs else None
 
     return AgentMetrics(
         agent_id=agent_id,
