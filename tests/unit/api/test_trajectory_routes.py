@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -208,3 +209,47 @@ def test_trajectory_malformed_lines_skipped(tmp_path, monkeypatch):
     assert resp.status_code == 200
     # Only 2 valid entries parsed
     assert resp.json()["total"] == 2
+
+
+@pytest.mark.parametrize("bad_line", ["null", "[]", '"scalar"', "42", "false", "{broken"])
+def test_malformed_rows_preserve_neighbors_across_routes(legacy_api, bad_line):
+    from holus.api.routes.trajectory import _load_trajectory
+
+    client, path = legacy_api
+    older = _make_entry(agent_id="alpha", quality_score=6.0, cost_usd=0.1)
+    newer = dict(older, timestamp=datetime.now(UTC).isoformat(), quality_score=8.0, cost_usd=0.3)
+    newer["future_field"] = {"nested": [1, "preserved"]}
+    path.write_text(f"{json.dumps(older)}\n{bad_line}\n\n{json.dumps(newer)}\n")
+
+    # The shared reader preserves order and additive fields, not just the projection.
+    assert _load_trajectory() == [older, newer]
+    responses = {
+        route: client.get(f"/api/v1/{route}")
+        for route in (
+            "trajectory",
+            "agents",
+            "agents/alpha",
+            "agents/alpha/metrics",
+            "health",
+            "metrics",
+        )
+    }
+    assert {route: response.status_code for route, response in responses.items()} == dict.fromkeys(
+        responses, 200
+    )
+    assert responses["agents"].json()[0]["run_count_7d"] == 2
+    assert responses["agents/alpha/metrics"].json()["avg_quality_score"] == 7.0
+    assert responses["agents/alpha/metrics"].json()["avg_cost_usd"] == pytest.approx(0.2)
+    assert responses["health"].json()["error_rate_1h"] == 0.0
+    assert responses["metrics"].json()["total_cycles"] == 2
+    assert responses["metrics"].json()["total_cost_usd"] == pytest.approx(0.4)
+
+    date = datetime.now(UTC).date().isoformat()
+    query = f"agent_id=alpha&content_type=linkedin_post&date_from={date}&date_to={date}&page_size=1"
+    first = client.get(f"/api/v1/trajectory?{query}").json()
+    second = client.get(f"/api/v1/trajectory?{query}&page=2").json()
+    assert first["total"] == second["total"] == 2
+    assert first["entries"][0]["quality_score"] == 8.0
+    assert second["entries"][0]["quality_score"] == 6.0
+    assert first["has_more"] is True
+    assert second["has_more"] is False

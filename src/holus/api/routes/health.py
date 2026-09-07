@@ -5,13 +5,14 @@ from __future__ import annotations
 import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from statistics import mean
 
 import yaml
 from fastapi import APIRouter
 
 from holus.api.models import HealthStatus, KPIMetrics
 from holus.api.routes.evaluations import EVAL_HISTORY_PATH
-from holus.api.routes.trajectory import TRAJECTORY_PATH, _load_trajectory
+from holus.api.routes.trajectory import TRAJECTORY_PATH, _finite_float, _load_trajectory
 from holus.core.config import HolusConfig
 from holus.lineage.store import LineageStore
 
@@ -127,11 +128,15 @@ async def metrics() -> KPIMetrics:
     successes = sum(1 for e in entries if e.get("outcome") == "success")
     success_rate = (successes / total_cycles) if total_cycles > 0 else 0.0
 
-    quality_scores = [e["quality_score"] for e in entries if e.get("quality_score") is not None]
-    avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else None
+    quality_scores = [
+        score for e in entries if (score := _finite_float(e.get("quality_score"))) is not None
+    ]
+    avg_quality = mean(quality_scores) if quality_scores else None
 
-    costs = [e["cost_usd"] for e in entries if e.get("cost_usd") is not None]
-    total_cost = sum(costs) if costs else None
+    costs = [cost for e in entries if (cost := _finite_float(e.get("cost_usd"))) is not None]
+    # Finite observations can still overflow the total. Report it as unavailable,
+    # rather than emitting infinity or inventing a clamped cost.
+    total_cost = _finite_float(sum(costs)) if costs else None
 
     # Active agents in last 24h
     active_agents: set[str] = set()
