@@ -85,21 +85,31 @@ class AgentRegistry:
     # -- Loading -----------------------------------------------------------
 
     def _load(self) -> None:
-        """Parse AGENTS.yaml and populate the internal dict.
+        """Build a replacement catalog, publishing only after every row loads.
+
+        A failure leaves the previous agents and their object identities intact.
 
         Raises:
             FileNotFoundError: If the YAML file does not exist.
             yaml.YAMLError: If the file cannot be parsed.
+            TypeError: If the root, agents section, or row is not a mapping,
+                or a rubric cannot be converted to a list.
         """
         raw = self._yaml_path.read_text(encoding="utf-8")
-        data: dict[str, Any] = yaml.safe_load(raw)
+        data = yaml.safe_load(raw)
+        if not isinstance(data, dict):
+            raise TypeError(f"registry: {self._yaml_path}: root must be a mapping")
 
         agents_section: dict[str, Any] = data.get("agents", {})
-        self._agents = {}
+        if not isinstance(agents_section, dict):
+            raise TypeError(f"registry: {self._yaml_path}: agents must be a mapping")
+        replacement: dict[str, AgentInfo] = {}
 
         for agent_id, attrs in agents_section.items():
             if not isinstance(attrs, dict):
-                continue
+                raise TypeError(
+                    f"registry: {self._yaml_path}: agent '{agent_id}' must be a mapping"
+                )
 
             # Normalise evaluated_by / evaluates_with to list[str]
             evaluated_by = attrs.get("evaluated_by", [])
@@ -118,7 +128,14 @@ class AgentRegistry:
             if rubric is None:
                 rubric = []
 
-            self._agents[agent_id] = AgentInfo(
+            try:
+                rubric = list(rubric)
+            except TypeError as exc:
+                raise TypeError(
+                    f"registry: {self._yaml_path}: agent '{agent_id}' rubric must be iterable"
+                ) from exc
+
+            replacement[agent_id] = AgentInfo(
                 agent_id=agent_id,
                 role=attrs.get("role", ""),
                 type=attrs.get("type", ""),
@@ -129,14 +146,15 @@ class AgentRegistry:
                 prompt_path=attrs.get("prompt", ""),
                 evaluated_by=evaluated_by,
                 evaluates_with=evaluates_with,
-                rubric=list(rubric),
+                rubric=rubric,
                 is_gate=bool(attrs.get("gate", False)),
             )
 
+        self._agents = replacement
         logger.info("registry: loaded %d agents from %s", len(self._agents), self._yaml_path)
 
     def reload(self) -> None:
-        """Re-read AGENTS.yaml from disk.  Useful for tests and long-running processes."""
+        """Re-read AGENTS.yaml, preserving the known-good catalog if loading fails."""
         self._load()
 
     # -- Queries -----------------------------------------------------------
