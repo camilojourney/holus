@@ -23,9 +23,26 @@ import type {
 } from '@/lib/types';
 
 type Step = 'capture' | 'suggest' | 'preview' | 'done';
+type RetryAction = 'suggest' | 'preview' | 'confirm' | null;
 
 function looksLikeUrl(value: string): boolean {
   return /^https?:\/\/\S+/i.test(value.trim());
+}
+
+function attachmentError(file: File): string | null {
+  const accepted = file.type.startsWith('image/') || file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+  return accepted ? null : 'Unsupported attachment. Choose an image or PDF.';
+}
+
+function friendlyError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/failed to fetch|network|load failed|fetch/i.test(message)) {
+    return 'Holus backend is unavailable. Check the local connection and try again.';
+  }
+  if (/400|422|unsupported|attachment/i.test(message)) {
+    return message.replace(/^POST \/capture\/\w+ → \d+:?\s*/i, '') || 'This capture or attachment was rejected.';
+  }
+  return message;
 }
 
 export default function CaptureShare() {
@@ -46,6 +63,7 @@ export default function CaptureShare() {
   const [deliveryGranted, setDeliveryGranted] = useState(false);
   const [socialReachable, setSocialReachable] = useState<boolean | null>(null);
   const [confirmResults, setConfirmResults] = useState<CaptureConfirmResult[]>([]);
+  const [retryAction, setRetryAction] = useState<RetryAction>(null);
 
   const attachmentUrl = useMemo(() => {
     const value = attachmentInput.trim();
@@ -53,9 +71,17 @@ export default function CaptureShare() {
   }, [attachmentInput]);
 
   function onFileChange(file: File | null) {
+    setError(null);
     if (!file) {
       setFileName(null);
       setFileType(null);
+      return;
+    }
+    const rejected = attachmentError(file);
+    if (rejected) {
+      setFileName(null);
+      setFileType(null);
+      setError(rejected);
       return;
     }
     setFileName(file.name);
@@ -77,11 +103,16 @@ export default function CaptureShare() {
 
   async function handleSuggest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (attachmentInput.trim() && !attachmentUrl && !fileName) {
+      setError('Attachment link must start with http:// or https://.');
+      return;
+    }
     if (!live) {
-      setError('Live capture requires local Holus. No request was sent.');
+      setError('Holus backend is unavailable from this surface. No request was sent.');
       return;
     }
     setBusy(true);
+    setRetryAction(null);
     setError(null);
     try {
       const response = await suggestCapture({
@@ -96,7 +127,8 @@ export default function CaptureShare() {
       setSocialReachable(response.social_api_reachable);
       setStep('suggest');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(friendlyError(err));
+      setRetryAction('suggest');
     } finally {
       setBusy(false);
     }
@@ -108,6 +140,7 @@ export default function CaptureShare() {
       return;
     }
     setBusy(true);
+    setRetryAction(null);
     setError(null);
     try {
       const response = await previewCapture({
@@ -118,7 +151,8 @@ export default function CaptureShare() {
       setPreviews(response.previews);
       setStep('preview');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(friendlyError(err));
+      setRetryAction('preview');
     } finally {
       setBusy(false);
     }
@@ -126,6 +160,7 @@ export default function CaptureShare() {
 
   async function handleConfirm() {
     setBusy(true);
+    setRetryAction(null);
     setError(null);
     try {
       const response = await confirmCapture({
@@ -137,7 +172,8 @@ export default function CaptureShare() {
       setStep('done');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(friendlyError(err));
+      setRetryAction('confirm');
     } finally {
       setBusy(false);
     }
@@ -154,6 +190,13 @@ export default function CaptureShare() {
     setConfirmResults([]);
     setStep('capture');
     setError(null);
+    setRetryAction(null);
+  }
+
+  function retry() {
+    if (retryAction === 'suggest') void handleSuggest({ preventDefault: () => undefined } as FormEvent<HTMLFormElement>);
+    if (retryAction === 'preview') void handlePreview();
+    if (retryAction === 'confirm') void handleConfirm();
   }
 
   const canSuggest =
@@ -182,8 +225,8 @@ export default function CaptureShare() {
               One box. Suggest routes. Preview. Then post.
             </h2>
             {!live && (
-              <p className="text-xs mt-2" style={{ color: 'var(--warning)' }}>
-                {connection.label} — live capture is unavailable from this surface.
+              <p role="status" className="text-xs mt-2" style={{ color: 'var(--warning)' }}>
+                {connection.label} - Holus backend unavailable here. Live capture is not sent.
               </p>
             )}
           </div>
@@ -203,9 +246,9 @@ export default function CaptureShare() {
         </div>
       </div>
 
-      <div className="p-6 space-y-5">
+      <div className="p-6 space-y-5" aria-busy={busy}>
         {step === 'capture' && (
-          <form onSubmit={handleSuggest} className="space-y-4">
+          <form onSubmit={handleSuggest} className="space-y-4" aria-label="Capture thought">
             <textarea
               value={text}
               onChange={(event) => setText(event.target.value)}
@@ -285,7 +328,7 @@ export default function CaptureShare() {
                 }}
               >
                 <Sparkles size={15} />
-                {busy ? 'Suggesting…' : 'Suggest destinations'}
+                {busy ? 'Checking capture…' : 'Suggest destinations'}
               </button>
             </div>
           </form>
@@ -293,8 +336,8 @@ export default function CaptureShare() {
 
         {step === 'suggest' && (
           <div className="space-y-4">
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Suggested routes
+            <p className="text-sm" aria-live="polite" style={{ color: 'var(--text-secondary)' }}>
+              {busy ? 'Loading route suggestions…' : 'Suggested routes'}
               {socialReachable === false && ' · Social API not reachable from this host'}
               {socialReachable === true && ' · Social API reachable'}
               {deliveryGranted
@@ -413,7 +456,7 @@ export default function CaptureShare() {
                 }}
               >
                 <Send size={15} />
-                {busy ? 'Posting…' : 'Confirm and post'}
+                {busy ? 'Confirming…' : 'Confirm and post'}
               </button>
             </div>
           </div>
@@ -462,10 +505,20 @@ export default function CaptureShare() {
         )}
 
         {error && (
-          <p className="inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--danger)' }}>
-            <AlertCircle size={14} />
-            {error}
-          </p>
+          <div role="alert" className="flex flex-wrap items-center gap-3 text-xs" style={{ color: 'var(--danger)' }}>
+            <span className="inline-flex items-center gap-1.5">
+              <AlertCircle size={14} />
+              {error}
+            </span>
+            {retryAction && (
+              <button type="button" onClick={retry} disabled={busy} className="font-semibold underline focus-ring">
+                Try again
+              </button>
+            )}
+            <button type="button" onClick={reset} disabled={busy} className="font-semibold underline focus-ring">
+              Start over
+            </button>
+          </div>
         )}
       </div>
     </section>
