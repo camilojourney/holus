@@ -8,6 +8,7 @@ default:
 
 install:
     uv sync --all-extras
+    uv run playwright install chromium
 
 # -- Run ---------------------------------------------------------------------
 

@@ -80,7 +80,11 @@ def mock_loader() -> MagicMock:
 
 @pytest.fixture
 def pipeline(mock_loader: MagicMock) -> VoicePipeline:
-    return VoicePipeline(loader=mock_loader)
+    # generate_cards=False: these tests cover pipeline text logic, not visual
+    # rendering. Leaving it enabled shells out to real Playwright and writes
+    # into the real data/cards/ directory using a content-derived filename,
+    # silently overwriting tracked generated PNGs on every test run.
+    return VoicePipeline(loader=mock_loader, generate_cards=False)
 
 
 def _inject_response() -> str:
