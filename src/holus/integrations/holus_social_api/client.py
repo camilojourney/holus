@@ -14,7 +14,10 @@ import httpx
 from pydantic import BaseModel, Field, model_validator
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from holus.integrations.holus_social_api.containment import raise_external_delivery_contained
+from holus.integrations.holus_social_api.containment import (
+    personal_delivery_granted,
+    raise_external_delivery_contained,
+)
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -210,7 +213,7 @@ class HolusSocialAPIClient:
     async def _post_json(
         self, path: str, payload: dict[str, Any], *, idempotency_key: str | None = None
     ) -> dict[str, Any]:
-        if path in _CONTAINED_WRITE_PATHS:
+        if path in _CONTAINED_WRITE_PATHS and not personal_delivery_granted():
             raise_external_delivery_contained()
         headers = {"Idempotency-Key": idempotency_key} if idempotency_key else None
         response = await self.client.post(path, json=payload, headers=headers)
@@ -223,10 +226,28 @@ class HolusSocialAPIClient:
 
     @_RETRY_ON_HTTP_ERROR
     async def publish(self, request: PublishRequest) -> PublishResult:
-        """Contained write path: raises ExternalDeliveryContainedError, no delivery."""
+        """Publish via Holus Social API when personal delivery is granted; else contained."""
         platforms = [normalize_platform(platform) for platform in request.platforms]
-        raise_external_delivery_contained()
+        if not personal_delivery_granted():
+            raise_external_delivery_contained()
         self._ensure_valid_content(request.content, platforms)
+        payload = _with_optional_media(
+            {
+                "content": request.content,
+                "platforms": platforms,
+                "style": request.style,
+                "bilingual": request.bilingual,
+                "source_language": request.source_language,
+            },
+            media_url=request.media_url,
+            media_type=request.media_type,
+        )
+        data = await self._post_json(
+            "/api/v1/publish",
+            payload,
+            idempotency_key=request.idempotency_key,
+        )
+        return PublishResult.model_validate(data)
 
     async def get_status(self, publish_id: str) -> PublishResult:
         """Check a publish operation status."""
@@ -237,6 +258,10 @@ class HolusSocialAPIClient:
     async def health(self) -> dict[str, Any]:
         """Check Holus Social API health."""
         return await self._get_json("/api/v1/health")
+
+    async def list_connections(self) -> dict[str, Any]:
+        """List connected platform accounts from Holus Social API."""
+        return await self._get_json("/api/v1/connections")
 
     async def get_analytics(
         self,
@@ -267,11 +292,28 @@ class HolusSocialAPIClient:
 
     @_RETRY_ON_HTTP_ERROR
     async def schedule_post(self, request: ScheduleRequest) -> ScheduleResult:
-        """Contained write path: raises ExternalDeliveryContainedError, no delivery."""
+        """Schedule via Holus Social API when personal delivery is granted; else contained."""
         platforms = request.platforms or ([request.platform] if request.platform else [])
         platforms = [normalize_platform(platform) for platform in platforms]
-        raise_external_delivery_contained()
+        if not personal_delivery_granted():
+            raise_external_delivery_contained()
         self._ensure_valid_content(request.content, platforms)
+        payload = _with_optional_media(
+            {
+                "content": request.content,
+                "platforms": platforms,
+                "approval_required": request.approval_required,
+                "scheduled_at": request.scheduled_at,
+            },
+            media_url=request.media_url,
+            media_type=request.media_type,
+        )
+        data = await self._post_json(
+            "/api/v1/schedule",
+            payload,
+            idempotency_key=request.idempotency_key,
+        )
+        return ScheduleResult.model_validate(data)
 
     async def close(self) -> None:
         """Close the HTTP client."""

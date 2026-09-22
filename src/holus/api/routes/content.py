@@ -44,6 +44,12 @@ from holus.core.storage import atomic_write_text
 from holus.integrations.holus_social_api import (
     EXTERNAL_DELIVERY_CONTAINED_STATUS,
     HolusSocialAPIClient,
+    PublishRequest,
+    ScheduleRequest,
+)
+from holus.integrations.holus_social_api.containment import (
+    ExternalDeliveryContainedError,
+    personal_delivery_granted,
 )
 from holus.lineage.models import ArtifactType, stable_hash
 from holus.lineage.outbox import DispatchOutbox
@@ -531,7 +537,12 @@ async def publish_content(
     piece_id: str,
     body: ContentPublishRequest | None = None,
 ) -> ContentPublishResponse:
-    """Explicitly record a publish intent for one approved piece; delivery contained."""
+    """Explicitly publish one approved piece through Holus Social API.
+
+    Default: record a durable outbox intent and mark delivery contained.
+    When HOLUS_PERSONAL_DELIVERY_GRANT is set, deliver via the existing Social
+    API connector after the same approval and revision checks.
+    """
     request_body = body or ContentPublishRequest()
     target_path, raw = _find_content_raw(piece_id)
     payload = _publish_payload(raw)
@@ -560,10 +571,13 @@ async def publish_content(
     if raw.get("status") != "approved" and _created:
         raise HTTPException(status_code=409, detail="DISPATCH_RECONCILIATION_REQUIRED")
     _record_publication_intent(raw, intent.request_id)
+
     if intent.status == "accepted":
         raw["status"] = "published"
         raw["post_id"] = intent.external_id
         publish_id = intent.external_id
+    elif personal_delivery_granted():
+        publish_id = await _deliver_publish(outbox, intent, raw, payload)
     else:
         _record_contained_dispatch_result(
             outbox,
@@ -593,7 +607,12 @@ async def schedule_content(
     piece_id: str,
     body: ContentScheduleRequest,
 ) -> ContentPublishResponse:
-    """Explicitly record a schedule intent for one approved piece; delivery contained."""
+    """Explicitly schedule one approved piece through Holus Social API.
+
+    Default: record a durable outbox intent and mark delivery contained.
+    When HOLUS_PERSONAL_DELIVERY_GRANT is set, deliver via the existing Social
+    API connector after the same approval and revision checks.
+    """
     target_path, raw = _find_content_raw(piece_id)
     payload = _schedule_payload(raw, body.scheduled_at)
 
@@ -628,6 +647,10 @@ async def schedule_content(
         raw["schedule_status"] = intent.external_status or "accepted"
         schedule_id = intent.external_id
         schedule_status = raw["schedule_status"]
+    elif personal_delivery_granted():
+        schedule_id, schedule_status = await _deliver_schedule(
+            outbox, intent, raw, payload
+        )
     else:
         _record_contained_dispatch_result(
             outbox,
@@ -648,6 +671,114 @@ async def schedule_content(
         schedule_id=schedule_id,
         status=schedule_status,
     )
+
+
+async def _deliver_publish(
+    outbox: DispatchOutbox,
+    intent: Any,
+    raw: dict[str, Any],
+    payload: dict[str, Any],
+) -> str | None:
+    """Call Holus Social API publish under the personal delivery grant."""
+    client = _ROUTE_CLIENT_IMPORT_SEAM()
+    try:
+        result = await client.publish(
+            PublishRequest(
+                content=str(payload["content"]),
+                platforms=list(payload["platforms"]),
+                style=str(payload.get("style", "raw")),
+                media_url=payload.get("media_url"),
+                media_type=payload.get("media_type"),
+                idempotency_key=intent.request_id,
+            )
+        )
+    except ExternalDeliveryContainedError:
+        _record_contained_dispatch_result(
+            outbox,
+            intent,
+            raw,
+            id_field="post_id",
+            status_field="publish_status",
+        )
+        return None
+    except Exception as exc:
+        outbox.mark_result(
+            intent,
+            status="failed",
+            external_id=None,
+            external_status="failed",
+        )
+        raw["publish_status"] = "failed"
+        raise HTTPException(status_code=502, detail=f"Social API publish failed: {exc}") from exc
+    finally:
+        await client.close()
+
+    publish_id = result.publish_id
+    outbox.mark_result(
+        intent,
+        status="accepted",
+        external_id=publish_id,
+        external_status="accepted",
+    )
+    raw["status"] = "published"
+    raw["post_id"] = publish_id
+    raw["publish_status"] = "accepted"
+    return publish_id
+
+
+async def _deliver_schedule(
+    outbox: DispatchOutbox,
+    intent: Any,
+    raw: dict[str, Any],
+    payload: dict[str, Any],
+) -> tuple[str | None, str]:
+    """Call Holus Social API schedule under the personal delivery grant."""
+    client = _ROUTE_CLIENT_IMPORT_SEAM()
+    try:
+        result = await client.schedule_post(
+            ScheduleRequest(
+                content=str(payload["content"]),
+                platforms=list(payload["platforms"]),
+                approval_required=bool(payload.get("approval_required", True)),
+                scheduled_at=payload.get("scheduled_at"),
+                media_url=payload.get("media_url"),
+                media_type=payload.get("media_type"),
+                idempotency_key=intent.request_id,
+            )
+        )
+    except ExternalDeliveryContainedError:
+        _record_contained_dispatch_result(
+            outbox,
+            intent,
+            raw,
+            id_field="schedule_id",
+            status_field="schedule_status",
+        )
+        return None, EXTERNAL_DELIVERY_CONTAINED_STATUS
+    except Exception as exc:
+        outbox.mark_result(
+            intent,
+            status="failed",
+            external_id=None,
+            external_status="failed",
+        )
+        raw["schedule_status"] = "failed"
+        raise HTTPException(status_code=502, detail=f"Social API schedule failed: {exc}") from exc
+    finally:
+        await client.close()
+
+    schedule_id = result.schedule_id
+    schedule_status = result.status or "accepted"
+    outbox.mark_result(
+        intent,
+        status="accepted",
+        external_id=schedule_id,
+        external_status=schedule_status,
+    )
+    raw["status"] = "scheduled"
+    raw["schedule_id"] = schedule_id
+    raw["schedule_status"] = schedule_status
+    return schedule_id, schedule_status
 
 
 def _find_content_raw(piece_id: str) -> tuple[Path, dict[str, Any]]:

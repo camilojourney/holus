@@ -126,6 +126,8 @@ export interface ContentItem {
   idea_source?: string;
   source_type?: string;
   source_url?: string;
+  revision?: string;
+  review_decision_id?: string;
   quality?: ContentQuality;
   posting_destination?: PostingDestination;
 }
@@ -167,6 +169,62 @@ export interface CreateContentRequest {
 export interface CreateContentResponse {
   group_id: string;
   items: ContentItem[];
+}
+
+export interface CaptureRouteSuggestion {
+  platform: string;
+  channel: string;
+  format_hint: string;
+  edit_notes: string;
+  confidence: number;
+  preview_text: string;
+  selected?: boolean;
+}
+
+export interface CaptureSuggestRequest {
+  text?: string;
+  attachment_url?: string;
+  attachment_filename?: string;
+  attachment_content_type?: string;
+  connected_platforms?: string[];
+}
+
+export interface CaptureSuggestResponse {
+  attachment_kind: string;
+  suggestions: CaptureRouteSuggestion[];
+  personal_delivery_granted: boolean;
+  social_api_reachable: boolean | null;
+  connected_platforms: string[];
+}
+
+export interface CapturePreviewRequest {
+  text: string;
+  channels: string[];
+  source_url?: string;
+  attachment_kind?: string;
+}
+
+export interface CapturePreviewResponse {
+  group_id: string;
+  items: ContentItem[];
+  previews: ContentDetail[];
+}
+
+export interface CaptureConfirmRequest {
+  piece_ids: string[];
+  dry_run?: boolean;
+}
+
+export interface CaptureConfirmResult {
+  piece_id: string;
+  status: string;
+  publish_id?: string | null;
+  detail?: string | null;
+}
+
+export interface CaptureConfirmResponse {
+  results: CaptureConfirmResult[];
+  personal_delivery_granted: boolean;
 }
 
 export interface PatchContentRequest {

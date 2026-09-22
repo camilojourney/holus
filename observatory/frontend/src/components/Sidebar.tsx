@@ -13,6 +13,7 @@ import {
   Clapperboard,
   Compass,
   ExternalLink,
+  Share2,
 } from 'lucide-react';
 import HolusLogo from '@/components/HolusLogo';
 import ConnectionStatus from '@/components/ConnectionStatus';
@@ -20,6 +21,7 @@ import { SOCIAL_API_ORIGIN } from '@/lib/generation/contract';
 
 const nav = [
   { href: '/', label: 'Overview', Icon: Compass, exact: true },
+  { href: '/capture', label: 'Capture', Icon: Share2 },
   { href: '/studio', label: 'Generation', Icon: Clapperboard },
   { href: '/content', label: 'Content', Icon: FileText },
   { href: '/health', label: 'Health', Icon: HeartPulse },

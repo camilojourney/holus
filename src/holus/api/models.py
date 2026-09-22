@@ -178,6 +178,63 @@ class ContentCreateResponse(BaseModel):
     items: list[ContentItem]
 
 
+class CaptureRouteSuggestion(BaseModel):
+    platform: str
+    channel: str
+    format_hint: str
+    edit_notes: str
+    confidence: float
+    preview_text: str
+    selected: bool = True
+
+
+class CaptureSuggestRequest(BaseModel):
+    text: str = ""
+    attachment_url: str | None = None
+    attachment_filename: str | None = None
+    attachment_content_type: str | None = None
+    # Optional override when Social API connections are known ahead of time.
+    connected_platforms: list[str] | None = None
+
+
+class CaptureSuggestResponse(BaseModel):
+    attachment_kind: str
+    suggestions: list[CaptureRouteSuggestion]
+    personal_delivery_granted: bool = False
+    social_api_reachable: bool | None = None
+    connected_platforms: list[str] = []
+
+
+class CapturePreviewRequest(BaseModel):
+    text: str
+    channels: list[str]
+    source_url: str | None = None
+    attachment_kind: str | None = None
+
+
+class CapturePreviewResponse(BaseModel):
+    group_id: str
+    items: list[ContentItem]
+    previews: list[ContentDetail]
+
+
+class CaptureConfirmRequest(BaseModel):
+    piece_ids: list[str]
+    dry_run: bool = False
+
+
+class CaptureConfirmResult(BaseModel):
+    piece_id: str
+    status: str
+    publish_id: str | None = None
+    detail: str | None = None
+
+
+class CaptureConfirmResponse(BaseModel):
+    results: list[CaptureConfirmResult]
+    personal_delivery_granted: bool = False
+
+
 class ContentStatusCounts(BaseModel):
     draft: int = 0
     review: int = 0

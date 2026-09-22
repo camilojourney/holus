@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from holus.api.routes import (
     agents,
     alerts,
+    capture,
     config,
     content,
     evaluations,
@@ -87,6 +88,7 @@ def create_app() -> FastAPI:
     app.include_router(config.router, prefix=prefix)
     app.include_router(trajectory.router, prefix=prefix)
     app.include_router(content.router, prefix=prefix)
+    app.include_router(capture.router, prefix=prefix)
     app.include_router(evaluations.router, prefix=prefix)
     app.include_router(knowledge.router, prefix=prefix)
     app.include_router(lineage.router, prefix=prefix)

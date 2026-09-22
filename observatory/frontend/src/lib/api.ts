@@ -15,6 +15,12 @@ import type {
   ContentResponse,
   CreateContentRequest,
   CreateContentResponse,
+  CaptureSuggestRequest,
+  CaptureSuggestResponse,
+  CapturePreviewRequest,
+  CapturePreviewResponse,
+  CaptureConfirmRequest,
+  CaptureConfirmResponse,
   PatchContentRequest,
   KnowledgeFile,
   CostBreakdown,
@@ -319,6 +325,60 @@ export async function createContentFromThought(
     throw new Error(`POST /content/from-thought → ${res.status}: ${msg}`);
   }
   return res.json() as Promise<CreateContentResponse>;
+}
+
+export async function suggestCapture(
+  body: CaptureSuggestRequest,
+): Promise<CaptureSuggestResponse> {
+  if (isPublicOrDemoSurface()) {
+    throw new Error(PUBLIC_MUTATION_BLOCKED);
+  }
+  const res = await fetch('/api/v1/capture/suggest', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => res.statusText);
+    throw new Error(`POST /capture/suggest → ${res.status}: ${msg}`);
+  }
+  return res.json() as Promise<CaptureSuggestResponse>;
+}
+
+export async function previewCapture(
+  body: CapturePreviewRequest,
+): Promise<CapturePreviewResponse> {
+  if (isPublicOrDemoSurface()) {
+    throw new Error(PUBLIC_MUTATION_BLOCKED);
+  }
+  const res = await fetch('/api/v1/capture/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => res.statusText);
+    throw new Error(`POST /capture/preview → ${res.status}: ${msg}`);
+  }
+  return res.json() as Promise<CapturePreviewResponse>;
+}
+
+export async function confirmCapture(
+  body: CaptureConfirmRequest,
+): Promise<CaptureConfirmResponse> {
+  if (isPublicOrDemoSurface()) {
+    throw new Error(PUBLIC_MUTATION_BLOCKED);
+  }
+  const res = await fetch('/api/v1/capture/confirm', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => res.statusText);
+    throw new Error(`POST /capture/confirm → ${res.status}: ${msg}`);
+  }
+  return res.json() as Promise<CaptureConfirmResponse>;
 }
 
 // Content detail (full text + agent trace)

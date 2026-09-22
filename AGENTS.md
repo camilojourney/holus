@@ -240,6 +240,7 @@ The MCP boundary is the contract. If a silo's MCP is down, Holus waits.
 3. **Trading is isolated.** pythia and milo-to-the-moon are never referenced, called, or monitored by Holus. They are separate businesses.
 4. **Human approval for publishing.** Phase 1: all publish actions require human review before execution. Phase 2+: autonomous with weekly human review.
 5. **Public generation stays Holus-owned.** The browser never calls Genpeli, and public/demo Observatory never opens localhost SSE. See the public generation boundary in `ARCHITECTURE.md`.
+6. **Personal capture loop.** Observatory `/capture` (also on Content) is text + one attachment slot → `/api/v1/capture/{suggest,preview,confirm}` → existing Holus Social API client. Real outbound publish stays contained unless `HOLUS_PERSONAL_DELIVERY_GRANT=1` (see `.env.example`).
 
 ## Context
 
