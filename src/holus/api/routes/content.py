@@ -648,9 +648,7 @@ async def schedule_content(
         schedule_id = intent.external_id
         schedule_status = raw["schedule_status"]
     elif personal_delivery_granted():
-        schedule_id, schedule_status = await _deliver_schedule(
-            outbox, intent, raw, payload
-        )
+        schedule_id, schedule_status = await _deliver_schedule(outbox, intent, raw, payload)
     else:
         _record_contained_dispatch_result(
             outbox,

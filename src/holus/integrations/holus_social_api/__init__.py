@@ -15,8 +15,8 @@ from .containment import (
     EXTERNAL_DELIVERY_CONTAINED_CODE,
     EXTERNAL_DELIVERY_CONTAINED_MESSAGE,
     EXTERNAL_DELIVERY_CONTAINED_STATUS,
-    ExternalDeliveryContainedError,
     PERSONAL_DELIVERY_GRANT_ENV,
+    ExternalDeliveryContainedError,
     personal_delivery_granted,
     raise_external_delivery_contained,
 )
