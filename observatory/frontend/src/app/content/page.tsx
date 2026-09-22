@@ -5,6 +5,7 @@ import CarouselPreview from '@/components/CarouselPreview';
 import ContentKanban from '@/components/ContentKanban';
 import ErrorBanner from '@/components/ErrorBanner';
 import ThoughtComposer from '@/components/ThoughtComposer';
+import CaptureShare from '@/components/CaptureShare';
 import ConnectionStatus from '@/components/ConnectionStatus';
 import { isPublicOrDemoSurface } from '@/lib/connection';
 import type { Agent, AgentTraceStep, ContentDetail, ContentItem } from '@/lib/types';
@@ -476,6 +477,8 @@ export default async function ContentPage() {
 
       {!error && (
         <>
+          <CaptureShare />
+
           <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)] gap-5">
             <ThoughtComposer />
 
