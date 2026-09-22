@@ -116,7 +116,9 @@ def suggest_routes(
             format_hint="document carousel / PDF share",
             edit_notes="Lead with a one-line takeaway, then attach the PDF.",
             confidence=0.92,
-            preview=f"{body}\n\n(PDF attachment)" if body else "Share this PDF with a short takeaway.",
+            preview=f"{body}\n\n(PDF attachment)"
+            if body
+            else "Share this PDF with a short takeaway.",
         )
         add(
             "facebook",
@@ -147,7 +149,8 @@ def suggest_routes(
             confidence=0.65,
         )
     elif attachment_kind == "link" or has_url:
-        link = attachment_url or (_URL_RE.search(body).group(0) if _URL_RE.search(body) else "")
+        body_match = _URL_RE.search(body)
+        link = attachment_url or (body_match.group(0) if body_match else "")
         add(
             "linkedin",
             format_hint="text post with link",

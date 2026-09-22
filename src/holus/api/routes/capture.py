@@ -102,6 +102,16 @@ async def capture_suggest(body: CaptureSuggestRequest) -> CaptureSuggestResponse
         filename=body.attachment_filename,
         content_type=body.attachment_content_type,
     )
+    has_attachment_metadata = any(
+        value is not None
+        for value in (
+            body.attachment_url,
+            body.attachment_filename,
+            body.attachment_content_type,
+        )
+    )
+    if has_attachment_metadata and kind == "none":
+        raise HTTPException(status_code=400, detail="Unsupported attachment")
     if not body.text.strip() and kind == "none":
         raise HTTPException(status_code=400, detail="Provide text and/or an attachment")
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -10,6 +10,9 @@ from fastapi.testclient import TestClient
 
 from holus.api.app import create_app
 from holus.integrations.holus_social_api.containment import PERSONAL_DELIVERY_GRANT_ENV
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture()
@@ -35,6 +38,64 @@ def test_capture_suggest_returns_routes(client: TestClient) -> None:
     assert body["attachment_kind"] == "none"
     assert body["suggestions"]
     assert body["personal_delivery_granted"] is False
+
+
+@pytest.mark.parametrize(
+    ("filename", "content_type", "expected_kind"),
+    [
+        ("diagram.png", "image/png", "image"),
+        ("brief.pdf", "application/pdf", "pdf"),
+    ],
+)
+def test_capture_suggest_accepts_supported_attachment_metadata(
+    client: TestClient,
+    filename: str,
+    content_type: str,
+    expected_kind: str,
+) -> None:
+    with patch(
+        "holus.api.routes.capture._probe_social_connections",
+        new=AsyncMock(return_value=(False, [])),
+    ):
+        response = client.post(
+            "/api/v1/capture/suggest",
+            json={
+                "text": "A useful takeaway from this artifact.",
+                "attachment_filename": filename,
+                "attachment_content_type": content_type,
+            },
+        )
+    assert response.status_code == 200
+    assert response.json()["attachment_kind"] == expected_kind
+    assert response.json()["suggestions"]
+
+
+def test_capture_suggest_rejects_unsupported_attachment(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/capture/suggest",
+        json={"text": "Keep the note, reject the binary.", "attachment_filename": "data.zip"},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Unsupported attachment"
+
+
+def test_capture_suggest_rejects_malformed_empty_request(client: TestClient) -> None:
+    response = client.post("/api/v1/capture/suggest", json={})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Provide text and/or an attachment"
+
+
+def test_capture_suggest_retries_as_contained_when_social_api_fails(client: TestClient) -> None:
+    with patch(
+        "holus.api.routes.capture.HolusSocialAPIClient.health",
+        new=AsyncMock(side_effect=RuntimeError("temporary outage")),
+    ):
+        response = client.post(
+            "/api/v1/capture/suggest",
+            json={"text": "Retry later if the social boundary is unavailable."},
+        )
+    assert response.status_code == 200
+    assert response.json()["social_api_reachable"] is False
 
 
 def test_capture_preview_and_confirm_contained(client: TestClient) -> None:
@@ -69,4 +130,6 @@ def test_capture_preview_and_confirm_contained(client: TestClient) -> None:
     body = confirm.json()
     assert body["personal_delivery_granted"] is False
     assert body["results"]
-    assert all(result["status"] in {"contained", "approved", "published"} for result in body["results"])
+    assert all(
+        result["status"] in {"contained", "approved", "published"} for result in body["results"]
+    )
