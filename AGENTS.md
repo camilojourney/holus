@@ -222,6 +222,16 @@ The MCP boundary is the contract. If a silo's MCP is down, Holus waits.
 - ALWAYS run `just check` before committing.
 - NEVER modify `config/guardrails.yaml` without explicit human approval.
 - ALWAYS use Pydantic models at silo boundaries. No raw dicts.
+- Several `data/*` entries (`reference-library`, `few-shot-examples`, `models`, `rendered`,
+  `logs`, `examples`, `token-usage`, `training-data`, `visuals`) are gitignored symlinks to
+  an external volume on the original author's machine. A broken one on another machine is
+  expected - reads against it already degrade gracefully via `.exists()`/`.is_dir()` checks
+  (see `src/holus/data/corpus.py`, `src/holus/data/few_shot.py`) - don't "fix" it by
+  recreating the symlink target. `data/content-queue` was the one exception (code did an
+  unguarded `mkdir(exist_ok=True)` on it and crashed); it is now untracked and created
+  locally on demand instead.
+- `just install` runs `uv run playwright install chromium` — required by `card_generator.py`
+  and `visual/engine.py` for card/carousel rendering; a plain `uv sync` does not provision it.
 
 ## Key Constraints
 

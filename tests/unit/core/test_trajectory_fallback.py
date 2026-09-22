@@ -134,8 +134,12 @@ class TestAppendJsonlStderr:
             assert data["cycle_id"] == "abc"
             assert data["value"] == 99
 
-    def test_does_not_raise_ever(self) -> None:
+    def test_does_not_raise_ever(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """_append_jsonl never raises regardless of path validity."""
+        # Path("") resolves its fallback file relative to cwd (stem="",
+        # suffix="" -> ".failed"). Run from an isolated tmp cwd so that
+        # fallback write does not land on the real repo's tracked .failed file.
+        monkeypatch.chdir(tmp_path)
         for bad_path in [
             Path("/nonexistent_root_dir/a/b/c.jsonl"),
             Path(""),

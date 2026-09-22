@@ -9,6 +9,7 @@ Holus -- Thought Studio and Social API workflow for a solo founder.
 ```bash
 git clone https://github.com/camilomartinez/holus.git && cd holus
 uv sync --all-extras
+uv run playwright install chromium  # required for card/carousel rendering
 just run
 ```
 
