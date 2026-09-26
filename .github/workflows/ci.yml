@@ -20,6 +20,8 @@ jobs:
         uses: astral-sh/setup-uv@v6
       - name: Install locked dependencies
         run: uv sync --locked --all-extras
+      - name: Install Playwright browser
+        run: uv run playwright install chromium
       - name: Set up just
         uses: extractions/setup-just@v3
       - name: Run checks
