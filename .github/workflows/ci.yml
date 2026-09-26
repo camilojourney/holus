@@ -20,5 +20,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
       - name: Install locked dependencies
         run: uv sync --locked --all-extras
+      - name: Set up just
+        uses: extractions/setup-just@v3
       - name: Run checks
         run: just check
