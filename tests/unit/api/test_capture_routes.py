@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
@@ -21,7 +22,9 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     queue.mkdir()
     monkeypatch.setattr("holus.api.routes.content.CONTENT_QUEUE_DIR", queue)
     monkeypatch.delenv(PERSONAL_DELIVERY_GRANT_ENV, raising=False)
-    return TestClient(create_app())
+    test_client = TestClient(create_app())
+    test_client._holus_queue = queue  # type: ignore[attr-defined]
+    return test_client
 
 
 def test_capture_suggest_returns_routes(client: TestClient) -> None:
@@ -133,3 +136,22 @@ def test_capture_preview_and_confirm_contained(client: TestClient) -> None:
     assert all(
         result["status"] in {"contained", "approved", "published"} for result in body["results"]
     )
+
+    # A retry is idempotent: it reconciles the same local intent rather than
+    # creating another delivery attempt. This is the background-safe dry-run
+    # contract for the capture -> approval -> queue -> publish lifecycle.
+    retry = client.post(
+        "/api/v1/capture/confirm",
+        json={"piece_ids": piece_ids, "dry_run": False},
+    )
+    assert retry.status_code == 200
+    assert [result["status"] for result in retry.json()["results"]] == ["contained"] * len(
+        piece_ids
+    )
+
+    queue_dir = client._holus_queue  # type: ignore[attr-defined]
+    outbox_files = list((queue_dir.parent / "lineage" / "outbox").glob("*.json"))
+    assert len(outbox_files) == len(piece_ids)
+    outbox_records = [json.loads(path.read_text(encoding="utf-8")) for path in outbox_files]
+    assert {record["status"] for record in outbox_records} == {"contained"}
+    assert all(record["external_id"] is None for record in outbox_records)
