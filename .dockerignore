@@ -1,0 +1,46 @@
+.git
+.github
+.cache
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.venv
+__pycache__
+*.py[cod]
+
+# Runtime state, generated assets, and private data are mounted or created at runtime.
+data
+logs
+.self-improvement
+.pipeline-state
+htmlcov
+.coverage
+
+# Never send local credentials or key material to a builder. The explicit
+# recursive forms make the intent clear for nested config directories too.
+.env*
+**/.env*
+!.env.example
+!**/.env.example
+secrets
+private
+*.pem
+*.key
+*.token
+*.secret
+**/*.pem
+**/*.key
+**/*.token
+**/*.secret
+
+# Local-only tooling and documentation.
+.claude
+.codex
+.cursor
+.agents
+.graphify
+experiments
+pre-registrations
+tasks
+tests
+observatory
