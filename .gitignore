@@ -105,6 +105,10 @@ data/examples/
 .worktrees/
 p2p3-final-review/
 
+# ---- Holusight: Local skill and index ----
+.agents/skills/holusight/
+.holusight/
+
 # graphify - commit graph.json; ignore generated reports/cache/viz outputs
 graphify-out/.graphify_*
 graphify-out/.rebuild.lock
